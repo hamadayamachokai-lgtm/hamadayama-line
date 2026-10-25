@@ -320,7 +320,7 @@ function renderNav(h) {
   var items = [['home', 'ホーム', 'home', true]];
   S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
-  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^ev/.test(h) ? 'event' : (h === 'tipnew' ? 'tips' : (h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
+  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
   var keep = el ? el.scrollLeft : 0;
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
   el.innerHTML = items.map(function (it) {
@@ -1027,28 +1027,38 @@ function evApplyView(name) {
   evLoad().then(draw).catch(function (e) { offErr('申込', e, 'event'); });
 }
 
-/* ---------- 豆知識 ---------- */
+/* ---------- 豆知識(今日の質問・投票・みんなの答え) ---------- */
+var KIND_TAG = { '投票': '投票', '自由記入': 'みんなに質問', '豆知識': '豆知識' };
 function tipsView() {
-  sub('豆知識', '<div class="skel" style="height:240px"></div>');
+  sub('豆知識', '<div class="skel" style="height:260px"></div>');
   api('tips_list').then(function (d) {
-    var h = d.today ? '<div class="card"><h2>今日の豆知識</h2><div style="font-size:18px;font-weight:700;line-height:1.5">' + esc(d.today.title) + '</div><div class="tg">' + esc(d.today.category) + '</div><div class="mbody">' + linkify(d.today.body) + '</div></div>' : '';
-    if (d.canEdit) h += '<button class="btn ghost" id="tnew">＋ 豆知識を追加する(役員)</button><div style="height:14px"></div>';
-    h += '<div class="sec">これまでの豆知識</div>' + d.items.map(function (t) {
-      return '<div class="card"' + (t.shown ? '' : ' style="opacity:.6"') + '><div style="font-weight:700;line-height:1.5">' + esc(t.title) + '</div><span class="tg">' + esc(t.category) + '</span>' + (t.shown ? '' : '<span class="tg warn">非表示中</span>') +
-        '<div class="mbody" style="margin-top:6px">' + linkify(t.body) + '</div>' + (d.canEdit ? '<div class="inrow" style="margin-top:10px"><button class="sbtn" data-tg="' + esc(t.id) + '">' + (t.shown ? '非表示にする' : '表示する') + '</button></div>' : '') + '</div>';
-    }).join('');
+    var t = d.today, h = '';
+    if (t) {
+      h += '<div class="card"><h2>今日の' + (t.kind === '豆知識' ? '豆知識' : '質問') + '</h2><span class="tg ' + (t.kind === '豆知識' ? '' : 'imp') + '" style="margin:0 0 6px">' + esc(KIND_TAG[t.kind] || t.kind) + '</span><span class="tg" style="margin-left:0">' + esc(t.category) + '</span>' +
+        '<div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:6px">' + esc(t.title) + '</div>' + (t.body ? '<div class="mbody" style="margin-top:6px">' + linkify(t.body) + '</div>' : '');
+      if (t.kind === '投票' && !t.answered) h += '<div style="margin-top:14px">' + t.choices.map(function (c, i) { return '<button class="btn ghost" style="margin-bottom:10px;justify-content:flex-start;text-align:left" data-ch="' + i + '">' + esc(c) + '</button>'; }).join('') + '</div><p class="small" style="margin:0">タップすると回答します(あとで変えられません)。結果は、明日お見せします。</p>';
+      else if (t.kind === '自由記入' && !t.answered) h += '<div style="margin-top:14px"><textarea class="inp" id="tx" maxlength="100" placeholder="ひとことで(100字まで)" aria-label="答え" style="min-height:90px"></textarea><div style="height:10px"></div><button class="btn" id="txs">答えを送る</button><p class="small" style="margin:8px 0 0">お名前は出ません。明日、みんなの答えが見られます。</p></div>';
+      else if (t.answered) h += '<div class="notice-box" style="margin:14px 0 0">回答ありがとうございます。あなたの答え: <b>' + esc(t.mine) + '</b><br>' + (t.kind === '投票' ? '結果は、明日お見せします。' : 'みんなの答えは、明日お見せします。') + '</div>';
+      h += '</div>';
+    } else h += '<div class="card"><p class="muted" style="margin:0">きょうの質問はありません。</p></div>';
+    if (d.past.length) {
+      h += '<div class="sec">きのうまでの結果</div>' + d.past.map(function (r) {
+        var x = '<div class="card"><div class="muted" style="font-size:13px">' + esc(fmtDate(r.date)) + ' ・ ' + esc(r.total) + '人が回答</div><div style="font-size:17px;font-weight:700;line-height:1.5;margin:2px 0 10px">' + esc(r.title) + '</div>';
+        if (r.kind === '投票') x += r.results.map(function (c) {
+          return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span>' + esc(c.label) + '</span><b>' + c.pct + '%</b></div><div class="bar" aria-hidden="true"><i style="width:' + c.pct + '%"></i></div></div>';
+        }).join('');
+        else if (r.kind === '自由記入') x += r.answers.length ? r.answers.map(function (a) { return '<div class="rp"><div class="tx">' + esc(a.text) + '</div>' + (d.staff ? '<div style="margin-top:6px"><button class="sbtn" data-da="' + esc(a.id) + '">この答えを消す</button></div>' : '') + '</div>'; }).join('') : '<p class="muted" style="margin:0">答えはありません。</p>';
+        return x + '</div>';
+      }).join('');
+    }
     sub('豆知識', h);
-    var n = $('#tnew'); if (n) n.onclick = function () { go('tipnew'); };
-    Array.prototype.forEach.call(document.querySelectorAll('[data-tg]'), function (b) { b.onclick = function () { b.disabled = true; api('tips_toggle', { id: b.dataset.tg }).then(tipsView).catch(function (e) { b.disabled = false; toast(e.message); }); }; });
+    var send = function (extra, btn) { if (btn) btn.disabled = true; api('tips_answer', Object.assign({ id: t.id }, extra)).then(function () { toast('回答しました'); tipsView(); }).catch(function (e) { if (btn) btn.disabled = false; toast(e.message); }); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ch]'), function (b) { b.onclick = function () { send({ choice: +b.dataset.ch }, b); }; });
+    var ts = $('#txs'); if (ts) ts.onclick = function () { var v = $('#tx').value; if (!v.trim()) return toast('答えを入力してください'); send({ text: v }, ts); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-da]'), function (b) {
+      b.onclick = function () { if (!window.confirm('この答えを消します。よろしいですか?')) return; b.disabled = true; api('tips_ans_delete', { id: b.dataset.da }).then(function () { tipsView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+    });
   }).catch(function (e) { offErr('豆知識', e, 'home'); });
-}
-function tipNewView() {
-  sub('豆知識を追加', '<div class="card"><div class="field"><label class="l" for="tt">タイトル<span class="req">必須</span></label><input class="inp" id="tt" maxlength="60"></div>' +
-    '<div class="field"><label class="l" for="tc">分類</label><div class="chips" id="tcs">' + ['防災', '暮らし', '町会'].map(function (c, i) { return '<button data-c="' + c + '" aria-pressed="' + (i === 0) + '">' + c + '</button>'; }).join('') + '</div></div>' +
-    '<div class="field"><label class="l" for="tb">本文<span class="req">必須</span></label><textarea class="inp" id="tb" maxlength="1000" style="min-height:160px"></textarea></div><button class="btn" id="tsv">追加する</button></div>', 'tips');
-  var cat = '防災';
-  Array.prototype.forEach.call(document.querySelectorAll('#tcs button'), function (b) { b.onclick = function () { cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#tcs button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
-  $('#tsv').onclick = function () { var b = $('#tsv'); b.disabled = true; api('tips_save', { title: $('#tt').value, body: $('#tb').value, category: cat }).then(function () { toast('追加しました'); go('tips'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
 }
 
 /* ---------- 掲示板 ---------- */
@@ -1186,7 +1196,7 @@ function route() {
   if (h === 'board' && seg) return boardDetailView(seg);
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, tipnew: tipNewView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
