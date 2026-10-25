@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>浜田山町会 LINE会員</title>
+<style>
+:root{
+  --bg:#f3efe6; --card:#fffdf8; --ink:#1b2438; --sub:#667085; --line:#e4ddcf;
+  --navy:#1f3a5f; --navy2:#2f4b7c; --navy3:#12243f; --gold:#b8934a; --red:#c4472f;
+  --ok:#1f7a4d; --ok-bg:#e3f3ea; --warn:#9a5b00; --warn-bg:#fcefd3; --bad:#b3261e; --bad-bg:#fbe5e2; --mute-bg:#ece8de;
+  --r:16px; --sh:0 1px 2px rgba(27,36,56,.06),0 6px 20px rgba(27,36,56,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:17px/1.65 "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button,input,textarea{font:inherit;color:inherit}
+a{color:var(--navy2)}
+#app{max-width:520px;margin:0 auto;min-height:100vh}
+.pad{padding:16px}
+h1,h2,h3{margin:0;line-height:1.35}
+.muted{color:var(--sub);font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* 上部バー */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 4px;background:rgba(243,239,230,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .back{width:48px;height:48px;border:0;background:none;border-radius:12px;display:grid;place-items:center;cursor:pointer;color:var(--navy)}
+.top .back:active{background:var(--mute-bg)}
+.top h1{font-size:18px;font-weight:700;flex:1}
+.top .pad-r{width:12px}
+
+/* ヒーロー */
+.hero{margin:0;padding:28px 20px 56px;color:#fff;position:relative;overflow:hidden;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(184,147,74,.35),transparent 55%),linear-gradient(160deg,var(--navy3),var(--navy) 60%,var(--navy2))}
+.hero::before{content:"";position:absolute;inset:0;opacity:.07;
+  background:repeating-radial-gradient(circle at 0 100%,transparent 0 14px,#fff 14px 15px)}
+.hero .brand{position:relative;font-size:13px;letter-spacing:.28em;opacity:.8}
+.hero h1{position:relative;font-size:24px;margin-top:6px;font-weight:700}
+.hero .sub{position:relative;opacity:.85;margin-top:2px;font-size:15px}
+.chip{display:inline-block;padding:1px 12px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.chip.role{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)} .chip.mute{background:var(--mute-bg);color:var(--sub)}
+.sheet{margin:-36px 12px 0;position:relative}
+.sheet.flat{margin-top:0}
+.hero.short{padding-bottom:28px}
+
+/* カード・ボタン */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px}
+.card h2{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:4px;height:1em;border-radius:2px;background:var(--red)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;padding:12px 18px;border:0;border-radius:14px;
+  background:var(--navy);color:#fff;font-weight:700;font-size:17px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.btn:active{transform:translateY(1px);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);box-shadow:none}
+.btn.red{background:var(--red)}
+.btn[disabled]{opacity:.55}
+.btns{display:grid;gap:10px;margin-top:16px}
+
+/* メニュー */
+.sec{margin:22px 4px 8px;font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--sub);display:flex;align-items:center;gap:10px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:98px;padding:12px 4px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);cursor:pointer;text-align:center;font-weight:700;font-size:13px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere}
+.tile svg{width:32px;height:32px;stroke:var(--navy);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tile:active{transform:scale(.97)}
+.tile.soon{background:#f7f4ec;box-shadow:none}
+.tile.soon svg{stroke:#a3a9b5} .tile.soon{color:#7d8696}
+.tile .tag{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;color:var(--sub);background:var(--mute-bg);padding:0 6px;border-radius:999px;line-height:1.7}
+.tile.officer svg{stroke:var(--red)}
+
+/* フォーム */
+.field{margin-bottom:18px}
+.field label.l{display:block;font-weight:700;margin-bottom:2px}
+.field .req{color:var(--red);font-size:12px;margin-left:6px;font-weight:700}
+.field .hint{font-size:13.5px;color:var(--sub);margin:0 0 6px;line-height:1.5}
+.inp{width:100%;min-height:52px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;outline:none}
+.inp:focus{border-color:var(--navy2);box-shadow:0 0 0 3px rgba(47,75,124,.15)}
+textarea.inp{min-height:96px;resize:vertical}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;min-height:54px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-weight:600}
+.opt input{width:22px;height:22px;accent-color:var(--navy)}
+.opt:has(input:checked){border-color:var(--navy2);background:#eef2f9}
+.err{color:var(--bad);font-size:14px;margin-top:6px;font-weight:600}
+.notice-box{border-left:4px solid var(--gold);background:#fbf6e9;padding:12px 14px;border-radius:0 12px 12px 0;font-size:14.5px;margin-bottom:16px}
+
+/* 状況画面 */
+.center{text-align:center;padding:36px 8px 8px}
+.bigicon{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:var(--mute-bg)}
+.bigicon svg{width:38px;height:38px;stroke:var(--navy);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.bigicon.bad{background:var(--bad-bg)} .bigicon.bad svg{stroke:var(--bad)}
+.bigicon.warn{background:var(--warn-bg)} .bigicon.warn svg{stroke:var(--warn)}
+.kv{display:grid;grid-template-columns:7.2em 1fr;gap:6px 10px;font-size:15px;margin:0}
+.kv dt{color:var(--sub)} .kv dd{margin:0;word-break:break-all}
+
+/* 会員証 */
+.mcard{position:relative;border-radius:22px;overflow:hidden;color:#fff;padding:22px 20px 20px;box-shadow:0 14px 30px rgba(18,36,63,.35);
+  background:radial-gradient(120% 80% at 100% 0%,rgba(184,147,74,.45),transparent 55%),linear-gradient(155deg,var(--navy3),var(--navy) 60%,var(--navy2))}
+.mcard::before{content:"";position:absolute;inset:0;opacity:.07;background:repeating-radial-gradient(circle at 0 100%,transparent 0 14px,#fff 14px 15px)}
+.mcard>*{position:relative}
+.mcard .t1{font-size:12px;letter-spacing:.3em;opacity:.8}
+.mcard .t2{font-size:20px;font-weight:700;margin-bottom:14px}
+.mcard .nm{font-size:26px;font-weight:700;line-height:1.3;word-break:break-all}
+.mcard .row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:12px;font-size:14px;opacity:.95}
+.mcard .no{font-size:20px;font-weight:700;letter-spacing:.04em}
+.qrbox{background:#fff;border-radius:16px;padding:10px;margin:18px auto 8px;width:min(66vw,260px);aspect-ratio:1}
+.qrbox svg{display:block;width:100%;height:100%}
+.mcard .code{text-align:center;font-size:20px;letter-spacing:.24em;font-weight:700;font-variant-numeric:tabular-nums}
+.mcard .gold{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px 0}
+
+/* ダッシュボード */
+.feebig{display:flex;align-items:center;gap:14px}
+.feebig .dot{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;flex:none}
+.feebig .dot svg{width:30px;height:30px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.feebig.ok .dot{background:var(--ok-bg)} .feebig.ok .dot svg{stroke:var(--ok)}
+.feebig.warn .dot{background:var(--warn-bg)} .feebig.warn .dot svg{stroke:var(--warn)}
+.feebig.mute .dot{background:var(--mute-bg)} .feebig.mute .dot svg{stroke:var(--sub)}
+.feebig .big{font-size:22px;font-weight:700;line-height:1.2}
+.years{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ntc{border-top:1px solid var(--line);padding:12px 0}
+.ntc:first-child{border-top:0;padding-top:0}
+.ntc button{all:unset;display:block;width:100%;cursor:pointer}
+.ntc .d{font-size:12.5px;color:var(--sub)}
+.ntc .ti{font-weight:700}
+.ntc .bd{display:none;margin-top:6px;white-space:pre-wrap;word-break:break-word;font-size:15.5px}
+.ntc.open .bd{display:block}
+
+/* 天気・防災 */
+.banner{border-radius:var(--r);padding:16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.banner.ok{background:var(--ok-bg);color:#14583a} .banner.advisory{background:var(--warn-bg);color:#6e4100}
+.banner.warning{background:#fbe0dc;color:#8d1d16} .banner.special{background:#5a1d6b;color:#fff}
+.banner b{font-size:17px}
+.wlist{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.wlist li{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.links{display:grid;gap:8px}
+.links a{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:52px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;text-decoration:none;color:var(--ink);font-weight:600}
+.links a::after{content:"›";font-size:22px;color:var(--sub)}
+.today{display:flex;align-items:center;gap:16px}
+.today svg.wi{width:84px;height:84px;flex:none}
+.today .tx{font-size:20px;font-weight:700;line-height:1.35}
+.tm{display:flex;gap:18px;margin-top:10px;font-weight:700}
+.tm .lo{color:#2563a8} .tm .hi{color:var(--red)}
+.pops{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.pops div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center;font-size:13px}
+.pops b{display:block;font-size:18px}
+.wk{display:grid;grid-template-columns:5.6em 34px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.wk:first-of-type{border-top:0}
+.wk svg{width:30px;height:30px}
+.wk .tt{text-align:right;font-weight:700;white-space:nowrap}
+.skel{height:84px;border-radius:var(--r);background:linear-gradient(90deg,#ebe6da,#f5f1e8,#ebe6da);background-size:200% 100%;animation:sk 1.4s infinite linear;margin-bottom:12px}
+@keyframes sk{to{background-position:-200% 0}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:88vw;background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"><div class="pad"><div class="skel"></div><div class="skel"></div></div></div>
+<div id="toast" role="status"></div>
+<script src="config.js"></script>
+<script src="qr.js"></script>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+(function () {
+'use strict';
+var CFG = window.APP_CONFIG || {};
+var S = { me: null, tab: '' };
+var $ = function (s, el) { return (el || document).querySelector(s); };
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function linkify(s) { return esc(s).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
+var toastT;
+function toast(m) { var t = $('#toast'); t.textContent = m; t.className = 'on'; clearTimeout(toastT); toastT = setTimeout(function () { t.className = ''; }, 2600); }
+
+/* ---------- アイコン ---------- */
+var IC = {
+  card: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.5 16c.6-1.5 4.4-1.5 5 0M14 10h4M14 13h3"/>',
+  dashboard: '<path d="M5 20V11M11 20V4M17 20v-6M3 20h18"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  event: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  help: '<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/>',
+  suginami: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M12 8v5M12 16v.5"/>',
+  weather: '<circle cx="8" cy="8" r="3"/><path d="M8 2v1M2 8h1M3.8 3.8l.7.7M12.2 3.8l-.7.7"/><path d="M8 19h9a4 4 0 000-8 5 5 0 00-9.6 1.5A3.3 3.3 0 008 19z"/>',
+  tips: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>',
+  mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
+  blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
+  board: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+  circ_dest: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
+  circ_members: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
+  circ_change: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+  o_member: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c0-3.6 2.9-6 6.5-6"/><circle cx="17" cy="16" r="3"/><path d="M19.2 18.2L22 21"/>',
+  o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
+  o_inquiry: '<path d="M4 5h16v11H9l-5 4z"/><path d="M12 8.5v3M12 13.5v.5"/>',
+  o_event: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>', hourglass: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  stop: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', x: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>', dash: '<path d="M6 12h12"/>', person: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'
+};
+function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
+var LABEL = {
+  card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
+  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
+  circ_dest: '回覧物の届け先', circ_members: '班員確認', circ_change: '回覧元変更申請',
+  o_member: '会員検索', o_unpaid: '未納者検索', o_inquiry: '問い合わせ', o_event: 'イベント受付'
+};
+var SECTION = { common: 'みんなのメニュー', circ: '回覧元メニュー', officer: '役員メニュー' };
+
+/* ---------- 通信 ---------- */
+function api(action, extra) {
+  if (window.__previewApi) return window.__previewApi(action, extra || {});
+  var body = JSON.stringify(Object.assign({ action: action, idToken: window.liff ? liff.getIDToken() : '' }, extra || {}));
+  return fetch(CFG.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body })
+    .then(function (r) { return r.json(); }, function () { throw mkErr('network', '通信できませんでした。電波の良い場所で、もう一度お試しください。'); })
+    .then(function (j) {
+      if (j && j.ok) return j.data;
+      var code = j && j.error;
+      if ((code === 'token_expired' || code === 'token_invalid') && window.liff && !window.__previewApi) { try { liff.logout(); liff.login({ redirectUri: location.href }); } catch (e) { /* 下で表示 */ } }
+      throw mkErr(code || 'server', (j && j.message) || '処理に失敗しました。');
+    });
+}
+function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
+
+/* ---------- 画面の骨組み ---------- */
+function setView(html) { $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
+function sub(title, body) {
+  setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
+  $('#bk').onclick = function () { go('home'); };
+}
+function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
+function fatal(e) {
+  setView('<div class="pad"><div class="center"><div class="bigicon bad">' + svg('alert') + '</div><h2>表示できませんでした</h2><p class="muted">' + esc(e && e.message || e) + '</p></div><div class="btns"><button class="btn" id="rt">もう一度読み込む</button></div></div>');
+  $('#rt').onclick = function () { location.reload(); };
+}
+
+/* ---------- 登録フォーム ---------- */
+function formView(prefill, isEdit) {
+  var me = S.me, f = prefill || {}, rel = f.relation || '';
+  var relHtml = me.relations.map(function (r) {
+    return '<label class="opt"><input type="radio" name="rel" value="' + esc(r) + '"' + (rel === r ? ' checked' : '') + '><span>' + esc(r) + '</span></label>';
+  }).join('');
+  setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>' + (isEdit ? '申請内容の修正' : 'LINE会員の登録') + '</h1><div class="sub">浜田山町会</div></div>' +
+    '<div class="pad sheet"><div class="card">' +
+    '<div class="notice-box">町会費の納入状況を役員が確認して、承認します。<br>承認の連絡は届きませんので、数日後にこの画面をもう一度開いてご確認ください。</div>' +
+    '<form id="rf" novalidate>' +
+    '<div class="field"><label class="l" for="f1">LINE会員氏名<span class="req">必須</span></label><p class="hint">ご本人のお名前(フルネーム)をご入力ください。</p><input class="inp" id="f1" autocomplete="name" maxlength="30" value="' + esc(f.lineName || me.displayName || '') + '"><div class="err" id="e1"></div></div>' +
+    '<div class="field"><label class="l" for="f2">町会費納入者のお名前<span class="req">必須</span></label><p class="hint">町会費をお支払いいただいている方(世帯主など)のお名前です。<b>管理組合で加入している場合は、建物名(マンション名)</b>をご入力ください。</p><input class="inp" id="f2" maxlength="60" value="' + esc(f.payerName || '') + '"><div class="err" id="e2"></div></div>' +
+    '<div class="field"><label class="l" for="f3">納入者の住所<span class="req">必須</span></label><p class="hint">「3-4-5」のように、番地まで入力してください。管理組合で加入している場合は、建物の住所です。</p><input class="inp" id="f3" maxlength="100" autocomplete="street-address" value="' + esc(f.payerAddress || '') + '"><div class="err" id="e3"></div></div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">納入者との関係<span class="req">必須</span></span><div class="opts" id="rels" role="radiogroup">' + relHtml + '</div>' +
+    '<div id="relnote" style="display:none;margin-top:10px"><p class="hint">状況を教えてください(例: 実家に同居している、マンションの管理人 など)</p><textarea class="inp" id="f4" maxlength="100">' + esc(f.relationNote || '') + '</textarea></div><div class="err" id="e4"></div></div>' +
+    '<button class="btn" id="sb" type="submit">' + (isEdit ? 'この内容で修正する' : 'この内容で申請する') + '</button>' +
+    (isEdit ? '<div class="btns"><button class="btn ghost" id="cn" type="button">やめる</button></div>' : '') +
+    '</form></div></div>');
+  function syncNote() { var r = document.querySelector('input[name=rel]:checked'); $('#relnote').style.display = r && r.value === 'どれにしたらいいかわからない' ? 'block' : 'none'; }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=rel]'), function (i) { i.onchange = syncNote; });
+  syncNote();
+  if (isEdit) $('#cn').onclick = function () { statusView(); };
+  $('#rf').onsubmit = function (ev) {
+    ev.preventDefault();
+    var v = { lineName: $('#f1').value.trim(), payerName: $('#f2').value.trim(), payerAddress: $('#f3').value.trim(), relation: '', relationNote: $('#f4').value.trim() };
+    var r = document.querySelector('input[name=rel]:checked'); if (r) v.relation = r.value;
+    var ok = true;
+    function chk(id, cond, msg) { $('#' + id).textContent = cond ? '' : msg; if (!cond) ok = false; }
+    chk('e1', v.lineName, 'お名前を入力してください');
+    chk('e2', v.payerName, '町会費納入者のお名前を入力してください');
+    chk('e3', v.payerAddress, '住所を入力してください');
+    chk('e4', v.relation && (v.relation !== 'どれにしたらいいかわからない' || v.relationNote), v.relation ? '状況をご記入ください' : '関係を選んでください');
+    if (!ok) { var first = document.querySelector('.err:not(:empty)'); if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    var b = $('#sb'); b.disabled = true; b.textContent = '送信中…';
+    api('register', { form: v }).then(function (me2) { S.me = me2; statusView(); toast('申請を受け付けました'); })
+      .catch(function (e) { b.disabled = false; b.textContent = isEdit ? 'この内容で修正する' : 'この内容で申請する'; toast(e.message); });
+  };
+}
+
+/* ---------- 承認待ち・否決・停止 ---------- */
+function profileHtml(p) {
+  return '<dl class="kv"><dt>LINE会員氏名</dt><dd>' + esc(p.lineName) + '</dd><dt>納入者</dt><dd>' + esc(p.payerName) + '</dd><dt>住所</dt><dd>' + esc(p.payerAddress) + '</dd><dt>関係</dt><dd>' + esc(p.relation) + (p.relationNote ? '<br><span class="muted">' + esc(p.relationNote) + '</span>' : '') + '</dd></dl>';
+}
+function statusView() {
+  var me = S.me;
+  if (me.state === 'none') return formView(null, false);
+  if (me.state === 'approved') return route();
+  var cfg = {
+    pending: { icon: 'hourglass', cls: '', t: '申請を受け付けました', d: '役員が町会費の納入状況を確認しています。承認されると、メニューが使えるようになります。' },
+    rejected: { icon: 'x', cls: 'bad', t: '承認できませんでした', d: '内容をご確認のうえ、必要であれば修正して、もう一度申請してください。' },
+    suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' }
+  }[me.state];
+  var html = '<div class="card"><div class="center" style="padding:12px 0 4px"><div class="bigicon ' + cfg.cls + '">' + svg(cfg.icon) + '</div><h2 style="justify-content:center;margin-bottom:6px">' + cfg.t + '</h2><p class="muted" style="margin:0">' + cfg.d + '</p></div></div>';
+  if (me.reason) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
+  if (me.state !== 'suspended') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
+  if (me.state === 'pending') html += '<div class="notice-box">承認の連絡は届きません。数日後に、この画面を開き直してご確認ください。</div><div class="btns"><button class="btn" id="rl">承認されたか確認する</button><button class="btn ghost" id="ed">申請内容を修正する</button></div>';
+  if (me.state === 'rejected') html += '<div class="btns"><button class="btn" id="ed">内容を直して再申請する</button></div>';
+  if (me.state === 'suspended') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
+  setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>浜田山町会</h1><div class="sub">LINE会員</div></div><div class="pad sheet">' + html + '</div>');
+  var rl = $('#rl'), ed = $('#ed');
+  if (rl) rl.onclick = function () { rl.disabled = true; loadMe().then(function () { if (S.me.state === 'approved') route(); else { statusView(); toast('まだ承認待ちです'); } }).catch(function (e) { rl.disabled = false; toast(e.message); }); };
+  if (ed) ed.onclick = function () { formView(S.me.profile, true); };
+}
+
+/* ---------- ホーム ---------- */
+function homeView() {
+  var me = S.me, sections = {}, order = [];
+  me.menu.forEach(function (m) { if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
+  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div></div><div class="pad sheet flat">';
+  order.forEach(function (sec) {
+    html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
+      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+    }).join('') + '</div>';
+  });
+  html += '</div><div style="height:28px"></div>';
+  setView(html);
+  Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
+}
+function openTile(k) {
+  var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
+  if (!m || !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
+  if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' }[k]);
+}
+function openExternal(url) { try { if (window.liff && liff.isInClient && liff.isInClient()) { liff.openWindow({ url: url, external: true }); return; } } catch (e) { /* 下へ */ } window.open(url, '_blank', 'noopener'); }
+
+/* ---------- 会員証 ---------- */
+var FEE = {
+  paid: ['ok', '納入済み', 'check'], unpaid: ['warn', '未納', 'alert'], exempt: ['mute', '対象外', 'dash'], na: ['mute', 'お休み中', 'dash'], unlinked: ['mute', '確認中', 'dash']
+};
+function cardView() {
+  sub('会員証', '<div class="skel" style="height:420px"></div>');
+  api('card').then(function (c) {
+    var f = FEE[c.fee] || FEE.unlinked;
+    var qr = ''; try { qr = window.qrSvg ? qrSvg('HMD1:' + c.code) : ''; } catch (e) { qr = ''; }
+    sub('会員証', '<div class="mcard"><div class="t1">HAMADAYAMA NEIGHBORHOOD ASSOCIATION</div><div class="t2">浜田山町会 会員証</div>' +
+      '<div class="nm">' + esc(c.name) + '</div><div class="row"><span class="chip role">' + esc(c.role) + '</span><span class="no">' + (c.memberNo ? esc(c.memberNo) : '会員番号 未設定') + '</span></div>' +
+      '<div class="gold"></div><div class="qrbox">' + (qr || '<div style="display:grid;place-items:center;height:100%;color:#1b2438;font-weight:700">QRを表示できません</div>') + '</div><div class="code">' + esc(c.code) + '</div></div>' +
+      '<div class="card" style="margin-top:16px"><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="muted">' + c.year + '年度 町会費</div><div class="big">' + f[1] + '</div></div></div></div>' +
+      '<p class="muted" style="text-align:center">受付では、この画面を見せてください。<br>画面の明るさを上げると読み取りやすくなります。</p>');
+  }).catch(function (e) { sub('会員証', errCard(e)); });
+}
+function errCard(e) { return '<div class="center"><div class="bigicon bad">' + svg('alert') + '</div><p>' + esc(e.message) + '</p></div>'; }
+
+/* ---------- ダッシュボード ---------- */
+function dashView() {
+  sub('ダッシュボード', '<div class="skel"></div><div class="skel"></div>');
+  api('dashboard').then(function (d) {
+    var f = FEE[d.fee.state] || FEE.unlinked;
+    var h = '<div class="card"><h2>' + d.year + '年度 町会費</h2><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="big">' + f[1] + '</div>' +
+      '<div class="muted">' + (d.fee.state === 'unpaid' ? 'お支払いがまだ確認できていません' : d.fee.state === 'unlinked' ? '会員番号の紐づけ後に表示されます' : d.fee.state === 'paid' ? 'ありがとうございます' : '') + '</div></div></div>';
+    if (d.fee.years && d.fee.years.length) h += '<div class="years">' + d.fee.years.map(function (y) { return '<span class="chip ' + (y.paid ? 'ok' : 'warn') + '">' + y.year + ' ' + (y.paid ? '済' : '未') + '</span>'; }).join('') + '</div>';
+    h += '</div>';
+    if (d.member) h += '<div class="card"><h2>登録情報</h2><dl class="kv"><dt>会員番号</dt><dd>' + esc(d.memberNo) + '</dd><dt>班</dt><dd>' + esc(d.member.group) + '班(' + esc(d.member.district) + ')</dd><dt>お名前</dt><dd>' + esc(d.member.name) + '</dd></dl></div>';
+    h += '<div class="card"><h2>町会からのお知らせ</h2>' + (d.notices.length ? d.notices.map(function (n, i) {
+      return '<div class="ntc" data-i="' + i + '"><button type="button" aria-expanded="false"><div class="d">' + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></button></div>';
+    }).join('') : '<p class="muted" style="margin:0">いまのところ、お知らせはありません。</p>') + '</div>';
+    sub('ダッシュボード', h);
+    Array.prototype.forEach.call(document.querySelectorAll('.ntc button'), function (b) {
+      b.onclick = function (ev) { if (ev.target.tagName === 'A') return; var p = b.parentNode; p.classList.toggle('open'); b.setAttribute('aria-expanded', p.classList.contains('open')); };
+    });
+  }).catch(function (e) { sub('ダッシュボード', errCard(e)); });
+}
+
+/* ---------- 杉並(防災) ---------- */
+function suginamiView() {
+  sub('杉並(防災)', '<div class="skel"></div><div class="skel"></div>');
+  var links = '<div class="card"><h2>くわしい情報</h2><div class="links">' +
+    '<a href="https://www.jma.go.jp/bosai/warning/#area_type=class20s&area_code=1311500" target="_blank" rel="noopener">気象庁 防災情報(杉並区)</a>' +
+    '<a href="https://www.city.suginami.tokyo.jp/" target="_blank" rel="noopener">杉並区公式ホームページ</a>' +
+    '<a href="https://www.bousai.metro.tokyo.lg.jp/" target="_blank" rel="noopener">東京都防災ホームページ</a></div></div>';
+  api('suginami').then(function (w) {
+    var top = w.items.length ? w.items[0].level : 'ok';
+    var head = w.items.length
+      ? '<div class="banner ' + top + '">' + svg('alert').replace('<svg', '<svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"') + '<div><b>杉並区に警報・注意報が出ています</b><ul class="wlist">' +
+        w.items.map(function (i) { return '<li><span>' + esc(i.name) + '</span><span>' + esc(i.status) + '</span></li>'; }).join('') + '</ul></div></div>'
+      : '<div class="banner ok">' + svg('check').replace('<svg', '<svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"') + '<div><b>いま、杉並区に出ている警報・注意報はありません</b></div></div>';
+    sub('杉並(防災)', head + '<p class="muted" style="margin:-4px 4px 14px">気象庁 発表: ' + esc(fmtDt(w.reportDatetime)) + '</p>' + links);
+  }).catch(function (e) { sub('杉並(防災)', '<div class="banner advisory"><div><b>警報・注意報を取得できませんでした</b><br>' + esc(e.message) + '<br>下の気象庁のページで最新の情報をご確認ください。</div></div>' + links); });
+}
+
+/* ---------- 天気 ---------- */
+var WI = {
+  sun: '<circle cx="32" cy="32" r="11" fill="#f5a623"/><g stroke="#f5a623" stroke-width="4" stroke-linecap="round"><path d="M32 8v6M32 50v6M8 32h6M50 32h6M15 15l4 4M45 45l4 4M15 49l4-4M45 19l4-4"/></g>',
+  cloud: '<path d="M20 48h26a10 10 0 000-20 14 14 0 00-27-3A9 9 0 0020 48z" fill="#9aa8bd"/>',
+  rain: '<path d="M20 40h26a10 10 0 000-20 14 14 0 00-27-3A9 9 0 0020 40z" fill="#8797ae"/><g stroke="#2f7fd1" stroke-width="4" stroke-linecap="round"><path d="M22 46l-3 8M33 46l-3 8M44 46l-3 8"/></g>',
+  snow: '<path d="M20 40h26a10 10 0 000-20 14 14 0 00-27-3A9 9 0 0020 40z" fill="#a8b6cb"/><g fill="#5b8fd1"><circle cx="22" cy="50" r="2.6"/><circle cx="33" cy="54" r="2.6"/><circle cx="44" cy="50" r="2.6"/></g>'
+};
+function wi(k, cls) { return '<svg class="' + (cls || 'wi') + '" viewBox="0 0 64 64" aria-hidden="true">' + (WI[k] || WI.cloud) + '</svg>'; }
+var DOW = ['日', '月', '火', '水', '木', '金', '土'];
+function fmtDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); if (!m) return esc(s); var d = new Date(+m[1], +m[2] - 1, +m[3]); return (+m[2]) + '/' + (+m[3]) + '(' + DOW[d.getDay()] + ')'; }
+function fmtDt(s) { var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s || ''); return m ? (+m[2]) + '月' + (+m[3]) + '日 ' + m[4] + ':' + m[5] : (s || ''); }
+function weatherView() {
+  sub('天気', '<div class="skel" style="height:160px"></div><div class="skel"></div>');
+  var foot = '<div class="card"><h2>くわしい天気</h2><div class="links"><a href="https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=130000" target="_blank" rel="noopener">気象庁 天気予報(東京都)</a><a href="https://weathernews.jp/" target="_blank" rel="noopener">ウェザーニュース</a></div></div>';
+  api('weather').then(function (w) {
+    var d0 = w.days[0], today = d0.date;
+    var temps = w.temps.filter(function (t) { return t.temp != null && t.time.slice(0, 10) === today; });
+    var lo = null, hi = null; temps.forEach(function (t) { if (+t.time.slice(11, 13) < 6) lo = t.temp; else hi = t.temp; });
+    var popsToday = w.pops.filter(function (p) { return p.time.slice(0, 10) === today; });
+    var h = '<div class="card"><h2>今日 ' + fmtDate(today) + ' 杉並区付近</h2><div class="today">' + wi(d0.icon) + '<div class="tx">' + esc(d0.weather) + '</div></div>' +
+      ((lo != null || hi != null) ? '<div class="tm">' + (lo != null ? '<span class="lo">最低 ' + lo + '℃</span>' : '') + (hi != null ? '<span class="hi">最高 ' + hi + '℃</span>' : '') + '</div>' : '') +
+      (d0.wind ? '<p class="muted" style="margin:8px 0 0">風: ' + esc(d0.wind) + '</p>' : '') +
+      (popsToday.length ? '<div class="pops">' + popsToday.map(function (p) { var hh = +p.time.slice(11, 13); return '<div>' + hh + '〜' + (hh + 6) + '時<b>' + (p.pop == null ? '-' : p.pop + '%') + '</b></div>'; }).join('') + '</div><p class="muted" style="margin:6px 0 0">数字は降水確率です</p>' : '') + '</div>';
+    if (w.days.length > 1) h += '<div class="card"><h2>あす・あさって</h2>' + w.days.slice(1, 3).map(function (d) { return '<div class="wk" style="grid-template-columns:5.6em 34px 1fr">' + '<b>' + fmtDate(d.date) + '</b>' + wi(d.icon, '') + '<span>' + esc(d.weather) + '</span></div>'; }).join('') + '</div>';
+    if (w.weekly && w.weekly.length) h += '<div class="card"><h2>週間予報</h2>' + w.weekly.map(function (d) {
+      return '<div class="wk"><b>' + fmtDate(d.date) + '</b>' + wi(d.icon, '') + '<span class="muted">' + (d.pop == null ? '' : '降水 ' + d.pop + '%') + '</span><span class="tt">' + (d.min == null ? '-' : d.min) + ' / ' + (d.max == null ? '-' : d.max) + '℃</span></div>';
+    }).join('') + '</div>';
+    sub('天気', h + '<p class="muted" style="margin:0 4px 14px">出典: ' + esc(w.office) + '(' + esc(fmtDt(w.reportDatetime)) + ' 発表・東京地方)</p>' + foot);
+  }).catch(function (e) { sub('天気', '<div class="banner advisory"><div><b>天気を取得できませんでした</b><br>' + esc(e.message) + '</div></div>' + foot); });
+}
+
+/* ---------- ルーティング ---------- */
+function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
+function route() {
+  var me = S.me; if (!me) return;
+  if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
+  var h = (location.hash || '').replace('#', '');
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView }[h] || homeView)();
+}
+window.addEventListener('hashchange', route);
+
+function boot() {
+  var p;
+  if (CFG.ALLOW_PREVIEW && /[?&]preview=/.test(location.search)) {
+    var s = document.createElement('script'); s.src = 'preview.js';
+    p = new Promise(function (ok, ng) { s.onload = ok; s.onerror = function () { ng(new Error('preview.js がありません')); }; document.head.appendChild(s); });
+  } else {
+    if (!window.liff) return fatal(new Error('LINEの機能を読み込めませんでした。通信状況をご確認ください。'));
+    if (!CFG.LIFF_ID || !CFG.API_URL) return fatal(new Error('設定(config.js)が未完了です。'));
+    p = liff.init({ liffId: CFG.LIFF_ID }).then(function () {
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return new Promise(function () {}); }
+    });
+  }
+  p.then(loadMe).then(route).catch(fatal);
+}
+boot();
+})();
+</script>
+</body>
+</html>
