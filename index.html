@@ -155,11 +155,17 @@ textarea.inp{min-height:96px;resize:vertical}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:88vw;background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 /* 下のタブ(どの画面からでも、閉じずに移動できる) */
-.bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:6;width:min(100%,520px);display:flex;background:rgba(255,253,248,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:4px 2px calc(4px + env(safe-area-inset-bottom))}
-.bnav button{all:unset;flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:54px;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);cursor:pointer;border-radius:12px}
+.bnav{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch;position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:6;width:min(100%,520px);display:flex;background:rgba(255,253,248,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:4px 2px calc(4px + env(safe-area-inset-bottom))}
+.bnav button{all:unset;position:relative;flex:0 0 auto;width:calc(100% / 5.5);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:54px;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);cursor:pointer;border-radius:12px}
 .bnav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bnav button[aria-current=page]{color:var(--navy);background:#eef2f9}
+.bnav::-webkit-scrollbar{display:none}
+.bnav button{scroll-snap-align:start}
 .bnav button.off{color:var(--red)}
+.bnav button.soon svg,.bnav button.soon span{opacity:.5}
+.bnav button span{white-space:nowrap}
+.bdg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#d92d20;color:#fff;font-size:11px;line-height:18px;text-align:center;font-weight:700;border:2px solid #fffdf8;line-height:14px}
+.tile .bdg{top:8px;left:8px}
 .bnav button:active{background:var(--mute-bg)}
 body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 /* 役員画面 */
@@ -262,16 +268,34 @@ function sub(title, body, backTo) {
   setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
   $('#bk').onclick = function () { go(backTo || 'home'); };
 }
-var NAV = [['home', 'ホーム', 'home'], ['card', '会員証', 'card'], ['dash', 'ダッシュ', 'dashboard'], ['suginami', '杉並', 'suginami'], ['weather', '天気', 'weather']];
 function isOfficer() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'officer'; })); }
+var NAVLABEL = { dashboard: 'ダッシュ', suginami: '杉並', blog: 'ブログ', board: '掲示板', help: '助け合い' };
+var HASH = { card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' };
+function badgeOf(k) { var n = S.me && S.me.badges && +S.me.badges[k]; return n > 0 ? n : 0; }
 function renderNav(h) {
   var el = $('#bnav');
   if (!S.me || S.me.state !== 'approved') { if (el) el.parentNode.removeChild(el); document.body.classList.remove('hasnav'); return; }
-  var items = NAV.slice(); if (isOfficer()) items.push(['officer', '役員', 'officer']);
-  var cur = h === 'home' || !h ? 'home' : (/^o_/.test(h) ? 'officer' : h);
-  if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー'); document.body.appendChild(el); }
-  el.innerHTML = items.map(function (it) { return '<button data-h="' + it[0] + '"' + (it[0] === cur ? ' aria-current="page"' : '') + (it[0] === 'officer' ? ' class="off"' : '') + '>' + svg(it[2]) + '<span>' + it[1] + '</span></button>'; }).join('');
-  Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { go(b.dataset.h); }; });
+  var items = [['home', 'ホーム', 'home', true]];
+  S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
+  if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
+  var cur = !h || h === 'home' ? 'home' : (/^o_/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : h));
+  var keep = el ? el.scrollLeft : 0;
+  if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
+  el.innerHTML = items.map(function (it) {
+    var n = badgeOf(it[0]);
+    return '<button data-h="' + it[0] + '"' + (it[0] === cur ? ' aria-current="page"' : '') + ' class="' + (it[0] === 'officer' ? 'off ' : '') + (it[3] ? '' : 'soon') + '">' + svg(it[2]) + (n ? '<b class="bdg" aria-label="未読' + n + '件">' + (n > 99 ? '99+' : n) + '</b>' : '') + '<span>' + esc(it[1]) + '</span></button>';
+  }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {
+    b.onclick = function () {
+      var k = b.dataset.h;
+      if (k === 'home' || k === 'officer') return go(k);
+      var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
+      if (m && !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
+      openTile(k);
+    };
+  });
+  el.scrollLeft = keep;
+  var c = el.querySelector('[aria-current]'); if (c && c.offsetLeft + c.offsetWidth > el.scrollLeft + el.clientWidth || c && c.offsetLeft < el.scrollLeft) el.scrollLeft = Math.max(0, c.offsetLeft - 40);
   document.body.classList.add('hasnav');
 }
 function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
@@ -352,7 +376,7 @@ function homeView() {
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div></div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
-      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
   html += '</div><div style="height:28px"></div>';
