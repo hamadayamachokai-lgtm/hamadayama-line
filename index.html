@@ -320,7 +320,7 @@ function renderNav(h) {
   var items = [['home', 'ホーム', 'home', true]];
   S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
-  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : h)));
+  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^ev/.test(h) ? 'event' : (h === 'tipnew' ? 'tips' : (h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
   var keep = el ? el.scrollLeft : 0;
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
   el.innerHTML = items.map(function (it) {
@@ -430,7 +430,7 @@ function openTile(k) {
   if (!m || !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -619,6 +619,16 @@ function askChoice(title, options, note) {
     function done(v) { document.body.removeChild(el); ok(v); }
     el.onclick = function (e) { if (e.target === el) done(null); };
     Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { var i = +b.dataset.i; done(i < 0 ? null : options[i]); }; });
+  });
+}
+function askText(title, ph) {
+  return new Promise(function (ok) {
+    var el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.innerHTML = '<div class="box"><h3>' + esc(title) + '</h3><input class="inp" id="atx" maxlength="100" placeholder="' + esc(ph || '') + '" aria-label="' + esc(ph || title) + '" style="margin-bottom:10px"><button class="sbtn fill" data-i="1">送る</button><button class="sbtn" data-i="0">やめる</button></div>';
+    document.body.appendChild(el);
+    function done(v) { document.body.removeChild(el); ok(v); }
+    el.onclick = function (e) { if (e.target === el) done(null); };
+    Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { done(b.dataset.i === '1' ? $('#atx', el).value : null); }; });
   });
 }
 function changeStatus(g, m, status, btn) {
@@ -927,6 +937,241 @@ function shrinkImage(file, max) {
   });
 }
 
+/* ---------- イベント ---------- */
+var EV = { state: null };
+function evLoad() { return api('ev_state').then(function (s) { EV.state = s; return s; }); }
+function gradeTag(g) { return g ? ' <span class="muted">(' + esc(g) + ')</span>' : ''; }
+function eventView() {
+  sub('イベント', '<div class="skel" style="height:300px"></div>');
+  evLoad().then(function (s) {
+    if (s.noMember) return sub('イベント', '<div class="notice-box">ご自身の会員番号が確認できないため、この機能はまだ使えません。役員にお問い合わせください。</div>');
+    var h = '<p class="muted" style="margin:0 0 12px">' + esc(s.year) + '年度のお申し込みです。ご家族は同じ「対象者」を共有します。</p>';
+    s.events.forEach(function (ev) {
+      h += '<div class="card"><h2>' + esc(ev.name) + '</h2>' +
+        (ev.open ? '<span class="tg ok">受付中 〜' + esc(fmtDate(ev.end)) + '</span>' : '<span class="tg">' + (ev.start ? '受付期間外(' + esc(fmtDate(ev.start)) + '〜' + esc(fmtDate(ev.end)) + ')' : 'まだ受付していません') + '</span>') +
+        (ev.note ? '<div class="mbody" style="margin-top:8px">' + linkify(ev.note) + '</div>' : '');
+      if (ev.apps.length) h += '<div style="margin-top:10px">' + ev.apps.map(function (a) {
+        return '<div class="rp' + (a.mine ? ' me' : '') + '"><div class="who">' + esc(a.channel) + 'から申込 ・ ' + esc(fmtMd(a.date)) + (a.received ? ' ・ 受取済み' : '') + '</div>' +
+          '<div class="tx">' + a.people.map(function (p) { return esc(p.name) + gradeTag(p.grade); }).join('、') + ' ／ ' + a.count + '個' + (a.note ? '<br><span class="muted">' + esc(a.note) + '</span>' : '') + '</div>' +
+          (a.editable ? '<div class="inrow" style="margin-top:8px"><button class="sbtn" data-ed="' + esc(ev.name) + '|' + esc(a.id) + '">直す</button><button class="sbtn" data-cx="' + esc(a.id) + '" style="color:var(--bad);border-color:var(--bad)">取り消す</button></div>' :
+            (a.channel !== 'LINE' ? '<div class="small">LINE以外の申込は、役員が直します。</div>' : '')) + '</div>';
+      }).join('') + '</div>';
+      else h += '<p class="muted" style="margin:10px 0 0">申込はまだありません。</p>';
+      h += '<div style="height:12px"></div>' + (ev.open ? '<button class="btn" data-ap="' + esc(ev.name) + '">' + (ev.apps.length ? 'もう1件 申し込む' : '申し込む') + '</button>' : '') + '</div>';
+    });
+    h += '<div class="card"><h2>対象者(ご家族)</h2>' + (s.people.length ? s.people.map(function (p) {
+      return '<div class="inrow" style="align-items:center;margin-bottom:8px"><div style="flex:1;min-width:0"><b>' + esc(p.name) + '</b>' + gradeTag(p.grade) + '</div><button class="sbtn" data-pe="' + esc(p.id) + '">直す</button></div>';
+    }).join('') : '<p class="muted" style="margin:0 0 10px">お子様や参加する方を登録すると、申込のときに選べます。</p>') +
+      '<button class="btn ghost" id="pnew">＋ 対象者を登録</button><p class="small" style="margin:8px 0 0">生年月日(例 2018-05-03)で登録すると、学年が毎年自動で変わります。</p></div>';
+    sub('イベント', h);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { EV.edit = null; go('evapply/' + b.dataset.ap); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ed]'), function (b) { b.onclick = function () { var x = b.dataset.ed.split('|'); EV.edit = x[1]; go('evapply/' + x[0]); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { go('evperson/' + b.dataset.pe); }; });
+    $('#pnew').onclick = function () { go('evperson/new'); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
+      b.onclick = function () {
+        if (!window.confirm('この申込を取り消します。よろしいですか?')) return;
+        b.disabled = true; api('ev_cancel', { id: b.dataset.cx }).then(function () { toast('取り消しました'); eventView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    });
+  }).catch(function (e) { offErr('イベント', e, 'home'); });
+}
+function evPersonView(id) {
+  var go2 = function (s) {
+    var p = id === 'new' ? null : s.people.filter(function (x) { return x.id === id; })[0];
+    if (id !== 'new' && !p) return go('event');
+    sub(p ? '対象者を直す' : '対象者を登録', '<div class="card"><div class="field"><label class="l" for="pn">お名前<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' +
+      '<div class="field"><label class="l" for="pb">生年月日 または 学年<span class="req">必須</span></label><p class="hint">例: 2018-05-03 ／ 小3 ／ 年長</p><input class="inp" id="pb" maxlength="20" value="' + esc(p ? p.birth : '') + '"></div>' +
+      '<button class="btn" id="psv">保存する</button>' + (p ? '<div style="height:10px"></div><button class="btn ghost" id="pdl" style="color:var(--bad);border-color:var(--bad)">この方を削除</button>' : '') + '</div>', 'event');
+    $('#psv').onclick = function () {
+      var b = $('#psv'); b.disabled = true;
+      api('ev_person_save', { id: p ? p.id : '', name: $('#pn').value, birth: $('#pb').value }).then(function () { toast('保存しました'); go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+    var d = $('#pdl'); if (d) d.onclick = function () {
+      if (!window.confirm('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
+      d.disabled = true; api('ev_person_delete', { id: p.id }).then(function () { toast('削除しました'); go('event'); }).catch(function (e) { d.disabled = false; toast(e.message); });
+    };
+  };
+  if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('対象者', e, 'event'); });
+}
+function evApplyView(name) {
+  var draw = function (s) {
+    var ev = s.events.filter(function (x) { return x.name === name; })[0];
+    if (!ev) return go('event');
+    var cur = EV.edit ? ev.apps.filter(function (a) { return a.id === EV.edit; })[0] : null;
+    if (!ev.open || (EV.edit && !cur)) return go('event');
+    var fest = name === '祭礼', chosen = {};
+    if (cur) cur.people.forEach(function (p) { chosen[p.name] = 1; });
+    var prev = ev.apps[0] || {};
+    var h = '<div class="card">' + (ev.note ? '<div class="notice-box">' + linkify(ev.note) + '</div>' : '') +
+      '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">' + (fest ? 'お菓子を受け取るお子様' : '参加する方') + '<span class="req">必須</span></span>' +
+      (s.people.length ? s.people.map(function (p) {
+        var bad = fest && !/^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || '');
+        return '<label class="opt" style="margin-bottom:8px;' + (bad ? 'opacity:.55' : '') + '"><input type="checkbox" data-id="' + esc(p.id) + '" data-n="' + esc(p.name) + '"' + (chosen[p.name] ? ' checked' : '') + (bad ? ' disabled' : '') + '><span>' + esc(p.name) + gradeTag(p.grade) + (bad ? ' <span class="muted">小学生以下のみ</span>' : '') + '</span></label>';
+      }).join('') : '<p class="muted">先に「対象者」を登録してください。</p>') +
+      '<button class="sbtn" id="addp" type="button">＋ 対象者を登録する</button></div>';
+    if (fest) h += '<div class="field"><label class="l" for="ag">保護者のお名前<span class="req">必須</span></label><input class="inp" id="ag" maxlength="40" value="' + esc(cur ? cur.guardian : (prev.guardian || '')) + '"></div>' +
+      '<div class="field"><label class="l" for="am">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="am" type="email" inputmode="email" maxlength="120" value="' + esc(cur ? cur.email : (prev.email || '')) + '"></div>';
+    h += '<div class="field"><label class="l" for="ac">申込個数<span class="req">必須</span></label><input class="inp" id="ac" inputmode="numeric" maxlength="2" value="' + esc(cur ? cur.count : '') + '" placeholder="空なら、選んだ人数"></div>' +
+      '<div class="field"><label class="l" for="an">ひとこと(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></div>' +
+      '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">すでに別の方法(フォーム・紙など)で申し込んだ方は、重ねて申し込めません。</p></div>';
+    sub(name + (cur ? 'の申込を直す' : 'に申し込む'), h, 'event');
+    $('#addp').onclick = function () { go('evperson/new'); };
+    $('#asv').onclick = function () {
+      var ids = Array.prototype.map.call(document.querySelectorAll('[data-id]:checked'), function (c) { return c.dataset.id; });
+      var b = $('#asv'); b.disabled = true;
+      api('ev_apply', { event: name, appId: cur ? cur.id : '', personIds: ids, guardian: fest ? $('#ag').value : '', email: fest ? $('#am').value : '', count: $('#ac').value || ids.length, note: $('#an').value })
+        .then(function () { toast(cur ? '修正しました' : '申し込みました'); EV.edit = null; go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  };
+  evLoad().then(draw).catch(function (e) { offErr('申込', e, 'event'); });
+}
+
+/* ---------- 豆知識 ---------- */
+function tipsView() {
+  sub('豆知識', '<div class="skel" style="height:240px"></div>');
+  api('tips_list').then(function (d) {
+    var h = d.today ? '<div class="card"><h2>今日の豆知識</h2><div style="font-size:18px;font-weight:700;line-height:1.5">' + esc(d.today.title) + '</div><div class="tg">' + esc(d.today.category) + '</div><div class="mbody">' + linkify(d.today.body) + '</div></div>' : '';
+    if (d.canEdit) h += '<button class="btn ghost" id="tnew">＋ 豆知識を追加する(役員)</button><div style="height:14px"></div>';
+    h += '<div class="sec">これまでの豆知識</div>' + d.items.map(function (t) {
+      return '<div class="card"' + (t.shown ? '' : ' style="opacity:.6"') + '><div style="font-weight:700;line-height:1.5">' + esc(t.title) + '</div><span class="tg">' + esc(t.category) + '</span>' + (t.shown ? '' : '<span class="tg warn">非表示中</span>') +
+        '<div class="mbody" style="margin-top:6px">' + linkify(t.body) + '</div>' + (d.canEdit ? '<div class="inrow" style="margin-top:10px"><button class="sbtn" data-tg="' + esc(t.id) + '">' + (t.shown ? '非表示にする' : '表示する') + '</button></div>' : '') + '</div>';
+    }).join('');
+    sub('豆知識', h);
+    var n = $('#tnew'); if (n) n.onclick = function () { go('tipnew'); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-tg]'), function (b) { b.onclick = function () { b.disabled = true; api('tips_toggle', { id: b.dataset.tg }).then(tipsView).catch(function (e) { b.disabled = false; toast(e.message); }); }; });
+  }).catch(function (e) { offErr('豆知識', e, 'home'); });
+}
+function tipNewView() {
+  sub('豆知識を追加', '<div class="card"><div class="field"><label class="l" for="tt">タイトル<span class="req">必須</span></label><input class="inp" id="tt" maxlength="60"></div>' +
+    '<div class="field"><label class="l" for="tc">分類</label><div class="chips" id="tcs">' + ['防災', '暮らし', '町会'].map(function (c, i) { return '<button data-c="' + c + '" aria-pressed="' + (i === 0) + '">' + c + '</button>'; }).join('') + '</div></div>' +
+    '<div class="field"><label class="l" for="tb">本文<span class="req">必須</span></label><textarea class="inp" id="tb" maxlength="1000" style="min-height:160px"></textarea></div><button class="btn" id="tsv">追加する</button></div>', 'tips');
+  var cat = '防災';
+  Array.prototype.forEach.call(document.querySelectorAll('#tcs button'), function (b) { b.onclick = function () { cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#tcs button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
+  $('#tsv').onclick = function () { var b = $('#tsv'); b.disabled = true; api('tips_save', { title: $('#tt').value, body: $('#tb').value, category: cat }).then(function () { toast('追加しました'); go('tips'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+}
+
+/* ---------- 掲示板 ---------- */
+var BD = { cat: 'all' };
+function boardView() {
+  sub('町会掲示板', '<div class="skel" style="height:300px"></div>');
+  api('board_list').then(function (d) {
+    var h = '<button class="btn" id="bnew">✎ 投稿する</button><div class="chips" id="bcs" style="margin:14px 0 4px"><button data-c="all" aria-pressed="true">すべて</button>' + d.cats.map(function (c) { return '<button data-c="' + esc(c) + '" aria-pressed="false">' + esc(c) + '</button>'; }).join('') + '</div><div id="blist"></div>' +
+      '<p class="small" style="margin:8px 4px">投稿は180日で自動で消えます。不適切な投稿は「通報」してください(3人の通報で、いったん非表示になります)。</p>';
+    sub('町会掲示板', h);
+    function draw() {
+      var rows = d.posts.filter(function (p) { return BD.cat === 'all' || p.cat === BD.cat; });
+      $('#blist').innerHTML = rows.length ? rows.map(function (p) {
+        return '<button class="ml" data-id="' + esc(p.id) + '"><div class="sj">' + esc(p.title) + '</div><div class="mt">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div><span class="tg' + (p.cat === 'おしらせ' ? ' imp' : '') + '">' + esc(p.cat) + '</span>' + (p.comments ? '<span class="tg">コメント ' + p.comments + '</span>' : '') + (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + '</button>';
+      }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はまだありません。</p></div>';
+      Array.prototype.forEach.call(document.querySelectorAll('#blist .ml'), function (b) { b.onclick = function () { go('board/' + b.dataset.id); }; });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('#bcs button'), function (b) { b.setAttribute('aria-pressed', b.dataset.c === BD.cat ? 'true' : 'false'); b.onclick = function () { BD.cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#bcs button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
+    $('#bnew').onclick = function () { BD.cats = d.cats; BD.staff = d.staff; go('boardnew'); };
+    BD.cats = d.cats; BD.staff = d.staff; draw();
+  }).catch(function (e) { offErr('町会掲示板', e, 'home'); });
+}
+function boardNewView() {
+  var cats = (BD.cats || ['質問・相談', '情報共有', '探しもの・譲ります']).filter(function (c) { return c !== 'おしらせ' || BD.staff; }), cat = cats[0];
+  sub('掲示板に投稿', '<div class="card"><div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">分類</span><div class="chips" id="bcc">' + cats.map(function (c, i) { return '<button data-c="' + esc(c) + '" aria-pressed="' + (i === 0) + '">' + esc(c) + '</button>'; }).join('') + '</div></div>' +
+    '<div class="field"><label class="l" for="bt">タイトル<span class="req">必須</span></label><input class="inp" id="bt" maxlength="60"></div>' +
+    '<div class="field"><label class="l" for="bb">本文<span class="req">必須</span></label><textarea class="inp" id="bb" maxlength="2000" style="min-height:160px"></textarea></div>' +
+    '<div class="notice-box">電話番号・住所などの個人情報は書かないでください。町会員全員に見えます。</div><button class="btn" id="bsv">投稿する</button></div>', 'board');
+  Array.prototype.forEach.call(document.querySelectorAll('#bcc button'), function (b) { b.onclick = function () { cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#bcc button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
+  $('#bsv').onclick = function () { var b = $('#bsv'); b.disabled = true; api('board_post', { cat: cat, title: $('#bt').value, body: $('#bb').value }).then(function (r) { toast('投稿しました'); go('board/' + r.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+}
+function boardDetailView(id) {
+  sub('掲示板', '<div class="skel" style="height:300px"></div>', 'board');
+  api('board_get', { id: id }).then(function (p) {
+    var act = function (tid, mine, reported, status) {
+      return '<div class="inrow" style="margin-top:8px;flex-wrap:wrap">' + (mine || p.staff ? '<button class="sbtn" data-op="delete|' + esc(tid) + '">削除</button>' : '') +
+        (!mine ? '<button class="sbtn" data-rp="' + esc(tid) + '"' + (reported ? ' disabled' : '') + '>' + (reported ? '通報済み' : '通報') + '</button>' : '') +
+        (p.staff ? '<button class="sbtn" data-op="' + (status === '公開' ? 'hide' : 'show') + '|' + esc(tid) + '">' + (status === '公開' ? '非表示にする' : '再表示') + '</button>' : '') + '</div>';
+    };
+    var h = '<div class="card"><div style="font-size:19px;font-weight:700;line-height:1.4">' + esc(p.title) + '</div><div class="muted" style="margin-top:4px">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div><span class="tg">' + esc(p.cat) + '</span>' +
+      (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + (p.staff && p.reports ? '<span class="tg warn">通報 ' + p.reports + '</span>' : '') +
+      '<div class="mbody">' + linkify(p.body) + '</div>' + act(p.id, p.mine, p.reported, p.status) + '</div>' +
+      '<div class="card"><h2>コメント' + (p.comments.length ? '(' + p.comments.length + ')' : '') + '</h2>' + (p.comments.length ? p.comments.map(function (c) {
+        return '<div class="rp' + (c.mine ? ' me' : '') + '"><div class="who">' + esc(c.mine ? 'あなた' : c.by) + ' ・ ' + esc(fmtMd(c.date)) + (c.status !== '公開' ? ' ・ ' + esc(c.status) : '') + '</div><div class="tx">' + linkify(c.body) + '</div>' + act(c.id, c.mine, c.reported, c.status) + '</div>';
+      }).join('') : '<p class="muted" style="margin:0 0 8px">まだコメントはありません。</p>') +
+      (p.status === '公開' ? '<textarea class="inp" id="cb" maxlength="800" placeholder="コメントを書く" aria-label="コメント"></textarea><div style="height:10px"></div><button class="btn" id="csv">コメントする</button>' : '') + '</div>';
+    sub('掲示板', h, 'board');
+    var cs = $('#csv'); if (cs) cs.onclick = function () { var t = $('#cb').value; if (!t.trim()) return toast('コメントを入力してください'); cs.disabled = true; api('board_comment', { id: p.id, body: t }).then(function () { toast('投稿しました'); boardDetailView(id); }).catch(function (e) { cs.disabled = false; toast(e.message); }); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rp]'), function (b) {
+      b.onclick = function () { if (!window.confirm('この投稿を通報します。よろしいですか?')) return; b.disabled = true; api('board_report', { id: b.dataset.rp }).then(function () { toast('通報しました'); boardDetailView(id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-op]'), function (b) {
+      b.onclick = function () {
+        var x = b.dataset.op.split('|');
+        if (x[0] === 'delete' && !window.confirm('削除します。よろしいですか?')) return;
+        b.disabled = true; api('board_action', { id: x[1], op: x[0] }).then(function () { toast('完了しました'); if (x[0] === 'delete' && x[1] === p.id) go('board'); else boardDetailView(id); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    });
+  }).catch(function (e) { offErr('掲示板', e, 'board'); });
+}
+
+/* ---------- 助け合い ---------- */
+var HP = { tab: 'open', d: null };
+function helpView() {
+  sub('助け合い', '<div class="skel" style="height:300px"></div>');
+  api('help_list').then(function (d) { HP.d = d; drawHelp(); }).catch(function (e) { offErr('助け合い', e, 'home'); });
+}
+function drawHelp() {
+  var d = HP.d, items = d.items;
+  var pend = items.filter(function (x) { return x.status === '承認待ち' && d.staff; });
+  var mine = items.filter(function (x) { return x.mine; });
+  var open = items.filter(function (x) { return x.status === '公開' || x.status === '成立'; });
+  var list = HP.tab === 'mine' ? mine : open;
+  var h = '<div class="notice-box">お互いの連絡先は公開しません。つながったら、役員が間に入って連絡を取り持ちます。</div><button class="btn" id="hnew">＋ お願い・できますを投稿</button>';
+  if (pend.length) h += '<div class="sec" style="margin-top:16px">確認待ち(役員)</div>' + pend.map(function (x) { return helpCard(x, d); }).join('');
+  h += '<div class="chips" id="hts" style="margin:14px 0 4px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんなの投稿</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分の投稿 ' + mine.length + '</button></div>';
+  h += list.length ? list.map(function (x) { return helpCard(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はありません。</p></div>';
+  sub('助け合い', h);
+  $('#hnew').onclick = function () { go('helpnew'); };
+  Array.prototype.forEach.call(document.querySelectorAll('#hts button'), function (b) { b.onclick = function () { HP.tab = b.dataset.t; drawHelp(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hp]'), function (b) {
+    b.onclick = function () {
+      var x = b.dataset.hp.split('|'), id = x[1], op = x[0];
+      var run = function (action, extra, ok) { b.disabled = true; api(action, Object.assign({ id: id }, extra)).then(function () { toast(ok); helpView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+      if (op === 'ok') run('help_review', { ok: true }, '公開しました');
+      else if (op === 'no') { if (window.confirm('この投稿を見送ります。よろしいですか?')) run('help_review', { ok: false }, '見送りました'); }
+      else if (op === 'raise') { askText('手を挙げる', 'ひとこと(任意・例: 土曜なら行けます)').then(function (m) { if (m !== null) run('help_raise', { message: m }, '手を挙げました'); }); }
+      else if (op === 'unraise') run('help_unraise', {}, '取り消しました');
+      else if (op === 'connect') { if (window.confirm(x[2] + 'さんとつなぎます。連絡先は公開されず、役員が間に入ります。よろしいですか?')) run('help_connect', { helperId: x[3] }, 'つなぎました。メールBOXをご確認ください'); }
+      else if (op === 'close') { if (window.confirm('この投稿を終了します。よろしいですか?')) run('help_close', {}, '終了しました'); }
+      else if (op === 'remove') { if (window.confirm('この投稿を削除します。よろしいですか?')) run('help_close', { remove: true }, '削除しました'); }
+    };
+  });
+}
+function helpCard(x, d) {
+  var h = '<div class="card"><span class="tg ' + (x.kind === 'お願い' ? 'imp' : 'ok') + '">' + esc(x.kind) + '</span><span class="tg">' + esc(x.cat) + '</span>' + (x.status !== '公開' ? '<span class="tg warn">' + esc(x.status) + '</span>' : '') +
+    '<div style="font-size:17px;font-weight:700;line-height:1.4;margin-top:6px">' + esc(x.title) + '</div><div class="muted">' + esc(x.by) + ' ・ ' + esc(fmtMd(x.date)) + '</div><div class="mbody" style="margin-top:6px">' + linkify(x.body) + '</div>';
+  var btn = function (op, label, extra, danger) { return '<button class="sbtn' + (op === 'ok' ? ' fill' : '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '"' + (danger ? ' style="color:var(--bad);border-color:var(--bad)"' : '') + '>' + label + '</button>'; };
+  var bs = [];
+  if (x.status === '承認待ち' && d.staff) { bs.push(btn('ok', '公開する')); bs.push(btn('no', '見送る')); }
+  if (x.status === '公開' && !x.mine) bs.push(x.raised ? btn('unraise', '手上げを取り消す') : btn('raise', '手を挙げる'));
+  if (x.status === '公開' && x.raisers && x.raisers.length) h += '<div style="margin-top:10px"><b>手を挙げた方(' + x.raisers.length + ')</b>' + x.raisers.map(function (r) {
+    return '<div class="rp"><div class="who">' + esc(r.name) + ' ・ ' + esc(fmtMd(r.date)) + '</div>' + (r.msg ? '<div class="tx">' + esc(r.msg) + '</div>' : '') + (x.mine ? '<div style="margin-top:6px"><button class="sbtn fill" data-hp="connect|' + esc(x.id) + '|' + esc(r.name) + '|' + esc(r.id) + '">この方とつなぐ</button></div>' : '') + '</div>';
+  }).join('') + '</div>';
+  if (x.status === '成立') h += '<p class="small" style="margin:10px 0 0">' + (x.partner ? esc(x.partner) + 'さんとつながりました。' : 'つながりました。') + 'メールBOXに、役員からのご案内が届いています。</p>';
+  if ((x.mine || d.staff) && (x.status === '公開' || x.status === '成立')) bs.push(btn('close', '終了する'));
+  if (x.mine || d.staff) bs.push(btn('remove', '削除', '', true));
+  if (bs.length) h += '<div class="inrow" style="margin-top:10px;flex-wrap:wrap">' + bs.join('') + '</div>';
+  return h + '</div>';
+}
+function helpNewView() {
+  var d = HP.d || { kinds: ['お願い', 'できます'], cats: ['買い物', 'ゴミ出し・力仕事', '通院・送迎', '見守り・話し相手', '子どもの預かり', '防災・避難', 'その他'] }, kind = d.kinds[0], cat = d.cats[0];
+  var chip = function (id, arr) { return '<div class="chips" id="' + id + '">' + arr.map(function (c, i) { return '<button data-c="' + esc(c) + '" aria-pressed="' + (i === 0) + '">' + esc(c) + '</button>'; }).join('') + '</div>'; };
+  sub('助け合いを投稿', '<div class="card"><div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">どちらですか?</span>' + chip('hk', ['お願い', 'できます']) + '<p class="hint">お願い=手伝ってほしい ／ できます=手伝えます</p></div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">内容の種類</span>' + chip('hc', d.cats) + '</div>' +
+    '<div class="field"><label class="l" for="ht">タイトル<span class="req">必須</span></label><input class="inp" id="ht" maxlength="60" placeholder="例: 週1回の買い物をお願いしたい"></div>' +
+    '<div class="field"><label class="l" for="hb">くわしく<span class="req">必須</span></label><textarea class="inp" id="hb" maxlength="1000" style="min-height:130px" placeholder="いつ・どのくらい・場所のだいたい(丁目まで)など"></textarea></div>' +
+    '<div class="notice-box">電話番号・番地は書かないでください。役員が内容を確認してから公開します。</div><button class="btn" id="hsv">投稿する</button></div>', 'help');
+  var bind = function (id, set) { Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (b) { b.onclick = function () { set(b.dataset.c); Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; }); };
+  bind('hk', function (v) { kind = v; }); bind('hc', function (v) { cat = v; });
+  $('#hsv').onclick = function () { var b = $('#hsv'); b.disabled = true; api('help_post', { kind: kind, cat: cat, title: $('#ht').value, body: $('#hb').value }).then(function (r) { toast(r.status === '公開' ? '投稿しました' : '投稿しました。役員の確認後に公開されます'); HP.d = null; go('help'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+}
+
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
@@ -936,8 +1181,12 @@ function route() {
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan)$/.test(h);
   if ((officerOnly && !isOfficer()) || (h === 'a_img' && !isAdmin())) h = '';
   renderNav(h);
-  if (h === 'mail' && full.indexOf('/') > 0) return mailDetailView(full.split('/')[1]);
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  var seg = full.split('/')[1];
+  if (h === 'mail' && seg) return mailDetailView(seg);
+  if (h === 'board' && seg) return boardDetailView(seg);
+  if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
+  if (h === 'evperson' && seg) return evPersonView(seg);
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, tipnew: tipNewView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
