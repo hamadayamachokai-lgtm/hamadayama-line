@@ -274,6 +274,7 @@ var IC = {
   a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
   a_disaster: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
+  a_notice: '<path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 01-3.4 0"/>',
   a_docs: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>',
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
@@ -287,7 +288,7 @@ var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
   o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
-  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新'
+  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
@@ -433,7 +434,7 @@ function openTile(k) {
   if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -1103,29 +1104,25 @@ var BD = { cat: 'all' };
 function boardView() {
   sub('町会掲示板', '<div class="skel" style="height:300px"></div>');
   api('board_list').then(function (d) {
-    var h = '<button class="btn" id="bnew">✎ 投稿する</button><div class="chips" id="bcs" style="margin:14px 0 4px"><button data-c="all" aria-pressed="true">すべて</button>' + d.cats.map(function (c) { return '<button data-c="' + esc(c) + '" aria-pressed="false">' + esc(c) + '</button>'; }).join('') + '</div><div id="blist"></div>' +
+    var h = '<button class="btn" id="bnew">✎ 投稿する</button><div id="blist" style="margin-top:14px"></div>' +
       '<p class="small" style="margin:8px 4px">投稿は180日で自動で消えます。不適切な投稿は「通報」してください(3人の通報で、いったん非表示になります)。</p>';
     sub('町会掲示板', h);
     function draw() {
-      var rows = d.posts.filter(function (p) { return BD.cat === 'all' || p.cat === BD.cat; });
+      var rows = d.posts;
       $('#blist').innerHTML = rows.length ? rows.map(function (p) {
-        return '<button class="ml" data-id="' + esc(p.id) + '"><div class="sj">' + esc(p.title) + '</div><div class="mt">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div><span class="tg' + (p.cat === 'おしらせ' ? ' imp' : '') + '">' + esc(p.cat) + '</span>' + (p.comments ? '<span class="tg">コメント ' + p.comments + '</span>' : '') + (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + '</button>';
+        return '<button class="ml" data-id="' + esc(p.id) + '"><div class="sj">' + esc(p.title) + '</div><div class="mt">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div>' + (p.comments ? '<span class="tg">コメント ' + p.comments + '</span>' : '') + (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + '</button>';
       }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はまだありません。</p></div>';
       Array.prototype.forEach.call(document.querySelectorAll('#blist .ml'), function (b) { b.onclick = function () { go('board/' + b.dataset.id); }; });
     }
-    Array.prototype.forEach.call(document.querySelectorAll('#bcs button'), function (b) { b.setAttribute('aria-pressed', b.dataset.c === BD.cat ? 'true' : 'false'); b.onclick = function () { BD.cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#bcs button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
-    $('#bnew').onclick = function () { BD.cats = d.cats; BD.staff = d.staff; go('boardnew'); };
-    BD.cats = d.cats; BD.staff = d.staff; draw();
+    $('#bnew').onclick = function () { go('boardnew'); };
+    draw();
   }).catch(function (e) { offErr('町会掲示板', e, 'home'); });
 }
 function boardNewView() {
-  var cats = (BD.cats || ['質問・相談', '情報共有', '探しもの・譲ります']).filter(function (c) { return c !== 'おしらせ' || BD.staff; }), cat = cats[0];
-  sub('掲示板に投稿', '<div class="card"><div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">分類</span><div class="chips" id="bcc">' + cats.map(function (c, i) { return '<button data-c="' + esc(c) + '" aria-pressed="' + (i === 0) + '">' + esc(c) + '</button>'; }).join('') + '</div></div>' +
-    '<div class="field"><label class="l" for="bt">タイトル<span class="req">必須</span></label><input class="inp" id="bt" maxlength="60"></div>' +
+  sub('掲示板に投稿', '<div class="card"><div class="field"><label class="l" for="bt">タイトル<span class="req">必須</span></label><input class="inp" id="bt" maxlength="60"></div>' +
     '<div class="field"><label class="l" for="bb">本文<span class="req">必須</span></label><textarea class="inp" id="bb" maxlength="2000" style="min-height:160px"></textarea></div>' +
     '<div class="notice-box">電話番号・住所などの個人情報は書かないでください。町会員全員に見えます。</div><button class="btn" id="bsv">投稿する</button></div>', 'board');
-  Array.prototype.forEach.call(document.querySelectorAll('#bcc button'), function (b) { b.onclick = function () { cat = b.dataset.c; Array.prototype.forEach.call(document.querySelectorAll('#bcc button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
-  $('#bsv').onclick = function () { var b = $('#bsv'); b.disabled = true; api('board_post', { cat: cat, title: $('#bt').value, body: $('#bb').value }).then(function (r) { toast('投稿しました'); go('board/' + r.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  $('#bsv').onclick = function () { var b = $('#bsv'); b.disabled = true; api('board_post', { title: $('#bt').value, body: $('#bb').value }).then(function (r) { toast('投稿しました'); go('board/' + r.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
 }
 function boardDetailView(id) {
   sub('掲示板', '<div class="skel" style="height:300px"></div>', 'board');
@@ -1135,7 +1132,7 @@ function boardDetailView(id) {
         (!mine ? '<button class="sbtn" data-rp="' + esc(tid) + '"' + (reported ? ' disabled' : '') + '>' + (reported ? '通報済み' : '通報') + '</button>' : '') +
         (p.staff ? '<button class="sbtn" data-op="' + (status === '公開' ? 'hide' : 'show') + '|' + esc(tid) + '">' + (status === '公開' ? '非表示にする' : '再表示') + '</button>' : '') + '</div>';
     };
-    var h = '<div class="card"><div style="font-size:19px;font-weight:700;line-height:1.4">' + esc(p.title) + '</div><div class="muted" style="margin-top:4px">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div><span class="tg">' + esc(p.cat) + '</span>' +
+    var h = '<div class="card"><div style="font-size:19px;font-weight:700;line-height:1.4">' + esc(p.title) + '</div><div class="muted" style="margin-top:4px">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div>' +
       (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + (p.staff && p.reports ? '<span class="tg warn">通報 ' + p.reports + '</span>' : '') +
       '<div class="mbody">' + linkify(p.body) + '</div>' + act(p.id, p.mine, p.reported, p.status) + '</div>' +
       '<div class="card"><h2>コメント' + (p.comments.length ? '(' + p.comments.length + ')' : '') + '</h2>' + (p.comments.length ? p.comments.map(function (c) {
@@ -1284,6 +1281,34 @@ function docsAdminView() {
   }).catch(function (e) { offErr('書類の更新', e, 'officer'); });
 }
 
+var NA = { list: [] };
+function noticeAdminView() {
+  sub('お知らせの更新', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_notice_list').then(function (d) {
+    NA.today = d.today; NA.list = d.notices;
+    sub('お知らせの更新', '<button class="btn" id="nnew">＋ 新しいお知らせ</button><div style="height:12px"></div>' + (d.notices.length ? d.notices.map(function (n) {
+      return '<button class="ml" data-id="' + esc(n.id) + '"><div class="sj">' + esc(n.title) + '</div><div class="mt">' + esc(n.from || '') + (n.to ? ' 〜 ' + esc(n.to) : ' 〜') + ' ・ ' + esc(n.audience) + '</div>' + (n.published ? '' : '<span class="tg warn">非公開</span>') + (n.to && n.to < d.today ? '<span class="tg">終了</span>' : '') + '</button>';
+    }).join('') : '<div class="card"><p class="muted" style="margin:0">お知らせはまだありません。</p></div>') + '<p class="small" style="margin:8px 4px">ここで作ったお知らせは、会員のダッシュボード「町会からのお知らせ」に出ます(新しいものは赤バッジ)。</p>', 'officer');
+    $('#nnew').onclick = function () { noticeEditView(null); };
+    Array.prototype.forEach.call(document.querySelectorAll('.ml[data-id]'), function (b) { b.onclick = function () { noticeEditView(NA.list.filter(function (x) { return x.id === b.dataset.id; })[0]); }; });
+  }).catch(function (e) { offErr('お知らせの更新', e, 'officer'); });
+}
+function noticeEditView(n) {
+  n = n || { id: '', title: '', body: '', audience: 'すべて', from: NA.today, to: '', published: true };
+  sub(n.id ? 'お知らせを直す' : '新しいお知らせ', '<div class="card"><div class="field"><label class="l" for="nt">タイトル<span class="req">必須</span></label><input class="inp" id="nt" maxlength="80" value="' + esc(n.title) + '"></div>' +
+    '<div class="field"><label class="l" for="nb">本文<span class="req">必須</span></label><textarea class="inp" id="nb" maxlength="3000" style="min-height:160px">' + esc(n.body) + '</textarea></div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">見られる人</span><div class="chips" id="na">' + ['すべて', '役員以上'].map(function (a) { return '<button data-a="' + a + '" aria-pressed="' + (a === n.audience) + '">' + a + '</button>'; }).join('') + '</div></div>' +
+    '<div class="field"><label class="l" for="nf">公開開始(2026-10-26 の形)</label><input class="inp" id="nf" maxlength="10" value="' + esc(n.from) + '"></div>' +
+    '<div class="field"><label class="l" for="ne">公開終了(空なら、ずっと)</label><input class="inp" id="ne" maxlength="10" value="' + esc(n.to) + '"></div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">公開</span><div class="chips" id="np">' + [['公開する', true], ['非公開(下書き)', false]].map(function (a) { return '<button data-p="' + a[1] + '" aria-pressed="' + (a[1] === n.published) + '">' + a[0] + '</button>'; }).join('') + '</div></div>' +
+    '<button class="btn" id="nsv">保存する</button>' + (n.id ? '<div style="height:10px"></div><button class="btn ghost" id="ndl">このお知らせを削除する</button>' : '') + '</div>', 'a_notice');
+  var aud = n.audience, pub = n.published;
+  function chips(id, set) { Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (b) { b.onclick = function () { set(b); Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; }); }
+  chips('na', function (b) { aud = b.dataset.a; }); chips('np', function (b) { pub = b.dataset.p === 'true'; });
+  $('#nsv').onclick = function () { var b = $('#nsv'); b.disabled = true; api('a_notice_save', { id: n.id, title: $('#nt').value, body: $('#nb').value, audience: aud, from: $('#nf').value, to: $('#ne').value, published: pub }).then(function () { toast('保存しました'); go('a_notice'); noticeAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  if (n.id) $('#ndl').onclick = function () { askChoice('このお知らせを削除します', ['削除する'], '元に戻せません。').then(function (v) { if (!v) return; api('a_notice_delete', { id: n.id }).then(function () { toast('削除しました'); go('a_notice'); noticeAdminView(); }).catch(function (e) { toast(e.message); }); }); };
+}
+
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
@@ -1291,7 +1316,7 @@ function route() {
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_docs|o_doc)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs)$/.test(h) && !isAdmin())) h = '';
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
@@ -1299,7 +1324,7 @@ function route() {
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
