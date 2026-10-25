@@ -1027,32 +1027,37 @@ function evApplyView(name) {
   evLoad().then(draw).catch(function (e) { offErr('申込', e, 'event'); });
 }
 
-/* ---------- 豆知識(今日の質問・投票・みんなの答え) ---------- */
-var KIND_TAG = { '投票': '投票', '自由記入': 'みんなに質問', '豆知識': '豆知識' };
+/* ---------- 豆知識 + 今日の質問(投票・クイズ・なぞなぞ・自由記入) ---------- */
+var QLABEL = { '投票': '今日の質問', '自由記入': '今日の質問', 'クイズ': '今日のクイズ', 'なぞなぞ': '今日のなぞなぞ' };
 function tipsView() {
   sub('豆知識', '<div class="skel" style="height:260px"></div>');
   api('tips_list').then(function (d) {
-    var t = d.today, h = '';
-    if (t) {
-      h += '<div class="card"><h2>今日の' + (t.kind === '豆知識' ? '豆知識' : '質問') + '</h2><span class="tg ' + (t.kind === '豆知識' ? '' : 'imp') + '" style="margin:0 0 6px">' + esc(KIND_TAG[t.kind] || t.kind) + '</span><span class="tg" style="margin-left:0">' + esc(t.category) + '</span>' +
-        '<div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:6px">' + esc(t.title) + '</div>' + (t.body ? '<div class="mbody" style="margin-top:6px">' + linkify(t.body) + '</div>' : '');
-      if (t.kind === '投票' && !t.answered) h += '<div style="margin-top:14px">' + t.choices.map(function (c, i) { return '<button class="btn ghost" style="margin-bottom:10px;justify-content:flex-start;text-align:left" data-ch="' + i + '">' + esc(c) + '</button>'; }).join('') + '</div><p class="small" style="margin:0">タップすると回答します(あとで変えられません)。結果は、明日お見せします。</p>';
-      else if (t.kind === '自由記入' && !t.answered) h += '<div style="margin-top:14px"><textarea class="inp" id="tx" maxlength="100" placeholder="ひとことで(100字まで)" aria-label="答え" style="min-height:90px"></textarea><div style="height:10px"></div><button class="btn" id="txs">答えを送る</button><p class="small" style="margin:8px 0 0">お名前は出ません。明日、みんなの答えが見られます。</p></div>';
-      else if (t.answered) h += '<div class="notice-box" style="margin:14px 0 0">回答ありがとうございます。あなたの答え: <b>' + esc(t.mine) + '</b><br>' + (t.kind === '投票' ? '結果は、明日お見せします。' : 'みんなの答えは、明日お見せします。') + '</div>';
+    var t = d.tip, q = d.question, h = '';
+    if (t) h += '<div class="card"><h2>今日の豆知識</h2><span class="tg" style="margin:0">' + esc(t.category) + '</span><div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:6px">' + esc(t.title) + '</div><div class="mbody" style="margin-top:6px">' + linkify(t.body) + '</div></div>';
+    if (q) {
+      var quiz = q.kind === 'クイズ' || q.kind === 'なぞなぞ';
+      h += '<div class="card"><h2>' + esc(QLABEL[q.kind] || '今日の質問') + '</h2><span class="tg imp" style="margin:0">' + esc(q.kind === '自由記入' ? 'みんなに質問' : q.kind) + '</span>' +
+        '<div style="font-size:19px;font-weight:700;line-height:1.5;margin-top:6px">' + esc(q.title) + '</div>' + (q.body ? '<div class="mbody" style="margin-top:6px">' + linkify(q.body) + '</div>' : '');
+      if (q.kind !== '自由記入' && !q.answered) h += '<div style="margin-top:14px">' + q.choices.map(function (c, i) { return '<button class="btn ghost" style="margin-bottom:10px;justify-content:flex-start;text-align:left" data-ch="' + i + '">' + esc(c) + '</button>'; }).join('') + '</div><p class="small" style="margin:0">タップすると回答します(あとで変えられません)。' + (quiz ? '' : '結果は、明日お見せします。') + '</p>';
+      else if (q.kind === '自由記入' && !q.answered) h += '<div style="margin-top:14px"><textarea class="inp" id="tx" maxlength="100" placeholder="ひとことで(100字まで)" aria-label="答え" style="min-height:90px"></textarea><div style="height:10px"></div><button class="btn" id="txs">答えを送る</button><p class="small" style="margin:8px 0 0">お名前は出ません。明日、みんなの答えが見られます。</p></div>';
+      else if (quiz && q.correctLabel) h += '<div class="banner ' + (q.isCorrect ? 'ok' : 'advisory') + '" style="margin:14px 0 0"><div><b>' + (q.isCorrect ? '正解!' : 'ざんねん…') + '</b><div>' + (q.isCorrect ? '' : '正解は「' + esc(q.correctLabel) + '」です。') + '</div>' + (q.explain ? '<div style="margin-top:6px">' + esc(q.explain) + '</div>' : '') + '</div></div><p class="small" style="margin:8px 0 0">あなたの答え: ' + esc(q.mine) + '。みんなの答えの割合は、明日お見せします。</p>';
+      else h += '<div class="notice-box" style="margin:14px 0 0">回答ありがとうございます。あなたの答え: <b>' + esc(q.mine) + '</b><br>' + (q.kind === '自由記入' ? 'みんなの答えは、明日お見せします。' : '結果は、明日お見せします。') + '</div>';
       h += '</div>';
-    } else h += '<div class="card"><p class="muted" style="margin:0">きょうの質問はありません。</p></div>';
+    }
+    if (!t && !q) h += '<div class="card"><p class="muted" style="margin:0">きょうの豆知識・質問はありません。</p></div>';
     if (d.past.length) {
       h += '<div class="sec">きのうまでの結果</div>' + d.past.map(function (r) {
-        var x = '<div class="card"><div class="muted" style="font-size:13px">' + esc(fmtDate(r.date)) + ' ・ ' + esc(r.total) + '人が回答</div><div style="font-size:17px;font-weight:700;line-height:1.5;margin:2px 0 10px">' + esc(r.title) + '</div>';
-        if (r.kind === '投票') x += r.results.map(function (c) {
-          return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span>' + esc(c.label) + '</span><b>' + c.pct + '%</b></div><div class="bar" aria-hidden="true"><i style="width:' + c.pct + '%"></i></div></div>';
-        }).join('');
-        else if (r.kind === '自由記入') x += r.answers.length ? r.answers.map(function (a) { return '<div class="rp"><div class="tx">' + esc(a.text) + '</div>' + (d.staff ? '<div style="margin-top:6px"><button class="sbtn" data-da="' + esc(a.id) + '">この答えを消す</button></div>' : '') + '</div>'; }).join('') : '<p class="muted" style="margin:0">答えはありません。</p>';
+        var x = '<div class="card"><div class="muted" style="font-size:13px">' + esc(fmtDate(r.date)) + ' ・ ' + esc(r.kind === '自由記入' ? '質問' : r.kind) + ' ・ ' + esc(r.total) + '人が回答' + (r.correctPct != null ? ' ・ 正解率 ' + r.correctPct + '%' : '') + '</div><div style="font-size:17px;font-weight:700;line-height:1.5;margin:2px 0 10px">' + esc(r.title) + '</div>';
+        if (r.kind !== '自由記入') {
+          x += r.results.map(function (c) {
+            return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span>' + (c.correct ? '✔ ' : '') + esc(c.label) + (c.correct ? '<span class="tg ok" style="margin-left:6px">正解</span>' : '') + '</span><b>' + c.pct + '%</b></div><div class="bar" aria-hidden="true"><i style="width:' + c.pct + '%"></i></div></div>';
+          }).join('') + (r.explain ? '<p class="small" style="margin:6px 0 0">' + esc(r.explain) + '</p>' : '');
+        } else x += r.answers.length ? r.answers.map(function (a) { return '<div class="rp"><div class="tx">' + esc(a.text) + '</div>' + (d.staff ? '<div style="margin-top:6px"><button class="sbtn" data-da="' + esc(a.id) + '">この答えを消す</button></div>' : '') + '</div>'; }).join('') : '<p class="muted" style="margin:0">答えはありません。</p>';
         return x + '</div>';
       }).join('');
     }
     sub('豆知識', h);
-    var send = function (extra, btn) { if (btn) btn.disabled = true; api('tips_answer', Object.assign({ id: t.id }, extra)).then(function () { toast('回答しました'); tipsView(); }).catch(function (e) { if (btn) btn.disabled = false; toast(e.message); }); };
+    var send = function (extra, btn) { if (btn) btn.disabled = true; api('tips_answer', Object.assign({ id: q.id }, extra)).then(function () { toast('回答しました'); tipsView(); }).catch(function (e) { if (btn) btn.disabled = false; toast(e.message); }); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-ch]'), function (b) { b.onclick = function () { send({ choice: +b.dataset.ch }, b); }; });
     var ts = $('#txs'); if (ts) ts.onclick = function () { var v = $('#tx').value; if (!v.trim()) return toast('答えを入力してください'); send({ text: v }, ts); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-da]'), function (b) {
