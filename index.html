@@ -213,6 +213,25 @@ body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .plist{max-height:240px;overflow:auto;border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:4px 10px}
 .plist label{display:flex;gap:10px;align-items:center;min-height:44px}
 .plist input{width:22px;height:22px}
+/* モーダル(選択) */
+.mdl{position:fixed;inset:0;z-index:30;background:rgba(16,35,63,.5);display:flex;align-items:flex-end;justify-content:center}
+.mdl .box{background:#fffdf8;width:min(100%,520px);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
+.mdl h3{font-size:17px;margin-bottom:10px}
+.mdl .sbtn{display:flex;width:100%;margin-bottom:8px;min-height:50px}
+/* 推理 */
+.hscroll{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.wc{flex:0 0 84%;scroll-snap-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.wc img{display:block;width:100%;aspect-ratio:20/13;object-fit:contain;background:#fff}
+.wc .in{padding:14px 16px 16px}
+.wc .pn{font-size:20px;font-weight:700}
+.wc .q{font-size:14px;font-weight:700;color:#475467;margin-top:8px}
+.wc .a{margin-top:8px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.7}
+.dots{display:flex;justify-content:center;gap:6px;margin:0 0 12px}.dots i{width:7px;height:7px;border-radius:50%;background:#cfd6e2}.dots i.on{background:var(--navy)}
+.rk td.me,.rk tr.me td{font-weight:700;background:#fff7dd}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.thumbs button{all:unset;position:relative;width:76px;height:52px;border-radius:8px;overflow:hidden;border:1.5px solid var(--line);background:#fff;cursor:pointer}
+.thumbs img{width:100%;height:100%;object-fit:cover}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -250,6 +269,9 @@ var IC = {
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
+  o_viewer: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 3 2 4-4"/>',
+  a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+  a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
   pin: '<path d="M12 21s-6-5.5-6-10a6 6 0 0112 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>',
@@ -261,9 +283,10 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
-  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン'
+  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
+  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_image: '推理の画像'
 };
-var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)' };
+var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
 /* ---------- 通信 ---------- */
 function api(action, extra) {
@@ -287,6 +310,7 @@ function sub(title, body, backTo) {
   $('#bk').onclick = function () { go(backTo || 'home'); };
 }
 function isOfficer() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'officer'; })); }
+function isAdmin() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'admin'; })); }
 var NAVLABEL = { dashboard: 'ダッシュ', suginami: '杉並', blog: 'ブログ', board: '掲示板', help: '助け合い' };
 var HASH = { card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' };
 function badgeOf(k) { var n = S.me && S.me.badges && +S.me.badges[k]; return n > 0 ? n : 0; }
@@ -296,7 +320,7 @@ function renderNav(h) {
   var items = [['home', 'ホーム', 'home', true]];
   S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
-  var cur = !h || h === 'home' ? 'home' : (/^o_/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : h)));
+  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : h)));
   var keep = el ? el.scrollLeft : 0;
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
   el.innerHTML = items.map(function (it) {
@@ -405,7 +429,11 @@ function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
   if (!m || !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail' }[k]);
+  if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img' }[k]);
+}
+function openLink(k) {
+  api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
 }
 function openExternal(url) { try { if (window.liff && liff.isInClient && liff.isInClient()) { liff.openWindow({ url: url, external: true }); return; } } catch (e) { /* 下へ */ } window.open(url, '_blank', 'noopener'); }
 
@@ -501,9 +529,9 @@ function mapBtn(q) { return '<button class="sbtn" data-map="' + esc(q) + '">' + 
 function bindMaps(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-map]'), function (b) { b.onclick = function () { openExternal(mapUrl(b.dataset.map)); }; }); }
 function offErr(title, e, back) { sub(title, '<div class="banner advisory"><div><b>表示できませんでした</b><br>' + esc(e.message) + '</div></div>', back); }
 function officerView() {
-  var tiles = S.me.menu.filter(function (m) { return m.section === 'officer'; });
+  var tiles = S.me.menu.filter(function (m) { return m.section === 'officer' || m.section === 'admin'; });
   sub('役員専用', '<div class="grid" style="grid-template-columns:repeat(2,1fr)">' + tiles.map(function (m) {
-    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
   }).join('') + '</div><p class="muted" style="margin:14px 4px">このメニューは、役員の方だけに表示されます。</p>');
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -557,12 +585,20 @@ function drawUnpaid() {
       rows.map(function (x, i) {
         var m = x[0];
         return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div></div><div class="acts">' + mapBtn(m.map) +
-          '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済みにする') + '</button></div></div>';
+          '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済にする') + '</button>' +
+          '<button class="sbtn" data-st="退会" data-g="' + gi + '" data-m="' + x[1] + '">退会にする</button><button class="sbtn" data-st="休会" data-g="' + gi + '" data-m="' + x[1] + '">休会にする</button>' +
+          '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にメール</button>' + '</div></div>';
       }).join('') + '</div>';
   });
   $('#ulist').innerHTML = html || '<div class="card"><p>' + (U.show === 'all' ? '該当する方はいません。' : 'この条件の未納の方は、いません。') + '</p></div>';
   bindMaps($('#ulist'));
-  Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-g]'), function (b) {
+  Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-st]'), function (b) {
+    b.onclick = function () { changeStatus(U.data.groups[+b.dataset.g], U.data.groups[+b.dataset.g].members[+b.dataset.m], b.dataset.st, b); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-mail]'), function (b) {
+    b.onclick = function () { var g = U.data.groups[+b.dataset.g], m = g.members[+b.dataset.m]; MT.type = '役員'; MT.prefill = { subject: '【未納の確認】' + m.name + ' 様', body: m.name + ' 様(' + g.district + ' ' + g.group + '班・' + m.address + ')の件です。\n' }; go('mailnew'); };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-g]:not([data-st]):not([data-mail])'), function (b) {
     b.onclick = function () {
       var m = U.data.groups[+b.dataset.g].members[+b.dataset.m], to = !m.paid;
       if (!to && !window.confirm(m.name + ' さんを「未納」に戻しますか?')) return;
@@ -575,6 +611,28 @@ function drawUnpaid() {
   });
 }
 
+function askChoice(title, options, note) {
+  return new Promise(function (ok) {
+    var el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.innerHTML = '<div class="box"><h3>' + esc(title) + '</h3>' + (note ? '<p class="muted" style="margin:0 0 10px">' + esc(note) + '</p>' : '') + options.map(function (o, i) { return '<button class="sbtn" data-i="' + i + '">' + esc(o) + '</button>'; }).join('') + '<button class="sbtn" data-i="-1" style="border-color:var(--line);color:var(--sub)">やめる</button></div>';
+    document.body.appendChild(el);
+    function done(v) { document.body.removeChild(el); ok(v); }
+    el.onclick = function (e) { if (e.target === el) done(null); };
+    Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { var i = +b.dataset.i; done(i < 0 ? null : options[i]); }; });
+  });
+}
+function changeStatus(g, m, status, btn) {
+  var LEAVE = ['未納', '理由なし', '高齢・体調不良', '逝去', '一時転居', '転居・閉店', 'その他'];
+  var p = status === '退会' ? askChoice(m.name + ' 様を「退会」にします', LEAVE, '退会の理由を選んでください。回覧元の方は、先に管理画面で交代が必要です。') : askChoice(m.name + ' 様を「休会」にします', ['休会にする'], 'お休みの扱いになり、未納者の一覧から外れます。戻すときは管理画面で行います。');
+  p.then(function (c) {
+    if (!c) return;
+    btn.disabled = true;
+    api('o_setstatus', { memberNo: m.no, status: status, reason: status === '退会' ? c : '' }).then(function () {
+      g.members = g.members.filter(function (x) { return x !== m; }); if (m.paid) g.paid--;
+      var y = window.scrollY; drawUnpaid(); window.scrollTo(0, y); toast(m.name + ' 様を「' + status + '」にしました');
+    }).catch(function (e) { btn.disabled = false; toast(e.message); });
+  });
+}
 var C = { data: null, dist: '' };
 function circView() {
   sub('回覧元', '<div class="skel" style="height:300px"></div>', 'officer');
@@ -669,7 +727,7 @@ function mailView() {
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .ml'), function (b) { b.onclick = function () { go('mail/' + b.dataset.id); }; });
     }
     sub('メールBOX', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたメールは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
-    $('#mnew').onclick = function () { go('mailnew'); };
+    $('#mnew').onclick = function () { MT.type = '全員'; go('mailnew'); };
     Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (b) { b.setAttribute('aria-pressed', b.dataset.f === MB.filter ? 'true' : 'false'); b.onclick = function () { MB.filter = b.dataset.f; Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
     draw();
   }).catch(function (e) { offErr('メールBOX', e, 'home'); });
@@ -726,6 +784,7 @@ function drawMailNew(tg) {
     (staff ? '<label class="opt" style="margin-bottom:16px"><input type="checkbox" id="mimp"><span>重要(赤い印をつける)</span></label>' : '') +
     '<button class="btn" id="msend">' + (staff ? '送信する' : '役員に送る') + '</button><p class="small" style="margin:8px 0 0">送ったメールは30日で自動で消えます。送信後も、メールBOXから取り消せます。</p></div>';
   sub(staff ? '新しいメール' : '役員に問い合わせる', h, 'mail');
+  if (MT.prefill) { $('#msj').value = MT.prefill.subject; $('#mbd').value = MT.prefill.body; MT.prefill = null; }
   var picks = {};
   function drawSub() {
     var t = MT.type, el = $('#msub'); if (!el) return;
@@ -761,6 +820,113 @@ function drawMailNew(tg) {
   };
 }
 
+/* ---------- 推理 ---------- */
+var MY = { story: null, round: 1, tab: 'monthly' };
+function mysteryView() {
+  sub('歴史推理', '<div class="skel" style="height:240px"></div>');
+  api('mystery_rank').then(function (r) {
+    var me = r.total.me;
+    sub('歴史推理', '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">戦国武将たちの証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目3点・2回目2点・3回目1点)。</p>' +
+      '<button class="btn" id="mgo">🔍 事件をはじめる</button>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
+      '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
+    $('#mgo').onclick = startMystery;
+    function draw() {
+      var d = r[MY.tab];
+      $('#mrk').innerHTML = d.top.length ? '<table class="stable rk"><tr><th>順位</th><th>名前</th><th>得点</th><th>正解</th></tr>' + d.top.map(function (x) { return '<tr class="' + (x.me ? 'me' : '') + '"><td>' + x.rank + '位</td><td>' + esc(x.name) + (x.me ? '(あなた)' : '') + '</td><td>' + x.points + '</td><td>' + x.wins + '/' + x.plays + '</td></tr>'; }).join('') + '</table>' : '<p class="muted">まだ記録がありません。最初の挑戦者になりましょう!</p>';
+      if (d.me && !d.top.some(function (x) { return x.me; })) $('#mrk').innerHTML += '<p class="muted">あなたは ' + d.me.rank + '位(' + d.me.points + '点)</p>';
+      Array.prototype.forEach.call(document.querySelectorAll('#mtab button'), function (b) { b.setAttribute('aria-pressed', b.dataset.t === MY.tab ? 'true' : 'false'); });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('#mtab button'), function (b) { b.onclick = function () { MY.tab = b.dataset.t; draw(); }; });
+    draw();
+  }).catch(function (e) { offErr('歴史推理', e, 'home'); });
+}
+function startMystery() {
+  sub('歴史推理', '<div class="skel" style="height:300px"></div>', 'mystery');
+  api('mystery_start').then(function (st) {
+    if (st.empty) return sub('歴史推理', '<div class="card"><p>' + esc(st.message) + '</p></div>', 'mystery');
+    MY.story = st; MY.round = 1; mysIntro();
+  }).catch(function (e) { offErr('歴史推理', e, 'mystery'); });
+}
+function mysIntro() {
+  var st = MY.story;
+  sub('事件', '<div class="card"><div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em">' + (st.rare ? 'レア編・幕末' : '戦国編') + '</div><div style="font-size:21px;font-weight:700;margin:4px 0 10px">' + esc(st.title) + '</div><p style="line-height:1.8;margin:0">' + linkify(st.intro) + '</p>' +
+    '<p class="muted" style="margin:12px 0 0">容疑者: ' + st.cast.map(esc).join('・') + '</p></div><button class="btn" id="mst">証言を聞く</button><p class="small" style="margin:10px 4px">残り ' + st.remaining + ' 件(全 ' + st.total + ' 件)</p>', 'mystery');
+  $('#mst').onclick = mysRound;
+}
+function mysRound() {
+  var st = MY.story, r = st.rounds[MY.round - 1];
+  var cards = r.talks.map(function (t, i) {
+    return '<div class="wc">' + (st.images[t.person] ? '<img src="' + esc(st.images[t.person]) + '" alt="' + esc(t.person) + '" loading="lazy" referrerpolicy="no-referrer">' : '') + '<div class="in"><div class="muted">第' + MY.round + 'ラウンド ・ ' + (i + 1) + '/5</div><div class="pn">🗣️ ' + esc(t.person) + '</div><div class="q">Q. ' + esc(t.question) + '</div><div class="a">「' + esc(t.answer) + '」</div></div></div>';
+  }).join('');
+  sub('第' + MY.round + 'ラウンド', '<p style="margin:0 2px 12px;line-height:1.7"><b>' + esc(r.lead || '証言を集めよう。') + '</b></p><div class="hscroll" id="hs">' + cards + '</div><div class="dots" id="dts">' + r.talks.map(function (_, i) { return '<i' + (i === 0 ? ' class="on"' : '') + '></i>'; }).join('') + '</div><p class="small" style="text-align:center;margin:0 0 14px">← 横にスワイプして、5人の証言を聞きましょう →</p>' +
+    '<button class="btn" id="mvote">🗳️ 犯人に投票する</button>' + (MY.round < 3 ? '<div style="height:10px"></div><button class="btn ghost" id="mnext">次のラウンドへ →</button>' : '<p class="small" style="margin:10px 4px;text-align:center;color:var(--red);font-weight:700">最終ラウンドです。犯人だと思う人に投票してください。</p>'), 'mystery');
+  var hs = $('#hs');
+  hs.onscroll = function () { var i = Math.round(hs.scrollLeft / (hs.scrollWidth / 5)); Array.prototype.forEach.call(document.querySelectorAll('#dts i'), function (d, k) { d.className = k === i ? 'on' : ''; }); };
+  $('#mvote').onclick = mysVote;
+  var nx = $('#mnext'); if (nx) nx.onclick = function () { MY.round++; mysRound(); };
+}
+function mysVote() {
+  var st = MY.story;
+  sub('投票', '<div class="card"><h2>犯人はだれ?</h2><p class="muted" style="margin:0 0 10px">第' + MY.round + 'ラウンドで投票します(投票するとすぐ結果が出ます)。</p>' + st.cast.map(function (p) { return '<button class="sbtn" style="display:flex;width:100%;margin-bottom:8px;min-height:52px" data-p="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div><button class="btn ghost" id="mbk">← 証言にもどる</button>', 'mystery');
+  $('#mbk').onclick = mysRound;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-p]'), function (b) {
+    b.onclick = function () {
+      if (!window.confirm(b.dataset.p + ' に投票しますか?')) return;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-p]'), function (x) { x.disabled = true; });
+      api('mystery_vote', { key: st.key, vote: b.dataset.p, round: MY.round }).then(mysResult).catch(function (e) { toast(e.message); mysVote(); });
+    };
+  });
+}
+function mysResult(r) {
+  var h = '<div class="card" style="text-align:center"><div style="font-size:26px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? '🎉 推理成功!' : '🕵️ 犯人側の勝利') + '</div>' +
+    '<p style="margin:8px 0 0">あなたの投票: ' + esc(r.vote) + '</p>' + (r.scored ? '<p style="margin:4px 0 0;font-weight:700">+' + r.points + '点</p>' : '') + '</div>' +
+    '<div class="card">' + (r.image ? '<img src="' + esc(r.image) + '" alt="' + esc(r.culprit) + '" style="width:100%;aspect-ratio:20/13;object-fit:contain;background:#fff;border-radius:10px;margin-bottom:10px" referrerpolicy="no-referrer">' : '') + '<div style="font-size:19px;font-weight:700">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '') +
+    '<div class="a" style="margin-top:12px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.8"><div class="muted" style="font-weight:700">真相</div>' + esc(r.truth) + '</div>' +
+    (r.history && r.history.note ? '<div style="margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #d9b44a;line-height:1.7"><b>' + (r.history.based ? '📜 史実をもとにした話' : '📜 補足') + '</b><br>' + esc(r.history.note) + '</div>' : '') + '</div>' +
+    '<button class="btn" id="mnx">次の事件へ</button><div style="height:10px"></div><button class="btn ghost" id="mrk">ランキングを見る</button>';
+  sub('結果', h, 'mystery');
+  $('#mnx').onclick = startMystery; $('#mrk').onclick = function () { go('mystery'); };
+}
+
+/* ---------- 推理の画像(管理者) ---------- */
+function imgAdminView() {
+  sub('推理の画像', '<div class="skel" style="height:300px"></div>', 'officer');
+  api('a_img_list').then(function (d) {
+    var h = '<p class="muted" style="margin:0 4px 12px">登録した画像は、ゲーム中にランダムで表示されます。何も登録していないときは、標準の画像を使います。画像をタップすると、有効/無効を切り替えます。</p>';
+    d.people.forEach(function (p) {
+      function sec(label, key, purpose) {
+        var list = p[key];
+        return '<div style="margin-top:8px"><b>' + label + '</b> <span class="muted">' + list.length + '枚' + (!list.length && p.defaults[key] ? '(標準の画像)' : '') + '</span><div class="thumbs">' + list.map(function (x) { return '<button data-id="' + esc(x.id) + '" aria-label="画像 タップで無効にする"><img src="' + esc(x.url) + '" alt="" referrerpolicy="no-referrer"></button>'; }).join('') +
+          '</div><label class="sbtn" style="cursor:pointer">＋ 画像を追加<input type="file" accept="image/*" hidden data-p="' + esc(p.name) + '" data-u="' + purpose + '"></label></div>';
+      }
+      h += '<div class="card"><h2>' + esc(p.name) + (p.rare ? ' <span class="tg">レア編</span>' : '') + '</h2>' + sec('証言のときの画像', 'witness', '証言') + sec('犯人のときの画像', 'culprit', '犯人') + '</div>';
+    });
+    sub('推理の画像', h, 'officer');
+    Array.prototype.forEach.call(document.querySelectorAll('.thumbs button'), function (b) { b.onclick = function () { if (!window.confirm('この画像を無効にします(ゲームで表示されなくなります)。よろしいですか?')) return; api('a_img_toggle', { id: b.dataset.id, enabled: false }).then(function () { toast('無効にしました'); imgAdminView(); }).catch(function (e) { toast(e.message); }); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('input[type=file]'), function (inp) {
+      inp.onchange = function () {
+        var f = inp.files && inp.files[0]; if (!f) return;
+        toast('画像を縮小して送っています…');
+        shrinkImage(f, 1200).then(function (data) { return api('a_img_add', { person: inp.dataset.p, purpose: inp.dataset.u, data: data }); })
+          .then(function () { toast('追加しました'); imgAdminView(); }).catch(function (e) { toast(e.message || '追加できませんでした'); });
+      };
+    });
+  }).catch(function (e) { offErr('推理の画像', e, 'officer'); });
+}
+function shrinkImage(file, max) {
+  return new Promise(function (ok, ng) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); ng(new Error('画像を読み込めませんでした。')); };
+    img.src = url;
+  });
+}
+
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
@@ -768,10 +934,10 @@ function route() {
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan)$/.test(h);
-  if (officerOnly && !isOfficer()) h = '';
+  if ((officerOnly && !isOfficer()) || (h === 'a_img' && !isAdmin())) h = '';
   renderNav(h);
   if (h === 'mail' && full.indexOf('/') > 0) return mailDetailView(full.split('/')[1]);
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
