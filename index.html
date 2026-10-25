@@ -152,8 +152,43 @@ textarea.inp{min-height:96px;resize:vertical}
 .wk .tt{text-align:right;font-weight:700;white-space:nowrap}
 .skel{height:84px;border-radius:var(--r);background:linear-gradient(90deg,#ebe6da,#f5f1e8,#ebe6da);background-size:200% 100%;animation:sk 1.4s infinite linear;margin-bottom:12px}
 @keyframes sk{to{background-position:-200% 0}}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:88vw;background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:88vw;background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+/* 下のタブ(どの画面からでも、閉じずに移動できる) */
+.bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:6;width:min(100%,520px);display:flex;background:rgba(255,253,248,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:4px 2px calc(4px + env(safe-area-inset-bottom))}
+.bnav button{all:unset;flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:54px;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);cursor:pointer;border-radius:12px}
+.bnav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bnav button[aria-current=page]{color:var(--navy);background:#eef2f9}
+.bnav button.off{color:var(--red)}
+.bnav button:active{background:var(--mute-bg)}
+body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+/* 役員画面 */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--navy);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.seg button{all:unset;text-align:center;padding:10px 4px;font-weight:700;color:var(--navy);cursor:pointer;min-height:24px;box-sizing:border-box;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chips button{all:unset;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:14px;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.gh .hd{font-weight:700;font-size:17px}
+.mrow{display:grid;grid-template-columns:1fr;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.mrow.first{border-top:0}
+.mrow .nm{font-weight:700}
+.mrow .ad{font-size:14px;color:var(--sub)}
+.mrow.done .nm{opacity:.55}
+.mrow .acts{display:flex;flex-wrap:wrap;gap:8px}
+.sbtn{all:unset;white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--navy);color:var(--navy);font-weight:700;font-size:14.5px;cursor:pointer;box-sizing:border-box}
+.sbtn.fill{background:var(--navy);color:#fff}
+.sbtn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.sbtn[disabled]{opacity:.5}
+.bar{height:10px;background:#e3e8ef;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.big{font-size:34px;font-weight:700;line-height:1.1}
+.dot2{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:-4px;margin-right:4px}
+.dot2.on{background:var(--red)} .dot2.off{border:2px solid var(--line)}
+.stable{width:100%;border-collapse:collapse;font-size:14.5px}.stable th,.stable td{padding:7px 4px;border-top:1px solid var(--line);text-align:right}.stable th:first-child,.stable td:first-child{text-align:left}.stable th{font-size:12.5px;color:var(--sub);border-top:0}
+.scanres{border-left:5px solid var(--navy)}
+.scanres.good{border-left-color:var(--ok)} .scanres.warn{border-left-color:var(--warn)}
+.inrow{display:flex;gap:8px}.inrow input{flex:1;min-width:0;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:17px;letter-spacing:.1em;text-transform:uppercase;background:#fff}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -187,13 +222,13 @@ var IC = {
   mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
   board: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
-  circ_dest: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
-  circ_members: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
-  circ_change: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
-  o_member: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c0-3.6 2.9-6 6.5-6"/><circle cx="17" cy="16" r="3"/><path d="M19.2 18.2L22 21"/>',
+  o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
-  o_inquiry: '<path d="M4 5h16v11H9l-5 4z"/><path d="M12 8.5v3M12 13.5v.5"/>',
-  o_event: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
+  o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
+  o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
+  home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
+  officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  pin: '<path d="M12 21s-6-5.5-6-10a6 6 0 0112 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>',
   back: '<path d="M15 5l-7 7 7 7"/>', hourglass: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
   stop: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', x: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>', dash: '<path d="M6 12h12"/>', person: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'
@@ -202,10 +237,9 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
-  circ_dest: '回覧物の届け先', circ_members: '班員確認', circ_change: '回覧元変更申請',
-  o_member: '会員検索', o_unpaid: '未納者検索', o_inquiry: '問い合わせ', o_event: 'イベント受付'
+  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン'
 };
-var SECTION = { common: 'みんなのメニュー', circ: '回覧元メニュー', officer: '役員メニュー' };
+var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)' };
 
 /* ---------- 通信 ---------- */
 function api(action, extra) {
@@ -224,9 +258,21 @@ function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
 
 /* ---------- 画面の骨組み ---------- */
 function setView(html) { $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
-function sub(title, body) {
+function sub(title, body, backTo) {
   setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
-  $('#bk').onclick = function () { go('home'); };
+  $('#bk').onclick = function () { go(backTo || 'home'); };
+}
+var NAV = [['home', 'ホーム', 'home'], ['card', '会員証', 'card'], ['dash', 'ダッシュ', 'dashboard'], ['suginami', '杉並', 'suginami'], ['weather', '天気', 'weather']];
+function isOfficer() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'officer'; })); }
+function renderNav(h) {
+  var el = $('#bnav');
+  if (!S.me || S.me.state !== 'approved') { if (el) el.parentNode.removeChild(el); document.body.classList.remove('hasnav'); return; }
+  var items = NAV.slice(); if (isOfficer()) items.push(['officer', '役員', 'officer']);
+  var cur = h === 'home' || !h ? 'home' : (/^o_/.test(h) ? 'officer' : h);
+  if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー'); document.body.appendChild(el); }
+  el.innerHTML = items.map(function (it) { return '<button data-h="' + it[0] + '"' + (it[0] === cur ? ' aria-current="page"' : '') + (it[0] === 'officer' ? ' class="off"' : '') + '>' + svg(it[2]) + '<span>' + it[1] + '</span></button>'; }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { go(b.dataset.h); }; });
+  document.body.classList.add('hasnav');
 }
 function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
 function fatal(e) {
@@ -317,7 +363,7 @@ function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
   if (!m || !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan' }[k]);
 }
 function openExternal(url) { try { if (window.liff && liff.isInClient && liff.isInClient()) { liff.openWindow({ url: url, external: true }); return; } } catch (e) { /* 下へ */ } window.open(url, '_blank', 'noopener'); }
 
@@ -407,13 +453,168 @@ function weatherView() {
   }).catch(function (e) { sub('天気', '<div class="banner advisory"><div><b>天気を取得できませんでした</b><br>' + esc(e.message) + '</div></div>' + foot); });
 }
 
+/* ---------- 役員専用 ---------- */
+function mapUrl(q) { return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q) + '&travelmode=walking'; }
+function mapBtn(q) { return '<button class="sbtn" data-map="' + esc(q) + '">' + svg('pin').replace('<svg', '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"') + '現在地から行く</button>'; }
+function bindMaps(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-map]'), function (b) { b.onclick = function () { openExternal(mapUrl(b.dataset.map)); }; }); }
+function offErr(title, e, back) { sub(title, '<div class="banner advisory"><div><b>表示できませんでした</b><br>' + esc(e.message) + '</div></div>', back); }
+function officerView() {
+  var tiles = S.me.menu.filter(function (m) { return m.section === 'officer'; });
+  sub('役員専用', '<div class="grid" style="grid-template-columns:repeat(2,1fr)">' + tiles.map(function (m) {
+    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+  }).join('') + '</div><p class="muted" style="margin:14px 4px">このメニューは、役員の方だけに表示されます。</p>');
+  Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
+}
+
+function pct(o) { return '<div class="bar" aria-hidden="true"><i style="width:' + o.rate + '%"></i></div>'; }
+function sumView() {
+  sub('集計結果', '<div class="skel" style="height:300px"></div>', 'officer');
+  api('o_summary').then(function (d) {
+    var t = d.total, h = '';
+    h += '<div class="card"><h2>' + d.year + '年度 町会費</h2><div class="big">' + t.rate + '<small style="font-size:18px">%</small></div><p class="muted" style="margin:4px 0 8px">納入 ' + t.paid + ' / 対象 ' + t.target + ' 世帯(未納 ' + t.unpaid + ')</p>' + pct(t) +
+      '<p class="muted" style="margin:10px 0 0">対象外 ' + t.exempt + ' 世帯・お休み ' + t.na + ' 世帯 ／ 在籍世帯数(回覧元の合計) ' + d.enrolled + '</p></div>';
+    function tbl(title, rows) {
+      return '<div class="card"><h2>' + title + '</h2><table class="stable"><tr><th></th><th>納入</th><th>対象</th><th>未納</th><th>率</th></tr>' + rows.map(function (r) {
+        return '<tr><td>' + esc(r.name) + '</td><td>' + r.paid + '</td><td>' + r.target + '</td><td>' + r.unpaid + '</td><td><b>' + r.rate + '%</b></td></tr>';
+      }).join('') + '</table></div>';
+    }
+    h += tbl('丁目別', d.districts) + tbl('納め方別', d.methods);
+    h += '<div class="card"><h2>イベント</h2>' + d.events.map(function (e) {
+      return '<div style="padding:8px 0;border-top:1px solid var(--line)"><b>' + esc(e.name) + '</b><div class="muted">申込 ' + e.apps + '件・' + e.units + '個' + (e.name === '祭礼' ? ' / 受取済み ' + e.received + '個' : '') + ' / QR来場 ' + e.checkedIn + '人</div></div>';
+    }).join('') + '</div>';
+    sub('集計結果', h, 'officer');
+  }).catch(function (e) { offErr('集計結果', e, 'officer'); });
+}
+
+var U = { data: null, dist: '', show: 'unpaid' };
+function unpaidView() {
+  sub('未納者', '<div class="skel" style="height:300px"></div>', 'officer');
+  api('o_unpaid').then(function (d) {
+    U.data = d; U.dist = ''; U.show = 'unpaid';
+    var ds = []; d.groups.forEach(function (g) { if (ds.indexOf(g.district) < 0) ds.push(g.district); });
+    var left = 0, all = 0; d.groups.forEach(function (g) { all += g.members.length; left += g.members.length - g.paid; });
+    sub('未納者', '<div class="card"><h2>' + d.year + '年度 現金回収</h2><div class="big" id="ucnt"></div><p class="muted" style="margin:4px 0 0">現金回収の方のうち、未納の方です(対象外の方は含みません)</p></div>' +
+      '<div class="seg" id="useg"><button data-s="unpaid" aria-pressed="true">未納のみ</button><button data-s="all" aria-pressed="false">納入済みも表示</button></div>' +
+      '<div class="chips" id="uchips"><button data-d="" aria-pressed="true">すべて</button>' + ds.map(function (x) { return '<button data-d="' + esc(x) + '" aria-pressed="false">' + esc(x) + '</button>'; }).join('') + '</div><div id="ulist"></div>', 'officer');
+    Array.prototype.forEach.call(document.querySelectorAll('#useg button'), function (b) { b.onclick = function () { U.show = b.dataset.s; Array.prototype.forEach.call(document.querySelectorAll('#useg button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawUnpaid(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('#uchips button'), function (b) { b.onclick = function () { U.dist = b.dataset.d; Array.prototype.forEach.call(document.querySelectorAll('#uchips button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawUnpaid(); }; });
+    drawUnpaid();
+  }).catch(function (e) { offErr('未納者', e, 'officer'); });
+}
+function drawUnpaid() {
+  var d = U.data, left = 0, all = 0;
+  d.groups.forEach(function (g) { all += g.members.length; left += g.members.length - g.paid; });
+  $('#ucnt').innerHTML = '未納 ' + left + '<small style="font-size:18px"> / ' + all + '世帯</small>';
+  var html = '';
+  d.groups.forEach(function (g, gi) {
+    if (U.dist && g.district !== U.dist) return;
+    var rows = g.members.map(function (m, mi) { return [m, mi]; }).filter(function (x) { return U.show === 'all' || !x[0].paid; });
+    if (!rows.length) return;
+    html += '<div class="card"><div class="gh"><span class="hd">' + esc(g.district) + ' ' + esc(g.group) + '班</span><span class="muted">済 ' + g.paid + '/' + g.members.length + '</span></div>' +
+      (g.head ? '<p class="muted" style="margin:0 0 4px">回覧元: ' + esc(g.head) + '</p>' : '') +
+      rows.map(function (x, i) {
+        var m = x[0];
+        return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div></div><div class="acts">' + mapBtn(m.map) +
+          '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済みにする') + '</button></div></div>';
+      }).join('') + '</div>';
+  });
+  $('#ulist').innerHTML = html || '<div class="card"><p>' + (U.show === 'all' ? '該当する方はいません。' : 'この条件の未納の方は、いません。') + '</p></div>';
+  bindMaps($('#ulist'));
+  Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-g]'), function (b) {
+    b.onclick = function () {
+      var m = U.data.groups[+b.dataset.g].members[+b.dataset.m], to = !m.paid;
+      if (!to && !window.confirm(m.name + ' さんを「未納」に戻しますか?')) return;
+      b.disabled = true;
+      api('o_setfee', { memberNo: m.no, paid: to }).then(function () {
+        m.paid = to; var g = U.data.groups[+b.dataset.g]; g.paid += to ? 1 : -1;
+        var y = window.scrollY; drawUnpaid(); window.scrollTo(0, y); toast(to ? '納入済みにしました' : '未納に戻しました');
+      }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  });
+}
+
+var C = { data: null, dist: '' };
+function circView() {
+  sub('回覧元', '<div class="skel" style="height:300px"></div>', 'officer');
+  api('o_circ').then(function (d) {
+    C.data = d; C.dist = '';
+    var ds = []; d.circs.forEach(function (c) { if (ds.indexOf(c.district) < 0) ds.push(c.district); });
+    var n = d.circs.filter(function (c) { return c.gift; }).length;
+    sub('回覧元', '<div class="card"><h2>商品券</h2><div class="big">' + n + '<small style="font-size:18px"> / ' + d.circs.length + '人</small></div><p class="muted" style="margin:4px 0 0">● が商品券あり、○ がなしです</p></div>' +
+      '<div class="chips" id="cchips"><button data-d="" aria-pressed="true">すべて</button>' + ds.map(function (x) { return '<button data-d="' + esc(x) + '" aria-pressed="false">' + esc(x) + '</button>'; }).join('') + '</div><div class="card" id="clist"></div>', 'officer');
+    Array.prototype.forEach.call(document.querySelectorAll('#cchips button'), function (b) { b.onclick = function () { C.dist = b.dataset.d; Array.prototype.forEach.call(document.querySelectorAll('#cchips button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawCirc(); }; });
+    drawCirc();
+  }).catch(function (e) { offErr('回覧元', e, 'officer'); });
+}
+function drawCirc() {
+  var rows = C.data.circs.filter(function (c) { return !C.dist || c.district === C.dist; });
+  $('#clist').innerHTML = rows.length ? rows.map(function (c, i) {
+    return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div><div class="nm"><span class="dot2 ' + (c.gift ? 'on' : 'off') + '" role="img" aria-label="' + (c.gift ? '商品券あり' : '商品券なし') + '"></span>' + esc(c.name) + ' <span class="muted">' + esc(c.district) + ' ' + esc(c.group) + '班</span></div><div class="ad">' + esc(c.address) + (c.giftText ? ' ／ ' + esc(c.giftText) : '') + '</div></div><div class="acts">' + mapBtn(c.map) + '</div></div>';
+  }).join('') : '<p>該当する方はいません。</p>';
+  bindMaps($('#clist'));
+}
+
+var SC = { mode: 'matsuri' };
+var MODE_LABEL = { matsuri: '祭礼', engeikai: '演芸会', disaster: '災害' };
+var MODE_HINT = { matsuri: '会員証のQRで、お菓子の申込を確認して「渡した」を記録します。', engeikai: '会員証のQRで、来場を記録します(同じ方は1回だけ数えます)。', disaster: '会員証のQRで、会員・世帯・登録されているご家族を確認します。' };
+function scanView() {
+  var can = false; try { can = !!(window.liff && liff.isApiAvailable && liff.isApiAvailable('scanCodeV2')); } catch (e) { can = false; }
+  sub('QRチェックイン', '<div class="seg" id="smode">' + Object.keys(MODE_LABEL).map(function (k) { return '<button data-m="' + k + '" aria-pressed="' + (SC.mode === k) + '">' + MODE_LABEL[k] + '</button>'; }).join('') + '</div>' +
+    '<p class="muted" id="shint" style="margin:0 4px 12px"></p>' +
+    (can ? '<button class="btn" id="sgo">' + svg('o_checkin').replace('<svg', '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"') + 'QRを読み取る</button>' : '<div class="banner advisory" style="margin-bottom:12px"><div>この画面では、カメラでの読み取りが使えません。下に会員コードを入力してください(LINEアプリで開くと読み取れます)。</div></div>') +
+    '<div class="card" style="margin-top:14px"><h2>会員コードを入力</h2><div class="inrow"><input id="scode" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="例: K7M2Q9XT" aria-label="会員コード"><button class="sbtn fill" id="sok">確認</button></div></div><div id="sres"></div>', 'officer');
+  function hint() { $('#shint').textContent = MODE_HINT[SC.mode]; }
+  hint();
+  Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (b) { b.onclick = function () { SC.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); hint(); $('#sres').innerHTML = ''; }; });
+  $('#sok').onclick = function () { var v = $('#scode').value; if (!v.trim()) return toast('会員コードを入力してください'); doScan(v); };
+  if (can) $('#sgo').onclick = function () {
+    liff.scanCodeV2().then(function (r) { if (r && r.value) doScan(r.value); }).catch(function (e) { toast('読み取りできませんでした: ' + (e && e.message || e)); });
+  };
+}
+function doScan(code) {
+  $('#sres').innerHTML = '<div class="card"><div class="skel" style="height:120px"></div></div>';
+  api('o_scan', { mode: SC.mode, code: code }).then(function (r) { $('#scode').value = ''; drawScan(r); window.scrollTo(0, $('#sres').offsetTop - 70); })
+    .catch(function (e) { $('#sres').innerHTML = '<div class="card scanres warn"><b>確認できませんでした</b><p>' + esc(e.message) + '</p></div>'; });
+}
+function drawScan(r) {
+  var p = r.person, h = '';
+  var who = '<div class="nm" style="font-size:19px;font-weight:700">' + esc(p.memberName || p.name) + ' 様</div><div class="muted">' + esc([p.district, p.group && p.group + '班', p.memberNo, p.role].filter(Boolean).join(' ・ ')) + (p.memberName && p.name !== p.memberName ? '(' + esc(p.name) + ')' : '') + '</div>';
+  if (r.mode === 'matsuri') {
+    h = '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込</h2>' + who + (r.apps.length ? r.apps.map(function (a, i) {
+      return '<div class="mrow' + (i === 0 ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + a.units + '個 ／ ' + esc(a.guardian) + '</div><div class="ad">' + esc(a.kids.map(function (k) { return k.name + (k.grade ? '(' + k.grade + ')' : ''); }).join('、')) + '</div>' +
+        (a.received ? '<div class="ad">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button></div></div>';
+    }).join('') : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
+  } else if (r.mode === 'engeikai') {
+    h = '<div class="card scanres ' + (r.already ? 'warn' : 'good') + '"><h2>演芸会 ' + r.year + '</h2>' + who + '<p style="margin:10px 0 0"><b>' + (r.already ? 'すでに来場を記録済みです(' + esc(r.already) + ')' : '✓ 来場を記録しました') + '</b></p><p class="muted" style="margin:4px 0 0">来場者 合計 ' + r.checkedIn + ' 人</p>' +
+      (r.apps && r.apps.length ? r.apps.map(function (a) { return '<p class="muted" style="margin:6px 0 0">申込: ' + a.units + '個 ／ ' + esc(a.people.join('、')) + '</p>'; }).join('') : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + '</div>';
+  } else {
+    var hh = r.household;
+    h = '<div class="card scanres good"><h2>災害 確認</h2>' + who + (r.already ? '<p class="muted" style="margin:8px 0 0">記録済み(' + esc(r.already) + ')</p>' : '<p class="muted" style="margin:8px 0 0">確認を記録しました</p>') + '<p class="muted" style="margin:4px 0 0">確認済み 合計 ' + r.checkedIn + ' 人</p></div>' +
+      (hh ? '<div class="card"><h2>世帯</h2><div class="nm">' + esc(hh.name) + ' 様 (' + hh.count + '人)</div><div class="ad">' + esc(hh.district) + ' ' + esc(hh.group) + '班 ・ ' + esc(hh.address) + '</div>' + (hh.head ? '<div class="ad">回覧元: ' + esc(hh.head) + '</div>' : '') + '<div class="acts" style="margin-top:8px">' + mapBtn(hh.map) + '</div></div>' : '') +
+      '<div class="card"><h2>LINE登録のご家族</h2>' + (r.family && r.family.length ? r.family.map(function (f) { return '<div class="mrow first" style="border:0;padding:4px 0"><span class="nm">' + esc(f.name) + '</span> <span class="muted">' + esc(f.relation) + '</span></div>'; }).join('') : '<p class="muted">登録はありません。</p>') + '</div>';
+  }
+  $('#sres').innerHTML = h; bindMaps($('#sres'));
+  Array.prototype.forEach.call(document.querySelectorAll('#sres [data-id]'), function (b) {
+    b.onclick = function () {
+      b.disabled = true;
+      api('o_receive', { id: b.dataset.id, received: b.dataset.r === '1' }).then(function (x) {
+        r.apps.forEach(function (a) { if (a.id === x.id) { a.received = x.received; a.receivedAt = x.receivedAt; } });
+        drawScan(r); toast(x.received ? '受取済みにしました' : '取り消しました');
+      }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  });
+}
+
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var h = (location.hash || '').replace('#', '');
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView }[h] || homeView)();
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan)$/.test(h);
+  if (officerOnly && !isOfficer()) h = '';
+  renderNav(h);
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
