@@ -185,6 +185,7 @@ body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .mrow .acts{display:flex;flex-wrap:wrap;gap:8px}
 .sbtn{all:unset;white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--navy);color:var(--navy);font-weight:700;font-size:14.5px;cursor:pointer;box-sizing:border-box}
 .sbtn.fill{background:var(--navy);color:#fff}
+.sbtn.blue{background:#1b5fc4;border-color:#1b5fc4;color:#fff}
 .sbtn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
 .sbtn[disabled]{opacity:.5}
 .bar{height:10px;background:#e3e8ef;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
@@ -272,6 +273,8 @@ var IC = {
   o_viewer: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 3 2 4-4"/>',
   a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
+  a_disaster: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
+  a_docs: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>',
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
   pin: '<path d="M12 21s-6-5.5-6-10a6 6 0 0112 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>',
@@ -284,7 +287,7 @@ var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
   o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
-  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_image: '推理の画像'
+  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
@@ -332,7 +335,7 @@ function renderNav(h) {
       var k = b.dataset.h;
       if (k === 'home' || k === 'officer') return go(k);
       var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
-      if (m && !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
+      if (m && !m.ready) return toast(m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
       openTile(k);
     };
   });
@@ -418,7 +421,7 @@ function homeView() {
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div></div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
-      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
   html += '</div><div style="height:28px"></div>';
@@ -427,10 +430,10 @@ function homeView() {
 }
 function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
-  if (!m || !m.ready) return toast('「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
+  if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -466,9 +469,10 @@ function dashView() {
     h += '</div>';
     if (d.member) h += '<div class="card"><h2>登録情報</h2><dl class="kv"><dt>会員番号</dt><dd>' + esc(d.memberNo) + '</dd><dt>班</dt><dd>' + esc(d.member.group) + '班(' + esc(d.member.district) + ')</dd><dt>お名前</dt><dd>' + esc(d.member.name) + '</dd></dl></div>';
     h += '<div class="card"><h2>町会からのお知らせ</h2>' + (d.notices.length ? d.notices.map(function (n, i) {
-      return '<div class="ntc" data-i="' + i + '"><button type="button" aria-expanded="false"><div class="d">' + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></button></div>';
+      return '<div class="ntc" data-i="' + i + '"><button type="button" aria-expanded="false"><div class="d">' + (n.isNew ? '<span class="tg imp" style="margin:0 6px 0 0">新着</span>' : '') + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></button></div>';
     }).join('') : '<p class="muted" style="margin:0">いまのところ、お知らせはありません。</p>') + '</div>';
     sub('ダッシュボード', h);
+    if (S.me.badges && S.me.badges.dashboard) { S.me.badges.dashboard = 0; renderNav('dash'); }
     Array.prototype.forEach.call(document.querySelectorAll('.ntc button'), function (b) {
       b.onclick = function (ev) { if (ev.target.tagName === 'A') return; var p = b.parentNode; p.classList.toggle('open'); b.setAttribute('aria-expanded', p.classList.contains('open')); };
     });
@@ -505,7 +509,7 @@ function fmtDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); if (!m) 
 function fmtDt(s) { var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s || ''); return m ? (+m[2]) + '月' + (+m[3]) + '日 ' + m[4] + ':' + m[5] : (s || ''); }
 function weatherView() {
   sub('天気', '<div class="skel" style="height:160px"></div><div class="skel"></div>');
-  var foot = '<div class="card"><h2>くわしい天気</h2><div class="links"><a href="https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=130000" target="_blank" rel="noopener">気象庁 天気予報(東京都)</a><a href="https://weathernews.jp/" target="_blank" rel="noopener">ウェザーニュース</a></div></div>';
+  var foot = '<div class="card"><h2>くわしい天気</h2><div class="links"><a href="https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=130000" target="_blank" rel="noopener">気象庁 天気予報(東京都)</a><a href="https://weathernews.jp/onebox/35.683/139.633/" target="_blank" rel="noopener">ウェザーニュース(浜田山)</a></div></div>';
   api('weather').then(function (w) {
     var d0 = w.days[0], today = d0.date;
     var temps = w.temps.filter(function (t) { return t.temp != null && t.time.slice(0, 10) === today; });
@@ -531,7 +535,7 @@ function offErr(title, e, back) { sub(title, '<div class="banner advisory"><div>
 function officerView() {
   var tiles = S.me.menu.filter(function (m) { return m.section === 'officer' || m.section === 'admin'; });
   sub('役員専用', '<div class="grid" style="grid-template-columns:repeat(2,1fr)">' + tiles.map(function (m) {
-    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">準備中</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
   }).join('') + '</div><p class="muted" style="margin:14px 4px">このメニューは、役員の方だけに表示されます。</p>');
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -587,11 +591,11 @@ function drawUnpaid() {
         return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div></div><div class="acts">' + mapBtn(m.map) +
           '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済にする') + '</button>' +
           '<button class="sbtn" data-st="退会" data-g="' + gi + '" data-m="' + x[1] + '">退会にする</button><button class="sbtn" data-st="休会" data-g="' + gi + '" data-m="' + x[1] + '">休会にする</button>' +
-          '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にメール</button>' + '</div></div>';
+          '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にメール</button>' + docBtn(m) + '</div></div>';
       }).join('') + '</div>';
   });
   $('#ulist').innerHTML = html || '<div class="card"><p>' + (U.show === 'all' ? '該当する方はいません。' : 'この条件の未納の方は、いません。') + '</p></div>';
-  bindMaps($('#ulist'));
+  bindMaps($('#ulist')); bindDocs($('#ulist'));
   Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-st]'), function (b) {
     b.onclick = function () { changeStatus(U.data.groups[+b.dataset.g], U.data.groups[+b.dataset.g].members[+b.dataset.m], b.dataset.st, b); };
   });
@@ -611,6 +615,31 @@ function drawUnpaid() {
   });
 }
 
+function docBtn(m) { return '<button class="sbtn blue" data-doc="' + esc(m.no) + '" data-n="' + (m.docs || 0) + '" data-nm="' + esc(m.name) + '"' + (m.docs ? '' : ' style="opacity:.55"') + '>格納書類' + (m.docs ? '(' + m.docs + ')' : '') + '</button>'; }
+function bindDocs(root) {
+  Array.prototype.forEach.call((root || document).querySelectorAll('[data-doc]'), function (b) {
+    b.onclick = function () { if (b.dataset.n === '0') return toast('この方の格納書類は、見つかりませんでした'); DOCS.from = (location.hash || '#home').replace('#', ''); DOCS.name = b.dataset.nm; go('o_docs/' + encodeURIComponent(b.dataset.doc)); };
+  });
+}
+var DOCS = { from: 'o_unpaid', name: '' };
+function docsView(no) {
+  sub('格納書類', '<div class="skel" style="height:240px"></div>', /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid');
+  api('o_docs', { memberNo: no }).then(function (d) {
+    var back = /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid';
+    sub('格納書類', '<p class="muted" style="margin:0 4px 12px">' + esc(DOCS.name ? DOCS.name + ' さん' : '') + '(会員番号 ' + esc(d.memberNo) + ')</p>' + (d.files.length ? d.files.map(function (f) {
+      return '<button class="ml" data-f="' + esc(f.id) + '"><div class="sj">' + esc(f.year) + '年 ' + esc(f.seq) + '枚目</div><div class="mt">回覧元 ' + esc(f.head) + ' ・ ' + esc(f.dist) + (f.kind === 'PDF' ? ' ・ PDF' : '') + '</div></button>';
+    }).join('') : '<div class="card"><p class="muted" style="margin:0">格納書類は見つかりませんでした。</p></div>') + '<p class="small" style="margin:8px 4px">個人情報です。役員の方だけが見られます。取り扱いにご注意ください。</p>', back);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-f]'), function (b) { b.onclick = function () { docFileView(b.dataset.f, no, b.querySelector('.sj').textContent); }; });
+  }).catch(function (e) { offErr('格納書類', e, 'o_unpaid'); });
+}
+function docFileView(id, no, label) {
+  sub(label || '書類', '<div class="skel" style="height:360px"></div>', 'o_docs/' + encodeURIComponent(no));
+  api('o_doc_file', { id: id }).then(function (f) {
+    var img = f.data ? '<img alt="' + esc(label || '書類') + '" src="data:' + esc(f.mime) + ';base64,' + f.data + '" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff">' : '<div class="card"><p class="muted" style="margin:0">この書類は、ここでは表示できません。下のボタンから、Googleドライブで開いてください。</p></div>';
+    sub(label || '書類', img + '<div style="height:12px"></div><button class="btn ghost" id="dopen">Googleドライブで開く</button><p class="small" style="margin:8px 4px">画像は、2本指で拡大できます。</p>', 'o_docs/' + encodeURIComponent(no));
+    $('#dopen').onclick = function () { openExternal(f.url); };
+  }).catch(function (e) { offErr('書類', e, 'o_docs/' + encodeURIComponent(no)); });
+}
 function askChoice(title, options, note) {
   return new Promise(function (ok) {
     var el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
@@ -659,9 +688,9 @@ function circView() {
 function drawCirc() {
   var rows = C.data.circs.filter(function (c) { return !C.dist || c.district === C.dist; });
   $('#clist').innerHTML = rows.length ? rows.map(function (c, i) {
-    return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div><div class="nm"><span class="dot2 ' + (c.gift ? 'on' : 'off') + '" role="img" aria-label="' + (c.gift ? '商品券あり' : '商品券なし') + '"></span>' + esc(c.name) + ' <span class="muted">' + esc(c.district) + ' ' + esc(c.group) + '班</span></div><div class="ad">' + esc(c.address) + (c.giftText ? ' ／ ' + esc(c.giftText) : '') + '</div></div><div class="acts">' + mapBtn(c.map) + '</div></div>';
+    return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div><div class="nm"><span class="dot2 ' + (c.gift ? 'on' : 'off') + '" role="img" aria-label="' + (c.gift ? '商品券あり' : '商品券なし') + '"></span>' + esc(c.name) + ' <span class="muted">' + esc(c.district) + ' ' + esc(c.group) + '班</span></div><div class="ad">' + esc(c.address) + (c.giftText ? ' ／ ' + esc(c.giftText) : '') + '</div></div><div class="acts">' + mapBtn(c.map) + docBtn(c) + '</div></div>';
   }).join('') : '<p>該当する方はいません。</p>';
-  bindMaps($('#clist'));
+  bindMaps($('#clist')); bindDocs($('#clist'));
 }
 
 var SC = { mode: 'matsuri' };
@@ -1125,66 +1154,131 @@ function boardDetailView(id) {
   }).catch(function (e) { offErr('掲示板', e, 'board'); });
 }
 
-/* ---------- 助け合い ---------- */
+/* ---------- 助け合い(災害時) ---------- */
 var HP = { tab: 'open', d: null };
+function refreshBadges() { return loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
 function helpView() {
   sub('助け合い', '<div class="skel" style="height:300px"></div>');
-  api('help_list').then(function (d) { HP.d = d; drawHelp(); }).catch(function (e) { offErr('助け合い', e, 'home'); });
+  api('help_list').then(function (d) { HP.d = d; drawHelp(); refreshBadges(); }).catch(function (e) { offErr('助け合い', e, 'home'); });
 }
 function drawHelp() {
   var d = HP.d, items = d.items;
-  var pend = items.filter(function (x) { return x.status === '承認待ち' && d.staff; });
+  var pend = items.filter(function (x) { return x.status === '承認待ち' && d.staff && !x.mine; });
   var mine = items.filter(function (x) { return x.mine; });
   var open = items.filter(function (x) { return x.status === '公開' || x.status === '成立'; });
+  var reqs = open.filter(function (x) { return x.kind === 'お願い' && !x.mine && x.status === '公開' && !x.raised; }).length;
   var list = HP.tab === 'mine' ? mine : open;
-  var h = '<div class="notice-box">お互いの連絡先は公開しません。つながったら、役員が間に入って連絡を取り持ちます。</div><button class="btn" id="hnew">＋ お願い・できますを投稿</button>';
+  var h = '<div class="banner warning" style="margin-bottom:14px"><div><b>災害モード中</b><div>助け合いが使えます。お互いの連絡先は公開しません。つながったら、役員が間に入ります。</div></div></div>' +
+    '<button class="btn" id="hnew">＋ 助け合いに参加する(お願い・できます)</button>';
   if (pend.length) h += '<div class="sec" style="margin-top:16px">確認待ち(役員)</div>' + pend.map(function (x) { return helpCard(x, d); }).join('');
-  h += '<div class="chips" id="hts" style="margin:14px 0 4px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんなの投稿</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分の投稿 ' + mine.length + '</button></div>';
+  h += '<div class="chips" id="hts" style="margin:14px 0 4px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんなの投稿' + (reqs ? ' ' + reqs : '') + '</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分の投稿 ' + mine.length + '</button></div>';
   h += list.length ? list.map(function (x) { return helpCard(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はありません。</p></div>';
   sub('助け合い', h);
   $('#hnew').onclick = function () { go('helpnew'); };
   Array.prototype.forEach.call(document.querySelectorAll('#hts button'), function (b) { b.onclick = function () { HP.tab = b.dataset.t; drawHelp(); }; });
+  bindHelpButtons(function () { helpView(); });
+}
+function bindHelpButtons(after) {
   Array.prototype.forEach.call(document.querySelectorAll('[data-hp]'), function (b) {
     b.onclick = function () {
       var x = b.dataset.hp.split('|'), id = x[1], op = x[0];
-      var run = function (action, extra, ok) { b.disabled = true; api(action, Object.assign({ id: id }, extra)).then(function () { toast(ok); helpView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+      var run = function (action, extra, ok) { b.disabled = true; api(action, Object.assign({ id: id }, extra)).then(function () { toast(ok); after(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
       if (op === 'ok') run('help_review', { ok: true }, '公開しました');
       else if (op === 'no') { if (window.confirm('この投稿を見送ります。よろしいですか?')) run('help_review', { ok: false }, '見送りました'); }
-      else if (op === 'raise') { askText('手を挙げる', 'ひとこと(任意・例: 土曜なら行けます)').then(function (m) { if (m !== null) run('help_raise', { message: m }, '手を挙げました'); }); }
+      else if (op === 'raise') { askText(x[2] === 'できます' ? 'お願いする' : '行けます!', 'ひとこと(任意・例: 土曜なら行けます)').then(function (m) { if (m !== null) run('help_raise', { message: m }, x[2] === 'できます' ? 'お願いしました' : '手を挙げました'); }); }
       else if (op === 'unraise') run('help_unraise', {}, '取り消しました');
       else if (op === 'connect') { if (window.confirm(x[2] + 'さんとつなぎます。連絡先は公開されず、役員が間に入ります。よろしいですか?')) run('help_connect', { helperId: x[3] }, 'つなぎました。メールBOXをご確認ください'); }
-      else if (op === 'close') { if (window.confirm('この投稿を終了します。よろしいですか?')) run('help_close', {}, '終了しました'); }
-      else if (op === 'remove') { if (window.confirm('この投稿を削除します。よろしいですか?')) run('help_close', { remove: true }, '削除しました'); }
+      else if (op === 'done') { if (window.confirm('完了にします。よろしいですか?')) run('help_status', { op: 'done' }, '完了しました。ありがとうございました'); }
+      else if (op === 'reopen') run('help_status', { op: 'reopen' }, '追加で募集します');
+      else if (op === 'cancel') { if (window.confirm('この投稿をキャンセルします。よろしいですか?')) run('help_status', { op: 'cancel' }, 'キャンセルしました'); }
+      else if (op === 'remove') { if (window.confirm('この投稿を削除します。よろしいですか?')) run('help_status', { op: 'remove' }, '削除しました'); }
     };
   });
 }
-function helpCard(x, d) {
-  var h = '<div class="card"><span class="tg ' + (x.kind === 'お願い' ? 'imp' : 'ok') + '">' + esc(x.kind) + '</span><span class="tg">' + esc(x.cat) + '</span>' + (x.status !== '公開' ? '<span class="tg warn">' + esc(x.status) + '</span>' : '') +
+function helpCard(x, d, compact) {
+  var gone = x.status === '完了' || x.status === 'キャンセル' || x.status === '見送り';
+  var h = '<div class="card"' + (gone ? ' style="opacity:.62"' : '') + '><span class="tg ' + (x.kind === 'お願い' ? 'imp' : 'ok') + '">' + esc(x.kind) + '</span><span class="tg">' + esc(x.cat) + '</span>' + (x.scale ? '<span class="tg">募集 ' + esc(x.scale) + '</span>' : '') + (x.status !== '公開' ? '<span class="tg warn">' + esc(x.status) + '</span>' : '') +
+    (x.connected ? '<span class="tg ok">つながり ' + x.connected + '人</span>' : '') +
     '<div style="font-size:17px;font-weight:700;line-height:1.4;margin-top:6px">' + esc(x.title) + '</div><div class="muted">' + esc(x.by) + ' ・ ' + esc(fmtMd(x.date)) + '</div><div class="mbody" style="margin-top:6px">' + linkify(x.body) + '</div>';
-  var btn = function (op, label, extra, danger) { return '<button class="sbtn' + (op === 'ok' ? ' fill' : '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '"' + (danger ? ' style="color:var(--bad);border-color:var(--bad)"' : '') + '>' + label + '</button>'; };
+  var btn = function (op, label, cls, extra) { return '<button class="sbtn ' + (cls || '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '"' + (cls === 'dg' ? ' style="color:var(--bad);border-color:var(--bad)"' : '') + '>' + label + '</button>'; };
   var bs = [];
-  if (x.status === '承認待ち' && d.staff) { bs.push(btn('ok', '公開する')); bs.push(btn('no', '見送る')); }
-  if (x.status === '公開' && !x.mine) bs.push(x.raised ? btn('unraise', '手上げを取り消す') : btn('raise', '手を挙げる'));
-  if (x.status === '公開' && x.raisers && x.raisers.length) h += '<div style="margin-top:10px"><b>手を挙げた方(' + x.raisers.length + ')</b>' + x.raisers.map(function (r) {
-    return '<div class="rp"><div class="who">' + esc(r.name) + ' ・ ' + esc(fmtMd(r.date)) + '</div>' + (r.msg ? '<div class="tx">' + esc(r.msg) + '</div>' : '') + (x.mine ? '<div style="margin-top:6px"><button class="sbtn fill" data-hp="connect|' + esc(x.id) + '|' + esc(r.name) + '|' + esc(r.id) + '">この方とつなぐ</button></div>' : '') + '</div>';
+  if (x.status === '承認待ち' && d.staff && !x.mine) { bs.push(btn('ok', '公開する', 'fill')); bs.push(btn('no', '見送る')); }
+  if (x.status === '公開' && !x.mine) bs.push(x.raised ? btn('unraise', '手上げを取り消す') : btn('raise', x.kind === 'お願い' ? 'こちら行けます!' : 'お願いしたい', 'ok', '|' + x.kind));
+  if (x.raisers && x.raisers.length && (x.status === '公開' || x.status === '成立')) h += '<div style="margin-top:10px"><b>' + (x.kind === 'お願い' ? '手を挙げた方' : 'お願いした方') + '(' + x.raisers.length + ')</b>' + x.raisers.map(function (r) {
+    return '<div class="rp"><div class="who">' + esc(r.name) + ' ・ ' + esc(fmtMd(r.date)) + (r.done ? ' ・ <span class="tg ok" style="margin:0">つながり済み</span>' : '') + '</div>' + (r.msg ? '<div class="tx">' + esc(r.msg) + '</div>' : '') +
+      (x.mine && x.status === '公開' && !r.done ? '<div style="margin-top:6px"><button class="sbtn fill" data-hp="connect|' + esc(x.id) + '|' + esc(r.name) + '|' + esc(r.id) + '">この方とつなぐ</button></div>' : '') + '</div>';
   }).join('') + '</div>';
-  if (x.status === '成立') h += '<p class="small" style="margin:10px 0 0">' + (x.partner ? esc(x.partner) + 'さんとつながりました。' : 'つながりました。') + 'メールBOXに、役員からのご案内が届いています。</p>';
-  if ((x.mine || d.staff) && (x.status === '公開' || x.status === '成立')) bs.push(btn('close', '終了する'));
-  if (x.mine || d.staff) bs.push(btn('remove', '削除', '', true));
+  if (x.status === '成立') h += '<p class="small" style="margin:10px 0 0">つながりました。メールBOXに、役員からのご案内が届いています。人手が足りないときは「追加募集!」を押してください。</p>';
+  if (x.mine || d.staff) {
+    if ((x.status === '成立') || (x.status === '公開' && x.connected)) bs.push(btn('done', '完了しました', 'ok'));
+    if (x.status === '成立') bs.push(btn('reopen', '追加募集!', 'fill'));
+    if (['承認待ち', '公開', '成立'].indexOf(x.status) >= 0) bs.push(btn('cancel', 'キャンセル', 'dg'));
+    if (d.staff) bs.push(btn('remove', '削除', 'dg'));
+  }
   if (bs.length) h += '<div class="inrow" style="margin-top:10px;flex-wrap:wrap">' + bs.join('') + '</div>';
   return h + '</div>';
 }
 function helpNewView() {
-  var d = HP.d || { kinds: ['お願い', 'できます'], cats: ['買い物', 'ゴミ出し・力仕事', '通院・送迎', '見守り・話し相手', '子どもの預かり', '防災・避難', 'その他'] }, kind = d.kinds[0], cat = d.cats[0];
-  var chip = function (id, arr) { return '<div class="chips" id="' + id + '">' + arr.map(function (c, i) { return '<button data-c="' + esc(c) + '" aria-pressed="' + (i === 0) + '">' + esc(c) + '</button>'; }).join('') + '</div>'; };
-  sub('助け合いを投稿', '<div class="card"><div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">どちらですか?</span>' + chip('hk', ['お願い', 'できます']) + '<p class="hint">お願い=手伝ってほしい ／ できます=手伝えます</p></div>' +
-    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">内容の種類</span>' + chip('hc', d.cats) + '</div>' +
-    '<div class="field"><label class="l" for="ht">タイトル<span class="req">必須</span></label><input class="inp" id="ht" maxlength="60" placeholder="例: 週1回の買い物をお願いしたい"></div>' +
-    '<div class="field"><label class="l" for="hb">くわしく<span class="req">必須</span></label><textarea class="inp" id="hb" maxlength="1000" style="min-height:130px" placeholder="いつ・どのくらい・場所のだいたい(丁目まで)など"></textarea></div>' +
-    '<div class="notice-box">電話番号・番地は書かないでください。役員が内容を確認してから公開します。</div><button class="btn" id="hsv">投稿する</button></div>', 'help');
-  var bind = function (id, set) { Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (b) { b.onclick = function () { set(b.dataset.c); Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; }); };
-  bind('hk', function (v) { kind = v; }); bind('hc', function (v) { cat = v; });
-  $('#hsv').onclick = function () { var b = $('#hsv'); b.disabled = true; api('help_post', { kind: kind, cat: cat, title: $('#ht').value, body: $('#hb').value }).then(function (r) { toast(r.status === '公開' ? '投稿しました' : '投稿しました。役員の確認後に公開されます'); HP.d = null; go('help'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  sub('助け合いに参加', '<div class="skel" style="height:260px"></div>', 'help');
+  api('help_list').then(function (x) { HP.d = x; helpNewDraw(x); }).catch(function (e) { offErr('助け合い', e, 'help'); });
+}
+function helpNewDraw(d) {
+  var kind = 'お願い', cat = d.cats[0], scale = d.scales[0];
+  var chip = function (id, arr, sel) { return '<div class="chips" id="' + id + '">' + arr.map(function (c) { return '<button data-c="' + esc(c) + '" aria-pressed="' + (c === sel) + '">' + esc(c) + '</button>'; }).join('') + '</div>'; };
+  var bind = function (id, set, after) { Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (b) { b.onclick = function () { set(b.dataset.c); Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); if (after) after(); }; }); };
+  function draw() {
+    var h = '<div class="card"><div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">どちらですか?</span>' + chip('hk', ['お願い', 'できます'], kind) + '<p class="hint">お願い=手伝ってほしい ／ できます=手伝えます</p></div></div>';
+    if (kind === 'できます') {
+      var reqs = d.items.filter(function (x) { return x.kind === 'お願い' && x.status === '公開' && !x.mine; });
+      h += '<div class="sec">いま、お願いが来ています</div>' + (reqs.length ? reqs.map(function (x) { return helpCard(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">いまは、公開中のお願いはありません。</p></div>') +
+        '<div class="card"><h2>こちらから申し出る</h2><p class="muted" style="margin:0 0 10px">お願いに当てはまらないとき、「こんなことができます」と投稿できます(役員が確認してから公開します)。</p><button class="btn ghost" id="hoffer">申し出を書く</button></div><div id="hform"></div>';
+    } else h += formHtml();
+    sub('助け合いに参加', h, 'help');
+    bind('hk', function (v) { kind = v; }, draw); bindFormSwitch();
+    var o = $('#hoffer'); if (o) o.onclick = function () { $('#hform').innerHTML = formHtml(true); bindFormSwitch(); $('#hform').scrollIntoView(); };
+    bindHelpButtons(function () { api('help_list').then(function (x) { HP.d = x; d = x; draw(); refreshBadges(); }).catch(function (e) { toast(e.message); }); });
+  }
+  function formHtml(offer) {
+    return '<div class="card"><h2>' + (offer ? '「できます」を投稿' : '「お願い」を投稿') + '</h2>' +
+      '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">内容の種類</span>' + chip('hc', d.cats, cat) + '</div>' +
+      (offer ? '' : '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">何人ほしいですか?</span>' + chip('hs', d.scales, scale) + '</div>') +
+      '<div class="field"><label class="l" for="ht">タイトル<span class="req">必須</span></label><input class="inp" id="ht" maxlength="60" placeholder="例: 倒れた棚を起こすのを手伝ってほしい"></div>' +
+      '<div class="field"><label class="l" for="hb">くわしく<span class="req">必須</span></label><textarea class="inp" id="hb" maxlength="1000" style="min-height:130px" placeholder="いつ・どこ(丁目まで)・何をなど"></textarea></div>' +
+      '<div class="notice-box">電話番号・番地は書かないでください。役員が内容を確認してから公開します。</div><button class="btn" id="hsv">投稿する</button></div>';
+  }
+  function bindFormSwitch() {
+    bind('hc', function (v) { cat = v; }); bind('hs', function (v) { scale = v; });
+    var sv = $('#hsv'); if (sv) sv.onclick = function () {
+      sv.disabled = true;
+      api('help_post', { kind: kind, cat: cat, scale: kind === 'お願い' ? scale : '', title: $('#ht').value, body: $('#hb').value }).then(function (r) { toast(r.status === '公開' ? '投稿しました' : '投稿しました。役員の確認後に公開されます'); HP.d = null; HP.tab = 'mine'; go('help'); }).catch(function (e) { sv.disabled = false; toast(e.message); });
+    };
+  }
+  draw();
+}
+
+/* ---------- 管理者: 災害モード・書類の更新 ---------- */
+function disasterView() {
+  sub('災害モード', '<div class="skel" style="height:200px"></div>', 'officer');
+  api('a_disaster_get').then(function (d) {
+    sub('災害モード', '<div class="card"><h2>いまの状態</h2><div class="banner ' + (d.on ? 'warning' : 'ok') + '" style="margin:0"><div><b>' + (d.on ? '災害モード ON' : '平常(OFF)') + '</b><div>' + (d.on ? '「助け合い」が使えます。' + (d.since ? '(' + esc(fmtMd(d.since)) + ' から)' : '') : '「助け合い」はグレーで、使えません。') + '</div></div></div>' +
+      '<div style="height:14px"></div><button class="btn ' + (d.on ? 'ghost' : 'red') + '" id="dm">' + (d.on ? '災害モードを終了する(OFF)' : '災害モードにする(助け合いをONにする)') + '</button>' +
+      '<p class="small" style="margin:10px 0 0">ONにすると、会員のメニューの「助け合い」が使えるようになり、お願いの投稿があると赤いバッジが出ます。OFFにすると、助け合いは見えなくなります(投稿は残ります)。</p></div>', 'officer');
+    $('#dm').onclick = function () {
+      if (!window.confirm(d.on ? '災害モードを終了します。助け合いが使えなくなります。よろしいですか?' : '災害モードにします。会員全員の「助け合い」が使えるようになります。よろしいですか?')) return;
+      $('#dm').disabled = true; api('a_disaster_set', { on: !d.on }).then(function () { toast(d.on ? '災害モードを終了しました' : '災害モードにしました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { $('#dm').disabled = false; toast(e.message); });
+    };
+  }).catch(function (e) { offErr('災害モード', e, 'officer'); });
+}
+function docsAdminView() {
+  sub('書類の更新', '<div class="skel" style="height:200px"></div>', 'officer');
+  api('a_docs_info').then(function (d) {
+    sub('書類の更新', '<div class="card"><h2>格納書類の一覧</h2><dl class="kv"><dt>最後の更新</dt><dd>' + (d.at ? esc(fmtMd(d.at)) : 'まだ更新していません') + '</dd><dt>書類の数</dt><dd>' + d.count + '件</dd><dt>読み込めなかった</dt><dd>' + d.skipped + '件(ファイル名の形式が違うもの)</dd></dl>' +
+      '<button class="btn" id="ds">Googleドライブから読み込み直す</button><p class="small" style="margin:10px 0 0">1丁目〜4丁目のフォルダを読みます。ファイルを追加・名前変更したあとに押してください(数分かかることがあります)。</p></div>', 'officer');
+    $('#ds').onclick = function () {
+      var b = $('#ds'); b.disabled = true; b.textContent = '読み込み中…しばらくお待ちください';
+      api('a_docs_sync').then(function (r) { toast(r.count + '件を読み込みました'); docsAdminView(); }).catch(function (e) { b.disabled = false; b.textContent = 'Googleドライブから読み込み直す'; toast(e.message); });
+    };
+  }).catch(function (e) { offErr('書類の更新', e, 'officer'); });
 }
 
 /* ---------- ルーティング ---------- */
@@ -1193,15 +1287,16 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (h === 'a_img' && !isAdmin())) h = '';
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_docs|o_doc)$/.test(h);
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
