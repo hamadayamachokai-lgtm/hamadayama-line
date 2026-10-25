@@ -622,20 +622,23 @@ function bindDocs(root) {
   });
 }
 var DOCS = { from: 'o_unpaid', name: '' };
-function docsView(no) {
-  sub('格納書類', '<div class="skel" style="height:240px"></div>', /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid');
-  api('o_docs', { memberNo: no }).then(function (d) {
-    var back = /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid';
-    sub('格納書類', '<p class="muted" style="margin:0 4px 12px">' + esc(DOCS.name ? DOCS.name + ' さん' : '') + '(会員番号 ' + esc(d.memberNo) + ')</p>' + (d.files.length ? d.files.map(function (f) {
+function docsView(no, all) {
+  var back = /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid';
+  sub('格納書類', '<div class="skel" style="height:240px"></div>', back);
+  api('o_docs', { memberNo: no, all: !!all }).then(function (d) {
+    var title = d.all ? 'すべての年' : d.year + '年';
+    var more = d.all ? '<button class="btn ghost" id="dyr">今年(' + esc(d.year) + '年)だけにする</button>' : (d.otherYears ? '<button class="btn ghost" id="dyr">過去の年度も見る(' + d.otherYears + '件)</button>' : '');
+    sub('格納書類', '<p class="muted" style="margin:0 4px 12px">' + esc(DOCS.name ? DOCS.name + ' さん' : '') + '(会員番号 ' + esc(d.memberNo) + (d.group ? ' ・ ' + esc(d.group) + '班' : '') + ') ・ ' + esc(title) + '</p>' + (d.files.length ? d.files.map(function (f) {
       return '<button class="ml" data-f="' + esc(f.id) + '"><div class="sj">' + esc(f.year) + '年 ' + esc(f.seq) + '枚目</div><div class="mt">回覧元 ' + esc(f.head) + ' ・ ' + esc(f.dist) + (f.kind === 'PDF' ? ' ・ PDF' : '') + '</div></button>';
-    }).join('') : '<div class="card"><p class="muted" style="margin:0">格納書類は見つかりませんでした。</p></div>') + '<p class="small" style="margin:8px 4px">個人情報です。役員の方だけが見られます。取り扱いにご注意ください。</p>', back);
+    }).join('') : '<div class="card"><p class="muted" style="margin:0">' + esc(title) + 'の格納書類は見つかりませんでした。</p></div>') + (more ? '<div style="height:8px"></div>' + more : '') + '<p class="small" style="margin:8px 4px">個人情報です。役員の方だけが見られます。取り扱いにご注意ください。</p>', back);
     Array.prototype.forEach.call(document.querySelectorAll('[data-f]'), function (b) { b.onclick = function () { docFileView(b.dataset.f, no, b.querySelector('.sj').textContent); }; });
+    if ($('#dyr')) $('#dyr').onclick = function () { docsView(no, !d.all); };
   }).catch(function (e) { offErr('格納書類', e, 'o_unpaid'); });
 }
 function docFileView(id, no, label) {
   sub(label || '書類', '<div class="skel" style="height:360px"></div>', 'o_docs/' + encodeURIComponent(no));
   api('o_doc_file', { id: id }).then(function (f) {
-    var img = f.data ? '<img alt="' + esc(label || '書類') + '" src="data:' + esc(f.mime) + ';base64,' + f.data + '" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff">' : '<div class="card"><p class="muted" style="margin:0">この書類は、ここでは表示できません。下のボタンから、Googleドライブで開いてください。</p></div>';
+    var img = f.data ? '<img alt="' + esc(label || '書類') + '" src="data:' + esc(f.mime) + ';base64,' + f.data + '" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff">' : '<div class="card"><p class="muted" style="margin:0">この書類は、ここでは表示できません。下のボタンから、Googleドライブで開いてください。</p>' + (f.why ? '<p class="small" style="margin:6px 0 0">(' + esc(f.why) + ')</p>' : '') + '</div>';
     sub(label || '書類', img + '<div style="height:12px"></div><button class="btn ghost" id="dopen">Googleドライブで開く</button><p class="small" style="margin:8px 4px">画像は、2本指で拡大できます。</p>', 'o_docs/' + encodeURIComponent(no));
     $('#dopen').onclick = function () { openExternal(f.url); };
   }).catch(function (e) { offErr('書類', e, 'o_docs/' + encodeURIComponent(no)); });
