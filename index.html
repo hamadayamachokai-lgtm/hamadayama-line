@@ -641,7 +641,7 @@ function docsView(no, all) {
     shown.forEach(function (f, i) {   // 1枚ずつ順に読み込んで、その場に表示
       api('o_doc_file', { id: f.id }).then(function (r) {
         var box = document.querySelector('#dc' + i + ' .dimg'); if (!box) return;
-        box.innerHTML = r.data ? '<img alt="書類" src="data:' + esc(r.mime) + ';base64,' + r.data + '" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff">' : '<p class="muted" style="margin:0">ここでは表示できませんでした。' + (r.why ? '<br><span class="small">(' + esc(r.why) + ')</span>' : '') + '</p>';
+        box.innerHTML = r.data ? '<img alt="書類" src="data:' + esc(r.mime) + ';base64,' + r.data + '" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff">' : '<p class="muted" style="margin:0">ここでは表示できませんでした。' + (r.why ? '<br><span class="small">(' + esc(r.why) + ')</span>' + (/権限/.test(r.why) ? '<br><span class="small">管理者へ: LINE APIでsetupApiを実行して許可し、「新バージョン」でデプロイしてください。</span>' : '') : '') + '</p>';
         box.insertAdjacentHTML('beforeend', '<button class="sbtn" style="margin-top:8px" data-o="' + i + '">Googleドライブで開く</button>');
         box.querySelector('[data-o]').onclick = function () { openExternal(r.url); };
       }).catch(function (e) { var box = document.querySelector('#dc' + i + ' .dimg'); if (box) box.innerHTML = '<p class="muted" style="margin:0">読み込めませんでした。' + esc(e.message) + '</p>'; });
@@ -1179,11 +1179,11 @@ function drawHelp() {
   var mine = items.filter(function (x) { return x.mine; });
   var open = items.filter(function (x) { return x.status === '公開' || x.status === '成立'; });
   var reqs = open.filter(function (x) { return x.kind === 'お願い' && !x.mine && x.status === '公開' && !x.raised; }).length;
-  var list = HP.tab === 'mine' ? mine : open;
+  var list = HP.tab === 'mine' ? mine : HP.tab === 'req' ? open.filter(function (x) { return x.kind === 'お願い'; }) : HP.tab === 'off' ? open.filter(function (x) { return x.kind === 'できます'; }) : open;
   var h = '<div class="banner warning" style="margin-bottom:14px"><div><b>災害モード中</b><div>助け合いが使えます。お互いの連絡先は公開しません。つながったら、役員が間に入ります。</div></div></div>' +
-    '<button class="btn" id="hnew">＋ 助け合いに参加する(お願い・できます)</button>';
+    '<button class="btn" id="hnew">＋ 参加(お願い・できます)</button>';
   if (pend.length) h += '<div class="sec" style="margin-top:16px">確認待ち(役員)</div>' + pend.map(function (x) { return helpCard(x, d); }).join('');
-  h += '<div class="chips" id="hts" style="margin:14px 0 4px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんなの投稿' + (reqs ? ' ' + reqs : '') + '</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分の投稿 ' + mine.length + '</button></div>';
+  h += '<div class="chips" id="hts" style="margin:14px 0 4px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんな</button><button data-t="req" aria-pressed="' + (HP.tab === 'req') + '">お願い' + (reqs ? ' ' + reqs : '') + '</button><button data-t="off" aria-pressed="' + (HP.tab === 'off') + '">できます</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分の ' + mine.length + '</button></div>';
   h += list.length ? list.map(function (x) { return helpCard(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はありません。</p></div>';
   sub('助け合い', h);
   $('#hnew').onclick = function () { go('helpnew'); };
@@ -1243,7 +1243,7 @@ function helpNewDraw(d) {
     if (kind === 'できます') {
       var reqs = d.items.filter(function (x) { return x.kind === 'お願い' && x.status === '公開' && !x.mine; });
       h += '<div class="sec">いま、お願いが来ています</div>' + (reqs.length ? reqs.map(function (x) { return helpCard(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">いまは、公開中のお願いはありません。</p></div>') +
-        '<div class="card"><h2>こちらから申し出る</h2><p class="muted" style="margin:0 0 10px">お願いに当てはまらないとき、「こんなことができます」と投稿できます(役員が確認してから公開します)。</p><button class="btn ghost" id="hoffer">申し出を書く</button></div><div id="hform"></div>';
+        '<div class="card"><h2>こちらから申し出る</h2><p class="muted" style="margin:0 0 10px">お願いに当てはまらないとき、「こんなことができます」と投稿できます。</p><button class="btn ghost" id="hoffer">申し出を書く</button></div><div id="hform"></div>';
     } else h += formHtml();
     sub('助け合いに参加', h, 'help');
     bind('hk', function (v) { kind = v; }, draw); bindFormSwitch();
@@ -1256,13 +1256,13 @@ function helpNewDraw(d) {
       (offer ? '' : '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">何人ほしいですか?</span>' + chip('hs', d.scales, scale) + '</div>') +
       '<div class="field"><label class="l" for="ht">タイトル<span class="req">必須</span></label><input class="inp" id="ht" maxlength="60" placeholder="例: 倒れた棚を起こすのを手伝ってほしい"></div>' +
       '<div class="field"><label class="l" for="hb">くわしく<span class="req">必須</span></label><textarea class="inp" id="hb" maxlength="1000" style="min-height:130px" placeholder="いつ・どこ(丁目まで)・何をなど"></textarea></div>' +
-      '<div class="notice-box">電話番号・番地は書かないでください。役員が内容を確認してから公開します。</div><button class="btn" id="hsv">投稿する</button></div>';
+      '<div class="notice-box">電話番号・番地は書かないでください。投稿はすぐ、みんなに見えます。</div><button class="btn" id="hsv">投稿する</button></div>';
   }
   function bindFormSwitch() {
     bind('hc', function (v) { cat = v; }); bind('hs', function (v) { scale = v; });
     var sv = $('#hsv'); if (sv) sv.onclick = function () {
       sv.disabled = true;
-      api('help_post', { kind: kind, cat: cat, scale: kind === 'お願い' ? scale : '', title: $('#ht').value, body: $('#hb').value }).then(function (r) { toast(r.status === '公開' ? '投稿しました' : '投稿しました。役員の確認後に公開されます'); HP.d = null; HP.tab = 'mine'; go('help'); }).catch(function (e) { sv.disabled = false; toast(e.message); });
+      api('help_post', { kind: kind, cat: cat, scale: kind === 'お願い' ? scale : '', title: $('#ht').value, body: $('#hb').value }).then(function (r) { toast('投稿しました'); HP.d = null; HP.tab = 'mine'; go('help'); }).catch(function (e) { sv.disabled = false; toast(e.message); });
     };
   }
   draw();
