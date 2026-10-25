@@ -284,14 +284,15 @@ function statusView() {
   var cfg = {
     pending: { icon: 'hourglass', cls: '', t: '申請を受け付けました', d: '役員が町会費の納入状況を確認しています。承認されると、メニューが使えるようになります。' },
     rejected: { icon: 'x', cls: 'bad', t: '承認できませんでした', d: '内容をご確認のうえ、必要であれば修正して、もう一度申請してください。' },
-    suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' }
+    suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' },
+    removed: { icon: 'stop', cls: 'bad', t: 'ご利用を終了しました', d: '詳しくは、町会の役員へお問い合わせください。' }
   }[me.state];
   var html = '<div class="card"><div class="center" style="padding:12px 0 4px"><div class="bigicon ' + cfg.cls + '">' + svg(cfg.icon) + '</div><h2 style="justify-content:center;margin-bottom:6px">' + cfg.t + '</h2><p class="muted" style="margin:0">' + cfg.d + '</p></div></div>';
-  if (me.reason) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
-  if (me.state !== 'suspended') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
+  if (me.reason) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : me.state === 'removed' ? '削除の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
+  if (me.state !== 'suspended' && me.state !== 'removed') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
   if (me.state === 'pending') html += '<div class="notice-box">承認の連絡は届きません。数日後に、この画面を開き直してご確認ください。</div><div class="btns"><button class="btn" id="rl">承認されたか確認する</button><button class="btn ghost" id="ed">申請内容を修正する</button></div>';
   if (me.state === 'rejected') html += '<div class="btns"><button class="btn" id="ed">内容を直して再申請する</button></div>';
-  if (me.state === 'suspended') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
+  if (me.state === 'suspended' || me.state === 'removed') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
   setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>浜田山町会</h1><div class="sub">LINE会員</div></div><div class="pad sheet">' + html + '</div>');
   var rl = $('#rl'), ed = $('#ed');
   if (rl) rl.onclick = function () { rl.disabled = true; loadMe().then(function () { if (S.me.state === 'approved') route(); else { statusView(); toast('まだ承認待ちです'); } }).catch(function (e) { rl.disabled = false; toast(e.message); }); };
