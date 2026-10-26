@@ -1213,7 +1213,7 @@ function schedBind(root) {
       api('o_sched_answer', { id: id, answer: was ? '' : b.dataset.a }).then(function (r) {
         var tmp = document.createElement('div'); tmp.innerHTML = schedCard(r.event, true); var nb = tmp.firstChild;
         if (open) nb.querySelector('details').open = true;
-        box.parentNode.replaceChild(nb, box); schedBind(nb.parentNode); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
+        box.parentNode.replaceChild(nb, box); schedBind(nb.parentNode); loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
       }).catch(function (e) { toast(e.message); });
     };
   });
