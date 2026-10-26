@@ -166,6 +166,7 @@ textarea.inp{min-height:96px;resize:vertical}
 .bnav button span{white-space:nowrap}
 .bdg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#d92d20;color:#fff;font-size:11px;line-height:18px;text-align:center;font-weight:700;border:2px solid #fffdf8;line-height:14px}
 .tile .bdg{top:8px;left:8px}
+.chpick{display:block;width:100%;text-align:left;padding:12px;margin:6px 0;border:2px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:17px;color:inherit}.chpick[aria-pressed=true]{border-color:#1e3a5f;background:#eef3fb}.chpick:disabled{opacity:.55}
 .bdg.g{background:#2e9e5b}.bdg.y{background:#e8a317;color:#3a2a00}.bdg.r{background:#d92d20}
 .sch{border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;background:var(--card)}
 .sch .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sch .dt{font-weight:800;font-size:17px}
@@ -445,7 +446,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-24 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -798,9 +799,45 @@ function circView() {
 function drawCirc() {
   var rows = C.data.circs.filter(function (c) { return !C.dist || c.district === C.dist; });
   $('#clist').innerHTML = rows.length ? rows.map(function (c, i) {
-    return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div><div class="nm"><span class="dot2 ' + (c.gift ? 'on' : 'off') + '" role="img" aria-label="' + (c.gift ? '商品券あり' : '商品券なし') + '"></span>' + esc(c.name) + ' <span class="muted">' + esc(c.district) + ' ' + esc(c.group) + '班</span></div><div class="ad">' + esc(c.address) + (c.giftText ? ' ／ ' + esc(c.giftText) : '') + '</div></div><div class="acts">' + mapBtn(c.map) + docBtn(c) + '</div></div>';
+    return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div><div class="nm"><span class="dot2 ' + (c.gift ? 'on' : 'off') + '" role="img" aria-label="' + (c.gift ? '商品券あり' : '商品券なし') + '"></span>' + esc(c.name) + ' <span class="muted">' + esc(c.district) + ' ' + esc(c.group) + '班</span></div><div class="ad">' + esc(c.address) + (c.giftText ? ' ／ ' + esc(c.giftText) : '') + '</div></div><div class="acts">' + mapBtn(c.map) + docBtn(c) + '<button class="sbtn" data-chg="' + i + '" style="border-color:#b45309;color:#b45309">回覧元変更通知</button></div></div>';
   }).join('') : '<p>該当する方はいません。</p>';
   bindMaps($('#clist')); bindDocs($('#clist'));
+  Array.prototype.forEach.call(document.querySelectorAll('#clist [data-chg]'), function (b) { b.onclick = function () { var c = rows[+b.dataset.chg]; CH.district = c.district; CH.group = c.group; go('o_chg'); }; });
+}
+
+/* ===== 回覧元変更通知(班員から新しい回覧元を選ぶ → スプレッドシートを書き換える) ===== */
+var CH = { district: '', group: '', pick: null, busy: false };
+function chgView() {
+  if (!CH.group) return go('o_circ');
+  sub('回覧元の変更', '<div class="skel" style="height:260px"></div>', 'o_circ');
+  api('o_circ_members', { district: CH.district, group: CH.group }).then(function (d) {
+    CH.pick = null;
+    sub('回覧元の変更', '<div class="card"><h2>' + esc(d.district + ' ' + d.group + '班') + '</h2><p class="muted" style="margin:0 0 6px">今の回覧元: <b>' + esc(d.heads.join('・') || '(なし)') + '</b><br>新しく回覧元になる方を、えらんでください。</p><div id="chlist">' +
+      d.members.map(function (m, i) { return '<button class="chpick" data-i="' + i + '"' + (m.circ ? ' disabled' : '') + ' aria-pressed="false"><b>' + esc(m.name) + '</b>' + (m.circ ? ' <span class="tg">今の回覧元</span>' : '') + '<span class="muted" style="display:block">' + esc(m.address || '(住所なし)') + '</span></button>'; }).join('') +
+      (d.members.length ? '' : '<p>この班の会員が見つかりません。</p>') + '</div></div><div id="chform"></div>', 'o_circ');
+    Array.prototype.forEach.call(document.querySelectorAll('#chlist .chpick'), function (b) {
+      b.onclick = function () {
+        var m = d.members[+b.dataset.i]; CH.pick = m;
+        Array.prototype.forEach.call(document.querySelectorAll('#chlist .chpick'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        $('#chform').innerHTML = '<div class="card"><h2>新しい回覧元: ' + esc(m.name) + ' 様</h2>' +
+          '<label class="muted" for="chaddr">住所(登録ずみ。まちがいがあれば直してください)</label><input id="chaddr" value="' + esc(m.address) + '" autocomplete="off" style="width:100%;font-size:18px;padding:10px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px;margin:4px 0 12px">' +
+          '<label class="muted" for="chnote">連絡事項(なくてもOK)</label><textarea id="chnote" rows="3" maxlength="300" placeholder="例: 12月から交代します。電話は…" style="width:100%;font-size:17px;padding:10px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px;margin:4px 0 12px;font-family:inherit"></textarea>' +
+          '<button class="btn" id="chgo">この内容で変更する</button><p class="small" style="margin:8px 2px 0">押すと、スプレッドシートの回覧元・会員状況・交代日・前任者が書き換わります。</p></div>';
+        $('#chgo').onclick = function () {
+          if (CH.busy) return;
+          var addr = $('#chaddr').value.trim(), note = $('#chnote').value.trim();
+          askChoice(d.group + '班の回覧元を変更します', ['変更する'], (d.heads.join('・') || '(なし)') + ' → ' + m.name + ' 様').then(function (v) {
+            if (!v || CH.busy) return;
+            CH.busy = true; $('#chgo').disabled = true;
+            api('o_circ_change', { memberNo: m.no, address: addr, note: note }).then(function (r) {
+              CH.busy = false; CH.group = ''; toast(r.group + '班の回覧元を ' + r.name + ' 様に変更しました'); go('o_circ');
+            }).catch(function (e) { CH.busy = false; var g = $('#chgo'); if (g) g.disabled = false; toast(e.message); });
+          });
+        };
+        $('#chform').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+    });
+  }).catch(function (e) { offErr('回覧元の変更', e, 'o_circ'); });
 }
 
 var SC = { mode: 'matsuri' };
@@ -1874,7 +1911,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_docs|o_doc)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -1885,7 +1922,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
