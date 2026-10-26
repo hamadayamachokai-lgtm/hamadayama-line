@@ -291,7 +291,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
-  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン', o_desk: 'QR受付画面',
+  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -429,7 +429,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-11 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-12 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -716,35 +716,41 @@ function drawCirc() {
 
 var SC = { mode: 'matsuri' };
 var MODE_LABEL = { matsuri: '祭礼', engeikai: '演芸会', disaster: '災害' };
-var MODE_HINT = { matsuri: '会員証のQRで、お菓子の申込を確認して「渡した」を記録します。', engeikai: '会員証のQRで、来場を記録し、お土産の申込があれば「渡した」を記録します(同じ方は来場を1回だけ数えます)。', disaster: '会員証のQRで、会員・世帯・登録されているご家族を確認します。' };
+var MODE_HINT = { matsuri: '会員証・フォームのQRを読むと、お菓子の申込を確認して「受付待ち」に入れます(大きな画面の「QR受付画面」で、順番に受け取りを進めます)。', engeikai: '会員証のQRで、来場を記録し、お土産の申込があれば「受付待ち」に入れます(同じ方は来場を1回だけ数えます)。', disaster: '会員証のQRで、会員・世帯・登録されているご家族を確認します。' };
 function scanView() {
   var can = false; try { can = !!(window.liff && liff.isApiAvailable && liff.isApiAvailable('scanCodeV2')); } catch (e) { can = false; }
-  sub('QRチェックイン', '<div class="seg" id="smode">' + Object.keys(MODE_LABEL).map(function (k) { return '<button data-m="' + k + '" aria-pressed="' + (SC.mode === k) + '">' + MODE_LABEL[k] + '</button>'; }).join('') + '</div>' +
+  sub('QR スキャン', '<div class="seg" id="smode">' + Object.keys(MODE_LABEL).map(function (k) { return '<button data-m="' + k + '" aria-pressed="' + (SC.mode === k) + '">' + MODE_LABEL[k] + '</button>'; }).join('') + '</div>' +
     '<p class="muted" id="shint" style="margin:0 4px 12px"></p>' +
     (can ? '<button class="btn" id="sgo">' + svg('o_checkin').replace('<svg', '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"') + 'QRを読み取る(LINE)</button><div style="height:8px"></div>' : '') +
-    '<button class="btn ' + (can ? 'ghost' : '') + '" id="sgo2">📷 カメラで読み取る(この画面)</button><p class="small" style="margin:6px 4px 0">QRスキャナーをお持ちなら、下の入力欄に読み取るだけでも受付できます。</p>' +
+    '<button class="btn ' + (can ? 'ghost' : '') + '" id="sgo2">📷 カメラで読み取る(この画面)</button><div id="shost" style="margin-top:8px"></div><p class="small" style="margin:6px 4px 0">QRスキャナーをお持ちなら、下の入力欄に読み取るだけでも受付できます。</p>' +
     '<div class="card" style="margin-top:14px"><h2>会員コードを入力</h2><div class="inrow"><input id="scode" maxlength="60" autocomplete="off" autocapitalize="characters" placeholder="例: K7M2Q9XT" aria-label="会員コード"><button class="sbtn fill" id="sok">確認</button></div></div><div id="sres"></div>' +
-    '<div class="card" style="margin-top:14px" id="fcard"><h2>お名前で探して受付</h2><p class="muted" style="margin:0 0 8px">QRを持っていない・わからない方向けです(祭礼・演芸会)。お名前の一部、会員番号、お子様のお名前で探せます。</p><div class="inrow"><input id="fq" autocomplete="off" placeholder="例: 田中" aria-label="お名前または会員番号"><button class="sbtn fill" id="fok">探す</button></div></div><div id="fres"></div>', 'officer');
+    '', 'o_scan');
   function hint() { $('#shint').textContent = MODE_HINT[SC.mode]; }
   hint();
-  Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (b) { b.onclick = function () { SC.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); hint(); $('#sres').innerHTML = ''; fvis(); }; });
-  $('#fok').onclick = doFind; $('#fq').onkeydown = function (e) { if (e.key === 'Enter') doFind(); };
-  function fvis() { $('#fcard').style.display = SC.mode === 'disaster' ? 'none' : ''; $('#fres').innerHTML = ''; } fvis();
+  Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (b) { b.onclick = function () { SC.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); hint(); $('#sres').innerHTML = ''; }; });
   $('#sok').onclick = function () { var v = $('#scode').value; if (!v.trim()) return toast('会員コードを入力してください'); doScan(v); };
-  $('#sgo2').onclick = function () { camScan({ onCode: function (c) { doScan(c); } }); };
+  $('#sgo2').onclick = function () { camScan({ host: $('#shost'), keep: true, onCode: function (c) { doScan(c); } }); };
   if (can) $('#sgo').onclick = function () {
     liff.scanCodeV2().then(function (r) { if (r && r.value) doScan(r.value); }).catch(function (e) { toast('読み取りできませんでした: ' + (e && e.message || e)); });
   };
 }
+function autoQueue(r) {   // 祭礼・演芸会は、読んだらそのまま受付待ちに入れる(続けて何人読んでも、順番に並ぶ)
+  if (!r || r.mode === 'disaster' || !r.apps) return;
+  var todo = r.apps.filter(function (a) { return !a.received; });
+  if (!todo.length) return toast(r.apps.length ? 'すでに受取済みです' : '申込が見つかりません');
+  var chain = Promise.resolve();
+  todo.forEach(function (a) { chain = chain.then(function () { return api('o_queue_add', { id: a.id }); }); });
+  chain.then(function () { toast((r.person.memberName || r.person.name) + ' 様を受付待ちに入れました'); }).catch(function (e) { toast(e.message); });
+}
 function doScan(code) {
   $('#sres').innerHTML = '<div class="card"><div class="skel" style="height:120px"></div></div>';
-  api('o_scan', { mode: SC.mode, code: code }).then(function (r) { $('#scode').value = ''; drawScan(r); window.scrollTo(0, $('#sres').offsetTop - 70); })
+  api('o_scan', { mode: SC.mode, code: code }).then(function (r) { $('#scode').value = ''; drawScan(r); window.scrollTo(0, $('#sres').offsetTop - 70); autoQueue(r); })
     .catch(function (e) { $('#sres').innerHTML = '<div class="card scanres warn"><b>確認できませんでした</b><p>' + esc(e.message) + '</p></div>'; });
 }
 function appRowsHtml(apps, first) {
   return apps.map(function (a, i) {
     var paper = a.channel === '紙申込書';
-    return '<div class="mrow' + (i === 0 && first ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + a.units + '個 ／ ' + esc(a.guardian || a.people.join('、')) + (paper ? ' <span class="tg">紙の申込(引換券)</span>' : ' <span class="tg">' + esc(a.channel) + '</span>') + '</div>' +
+    return '<div class="mrow' + (i === 0 && first ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + (a.event ? '<span class="tg">' + esc(a.event) + '</span> ' : '') + a.units + '個 ／ ' + esc(a.guardian || a.people.join('、')) + (paper ? ' <span class="tg">紙の申込(引換券)</span>' : ' <span class="tg">' + esc(a.channel) + '</span>') + '</div>' +
       (a.kids && a.kids.length && a.guardian ? '<div class="ad">' + esc(a.kids.map(function (k) { return k.name + (k.grade ? '(' + k.grade + ')' : ''); }).join('、')) + '</div>' : '') +
       (a.note ? '<div class="ad">連絡事項: ' + esc(a.note) + '</div>' : '') +
       (a.received ? '<div class="ad" style="color:var(--bad);font-weight:700">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button>' + (a.received ? '' : '<button class="sbtn" data-q="' + esc(a.id) + '">受付待ちへ</button>') + '</div></div>';
@@ -772,6 +778,29 @@ function findDraw(d) {
       (g.apps.length ? appRowsHtml(g.apps, false) : '<p style="margin:8px 0 0"><b>' + esc(d.event) + 'の申込は見つかりません。</b></p>') + '</div>';
   }).join('') : '<div class="card scanres warn"><b>該当する方がいません</b><p class="muted">お名前の一部、会員番号で探せます。お子様のお名前でも探せます。</p></div>';
   bindRecv(box, all, '検索', function () { findDraw(d); });
+}
+/* ---------- QR(ボタン1つから、受付・スキャン・検索を選ぶ) ---------- */
+function qrHubView() {
+  var btn = function (k, t, d) { return '<button class="btn" data-k="' + k + '" style="text-align:left;margin-bottom:12px"><div style="font-size:19px">' + t + '</div><div style="font-size:13px;font-weight:400;opacity:.85;margin-top:2px">' + d + '</div></button>'; };
+  sub('QR', btn('o_desk', '① 受付', '大きな画面。受付待ちの方を、順番に「受け取りました」で進めます') + btn('o_scanrun', '② スキャン', '会員証・フォームのQRを読む(祭礼・演芸会・防災)。祭礼・演芸会は、読んだ順に受付待ちへ') + btn('o_search', '③ 検索', '会員氏名・住所・メールアドレス・申込者名などの一部で探して、受付待ちへ'), 'officer');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-k]'), function (b) { b.onclick = function () { go(b.dataset.k); }; });
+}
+function searchView() {
+  sub('QR 検索', '<div class="card"><p class="muted" style="margin:0 0 8px">会員氏名・住所・メールアドレス・申込者名・お子様名・会員番号などの一部で探せます(空白で区切ると、すべてを含む方を探します)。祭礼・演芸会の今年度の申込が対象です。</p><div class="inrow"><input id="fq" autocomplete="off" placeholder="例: 田中 浜田山1" aria-label="検索"><button class="sbtn fill" id="fok">探す</button></div></div><div id="fres"></div>', 'o_scan');
+  function go1() {
+    var q = $('#fq').value.trim(); if (!q) return toast('探したい言葉を入れてください');
+    $('#fres').innerHTML = '<div class="card"><div class="skel" style="height:80px"></div></div>';
+    api('o_find', { event: '', q: q }).then(function (d) {
+      var all = [];
+      $('#fres').innerHTML = d.results.length ? d.results.map(function (g) {
+        all = all.concat(g.apps);
+        return '<div class="card scanres ' + (g.apps.length ? 'good' : 'warn') + '"><div class="nm" style="font-size:18px;font-weight:700">' + esc(g.memberName) + ' 様</div><div class="muted">' + esc([g.district, g.group && g.group + '班', g.memberNo, g.address].filter(Boolean).join(' ・ ')) + '</div>' +
+          (g.apps.length ? appRowsHtml(g.apps, false) : '<p style="margin:8px 0 0"><b>今年度の申込は見つかりません。</b></p>') + '</div>';
+      }).join('') : '<div class="card scanres warn"><b>該当する方がいません</b><p class="muted">言葉を短くすると見つかることがあります。</p></div>';
+      bindRecv($('#fres'), all, '検索', go1);
+    }).catch(function (e) { $('#fres').innerHTML = '<div class="card scanres warn"><b>探せませんでした</b><p>' + esc(e.message) + '</p></div>'; });
+  }
+  $('#fok').onclick = go1; $('#fq').onkeydown = function (e) { if (e.key === 'Enter') go1(); };
 }
 function doFind() {
   var q = $('#fq').value.trim(); if (!q) return toast('お名前か会員番号を入れてください');
@@ -863,7 +892,7 @@ function deskView() {
   sub('QR受付画面', '<div class="card" style="padding:12px"><div class="seg" id="dmode"><button data-m="matsuri" aria-pressed="true">祭礼</button><button data-m="engeikai" aria-pressed="false">演芸会</button></div>' +
     '<div class="inrow" style="margin-top:10px"><input id="dcode" autocomplete="off" placeholder="QRスキャナーで読む / お名前・会員番号で探す" aria-label="QRまたはお名前"><button class="sbtn fill" id="dok">受付待ちへ</button><button class="sbtn" id="dcam">📷 カメラ</button></div>' +
     '<div id="dcamhost" style="margin-top:8px"></div><div id="dmsg" class="small" style="margin-top:8px;min-height:20px"></div><div id="dres"></div></div>' +
-    '<div id="dnow"></div><div id="dnext"></div>', 'officer');
+    '<div id="dnow"></div><div id="dnext"></div>', 'o_scan');
   document.body.classList.add('deskmode');
   Array.prototype.forEach.call(document.querySelectorAll('#dmode button'), function (b) { b.onclick = function () { DK.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#dmode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
   function msg(t, bad) { var m = $('#dmsg'); if (m) { m.textContent = t; m.style.color = bad ? 'var(--bad)' : ''; m.style.fontWeight = bad ? '700' : ''; } }
@@ -1639,7 +1668,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_desk|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_scanrun|o_search|o_desk|o_docs|o_doc)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -1650,7 +1679,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_desk: deskView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
