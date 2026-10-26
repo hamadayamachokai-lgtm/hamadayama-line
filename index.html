@@ -427,7 +427,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-10 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1049,7 +1049,7 @@ function eventView() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { var x = b.dataset.pe.split('|'); EV.pev = x[1]; go('evperson/' + x[0]); }; });
     var ge = $('#gedit'); if (ge) ge.onclick = function () { go('evguardian'); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-mailnew]'), function (b) { b.onclick = function () { go('mailnew'); }; });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { EV.back = null; EV.pev = b.dataset.pn; go('evperson/new'); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { go('evreg/' + b.dataset.pn); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
       b.onclick = function () {
         if (!window.confirm('この申込を取り消します。よろしいですか?')) return;
@@ -1064,6 +1064,88 @@ function gradeLabel(y, m, d, year) {
   if (age >= 12) return '中学生以上(対象外)';
   if (age >= 6) return '小学校' + (age - 5) + '年生(対象)';
   return age === 5 ? '年長(対象)' : age === 4 ? '年中(対象)' : age === 3 ? '年少(対象)' : '未就学(対象)';
+}
+/** 対象者の登録と申込を、ひとつの画面で(登録だけして申込を忘れないように)。祭礼=保護者(最初だけ)+お子様の行 / 演芸会=70歳以上のチェック+氏名の行 */
+function evRegView(name) {
+  var fest = name === '祭礼';
+  var go2 = function (s) {
+    var ev = s.events.filter(function (x) { return x.name === name; })[0];
+    if (!ev) return go('event');
+    var Y = s.year, pl = s.people.filter(function (p) { return !p.event || p.event === name; });
+    var app = ev.apps[0] || null, canApply = ev.open && (!app || app.editable), locked = ev.open && app && !app.editable;
+    var inApp = {}; if (app) app.people.forEach(function (p) { inApp[p.name] = 1; });
+    var nrow = 0;
+    var opts = function (from, to, desc) { var o = '<option value="">--</option>'; for (var i = from; i <= to; i++) { var v = desc ? to - (i - from) : i; o += '<option value="' + v + '">' + v + '</option>'; } return o; };
+    function newRow() {
+      var i = ++nrow;
+      return '<div class="card nr" data-r="' + i + '" style="margin:10px 0;padding:12px;background:var(--bg2,#f6f8fb)"><div class="field"><label class="l" for="rn' + i + '">' + (fest ? 'お子様氏名' : '氏名') + '</label><input class="inp rn" id="rn' + i + '" maxlength="30"></div>' +
+        (fest ? '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">お子様生年月日</span><div class="inrow" style="gap:6px"><select class="inp ry" aria-label="年">' + opts(Y - 12, Y, true) + '</select><select class="inp rm" aria-label="月">' + opts(1, 12) + '</select><select class="inp rd" aria-label="日">' + opts(1, 31) + '</select></div><div class="hint rg" style="margin-top:4px"></div></div>' : '') +
+        (canApply && !app ? '<label class="opt"><input type="checkbox" class="rap" checked><span>' + (fest ? '今年度の申込に入れる' : '今年度のお土産引換の申込に入れる') + '</span></label>' : '') + '</div>';
+    }
+    var h = '<div class="card">' + (ev.note ? '<div class="notice-box">' + linkify(ev.note) + '</div>' : '');
+    if (fest && !s.guardian) h += '<div class="notice-box">最初の登録のときだけ、保護者の方のお名前とメールアドレスをおたずねします(次回からは不要です)。</div><div class="field"><label class="l" for="gn">保護者のお名前<span class="req">必須</span></label><input class="inp" id="gn" maxlength="40"></div><div class="field"><label class="l" for="gm">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="gm" type="email" inputmode="email" maxlength="120"></div>';
+    else if (fest) h += '<p class="small" style="margin:0 0 8px">保護者: ' + esc(s.guardian.name) + '(' + esc(s.guardian.email) + ') <button class="sbtn" id="gedit" type="button">直す</button></p>';
+    if (!fest) h += '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">あなた(またはご家族)は70歳以上ですか?<span class="req">必須</span></span><label class="opt"><input type="checkbox" id="o70"' + (pl.length ? ' checked' : '') + '><span>はい(70歳以上です)</span></label></div><b>お土産引換の対象者を、全員登録してください</b>';
+    else h += '<b>登録済みのお子様</b>';
+    h += '<div id="exl">' + (pl.length ? pl.map(function (p) {
+      var bad = fest && !/^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || ''), chk = app ? !!inApp[p.name] : !bad;
+      return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + (fest ? gradeTag(p.grade) : '') + '</div>' +
+        (canApply && !bad ? '<label class="opt" style="margin:0"><input type="checkbox" class="exap" data-id="' + esc(p.id) + '" data-n="' + esc(p.name) + '"' + (chk ? ' checked' : '') + (app && !inApp[p.name] ? ' disabled' : '') + '><span>申込</span></label>' : (app && inApp[p.name] ? '<span class="tg ok">申込済み</span>' : '')) +
+        '<button class="sbtn" data-pe="' + esc(p.id) + '">編集</button><button class="sbtn" data-pd="' + esc(p.id) + '" data-n="' + esc(p.name) + '" style="color:var(--bad);border-color:var(--bad)">削除</button></div>';
+    }).join('') : '<p class="muted" style="margin:6px 0 0">まだ登録がありません。</p>') + '</div>' +
+      '<div id="nrows">' + newRow() + '</div><button class="sbtn" id="addrow" type="button">＋ ' + (fest ? '次のお子様を追加' : '追加する') + '</button>';
+    if (canApply) h += '<div class="field" style="margin-top:14px"><label class="l" for="an">連絡事項(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(app ? app.note : '') + '"></div><p class="hint">「申込」にチェックを入れた方で、今年度の申込をします。申込個数は人数で自動です。</p>';
+    else if (locked) h += '<p class="small">すでに他の方法で申込があります。人数を増やしたいときは、役員へご連絡ください(登録だけはできます)。</p>';
+    else if (ev.apps.length) h += '<p class="small">申込のあとで人数を増やしたいときは、役員へご連絡ください(登録だけはできます)。</p>';
+    else h += '<p class="small">いまは申込の受付期間ではありません。登録だけ先にしておけます。</p>';
+    h += '<button class="btn" id="rsv" style="margin-top:12px">' + (canApply ? '保存して申し込む' : '保存する') + '</button></div>';
+    sub(name + '対象者登録' + (canApply ? '・申込' : ''), h, 'event');
+    function bindRow(r) {
+      var gl = function () { var y = +$('.ry', r).value, m = +$('.rm', r).value, d = +$('.rd', r).value; $('.rg', r).textContent = y && m && d ? '学年: ' + gradeLabel(y, m, d, Y) : ''; };
+      if (fest) ['.ry', '.rm', '.rd'].forEach(function (k) { $(k, r).onchange = gl; });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.nr'), bindRow);
+    $('#addrow').onclick = function () { var d = document.createElement('div'); d.innerHTML = newRow(); var r = d.firstChild; $('#nrows').appendChild(r); bindRow(r); $('.rn', r).focus(); };
+    var ge = $('#gedit'); if (ge) ge.onclick = function () { go('evguardian'); };
+    Array.prototype.forEach.call(document.querySelectorAll('#exl [data-pe]'), function (b) { b.onclick = function () { EV.pev = name; EV.back = 'evreg/' + name; go('evperson/' + b.dataset.pe); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('#exl [data-pd]'), function (b) {
+      b.onclick = function () {
+        if (!window.confirm('「' + b.dataset.n + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
+        b.disabled = true; api('ev_person_delete', { id: b.dataset.pd }).then(function () { toast('削除しました'); EV.state = null; evRegView(name); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    });
+    $('#rsv').onclick = function () {
+      var rows = [];
+      Array.prototype.forEach.call(document.querySelectorAll('.nr'), function (r) {
+        var n = $('.rn', r).value.trim(); if (!n) return;
+        var birth = fest ? ($('.ry', r).value && $('.rm', r).value && $('.rd', r).value ? $('.ry', r).value + '-' + $('.rm', r).value + '-' + $('.rd', r).value : '') : '';
+        rows.push({ name: n, birth: birth, apply: !!($('.rap', r) && $('.rap', r).checked) });
+      });
+      var needG = fest && !s.guardian;
+      if (needG && rows.length) { if (!$('#gn').value.trim()) return toast('保護者のお名前を入力してください'); if (!$('#gm').value.trim()) return toast('保護者のメールアドレスを入力してください'); }
+      if (!fest && rows.length && !$('#o70').checked) return toast('「70歳以上ですか」に「はい」のチェックを入れてください');
+      if (fest && rows.some(function (r) { return !r.birth; })) return toast('お子様の生年月日を選んでください');
+      var exIds = Array.prototype.map.call(document.querySelectorAll('.exap:checked'), function (c) { return c.dataset.id; });
+      if (!rows.length && !exIds.length && !(app && canApply)) return toast(fest ? 'お子様の氏名を入力してください' : '氏名を入力してください');
+      var b = $('#rsv'); b.disabled = true;
+      var chain = Promise.resolve();
+      rows.forEach(function (r, i) {
+        chain = chain.then(function () { return api('ev_person_save', { event: name, name: r.name, birth: r.birth, over70: !fest, guardian: needG ? $('#gn').value : '', email: needG ? $('#gm').value : '' }); });
+      });
+      chain.then(function () {
+        EV.state = null;
+        var wantNew = rows.filter(function (r) { return r.apply; }).map(function (r) { return r.name; });
+        if (!canApply || (!exIds.length && !wantNew.length)) return null;
+        return evLoad().then(function (st) {
+          var norm = function (t) { return String(t).replace(/[\s　]+/g, ''); }, ids = exIds.slice();
+          st.people.forEach(function (p) { if ((!p.event || p.event === name) && wantNew.some(function (n) { return norm(n) === norm(p.name); }) && ids.indexOf(p.id) < 0) ids.push(p.id); });
+          return api('ev_apply', { event: name, personIds: ids, note: $('#an') ? $('#an').value : '', appId: app ? app.id : '' }).then(function () { return 'applied'; });
+        });
+      }).then(function (r) { toast(r === 'applied' ? '保存して、申込しました' : '保存しました'); EV.state = null; go('event'); })
+        .catch(function (e) { b.disabled = false; EV.state = null; toast(e.message); });
+    };
+  };
+  if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('対象者', e, 'event'); });
 }
 function evPersonView(id) {
   var go2 = function (s) {
@@ -1121,7 +1203,7 @@ function evApplyView(name) {
       (fest && s.guardian ? '<p class="small" style="margin:0 0 8px">保護者: ' + esc(s.guardian.name) + '(' + esc(s.guardian.email) + ')</p>' : '') +
       '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">申込は1会員につき1件です。申込のあとで人数を増やしたいときは、役員へご連絡ください。</p></div>';
     sub(name + (cur ? 'の申込を直す' : 'に申し込む'), h, 'event');
-    $('#addp').onclick = function () { EV.pev = name; EV.back = 'evapply/' + name; go('evperson/new'); };
+    $('#addp').onclick = function () { go('evreg/' + name); };
     function recount() { $('#acn').textContent = document.querySelectorAll('[data-id]:checked').length + '個'; }
     Array.prototype.forEach.call(document.querySelectorAll('[data-id]'), function (c) { c.onchange = recount; }); recount();
     $('#asv').onclick = function () {
@@ -1428,6 +1510,7 @@ function route() {
   if (h === 'evguardian') return evGuardianView();
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
+  if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
   ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
