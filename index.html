@@ -445,7 +445,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-22 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-23 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -620,9 +620,9 @@ function rSel(k, label, opts) {
 function rOpts(list, k) { var a = []; list.forEach(function (m) { if (m[k] && a.indexOf(m[k]) < 0) a.push(m[k]); }); return a; }
 function drawRoster() {
   var d = R.data, terms = String(R.q).normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean).map(rNorm);
-  var gs = [];
-  if (R.dist) d.members.forEach(function (m) { if (m.district === R.dist && m.group && gs.indexOf(m.group) < 0) gs.push(m.group); });
-  $('#rgrp').innerHTML = gs.length ? '<button data-g="" aria-pressed="' + (!R.grp) + '">全部の班</button>' + gs.map(function (x) { return '<button data-g="' + esc(x) + '" aria-pressed="' + (R.grp === x) + '">' + esc(x) + '班</button>'; }).join('') : '';
+  var gs = [], gh = {};
+  if (R.dist) d.members.forEach(function (m) { if (m.district === R.dist && m.group && gs.indexOf(m.group) < 0) { gs.push(m.group); } if (m.district === R.dist && m.group && m.head && !gh[m.group]) gh[m.group] = m.head; });
+  $('#rgrp').innerHTML = gs.length ? '<button data-g="" aria-pressed="' + (!R.grp) + '">全部の班</button>' + gs.map(function (x) { return '<button data-g="' + esc(x) + '" aria-pressed="' + (R.grp === x) + '" title="' + esc(x) + '班">' + esc(gh[x] || x + '班') + '</button>'; }).join('') : '';
   Array.prototype.forEach.call(document.querySelectorAll('#rgrp button'), function (b) { b.onclick = function () { R.grp = b.dataset.g; R.n = 40; drawRoster(); }; });
   var hit = d.members.filter(function (m) {
     if (!R.all && (m.status === '退会' || m.status === '休会')) return false;
