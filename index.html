@@ -276,6 +276,7 @@ var IC = {
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
   a_disaster: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
   a_notice: '<path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 01-3.4 0"/>',
+  a_event: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15l3 3 5-5"/>',
   a_docs: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>',
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
@@ -289,7 +290,7 @@ var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
   o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
-  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新'
+  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
@@ -426,7 +427,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-7 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -436,7 +437,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -995,7 +996,7 @@ function eventView() {
     var h = '<p class="muted" style="margin:0 0 12px">' + esc(s.year) + '年度のお申し込みです。ご家族は同じ「対象者」を共有します。</p>';
     s.events.forEach(function (ev) {
       h += '<div class="card"><h2>' + esc(ev.name) + '</h2>' +
-        (ev.open ? '<span class="tg ok">受付中 〜' + esc(fmtDate(ev.end)) + '</span>' : '<span class="tg">' + (ev.start ? '受付期間外(' + esc(fmtDate(ev.start)) + '〜' + esc(fmtDate(ev.end)) + ')' : 'まだ受付していません') + '</span>') +
+        (ev.open ? '<span class="tg ok">予約受付中' + (ev.end ? ' 〜' + esc(fmtDate(ev.end)) : '') + '</span>' : '<span class="tg">' + (ev.state === 'イベント終了' ? 'イベントは終了しました' : ev.state === '予約終了' ? '予約の受付は終了しました' : ev.start ? '受付期間外(' + esc(fmtDate(ev.start)) + '〜' + esc(fmtDate(ev.end)) + ')' : 'まだ予約は始まっていません') + '</span>') + (ev.date ? '<span class="tg">イベント日 ' + esc(fmtDate(ev.date)) + '</span>' : '') +
         (ev.note ? '<div class="mbody" style="margin-top:8px">' + linkify(ev.note) + '</div>' : '');
       if (ev.apps.length) h += '<div style="margin-top:10px">' + ev.apps.map(function (a) {
         return '<div class="rp' + (a.mine ? ' me' : '') + '"><div class="who">' + esc(a.channel) + 'から申込 ・ ' + esc(fmtMd(a.date)) + (a.received ? ' ・ 受取済み' : '') + '</div>' +
@@ -1309,6 +1310,36 @@ function docsAdminView() {
   }).catch(function (e) { offErr('書類の更新', e, 'officer'); });
 }
 
+var EA = {};
+function eventAdminView() {
+  sub('イベントの設定', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_event_get').then(function (d) {
+    var STS = ['予約開始', '予約終了', 'イベント終了'];
+    sub('イベントの設定', '<p class="muted" style="margin:0 4px 12px">' + esc(d.year) + '年度(年度は自動です)。LINEの予約は「予約開始」の間、イベント日の前日まで受け付けます。</p>' + d.events.map(function (ev, i) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ev.date || ''), Y = d.year;
+      var opt = function (from, to, sel, unit) { var o = '<option value="">--</option>'; for (var k = from; k <= to; k++) o += '<option value="' + k + '"' + (sel === k ? ' selected' : '') + '>' + k + unit + '</option>'; return o; };
+      return '<div class="card" data-e="' + i + '"><h2>' + esc(ev.name) + '</h2><span class="tg ' + (ev.open ? 'ok' : '') + '">いま: ' + esc(ev.state || '未設定') + (ev.open ? '(受付中)' : '') + '</span>' +
+        '<div class="field" style="margin-top:10px"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">ステータス</span><div class="chips" id="es' + i + '">' + STS.map(function (s2) { return '<button data-s="' + s2 + '" aria-pressed="' + (ev.status === s2) + '">' + s2 + '</button>'; }).join('') + '</div><p class="hint">選ばないと「自動」: イベント日を入れると、5月1日〜前日に受け付けます。</p></div>' +
+        '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">イベント日(毎年入れ直し)</span><div class="inrow" style="gap:6px"><select class="inp" id="ey' + i + '">' + opt(Y, Y + 1, m ? +m[1] : 0, '年') + '</select><select class="inp" id="em' + i + '">' + opt(1, 12, m ? +m[2] : 0, '月') + '</select><select class="inp" id="ed' + i + '">' + opt(1, 31, m ? +m[3] : 0, '日') + '</select></div></div>' +
+        '<div class="field"><label class="l" for="en' + i + '">会員への案内文(任意)</label><textarea class="inp" id="en' + i + '" maxlength="600" style="min-height:90px">' + esc(ev.note) + '</textarea></div>' +
+        '<button class="btn" data-sv="' + i + '">保存する</button></div>';
+    }).join(''), 'officer');
+    d.events.forEach(function (ev, i) {
+      EA[i] = ev.status;
+      Array.prototype.forEach.call(document.querySelectorAll('#es' + i + ' button'), function (b) {
+        b.onclick = function () { EA[i] = EA[i] === b.dataset.s ? '' : b.dataset.s; Array.prototype.forEach.call(document.querySelectorAll('#es' + i + ' button'), function (x) { x.setAttribute('aria-pressed', x.dataset.s === EA[i] ? 'true' : 'false'); }); };
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sv]'), function (b) {
+      b.onclick = function () {
+        var i = +b.dataset.sv, ev = d.events[i], y = $('#ey' + i).value, mo = $('#em' + i).value, dd = $('#ed' + i).value;
+        if ((y || mo || dd) && !(y && mo && dd)) return toast('イベント日は、年・月・日をそろえて選んでください');
+        b.disabled = true;
+        api('a_event_set', { event: ev.name, status: EA[i] || '', date: y ? y + '-' + mo + '-' + dd : '', note: $('#en' + i).value }).then(function () { toast('保存しました'); eventAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    });
+  }).catch(function (e) { offErr('イベントの設定', e, 'officer'); });
+}
 var NA = { list: [] };
 function noticeAdminView() {
   sub('お知らせの更新', '<div class="skel" style="height:240px"></div>', 'officer');
@@ -1344,7 +1375,7 @@ function route() {
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_docs|o_doc)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice)$/.test(h) && !isAdmin())) h = '';
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
@@ -1352,7 +1383,7 @@ function route() {
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
