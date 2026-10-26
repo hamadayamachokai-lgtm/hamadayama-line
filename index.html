@@ -443,7 +443,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-17 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-18 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1215,6 +1215,8 @@ function notesHtml(e) {
   }).join('');
 }
 function schedPut(box, ev) {
+  if (!box.parentNode) box = document.querySelector('.sch[data-eid="' + ev.id + '"]');   // 画面が先に作り直されていたときは、いまの同じ予定を探す
+  if (!box) return;
   var open = box.querySelector('details').open, tmp = document.createElement('div'); tmp.innerHTML = schedCard(ev, true); var nb = tmp.firstChild;
   if (open) nb.querySelector('details').open = true;
   var par = box.parentNode; par.replaceChild(nb, box); schedBind(par);
@@ -1252,12 +1254,11 @@ function schedBind(root) {
   });
   Array.prototype.forEach.call(root.querySelectorAll('.sch .ans button'), function (b) {
     b.onclick = function () {
-      var box = b.closest('.sch'), id = box.dataset.eid, was = b.classList.contains('on'), open = box.querySelector('details').open;
+      var box = b.closest('.sch'), id = box.dataset.eid, was = b.classList.contains('on');
+      if (box.dataset.busy) return; box.dataset.busy = '1';
       api('o_sched_answer', { id: id, answer: was ? '' : b.dataset.a }).then(function (r) {
-        var tmp = document.createElement('div'); tmp.innerHTML = schedCard(r.event, true); var nb = tmp.firstChild;
-        if (open) nb.querySelector('details').open = true;
-        box.parentNode.replaceChild(nb, box); schedBind(nb.parentNode); loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
-      }).catch(function (e) { toast(e.message); });
+        schedPut(box, r.event); loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
+      }).catch(function (e) { delete box.dataset.busy; toast(e.message); });
     };
   });
 }
