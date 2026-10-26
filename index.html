@@ -444,7 +444,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-19 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-20 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -583,20 +583,23 @@ function sumView() {
 }
 
 /* ===== 会員名簿(見るだけ・検索) ===== */
-var R = { data: null, q: '', dist: '', grp: '', all: false, unpaid: false, n: 40 };
+var R = { data: null, q: '', dist: '', grp: '', all: false, unpaid: false, gift: '', kind: '', method: '', n: 40 };
 function rNorm(t) {
   return String(t || '').normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }).replace(/[ー\-‐−]/g, '').replace(/\s+/g, '');
 }
 function rosterView() {
   sub('会員名簿', '<div class="skel" style="height:300px"></div>', 'officer');
   api('o_roster').then(function (d) {
-    R.data = d; R.q = ''; R.dist = ''; R.grp = ''; R.all = false; R.unpaid = false; R.n = 40;
+    R.data = d; R.q = ''; R.dist = ''; R.grp = ''; R.all = false; R.unpaid = false; R.gift = ''; R.kind = ''; R.method = ''; R.n = 40;
     d.members.forEach(function (m) { m._k = [m.name, m.kana, m.address, m.no, m.district + m.group + '班'].map(rNorm).join('|'); });
     var ds = []; d.members.forEach(function (m) { if (m.district && ds.indexOf(m.district) < 0) ds.push(m.district); });
     sub('会員名簿', '<div class="card"><p class="muted" style="margin:0 0 8px">見るだけの名簿です。お名前・ふりがな・住所・会員番号の一部で探せます(空白で区切ると、すべてを含む方)。</p>' +
       '<input id="rq" autocomplete="off" placeholder="例: 田中 / たなか / 浜田山1" aria-label="検索" style="width:100%;font-size:20px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px">' +
       '<div class="chips" id="rdist" style="margin-top:10px"><button data-d="" aria-pressed="true">すべて</button>' + ds.map(function (x) { return '<button data-d="' + esc(x) + '" aria-pressed="false">' + esc(x) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" id="rgrp" style="margin-top:6px"></div>' +
+      '<div style="display:grid;gap:8px;margin-top:10px">' + rSel('gift', '商品券', ['', 'あり', 'なし'].map(function (x) { return [x, x ? '商品券 ' + x : '商品券: すべて']; })) +
+      rSel('kind', '住居種別', [['', '住居種別: すべて']].concat(rOpts(d.members, 'kind').map(function (x) { return [x, x]; }))) +
+      rSel('method', '町会費納入方法', [['', '町会費納入方法: すべて']].concat(rOpts(d.members, 'method').map(function (x) { return [x, x]; }))) + '</div>' +
       '<div class="chips" id="ropt" style="margin-top:6px"><button data-o="unpaid" aria-pressed="false">未納の方だけ</button><button data-o="all" aria-pressed="false">退会・休会も表示</button></div></div>' +
       '<div id="rcnt" class="muted" style="margin:4px 4px 8px"></div><div id="rlist"></div>', 'officer');
     $('#rq').oninput = function () { R.q = this.value; R.n = 40; drawRoster(); };
@@ -606,9 +609,14 @@ function rosterView() {
     Array.prototype.forEach.call(document.querySelectorAll('#ropt button'), function (b) {
       b.onclick = function () { var k = b.dataset.o; R[k] = !R[k]; b.setAttribute('aria-pressed', R[k] ? 'true' : 'false'); R.n = 40; drawRoster(); };
     });
+    Array.prototype.forEach.call(document.querySelectorAll('select[data-rs]'), function (e) { e.onchange = function () { R[e.dataset.rs] = e.value; R.n = 40; drawRoster(); }; });
     drawRoster();
   }).catch(function (e) { offErr('会員名簿', e, 'officer'); });
 }
+function rSel(k, label, opts) {
+  return '<select data-rs="' + k + '" aria-label="' + esc(label) + '" style="width:100%;font-size:17px;padding:10px;border:2px solid var(--line);border-radius:10px;background:#fff">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+}
+function rOpts(list, k) { var a = []; list.forEach(function (m) { if (m[k] && a.indexOf(m[k]) < 0) a.push(m[k]); }); return a; }
 function drawRoster() {
   var d = R.data, terms = String(R.q).normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean).map(rNorm);
   var gs = [];
@@ -620,6 +628,9 @@ function drawRoster() {
     if (R.dist && m.district !== R.dist) return false;
     if (R.grp && m.group !== R.grp) return false;
     if (R.unpaid && m.fee !== 'unpaid') return false;
+    if (R.gift && (R.gift === 'あり') !== !!m.gift) return false;
+    if (R.kind && m.kind !== R.kind) return false;
+    if (R.method && m.method !== R.method) return false;
     for (var i = 0; i < terms.length; i++) if (m._k.indexOf(terms[i]) < 0) return false;
     return true;
   });
@@ -632,11 +643,13 @@ function drawRoster() {
       '<div class="ad" style="margin-top:4px">' + esc([m.district, m.group && m.group + '班'].filter(Boolean).join(' ')) + ' ・ ' + esc(m.address) + '</div>' +
       '<div style="margin-top:6px">' + (m.status ? '<span class="tg">' + esc(m.status) + '</span> ' : '') + (m.circ ? '<span class="tg imp">回覧元</span> ' : '') + (f[0] ? '<span class="tg">' + esc(R.data.year + '年度 ' + f[0]) + '</span> ' : '') + (m.count ? '<span class="tg">' + m.count + '人</span>' : '') + '</div>' +
       (m.head && !m.circ ? '<div class="ad">回覧元: ' + esc(m.head) + '</div>' : '') +
+      (m.kind ? '<div class="ad">住居種別: ' + esc(m.kind) + '</div>' : '') +
       (m.method ? '<div class="ad">町会費: ' + esc(m.method) + '</div>' : '') +
+      (m.gift || m.giftText ? '<div class="ad">商品券: ' + esc(m.giftText || 'あり') + '</div>' : '') +
       (m.memo ? '<div class="ad" style="white-space:pre-wrap">連絡事項: ' + esc(m.memo) + '</div>' : '') +
-      '<div class="acts" style="margin-top:8px">' + mapBtn(m.map) + '</div></div>';
+      '<div class="acts" style="margin-top:8px">' + mapBtn(m.map) + docBtn(m) + '</div></div>';
   }).join('') + (hit.length > R.n ? '<button class="sbtn fill" id="rmore" style="width:100%;margin:6px 0 14px">もっと見る</button>' : '') + (hit.length ? '' : '<div class="card"><p>該当する方がいません。言葉を短くすると見つかることがあります。</p></div>');
-  bindMaps($('#rlist'));
+  bindMaps($('#rlist')); bindDocs($('#rlist'));
   var mb = $('#rmore'); if (mb) mb.onclick = function () { R.n += 40; var y = window.scrollY; drawRoster(); window.scrollTo(0, y); };
 }
 
@@ -703,7 +716,7 @@ function bindDocs(root) {
 }
 var DOCS = { from: 'o_unpaid', name: '' };
 function docsView(no, all) {
-  var back = /^o_(unpaid|circ)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid';
+  var back = /^o_(unpaid|circ|roster)$/.test(DOCS.from) ? DOCS.from : 'o_unpaid';
   sub('格納書類', '<div class="skel" style="height:240px"></div>', back);
   api('o_docs', { memberNo: no, all: !!all }).then(function (d) {
     var title = d.all ? 'すべての年' : d.year + '年';
