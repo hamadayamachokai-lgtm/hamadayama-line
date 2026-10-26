@@ -166,6 +166,16 @@ textarea.inp{min-height:96px;resize:vertical}
 .bnav button span{white-space:nowrap}
 .bdg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#d92d20;color:#fff;font-size:11px;line-height:18px;text-align:center;font-weight:700;border:2px solid #fffdf8;line-height:14px}
 .tile .bdg{top:8px;left:8px}
+.bdg.g{background:#2e9e5b}.bdg.y{background:#e8a317;color:#3a2a00}.bdg.r{background:#d92d20}
+.sch{border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;background:var(--card)}
+.sch .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sch .dt{font-weight:800;font-size:17px}
+.sch .tt{font-size:16px;font-weight:700;margin:6px 0 0}.sch .pl{color:var(--sub);font-size:14px}
+.lvc{display:inline-block;padding:1px 10px;border-radius:999px;font-size:13px;font-weight:800}.lvc.g{background:#e3f5ea;color:#1e7a45}.lvc.y{background:#fff1c9;color:#8a5a00}.lvc.r{background:#fde4e1;color:#b42318}
+.ans{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.ans button{padding:11px 4px;border-radius:10px;border:1.5px solid #cfc8b8;background:#fff;font-size:15px;font-weight:700;color:var(--ink)}
+.ans button.on.a0{background:#2e9e5b;color:#fff;border-color:#2e9e5b}.ans button.on.a1{background:#d92d20;color:#fff;border-color:#d92d20}.ans button.on.a2{background:#6b7280;color:#fff;border-color:#6b7280}
+.sch .cn{font-size:13px;color:var(--sub);margin-top:8px}.sch details{margin-top:6px;font-size:14px}.sch summary{cursor:pointer;color:var(--navy);font-weight:700}.sch .nm{margin:4px 0}
+.pvrow{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid var(--line);padding:8px 0}.pvrow .x{flex:none;border:0;background:#eee;border-radius:8px;padding:4px 10px;font-weight:700}
 .bnav button:active{background:var(--mute-bg)}
 body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 /* 役員画面 */
@@ -269,6 +279,8 @@ var IC = {
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
   board: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
   o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
+  o_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h4M7 17h7"/>',
+  a_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
@@ -291,7 +303,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
-  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QR', o_desk: 'QR受付画面',
+  o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -321,6 +333,7 @@ function isOfficer() { return !!(S.me && S.me.menu && S.me.menu.some(function (m
 function isAdmin() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'admin'; })); }
 var NAVLABEL = { dashboard: 'ダッシュ', suginami: '杉並', blog: 'ブログ', board: '掲示板', help: '助け合い' };
 var HASH = { card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' };
+function bdgCls(k) { var lv = S.me && S.me.badges && S.me.badges[k + '_lv']; return lv ? ' ' + lv : ''; }
 function badgeOf(k) { var n = S.me && S.me.badges && +S.me.badges[k]; return n > 0 ? n : 0; }
 function renderNav(h) {
   var el = $('#bnav');
@@ -333,7 +346,7 @@ function renderNav(h) {
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
   el.innerHTML = items.map(function (it) {
     var n = badgeOf(it[0]);
-    return '<button data-h="' + it[0] + '"' + (it[0] === cur ? ' aria-current="page"' : '') + ' class="' + (it[0] === 'officer' ? 'off ' : '') + (it[3] ? '' : 'soon') + '">' + svg(it[2]) + (n ? '<b class="bdg" aria-label="未読' + n + '件">' + (n > 99 ? '99+' : n) + '</b>' : '') + '<span>' + esc(it[1]) + '</span></button>';
+    return '<button data-h="' + it[0] + '"' + (it[0] === cur ? ' aria-current="page"' : '') + ' class="' + (it[0] === 'officer' ? 'off ' : '') + (it[3] ? '' : 'soon') + '">' + svg(it[2]) + (n ? '<b class="bdg' + bdgCls(it[0]) + '" aria-label="' + (bdgCls(it[0]) ? '3日以内の予定' : '未読') + n + '件">' + (n > 99 ? '99+' : n) + '</b>' : '') + '<span>' + esc(it[1]) + '</span></button>';
   }).join('');
   Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {
     b.onclick = function () {
@@ -426,10 +439,10 @@ function homeView() {
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div></div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
-      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-12 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-13 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -439,7 +452,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', o_desk: 'o_desk', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -469,7 +482,7 @@ function dashView() {
   sub('ダッシュボード', '<div class="skel"></div><div class="skel"></div>');
   api('dashboard').then(function (d) {
     var f = FEE[d.fee.state] || FEE.unlinked;
-    var h = '<div class="card"><h2>' + d.year + '年度 町会費</h2><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="big">' + f[1] + '</div>' +
+    var h = (d.sched && d.sched.length ? '<div class="card" id="dsch"><h2>役員の予定(3日以内)</h2>' + d.sched.map(function (e) { return schedCard(e, false); }).join('') + '<p class="muted" style="margin:8px 0 0">役員・管理者だけに表示されます。</p></div>' : '') + '<div class="card"><h2>' + d.year + '年度 町会費</h2><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="big">' + f[1] + '</div>' +
       '<div class="muted">' + (d.fee.state === 'unpaid' ? 'お支払いがまだ確認できていません' : d.fee.state === 'unlinked' ? '会員番号の紐づけ後に表示されます' : d.fee.state === 'paid' ? 'ありがとうございます' : '') + '</div></div></div>';
     if (d.fee.years && d.fee.years.length) h += '<div class="years">' + d.fee.years.map(function (y) { return '<span class="chip ' + (y.paid ? 'ok' : 'warn') + '">' + y.year + ' ' + (y.paid ? '済' : '未') + '</span>'; }).join('') + '</div>';
     h += '</div>';
@@ -478,6 +491,7 @@ function dashView() {
       return '<div class="ntc" data-i="' + i + '"><button type="button" aria-expanded="false"><div class="d">' + (n.isNew ? '<span class="tg imp" style="margin:0 6px 0 0">新着</span>' : '') + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></button></div>';
     }).join('') : '<p class="muted" style="margin:0">いまのところ、お知らせはありません。</p>') + '</div>';
     sub('ダッシュボード', h);
+    schedBind(document);
     if (S.me.badges && S.me.badges.dashboard) { S.me.badges.dashboard = 0; renderNav('dash'); }
     Array.prototype.forEach.call(document.querySelectorAll('.ntc button'), function (b) {
       b.onclick = function (ev) { if (ev.target.tagName === 'A') return; var p = b.parentNode; p.classList.toggle('open'); b.setAttribute('aria-expanded', p.classList.contains('open')); };
@@ -541,7 +555,7 @@ function offErr(title, e, back) { sub(title, '<div class="banner advisory"><div>
 function officerView() {
   var tiles = S.me.menu.filter(function (m) { return m.section === 'officer' || m.section === 'admin'; });
   sub('役員専用', '<div class="grid" style="grid-template-columns:repeat(2,1fr)">' + tiles.map(function (m) {
-    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+    return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
   }).join('') + '</div><p class="muted" style="margin:14px 4px">このメニューは、役員の方だけに表示されます。</p>');
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1179,6 +1193,80 @@ function shrinkImage(file, max) {
   });
 }
 
+
+/* ---------- 役員の予定 ---------- */
+var SANS = ['参加', '不参加', '対象外'];
+function schedWhen(e) { return (e.days === 0 ? '今日' : e.days === 1 ? '明日' : 'あと' + e.days + '日'); }
+function schedCard(e, withWho) {
+  var t = (e.start ? e.start + (e.end ? '〜' + e.end : '') : '時間未定');
+  var h = '<div class="sch" data-eid="' + esc(e.id) + '"><div class="hd"><span class="dt">' + (+e.date.slice(5, 7)) + '月' + (+e.date.slice(8)) + '日(' + esc(e.dow) + ')</span><span>' + esc(t) + '</span>' + (e.lv ? '<span class="lvc ' + e.lv + '">' + schedWhen(e) + '</span>' : '') + '</div>' +
+    '<div class="tt">' + esc(e.title) + '</div>' + (e.place ? '<div class="pl">' + esc(e.place) + '</div>' : '') +
+    '<div class="ans">' + SANS.map(function (a, i) { return '<button type="button" class="a' + i + (e.mine === a ? ' on' : '') + '" data-a="' + a + '" aria-pressed="' + (e.mine === a) + '">' + a + '</button>'; }).join('') + '</div>' +
+    '<div class="cn">参加 ' + e.counts['参加'] + '・不参加 ' + e.counts['不参加'] + '・対象外 ' + e.counts['対象外'] + '・未回答 ' + e.counts['未回答'] + '</div>';
+  h += '<details' + (withWho ? '' : '') + '><summary>だれが参加?</summary>' + ['参加', '不参加', '対象外', '未回答'].map(function (k) { return '<div class="nm"><b>' + k + '</b> ' + (e.names[k].length ? esc(e.names[k].join('、')) : '<span class="muted">なし</span>') + '</div>'; }).join('') + '</details></div>';
+  return h;
+}
+function schedBind(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('.sch .ans button'), function (b) {
+    b.onclick = function () {
+      var box = b.closest('.sch'), id = box.dataset.eid, was = b.classList.contains('on'), open = box.querySelector('details').open;
+      api('o_sched_answer', { id: id, answer: was ? '' : b.dataset.a }).then(function (r) {
+        var tmp = document.createElement('div'); tmp.innerHTML = schedCard(r.event, true); var nb = tmp.firstChild;
+        if (open) nb.querySelector('details').open = true;
+        box.parentNode.replaceChild(nb, box); schedBind(nb.parentNode); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
+      }).catch(function (e) { toast(e.message); });
+    };
+  });
+}
+function schedView() {
+  sub('役員の予定', '<div class="skel" style="height:220px"></div>', 'officer');
+  api('o_sched_list').then(function (d) {
+    var h = '<p class="muted" style="margin:0 4px 8px">役員・管理者だけに表示されます。3日以内の予定は、色つきのバッジでお知らせします(緑=3日前・黄=2日前・赤=前日と当日)。</p>';
+    h += d.events.length ? d.events.map(function (e) { return schedCard(e, true); }).join('') : '<div class="card"><p class="muted" style="margin:0">これからの予定は、まだ登録されていません。</p></div>';
+    if (d.admin) h += '<button class="sbtn" id="sgo" style="margin-top:8px">予定を登録・削除する</button>';
+    sub('役員の予定', h, 'officer'); schedBind(document);
+    if (d.admin) $('#sgo').onclick = function () { go('a_sched'); };
+  }).catch(function (e) { sub('役員の予定', errCard(e), 'officer'); });
+}
+function schedAdminView() {
+  var items = [];
+  sub('予定の登録', '<div class="skel" style="height:260px"></div>', 'officer');
+  api('o_sched_list').then(function (d) {
+    var h = '<div class="card"><h2>予定を入れる</h2><p class="muted" style="margin:0 0 8px">1行に1つの予定を書きます。<br>例:2027年4月26日(月) 17:00〜21:00 役員会 第一回 第1・第2集会室<br>エクセルの表をコピーして貼り付けてもかまいません。</p>' +
+      '<textarea id="sx" rows="8" style="width:100%" placeholder="ここに貼り付け"></textarea>' +
+      '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><label class="sbtn" style="cursor:pointer;margin:0">写真から文字にする<input type="file" id="sfile" accept="image/*" hidden></label><button class="sbtn" id="sparse">確認する</button></div><div id="spv"></div></div>' +
+      '<div class="card"><h2>登録ずみの予定(これから)</h2>' + (d.events.length ? d.events.map(function (e) {
+        return '<div class="pvrow"><div style="flex:1"><b>' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '(' + esc(e.dow) + ')</b> ' + esc(e.start || '') + (e.end ? '〜' + esc(e.end) : '') + '<br>' + esc(e.title) + (e.place ? ' <span class="muted">' + esc(e.place) + '</span>' : '') + '</div><button class="x" data-id="' + esc(e.id) + '">削除</button></div>';
+      }).join('') : '<p class="muted" style="margin:0">なし</p>') + '</div>';
+    sub('予定の登録', h, 'officer');
+    function drawPv(bad) {
+      $('#spv').innerHTML = (items.length ? '<h2 style="margin:14px 0 4px">この内容で登録します(' + items.length + '件)</h2>' + items.map(function (x, i) {
+        return '<div class="pvrow"><div style="flex:1"><b>' + (+x.date.slice(5, 7)) + '/' + (+x.date.slice(8)) + '(' + esc(dowJs(x.date)) + ')</b> ' + esc(x.start || '時間未定') + (x.end ? '〜' + esc(x.end) : '') + '<br>' + esc(x.title) + (x.place ? ' <span class="muted">' + esc(x.place) + '</span>' : '') + '</div><button class="x" data-i="' + i + '">外す</button></div>';
+      }).join('') + '<button class="btn" id="ssave" style="margin-top:10px">登録する</button>' : '') +
+        (bad && bad.length ? '<p class="small" style="color:var(--bad)">読み取れなかった行:<br>' + bad.map(esc).join('<br>') + '</p>' : '') + (!items.length && !(bad && bad.length) ? '<p class="muted">予定が見つかりませんでした。</p>' : '');
+      Array.prototype.forEach.call($('#spv').querySelectorAll('.x'), function (b) { b.onclick = function () { items.splice(+b.dataset.i, 1); drawPv(bad); }; });
+      if ($('#ssave')) $('#ssave').onclick = function () {
+        var b = $('#ssave'); b.disabled = true;
+        api('a_sched_save', { items: items }).then(function (r) { toast(r.added + '件を登録しました' + (r.skipped ? '(同じ予定' + r.skipped + '件は除きました)' : '')); schedAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    }
+    $('#sparse').onclick = function () {
+      api('a_sched_parse', { text: $('#sx').value }).then(function (r) { items = r.items; drawPv(r.bad); }).catch(function (e) { toast(e.message); });
+    };
+    $('#sfile').onchange = function () {
+      var f = this.files && this.files[0]; if (!f) return; var inp = this;
+      toast('写真を読み取っています…(30秒ほどかかります)');
+      shrinkImage(f, 1600).then(function (data) { return api('a_sched_ocr', { data: data }); })
+        .then(function (r) { $('#sx').value = r.text; toast('文字にしました。内容を確認してから「確認する」を押してください'); })
+        .catch(function (e) { toast(e.message || '読み取れませんでした'); }).then(function () { inp.value = ''; });
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('.pvrow .x[data-id]'), function (b) {
+      b.onclick = function () { if (!window.confirm('この予定を削除します(回答も消えます)。よろしいですか?')) return; api('a_sched_delete', { id: b.dataset.id }).then(function () { toast('削除しました'); schedAdminView(); }).catch(function (e) { toast(e.message); }); };
+    });
+  }).catch(function (e) { sub('予定の登録', errCard(e), 'officer'); });
+}
+function dowJs(ymd) { var p = ymd.split('-'); return '日月火水木金土'.charAt(new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()); }
+
 /* ---------- イベント ---------- */
 var EV = { state: null };
 function evLoad() { return api('ev_state').then(function (s) { EV.state = s; return s; }); }
@@ -1668,8 +1756,8 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_scanrun|o_search|o_desk|o_docs|o_doc)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event)$/.test(h) && !isAdmin())) h = '';
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_scanrun|o_search|o_desk|o_sched|o_docs|o_doc)$/.test(h);
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
@@ -1679,7 +1767,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: qrHubView }[h] || homeView)();
+  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
