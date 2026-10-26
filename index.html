@@ -427,7 +427,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-7 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1006,15 +1006,20 @@ function eventView() {
       }).join('') + '</div>';
       else h += '<p class="muted" style="margin:10px 0 0">申込はまだありません。</p>';
       var pl = s.people.filter(function (p) { return !p.event || p.event === ev.name; });
+      if (ev.name === '祭礼' && s.guardian) h += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>保護者</b><div class="muted" style="margin-top:4px">' + esc(s.guardian.name) + ' ・ ' + esc(s.guardian.email) + '</div><button class="sbtn" id="gedit" style="margin-top:6px">直す</button></div>';
       h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>' + esc(ev.name) + 'の対象者</b>' + (pl.length ? pl.map(function (p) {
         return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + (ev.name === '祭礼' ? gradeTag(p.grade) : '') + '</div><button class="sbtn" data-pe="' + esc(p.id) + '|' + esc(ev.name) + '">直す</button></div>';
       }).join('') : '<p class="muted" style="margin:6px 0 0">まだ登録がありません。</p>') + '<div style="height:8px"></div><button class="btn ghost" data-pn="' + esc(ev.name) + '">＋ ' + esc(ev.name) + '対象者登録</button>' + (ev.name === '祭礼' ? '<p class="small" style="margin:6px 0 0">生年月日で登録すると、学年が毎年自動で変わります。</p>' : '<p class="small" style="margin:6px 0 0">70歳以上の方が対象です。</p>') + '</div>';
-      h += '<div style="height:12px"></div>' + (ev.open ? '<button class="btn" data-ap="' + esc(ev.name) + '">' + (ev.apps.length ? 'もう1件 申し込む' : '申し込む') + '</button>' : '') + '</div>';
+      var mine = ev.apps.filter(function (a) { return a.mine; })[0], other = ev.apps.filter(function (a) { return !a.mine; })[0];
+      h += '<div style="height:12px"></div>' + (ev.open && !ev.apps.length ? '<button class="btn" data-ap="' + esc(ev.name) + '">申し込む</button>' : '') +
+        (ev.apps.length ? '<p class="small" style="margin:0 0 8px">申込は、1会員につき1件です。' + (other ? '(' + esc(other.channel) + 'から申込済み)' : '') + '人数を増やしたいときは、役員へご連絡ください。</p><button class="sbtn" data-mailnew="1">役員へ連絡する</button>' : '') + '</div>';
     });
     sub('イベント', h);
     Array.prototype.forEach.call(document.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { EV.edit = null; EV.back = null; go('evapply/' + b.dataset.ap); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-ed]'), function (b) { b.onclick = function () { var x = b.dataset.ed.split('|'); EV.edit = x[1]; go('evapply/' + x[0]); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { var x = b.dataset.pe.split('|'); EV.pev = x[1]; go('evperson/' + x[0]); }; });
+    var ge = $('#gedit'); if (ge) ge.onclick = function () { go('evguardian'); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mailnew]'), function (b) { b.onclick = function () { go('mailnew'); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { EV.back = null; EV.pev = b.dataset.pn; go('evperson/new'); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
       b.onclick = function () {
@@ -1038,6 +1043,7 @@ function evPersonView(id) {
     var ev = (p && p.event) || EV.pev || '祭礼', fest = ev === '祭礼', Y = s.year, bm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p ? p.birth : '');
     var opts = function (from, to, sel, unit, desc) { var o = '<option value="">--</option>'; for (var i = from; i <= to; i++) { var v = desc ? to - (i - from) : i; o += '<option value="' + v + '"' + (sel === v ? ' selected' : '') + '>' + v + unit + '</option>'; } return o; };
     var form = fest ?
+      (!p && !s.guardian ? '<div class="notice-box">最初の登録のときだけ、保護者の方のお名前とメールアドレスをおたずねします(次回からは不要です)。</div><div class="field"><label class="l" for="gn">保護者のお名前<span class="req">必須</span></label><input class="inp" id="gn" maxlength="40"></div><div class="field"><label class="l" for="gm">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="gm" type="email" inputmode="email" maxlength="120"></div>' : '') +
       '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">生年月日<span class="req">必須</span></span><div class="inrow" style="gap:6px"><select class="inp" id="by" aria-label="年">' + opts(Y - 12, Y, bm ? +bm[1] : 0, '年', true) + '</select><select class="inp" id="bm" aria-label="月">' + opts(1, 12, bm ? +bm[2] : 0, '月') + '</select><select class="inp" id="bd" aria-label="日">' + opts(1, 31, bm ? +bm[3] : 0, '日') + '</select></div><p class="hint">対象は小学生以下のお子様です(生まれ年は ' + (Y - 12) + '〜' + Y + ' 年)。</p><div id="gl" style="font-size:17px;font-weight:700;margin-top:6px;min-height:26px"></div></div>' :
       '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">あなた(またはご家族)は70歳以上ですか?<span class="req">必須</span></span><label class="opt"><input type="checkbox" id="o70"' + (p ? ' checked' : '') + '><span>はい(70歳以上です)</span></label></div>';
     sub(ev + '対象者' + (p ? 'を直す' : '登録'), '<div class="card"><div class="field"><label class="l" for="pn">氏名<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' + form +
@@ -1047,7 +1053,7 @@ function evPersonView(id) {
     $('#psv').onclick = function () {
       var b = $('#psv'); b.disabled = true;
       var birth = fest ? ($('#by').value && $('#bm').value && $('#bd').value ? $('#by').value + '-' + $('#bm').value + '-' + $('#bd').value : '') : '';
-      api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: birth, over70: fest ? false : $('#o70').checked }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: birth, over70: fest ? false : $('#o70').checked, guardian: $('#gn') ? $('#gn').value : '', email: $('#gm') ? $('#gm').value : '' }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
     var d = $('#pdl'); if (d) d.onclick = function () {
       if (!window.confirm('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
@@ -1056,12 +1062,21 @@ function evPersonView(id) {
   };
   if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('対象者', e, 'event'); });
 }
+function evGuardianView() {
+  var go2 = function (s) {
+    var g = s.guardian || { name: '', email: '' };
+    sub('保護者の情報', '<div class="card"><div class="field"><label class="l" for="gn">保護者のお名前<span class="req">必須</span></label><input class="inp" id="gn" maxlength="40" value="' + esc(g.name) + '"></div>' +
+      '<div class="field"><label class="l" for="gm">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="gm" type="email" inputmode="email" maxlength="120" value="' + esc(g.email) + '"></div><button class="btn" id="gsv">保存する</button></div>', 'event');
+    $('#gsv').onclick = function () { var b = $('#gsv'); b.disabled = true; api('ev_guardian_save', { guardian: $('#gn').value, email: $('#gm').value }).then(function () { toast('保存しました'); EV.state = null; go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  };
+  if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('保護者の情報', e, 'event'); });
+}
 function evApplyView(name) {
   var draw = function (s) {
     var ev = s.events.filter(function (x) { return x.name === name; })[0];
     if (!ev) return go('event');
     var cur = EV.edit ? ev.apps.filter(function (a) { return a.id === EV.edit; })[0] : null;
-    if (!ev.open || (EV.edit && !cur)) return go('event');
+    if (!ev.open || (EV.edit && !cur) || (!EV.edit && ev.apps.length)) return go('event');
     var fest = name === '祭礼', chosen = {}, pl = s.people.filter(function (p) { return !p.event || p.event === name; });
     if (cur) cur.people.forEach(function (p) { chosen[p.name] = 1; });
     var prev = ev.apps[0] || {};
@@ -1069,20 +1084,21 @@ function evApplyView(name) {
       '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">' + (fest ? 'お菓子を受け取るお子様' : '参加する方') + '<span class="req">必須</span></span>' +
       (pl.length ? pl.map(function (p) {
         var bad = fest && !/^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || '');
-        return '<label class="opt" style="margin-bottom:8px;' + (bad ? 'opacity:.55' : '') + '"><input type="checkbox" data-id="' + esc(p.id) + '" data-n="' + esc(p.name) + '"' + (chosen[p.name] ? ' checked' : '') + (bad ? ' disabled' : '') + '><span>' + esc(p.name) + gradeTag(p.grade) + (bad ? ' <span class="muted">小学生以下のみ</span>' : '') + '</span></label>';
+        return '<label class="opt" style="margin-bottom:8px;' + (bad ? 'opacity:.55' : '') + '"><input type="checkbox" data-id="' + esc(p.id) + '" data-n="' + esc(p.name) + '"' + (chosen[p.name] ? ' checked' : '') + (bad || (cur && !chosen[p.name]) ? ' disabled' : '') + '><span>' + esc(p.name) + gradeTag(p.grade) + (bad ? ' <span class="muted">小学生以下のみ</span>' : '') + '</span></label>';
       }).join('') : '<p class="muted">先に「' + name + '対象者」を登録してください。</p>') +
       '<button class="sbtn" id="addp" type="button">＋ ' + name + '対象者を登録する</button></div>';
-    if (fest) h += '<div class="field"><label class="l" for="ag">保護者のお名前<span class="req">必須</span></label><input class="inp" id="ag" maxlength="40" value="' + esc(cur ? cur.guardian : (prev.guardian || '')) + '"></div>' +
-      '<div class="field"><label class="l" for="am">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="am" type="email" inputmode="email" maxlength="120" value="' + esc(cur ? cur.email : (prev.email || '')) + '"></div>';
-    h += '<div class="field"><label class="l" for="ac">申込個数<span class="req">必須</span></label><input class="inp" id="ac" inputmode="numeric" maxlength="2" value="' + esc(cur ? cur.count : '') + '" placeholder="空なら、選んだ人数"></div>' +
-      '<div class="field"><label class="l" for="an">ひとこと(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></div>' +
-      '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">すでに別の方法(フォーム・紙など)で申し込んだ方は、重ねて申し込めません。</p></div>';
+    h += '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">申込個数</span><div id="acn" style="font-size:20px;font-weight:700">0個</div><p class="hint">選んだ人数が、自動で入ります。</p></div>' +
+      '<div class="field"><label class="l" for="an">連絡事項(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></div>' +
+      (fest && s.guardian ? '<p class="small" style="margin:0 0 8px">保護者: ' + esc(s.guardian.name) + '(' + esc(s.guardian.email) + ')</p>' : '') +
+      '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">申込は1会員につき1件です。申込のあとで人数を増やしたいときは、役員へご連絡ください。</p></div>';
     sub(name + (cur ? 'の申込を直す' : 'に申し込む'), h, 'event');
     $('#addp').onclick = function () { EV.pev = name; EV.back = 'evapply/' + name; go('evperson/new'); };
+    function recount() { $('#acn').textContent = document.querySelectorAll('[data-id]:checked').length + '個'; }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-id]'), function (c) { c.onchange = recount; }); recount();
     $('#asv').onclick = function () {
       var ids = Array.prototype.map.call(document.querySelectorAll('[data-id]:checked'), function (c) { return c.dataset.id; });
       var b = $('#asv'); b.disabled = true;
-      api('ev_apply', { event: name, appId: cur ? cur.id : '', personIds: ids, guardian: fest ? $('#ag').value : '', email: fest ? $('#am').value : '', count: $('#ac').value || ids.length, note: $('#an').value })
+      api('ev_apply', { event: name, appId: cur ? cur.id : '', personIds: ids, note: $('#an').value })
         .then(function () { toast(cur ? '修正しました' : '申し込みました'); EV.edit = null; go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
   };
@@ -1380,6 +1396,7 @@ function route() {
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
+  if (h === 'evguardian') return evGuardianView();
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
