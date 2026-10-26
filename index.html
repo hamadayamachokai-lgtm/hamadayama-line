@@ -250,9 +250,10 @@ body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 <body>
 <div id="app" aria-live="polite"><div class="pad"><div class="skel"></div><div class="skel"></div></div></div>
 <div id="toast" role="status"></div>
+<link rel="preconnect" href="https://script.google.com"><link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <script src="config.js"></script>
 <script src="qr.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 (function () {
@@ -319,7 +320,7 @@ function api(action, extra) {
     .then(function (j) {
       if (j && j.ok) return j.data;
       var code = j && j.error;
-      if ((code === 'token_expired' || code === 'token_invalid') && window.liff && !window.__previewApi) { try { liff.logout(); liff.login({ redirectUri: location.href }); } catch (e) { /* 下で表示 */ } }
+      if ((code === 'token_expired' || code === 'token_invalid') && window.liff && !window.__previewApi && !window.__relogin) { window.__relogin = true; try { liff.logout(); liff.login({ redirectUri: location.href }); } catch (e) { /* 下で表示 */ } }
       throw mkErr(code || 'server', (j && j.message) || '処理に失敗しました。');
     });
 }
@@ -444,7 +445,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-20 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-21 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1329,7 +1330,7 @@ function schedBind(root) {
       var box = b.closest('.sch'), id = box.dataset.eid, was = b.classList.contains('on');
       if (box.dataset.busy) return; box.dataset.busy = '1';
       api('o_sched_answer', { id: id, answer: was ? '' : b.dataset.a }).then(function (r) {
-        schedPut(box, r.event); loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
+        schedPut(box, r.event); refreshBadges(); toast(was ? '回答を取り消しました' : '「' + b.dataset.a + '」で回答しました');
       }).catch(function (e) { delete box.dataset.busy; toast(e.message); });
     };
   });
@@ -1683,7 +1684,7 @@ function boardDetailView(id) {
 
 /* ---------- 助け合い(災害時) ---------- */
 var HP = { tab: 'open', d: null };
-function refreshBadges() { return loadMe().then(function () { renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
+function refreshBadges() { return api('badges').then(function (b) { if (!S.me) return; S.me.badges = b; saveMe(S.me); renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
 function helpView() {
   sub('助け合い', '<div class="skel" style="height:300px"></div>');
   api('help_list').then(function (d) { HP.d = d; drawHelp(); refreshBadges(); }).catch(function (e) { offErr('助け合い', e, 'home'); });
@@ -1899,7 +1900,44 @@ function boot() {
       if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return new Promise(function () {}); }
     });
   }
-  p.then(loadMe).then(route).catch(fatal);
+  p.then(startMe).catch(fatal);
+}
+
+/* ---------- 起動を速くする: 前回の画面を先に出し、最新は裏で取る ---------- */
+var ME_KEY = 'hmt_me_';
+function meSub() { try { var t = window.liff && !window.__previewApi && liff.getDecodedIDToken(); return t && t.sub || ''; } catch (e) { return ''; } }
+function saveMe(me) {
+  try {
+    var sub = meSub(); if (!sub || !me || me.state !== 'approved') return;
+    var c = JSON.parse(JSON.stringify(me)); c.profile = { lineName: me.profile && me.profile.lineName };   // 住所などは保存しない
+    localStorage.setItem(ME_KEY + sub, JSON.stringify(c));
+  } catch (e) { /* 保存できなくても動く */ }
+}
+function cachedMe() {
+  try { var sub = meSub(); if (!sub) return null; var c = JSON.parse(localStorage.getItem(ME_KEY + sub) || 'null'); return c && c.state === 'approved' && c.menu && c.profile ? c : null; } catch (e) { return null; }
+}
+function curHash() { return (location.hash || '').replace('#', '').split('/')[0]; }
+function startMe() {
+  var cached = cachedMe();
+  if (cached) { S.me = cached; route(); }
+  var bp = api('badges').catch(function () { return null; });
+  return api('me', { nobadge: true }).catch(function (e) { if (cached && e && e.code === 'network') { toast(e.message); return null; } throw e; }).then(function (me) {
+    if (!me) return bp;
+    if (S.me && S.me.badges) me.badges = S.me.badges;   // 新しいバッジが届くまで、前の値のまま
+    var same = cached && cached.state === me.state && JSON.stringify([cached.role, cached.menu]) === JSON.stringify([me.role, me.menu]);
+    S.me = me;
+    if (!same) route();
+    saveMe(me);
+    return bp;
+  }).then(function (b) {
+    if (!b || !S.me || S.me.state !== 'approved') return;
+    if (curHash() === 'dash') b.dashboard = 0;
+    var before = JSON.stringify(S.me.badges || {}); S.me.badges = b; saveMe(S.me);
+    if (JSON.stringify(b) === before) return;
+    var h = curHash();
+    if ((h === '' || h === 'home') && window.scrollY < 40) homeView();
+    renderNav(h);
+  });
 }
 boot();
 })();
