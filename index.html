@@ -443,7 +443,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-16 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-17 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1284,13 +1284,13 @@ function schedAdminView() {
     sub('予定の登録', h, 'officer');
     function drawPv(bad) {
       $('#spv').innerHTML = (items.length ? '<h2 style="margin:14px 0 4px">この内容で登録します(' + items.length + '件)</h2>' + items.map(function (x, i) {
-        return '<div class="pvrow"><div style="flex:1"><b>' + (+x.date.slice(5, 7)) + '/' + (+x.date.slice(8)) + '(' + esc(dowJs(x.date)) + ')</b> ' + esc(x.start || '時間未定') + (x.end ? '〜' + esc(x.end) : '') + '<br>' + esc(x.title) + (x.place ? ' <span class="muted">' + esc(x.place) + '</span>' : '') + '</div><button class="x" data-i="' + i + '">外す</button></div>';
+        return '<div class="pvrow"><div style="flex:1"><b>' + (+x.date.slice(5, 7)) + '/' + (+x.date.slice(8)) + '(' + esc(dowJs(x.date)) + ')</b> ' + esc(x.start || '時間未定') + (x.end ? '〜' + esc(x.end) : '') + '<br>' + esc(x.title) + (x.place ? ' <span class="muted">' + esc(x.place) + '</span>' : '') + (x.memo ? '<br><span class="small" style="color:var(--navy)">備考あり(' + x.memo.length + '文字)</span>' : '') + '</div><button class="x" data-i="' + i + '">外す</button></div>';
       }).join('') + '<button class="btn" id="ssave" style="margin-top:10px">登録する</button>' : '') +
         (bad && bad.length ? '<p class="small" style="color:var(--bad)">読み取れなかった行:<br>' + bad.map(esc).join('<br>') + '</p>' : '') + (!items.length && !(bad && bad.length) ? '<p class="muted">予定が見つかりませんでした。</p>' : '');
       Array.prototype.forEach.call($('#spv').querySelectorAll('.x'), function (b) { b.onclick = function () { items.splice(+b.dataset.i, 1); drawPv(bad); }; });
       if ($('#ssave')) $('#ssave').onclick = function () {
         var b = $('#ssave'); b.disabled = true;
-        api('a_sched_save', { items: items }).then(function (r) { toast(r.added + '件を登録しました' + (r.skipped ? '(同じ予定' + r.skipped + '件は除きました)' : '')); schedAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        api('a_sched_save', { items: items }).then(function (r) { toast(r.added + '件を登録しました' + (r.skipped ? '(同じ予定' + r.skipped + '件は新しく作らず)' : '') + (r.noted ? ' 備考' + r.noted + '件を追記' : '')); schedAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
       };
     }
     $('#sparse').onclick = function () {
