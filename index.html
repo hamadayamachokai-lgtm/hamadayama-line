@@ -286,6 +286,7 @@ var IC = {
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
   o_desk: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9h8M8 12h5"/>',
+  o_roster: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8 9.5h5M8 12.5h3"/>',
   o_viewer: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 3 2 4-4"/>',
   a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
@@ -304,7 +305,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
-  o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QR', o_desk: 'QR受付画面',
+  o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -443,7 +444,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-18 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-19 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -453,7 +454,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -579,6 +580,64 @@ function sumView() {
     }).join('') + '</div>';
     sub('集計結果', h, 'officer');
   }).catch(function (e) { offErr('集計結果', e, 'officer'); });
+}
+
+/* ===== 会員名簿(見るだけ・検索) ===== */
+var R = { data: null, q: '', dist: '', grp: '', all: false, unpaid: false, n: 40 };
+function rNorm(t) {
+  return String(t || '').normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }).replace(/[ー\-‐−]/g, '').replace(/\s+/g, '');
+}
+function rosterView() {
+  sub('会員名簿', '<div class="skel" style="height:300px"></div>', 'officer');
+  api('o_roster').then(function (d) {
+    R.data = d; R.q = ''; R.dist = ''; R.grp = ''; R.all = false; R.unpaid = false; R.n = 40;
+    d.members.forEach(function (m) { m._k = [m.name, m.kana, m.address, m.no, m.district + m.group + '班'].map(rNorm).join('|'); });
+    var ds = []; d.members.forEach(function (m) { if (m.district && ds.indexOf(m.district) < 0) ds.push(m.district); });
+    sub('会員名簿', '<div class="card"><p class="muted" style="margin:0 0 8px">見るだけの名簿です。お名前・ふりがな・住所・会員番号の一部で探せます(空白で区切ると、すべてを含む方)。</p>' +
+      '<input id="rq" autocomplete="off" placeholder="例: 田中 / たなか / 浜田山1" aria-label="検索" style="width:100%;font-size:20px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px">' +
+      '<div class="chips" id="rdist" style="margin-top:10px"><button data-d="" aria-pressed="true">すべて</button>' + ds.map(function (x) { return '<button data-d="' + esc(x) + '" aria-pressed="false">' + esc(x) + '</button>'; }).join('') + '</div>' +
+      '<div class="chips" id="rgrp" style="margin-top:6px"></div>' +
+      '<div class="chips" id="ropt" style="margin-top:6px"><button data-o="unpaid" aria-pressed="false">未納の方だけ</button><button data-o="all" aria-pressed="false">退会・休会も表示</button></div></div>' +
+      '<div id="rcnt" class="muted" style="margin:4px 4px 8px"></div><div id="rlist"></div>', 'officer');
+    $('#rq').oninput = function () { R.q = this.value; R.n = 40; drawRoster(); };
+    Array.prototype.forEach.call(document.querySelectorAll('#rdist button'), function (b) {
+      b.onclick = function () { R.dist = b.dataset.d; R.grp = ''; R.n = 40; Array.prototype.forEach.call(document.querySelectorAll('#rdist button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawRoster(); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#ropt button'), function (b) {
+      b.onclick = function () { var k = b.dataset.o; R[k] = !R[k]; b.setAttribute('aria-pressed', R[k] ? 'true' : 'false'); R.n = 40; drawRoster(); };
+    });
+    drawRoster();
+  }).catch(function (e) { offErr('会員名簿', e, 'officer'); });
+}
+function drawRoster() {
+  var d = R.data, terms = String(R.q).normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean).map(rNorm);
+  var gs = [];
+  if (R.dist) d.members.forEach(function (m) { if (m.district === R.dist && m.group && gs.indexOf(m.group) < 0) gs.push(m.group); });
+  $('#rgrp').innerHTML = gs.length ? '<button data-g="" aria-pressed="' + (!R.grp) + '">全部の班</button>' + gs.map(function (x) { return '<button data-g="' + esc(x) + '" aria-pressed="' + (R.grp === x) + '">' + esc(x) + '班</button>'; }).join('') : '';
+  Array.prototype.forEach.call(document.querySelectorAll('#rgrp button'), function (b) { b.onclick = function () { R.grp = b.dataset.g; R.n = 40; drawRoster(); }; });
+  var hit = d.members.filter(function (m) {
+    if (!R.all && (m.status === '退会' || m.status === '休会')) return false;
+    if (R.dist && m.district !== R.dist) return false;
+    if (R.grp && m.group !== R.grp) return false;
+    if (R.unpaid && m.fee !== 'unpaid') return false;
+    for (var i = 0; i < terms.length; i++) if (m._k.indexOf(terms[i]) < 0) return false;
+    return true;
+  });
+  $('#rcnt').textContent = hit.length + '件' + (hit.length > R.n ? '(先頭の ' + R.n + '件を表示)' : '');
+  var feeT = { paid: ['納入済', 'ok'], unpaid: ['未納', 'warn'], exempt: ['対象外・別途回収', ''], na: ['', ''] };
+  $('#rlist').innerHTML = hit.slice(0, R.n).map(function (m, i) {
+    var f = feeT[m.fee] || ['', ''];
+    return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><div class="nm" style="font-size:19px;font-weight:700">' + esc(m.name) + '</div><span class="muted" style="white-space:nowrap">' + esc(m.no) + '</span></div>' +
+      (m.kana ? '<div class="muted">' + esc(m.kana) + '</div>' : '') +
+      '<div class="ad" style="margin-top:4px">' + esc([m.district, m.group && m.group + '班'].filter(Boolean).join(' ')) + ' ・ ' + esc(m.address) + '</div>' +
+      '<div style="margin-top:6px">' + (m.status ? '<span class="tg">' + esc(m.status) + '</span> ' : '') + (m.circ ? '<span class="tg imp">回覧元</span> ' : '') + (f[0] ? '<span class="tg">' + esc(R.data.year + '年度 ' + f[0]) + '</span> ' : '') + (m.count ? '<span class="tg">' + m.count + '人</span>' : '') + '</div>' +
+      (m.head && !m.circ ? '<div class="ad">回覧元: ' + esc(m.head) + '</div>' : '') +
+      (m.method ? '<div class="ad">町会費: ' + esc(m.method) + '</div>' : '') +
+      (m.memo ? '<div class="ad" style="white-space:pre-wrap">連絡事項: ' + esc(m.memo) + '</div>' : '') +
+      '<div class="acts" style="margin-top:8px">' + mapBtn(m.map) + '</div></div>';
+  }).join('') + (hit.length > R.n ? '<button class="sbtn fill" id="rmore" style="width:100%;margin:6px 0 14px">もっと見る</button>' : '') + (hit.length ? '' : '<div class="card"><p>該当する方がいません。言葉を短くすると見つかることがあります。</p></div>');
+  bindMaps($('#rlist'));
+  var mb = $('#rmore'); if (mb) mb.onclick = function () { R.n += 40; var y = window.scrollY; drawRoster(); window.scrollTo(0, y); };
 }
 
 var U = { data: null, dist: '', show: 'unpaid' };
@@ -1800,7 +1859,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_scanrun|o_search|o_desk|o_sched|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_docs|o_doc)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -1811,7 +1870,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: qrHubView }[h] || homeView)();
+  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
