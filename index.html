@@ -264,6 +264,7 @@ var IC = {
   weather: '<circle cx="8" cy="8" r="3"/><path d="M8 2v1M2 8h1M3.8 3.8l.7.7M12.2 3.8l-.7.7"/><path d="M8 19h9a4 4 0 000-8 5 5 0 00-9.6 1.5A3.3 3.3 0 008 19z"/>',
   tips: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>',
   mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
+  headchg: '<path d="M17 3l4 4-4 4M21 7H8a4 4 0 00-4 4M7 21l-4-4 4-4M3 17h13a4 4 0 004-4"/>',
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
   board: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
   o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
@@ -286,7 +287,7 @@ var IC = {
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
-  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板',
+  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
   o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新'
 };
@@ -425,7 +426,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-3 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-4 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -433,6 +434,7 @@ function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
   if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
+  if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
   go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
@@ -1002,17 +1004,17 @@ function eventView() {
             (a.channel !== 'LINE' ? '<div class="small">LINE以外の申込は、役員が直します。</div>' : '')) + '</div>';
       }).join('') + '</div>';
       else h += '<p class="muted" style="margin:10px 0 0">申込はまだありません。</p>';
+      var pl = s.people.filter(function (p) { return !p.event || p.event === ev.name; });
+      h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>' + esc(ev.name) + 'の対象者</b>' + (pl.length ? pl.map(function (p) {
+        return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + (ev.name === '祭礼' ? gradeTag(p.grade) : '') + '</div><button class="sbtn" data-pe="' + esc(p.id) + '|' + esc(ev.name) + '">直す</button></div>';
+      }).join('') : '<p class="muted" style="margin:6px 0 0">まだ登録がありません。</p>') + '<div style="height:8px"></div><button class="btn ghost" data-pn="' + esc(ev.name) + '">＋ ' + esc(ev.name) + '対象者登録</button>' + (ev.name === '祭礼' ? '<p class="small" style="margin:6px 0 0">生年月日(例 2018-05-03)で登録すると、学年が毎年自動で変わります。</p>' : '') + '</div>';
       h += '<div style="height:12px"></div>' + (ev.open ? '<button class="btn" data-ap="' + esc(ev.name) + '">' + (ev.apps.length ? 'もう1件 申し込む' : '申し込む') + '</button>' : '') + '</div>';
     });
-    h += '<div class="card"><h2>対象者(ご家族)</h2>' + (s.people.length ? s.people.map(function (p) {
-      return '<div class="inrow" style="align-items:center;margin-bottom:8px"><div style="flex:1;min-width:0"><b>' + esc(p.name) + '</b>' + gradeTag(p.grade) + '</div><button class="sbtn" data-pe="' + esc(p.id) + '">直す</button></div>';
-    }).join('') : '<p class="muted" style="margin:0 0 10px">お子様や参加する方を登録すると、申込のときに選べます。</p>') +
-      '<button class="btn ghost" id="pnew">＋ 対象者を登録</button><p class="small" style="margin:8px 0 0">生年月日(例 2018-05-03)で登録すると、学年が毎年自動で変わります。</p></div>';
     sub('イベント', h);
-    Array.prototype.forEach.call(document.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { EV.edit = null; go('evapply/' + b.dataset.ap); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { EV.edit = null; EV.back = null; go('evapply/' + b.dataset.ap); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-ed]'), function (b) { b.onclick = function () { var x = b.dataset.ed.split('|'); EV.edit = x[1]; go('evapply/' + x[0]); }; });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { go('evperson/' + b.dataset.pe); }; });
-    $('#pnew').onclick = function () { go('evperson/new'); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { var x = b.dataset.pe.split('|'); EV.pev = x[1]; go('evperson/' + x[0]); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { EV.back = null; EV.pev = b.dataset.pn; go('evperson/new'); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
       b.onclick = function () {
         if (!window.confirm('この申込を取り消します。よろしいですか?')) return;
@@ -1025,16 +1027,17 @@ function evPersonView(id) {
   var go2 = function (s) {
     var p = id === 'new' ? null : s.people.filter(function (x) { return x.id === id; })[0];
     if (id !== 'new' && !p) return go('event');
-    sub(p ? '対象者を直す' : '対象者を登録', '<div class="card"><div class="field"><label class="l" for="pn">お名前<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' +
-      '<div class="field"><label class="l" for="pb">生年月日 または 学年<span class="req">必須</span></label><p class="hint">例: 2018-05-03 ／ 小3 ／ 年長</p><input class="inp" id="pb" maxlength="20" value="' + esc(p ? p.birth : '') + '"></div>' +
-      '<button class="btn" id="psv">保存する</button>' + (p ? '<div style="height:10px"></div><button class="btn ghost" id="pdl" style="color:var(--bad);border-color:var(--bad)">この方を削除</button>' : '') + '</div>', 'event');
+    var ev = (p && p.event) || EV.pev || '祭礼', fest = ev === '祭礼';
+    sub(ev + '対象者' + (p ? 'を直す' : '登録'), '<div class="card"><div class="field"><label class="l" for="pn">お名前<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' +
+      (fest ? '<div class="field"><label class="l" for="pb">生年月日 または 学年<span class="req">必須</span></label><p class="hint">例: 2018-05-03 ／ 小3 ／ 年長</p><input class="inp" id="pb" maxlength="20" value="' + esc(p ? p.birth : '') + '"></div>' : '') +
+      '<button class="btn" id="psv">保存する</button>' + (p ? '<div style="height:10px"></div><button class="btn ghost" id="pdl" style="color:var(--bad);border-color:var(--bad)">この方を削除</button>' : '') + '</div>', EV.back || 'event');
     $('#psv').onclick = function () {
       var b = $('#psv'); b.disabled = true;
-      api('ev_person_save', { id: p ? p.id : '', name: $('#pn').value, birth: $('#pb').value }).then(function () { toast('保存しました'); go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: fest ? $('#pb').value : '' }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
     var d = $('#pdl'); if (d) d.onclick = function () {
       if (!window.confirm('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
-      d.disabled = true; api('ev_person_delete', { id: p.id }).then(function () { toast('削除しました'); go('event'); }).catch(function (e) { d.disabled = false; toast(e.message); });
+      d.disabled = true; api('ev_person_delete', { id: p.id }).then(function () { toast('削除しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { d.disabled = false; toast(e.message); });
     };
   };
   if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('対象者', e, 'event'); });
@@ -1045,23 +1048,23 @@ function evApplyView(name) {
     if (!ev) return go('event');
     var cur = EV.edit ? ev.apps.filter(function (a) { return a.id === EV.edit; })[0] : null;
     if (!ev.open || (EV.edit && !cur)) return go('event');
-    var fest = name === '祭礼', chosen = {};
+    var fest = name === '祭礼', chosen = {}, pl = s.people.filter(function (p) { return !p.event || p.event === name; });
     if (cur) cur.people.forEach(function (p) { chosen[p.name] = 1; });
     var prev = ev.apps[0] || {};
     var h = '<div class="card">' + (ev.note ? '<div class="notice-box">' + linkify(ev.note) + '</div>' : '') +
       '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">' + (fest ? 'お菓子を受け取るお子様' : '参加する方') + '<span class="req">必須</span></span>' +
-      (s.people.length ? s.people.map(function (p) {
+      (pl.length ? pl.map(function (p) {
         var bad = fest && !/^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || '');
         return '<label class="opt" style="margin-bottom:8px;' + (bad ? 'opacity:.55' : '') + '"><input type="checkbox" data-id="' + esc(p.id) + '" data-n="' + esc(p.name) + '"' + (chosen[p.name] ? ' checked' : '') + (bad ? ' disabled' : '') + '><span>' + esc(p.name) + gradeTag(p.grade) + (bad ? ' <span class="muted">小学生以下のみ</span>' : '') + '</span></label>';
-      }).join('') : '<p class="muted">先に「対象者」を登録してください。</p>') +
-      '<button class="sbtn" id="addp" type="button">＋ 対象者を登録する</button></div>';
+      }).join('') : '<p class="muted">先に「' + name + '対象者」を登録してください。</p>') +
+      '<button class="sbtn" id="addp" type="button">＋ ' + name + '対象者を登録する</button></div>';
     if (fest) h += '<div class="field"><label class="l" for="ag">保護者のお名前<span class="req">必須</span></label><input class="inp" id="ag" maxlength="40" value="' + esc(cur ? cur.guardian : (prev.guardian || '')) + '"></div>' +
       '<div class="field"><label class="l" for="am">保護者のメールアドレス<span class="req">必須</span></label><input class="inp" id="am" type="email" inputmode="email" maxlength="120" value="' + esc(cur ? cur.email : (prev.email || '')) + '"></div>';
     h += '<div class="field"><label class="l" for="ac">申込個数<span class="req">必須</span></label><input class="inp" id="ac" inputmode="numeric" maxlength="2" value="' + esc(cur ? cur.count : '') + '" placeholder="空なら、選んだ人数"></div>' +
       '<div class="field"><label class="l" for="an">ひとこと(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></div>' +
       '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">すでに別の方法(フォーム・紙など)で申し込んだ方は、重ねて申し込めません。</p></div>';
     sub(name + (cur ? 'の申込を直す' : 'に申し込む'), h, 'event');
-    $('#addp').onclick = function () { go('evperson/new'); };
+    $('#addp').onclick = function () { EV.pev = name; EV.back = 'evapply/' + name; go('evperson/new'); };
     $('#asv').onclick = function () {
       var ids = Array.prototype.map.call(document.querySelectorAll('[data-id]:checked'), function (c) { return c.dataset.id; });
       var b = $('#asv'); b.disabled = true;
