@@ -175,6 +175,7 @@ textarea.inp{min-height:96px;resize:vertical}
 .ans button{padding:11px 4px;border-radius:10px;border:1.5px solid #cfc8b8;background:#fff;font-size:15px;font-weight:700;color:var(--ink)}
 .ans button.on.a0{background:#2e9e5b;color:#fff;border-color:#2e9e5b}.ans button.on.a1{background:#d92d20;color:#fff;border-color:#d92d20}.ans button.on.a2{background:#6b7280;color:#fff;border-color:#6b7280}
 .sch .cn{font-size:13px;color:var(--sub);margin-top:8px}.sch details{margin-top:6px;font-size:14px}.sch summary{cursor:pointer;color:var(--navy);font-weight:700}.sch .nm{margin:4px 0}
+.sch .note{margin-top:8px;padding:8px 10px;border-left:4px solid var(--gold);background:#fbf5e6;border-radius:6px;font-size:14px}.sch .note b{display:block}.sch .note .by{color:var(--sub);font-size:12px}.sch .note .nb{white-space:pre-wrap;word-break:break-word}.sch .note img{max-width:100%;border-radius:8px;margin-top:6px;display:block}.sch .note a.fl{display:inline-block;margin-top:6px;margin-right:8px;padding:6px 10px;border:1px solid var(--navy);border-radius:8px;color:var(--navy);font-weight:700;text-decoration:none;font-size:13px}.sch .nx{float:right;border:0;background:#eee;border-radius:6px;font-size:12px;padding:2px 8px}.sch .nform{margin-top:8px;padding:8px;border:1px dashed #cfc8b8;border-radius:8px}.sch .nform input[type=text],.sch .nform textarea{width:100%;margin-bottom:6px}
 .pvrow{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid var(--line);padding:8px 0}.pvrow .x{flex:none;border:0;background:#eee;border-radius:8px;padding:4px 10px;font-weight:700}
 .bnav button:active{background:var(--mute-bg)}
 body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
@@ -442,7 +443,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-13 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-15 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1200,13 +1201,55 @@ function schedWhen(e) { return (e.days === 0 ? '今日' : e.days === 1 ? '明日
 function schedCard(e, withWho) {
   var t = (e.start ? e.start + (e.end ? '〜' + e.end : '') : '時間未定');
   var h = '<div class="sch" data-eid="' + esc(e.id) + '"><div class="hd"><span class="dt">' + (+e.date.slice(5, 7)) + '月' + (+e.date.slice(8)) + '日(' + esc(e.dow) + ')</span><span>' + esc(t) + '</span>' + (e.lv ? '<span class="lvc ' + e.lv + '">' + schedWhen(e) + '</span>' : '') + '</div>' +
-    '<div class="tt">' + esc(e.title) + '</div>' + (e.place ? '<div class="pl">' + esc(e.place) + '</div>' : '') +
+    '<div class="tt">' + esc(e.title) + '</div>' + (e.place ? '<div class="pl">' + esc(e.place) + '</div>' : '') + notesHtml(e) +
     '<div class="ans">' + SANS.map(function (a, i) { return '<button type="button" class="a' + i + (e.mine === a ? ' on' : '') + '" data-a="' + a + '" aria-pressed="' + (e.mine === a) + '">' + a + '</button>'; }).join('') + '</div>' +
     '<div class="cn">参加 ' + e.counts['参加'] + '・不参加 ' + e.counts['不参加'] + '・対象外 ' + e.counts['対象外'] + '・未回答 ' + e.counts['未回答'] + '</div>';
-  h += '<details' + (withWho ? '' : '') + '><summary>だれが参加?</summary>' + ['参加', '不参加', '対象外', '未回答'].map(function (k) { return '<div class="nm"><b>' + k + '</b> ' + (e.names[k].length ? esc(e.names[k].join('、')) : '<span class="muted">なし</span>') + '</div>'; }).join('') + '</details></div>';
+  h += '<details' + (withWho ? '' : '') + '><summary>だれが参加?</summary>' + ['参加', '不参加', '対象外', '未回答'].map(function (k) { return '<div class="nm"><b>' + k + '</b> ' + (e.names[k].length ? esc(e.names[k].join('、')) : '<span class="muted">なし</span>') + '</div>'; }).join('') + '</details>' + (isAdmin() ? '<button type="button" class="sbtn nadd" style="margin-top:8px">追記・ファイルを付ける</button>' : '') + '</div>';
   return h;
 }
+function notesHtml(e) {
+  return (e.notes || []).map(function (n) {
+    return '<div class="note" data-nid="' + esc(n.id) + '">' + (isAdmin() ? '<button type="button" class="nx">削除</button>' : '') + (n.head ? '<b>' + esc(n.head) + '</b>' : '') + (n.body ? '<div class="nb">' + linkify(n.body) + '</div>' : '') +
+      (n.files || []).map(function (f) { return f.img ? '<a href="' + esc(f.view) + '" data-ext="1"><img src="' + esc(f.thumb) + '" alt="' + esc(f.name) + '" referrerpolicy="no-referrer"></a>' : '<a class="fl" href="' + esc(f.view) + '" data-ext="1">' + esc(f.name) + '</a>'; }).join('') +
+      '<div class="by">' + esc(n.at) + ' ' + esc(n.by) + '</div></div>';
+  }).join('');
+}
+function schedPut(box, ev) {
+  var open = box.querySelector('details').open, tmp = document.createElement('div'); tmp.innerHTML = schedCard(ev, true); var nb = tmp.firstChild;
+  if (open) nb.querySelector('details').open = true;
+  var par = box.parentNode; par.replaceChild(nb, box); schedBind(par);
+}
+function readFileData(f) {
+  if (/^image\//.test(f.type)) return shrinkImage(f, 1600);
+  return new Promise(function (ok, ng) { if (f.size > 3000000) return ng(new Error('「' + f.name + '」は大きすぎます(3MBまで)')); var r = new FileReader(); r.onload = function () { ok(r.result); }; r.onerror = function () { ng(new Error('ファイルを読み込めませんでした')); }; r.readAsDataURL(f); });
+}
 function schedBind(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('.sch a[data-ext]'), function (a) { a.onclick = function (ev) { ev.preventDefault(); openExternal(a.href); }; });
+  Array.prototype.forEach.call(root.querySelectorAll('.sch .nx'), function (b) {
+    b.onclick = function () { if (!window.confirm('この追記を削除します。よろしいですか?')) return; var box = b.closest('.sch'); api('a_sched_note_delete', { noteId: b.closest('.note').dataset.nid }).then(function (r) { schedPut(box, r.event); toast('削除しました'); }).catch(function (e) { toast(e.message); }); };
+  });
+  Array.prototype.forEach.call(root.querySelectorAll('.sch .nadd'), function (b) {
+    b.onclick = function () {
+      var box = b.closest('.sch'); if (box.querySelector('.nform')) return;
+      var f = document.createElement('div'); f.className = 'nform';
+      f.innerHTML = '<input type="text" class="nh" maxlength="40" placeholder="見出し(例:集合時間変更)"><textarea class="nbd" rows="3" maxlength="1000" placeholder="本文(例:18時からになりました)"></textarea><label class="sbtn" style="cursor:pointer;margin-right:8px">写真・ファイルを選ぶ<input type="file" class="nf" multiple accept="image/*,.pdf,.docx,.xlsx" hidden></label><label class="sbtn" style="cursor:pointer;margin-right:8px">写真から文字にする<input type="file" class="nocr" accept="image/*" hidden></label><span class="small nfl"></span><div style="margin-top:8px;display:flex;gap:8px"><button type="button" class="sbtn nok">追記する</button><button type="button" class="sbtn nno">やめる</button></div>';
+      b.parentNode.insertBefore(f, b); b.style.display = 'none';
+      var inp = f.querySelector('.nf'); inp.onchange = function () { f.querySelector('.nfl').textContent = inp.files.length ? inp.files.length + '件選択中' : ''; };
+      var oc = f.querySelector('.nocr'); oc.onchange = function () {
+        var pic = oc.files && oc.files[0]; if (!pic) return; toast('写真を読み取っています…(30秒ほどかかります)');
+        shrinkImage(pic, 1600).then(function (d) { return api('a_sched_ocr', { data: d, mode: 'note' }); })
+          .then(function (r) { var t = f.querySelector('.nbd'); t.value = (t.value ? t.value + '\n' : '') + r.text; toast('文字にしました。まちがいを直してから追記してください'); })
+          .catch(function (e) { toast(e.message || '読み取れませんでした'); }).then(function () { oc.value = ''; });
+      };
+      f.querySelector('.nno').onclick = function () { f.parentNode.removeChild(f); b.style.display = ''; };
+      f.querySelector('.nok').onclick = function () {
+        var ok = f.querySelector('.nok'); ok.disabled = true; var files = Array.prototype.slice.call(inp.files, 0, 5); if (files.length) toast('ファイルを送っています…');
+        files.reduce(function (pr, file) { return pr.then(function (acc) { return readFileData(file).then(function (d) { return api('a_sched_file', { name: file.name, data: d }); }).then(function (x) { acc.push(x); return acc; }); }); }, Promise.resolve([]))
+          .then(function (fs) { return api('a_sched_note_add', { id: box.dataset.eid, head: f.querySelector('.nh').value, body: f.querySelector('.nbd').value, files: fs }); })
+          .then(function (r) { schedPut(box, r.event); toast('追記しました'); }).catch(function (e) { ok.disabled = false; toast(e.message); });
+      };
+    };
+  });
   Array.prototype.forEach.call(root.querySelectorAll('.sch .ans button'), function (b) {
     b.onclick = function () {
       var box = b.closest('.sch'), id = box.dataset.eid, was = b.classList.contains('on'), open = box.querySelector('details').open;
@@ -1256,8 +1299,8 @@ function schedAdminView() {
     $('#sfile').onchange = function () {
       var f = this.files && this.files[0]; if (!f) return; var inp = this;
       toast('写真を読み取っています…(30秒ほどかかります)');
-      shrinkImage(f, 1600).then(function (data) { return api('a_sched_ocr', { data: data }); })
-        .then(function (r) { $('#sx').value = r.text; toast('文字にしました。内容を確認してから「確認する」を押してください'); })
+      shrinkImage(f, 1600).then(function (data) { return api('a_sched_ocr', { data: data, mode: 'sched' }); })
+        .then(function (r) { $('#sx').value = r.text; toast(r.via === 'drive' ? '文字にしました(ざっくり読み取りです)。まちがいを直してから「確認する」を押してください' : '文字にしました。内容を確認してから「確認する」を押してください'); })
         .catch(function (e) { toast(e.message || '読み取れませんでした'); }).then(function () { inp.value = ''; });
     };
     Array.prototype.forEach.call(document.querySelectorAll('.pvrow .x[data-id]'), function (b) {
