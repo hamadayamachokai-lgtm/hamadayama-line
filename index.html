@@ -18,7 +18,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);
 body{padding-bottom:env(safe-area-inset-bottom)}
 button,input,textarea{font:inherit;color:inherit}
 a{color:var(--navy2)}
-#app{max-width:520px;margin:0 auto;min-height:100vh}
+#app{max-width:520px;margin:0 auto;min-height:100vh}body.deskmode #app{max-width:1100px}
 .pad{padding:16px}
 h1,h2,h3{margin:0;line-height:1.35}
 .muted{color:var(--sub);font-size:14px}
@@ -241,6 +241,7 @@ body.hasnav #app{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 <div id="toast" role="status"></div>
 <script src="config.js"></script>
 <script src="qr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 (function () {
@@ -271,6 +272,7 @@ var IC = {
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
+  o_desk: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9h8M8 12h5"/>',
   o_viewer: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 3 2 4-4"/>',
   a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
@@ -289,7 +291,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: '町会掲示板', headchg: '回覧元変更申請',
-  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン',
+  o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_checkin: 'QRチェックイン', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -310,7 +312,7 @@ function api(action, extra) {
 function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
 
 /* ---------- 画面の骨組み ---------- */
-function setView(html) { $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
+function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
 function sub(title, body, backTo) {
   setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
   $('#bk').onclick = function () { go(backTo || 'home'); };
@@ -427,7 +429,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-10 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-11 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -437,7 +439,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_checkin: 'o_scan', o_desk: 'o_desk', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -719,7 +721,8 @@ function scanView() {
   var can = false; try { can = !!(window.liff && liff.isApiAvailable && liff.isApiAvailable('scanCodeV2')); } catch (e) { can = false; }
   sub('QRチェックイン', '<div class="seg" id="smode">' + Object.keys(MODE_LABEL).map(function (k) { return '<button data-m="' + k + '" aria-pressed="' + (SC.mode === k) + '">' + MODE_LABEL[k] + '</button>'; }).join('') + '</div>' +
     '<p class="muted" id="shint" style="margin:0 4px 12px"></p>' +
-    (can ? '<button class="btn" id="sgo">' + svg('o_checkin').replace('<svg', '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"') + 'QRを読み取る</button>' : '<div class="banner advisory" style="margin-bottom:12px"><div>この画面では、カメラでの読み取りが使えません。下に会員コードを入力してください(LINEアプリで開くと読み取れます)。</div></div>') +
+    (can ? '<button class="btn" id="sgo">' + svg('o_checkin').replace('<svg', '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"') + 'QRを読み取る(LINE)</button><div style="height:8px"></div>' : '') +
+    '<button class="btn ' + (can ? 'ghost' : '') + '" id="sgo2">📷 カメラで読み取る(この画面)</button><p class="small" style="margin:6px 4px 0">QRスキャナーをお持ちなら、下の入力欄に読み取るだけでも受付できます。</p>' +
     '<div class="card" style="margin-top:14px"><h2>会員コードを入力</h2><div class="inrow"><input id="scode" maxlength="60" autocomplete="off" autocapitalize="characters" placeholder="例: K7M2Q9XT" aria-label="会員コード"><button class="sbtn fill" id="sok">確認</button></div></div><div id="sres"></div>' +
     '<div class="card" style="margin-top:14px" id="fcard"><h2>お名前で探して受付</h2><p class="muted" style="margin:0 0 8px">QRを持っていない・わからない方向けです(祭礼・演芸会)。お名前の一部、会員番号、お子様のお名前で探せます。</p><div class="inrow"><input id="fq" autocomplete="off" placeholder="例: 田中" aria-label="お名前または会員番号"><button class="sbtn fill" id="fok">探す</button></div></div><div id="fres"></div>', 'officer');
   function hint() { $('#shint').textContent = MODE_HINT[SC.mode]; }
@@ -728,6 +731,7 @@ function scanView() {
   $('#fok').onclick = doFind; $('#fq').onkeydown = function (e) { if (e.key === 'Enter') doFind(); };
   function fvis() { $('#fcard').style.display = SC.mode === 'disaster' ? 'none' : ''; $('#fres').innerHTML = ''; } fvis();
   $('#sok').onclick = function () { var v = $('#scode').value; if (!v.trim()) return toast('会員コードを入力してください'); doScan(v); };
+  $('#sgo2').onclick = function () { camScan({ onCode: function (c) { doScan(c); } }); };
   if (can) $('#sgo').onclick = function () {
     liff.scanCodeV2().then(function (r) { if (r && r.value) doScan(r.value); }).catch(function (e) { toast('読み取りできませんでした: ' + (e && e.message || e)); });
   };
@@ -743,10 +747,13 @@ function appRowsHtml(apps, first) {
     return '<div class="mrow' + (i === 0 && first ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + a.units + '個 ／ ' + esc(a.guardian || a.people.join('、')) + (paper ? ' <span class="tg">紙の申込(引換券)</span>' : ' <span class="tg">' + esc(a.channel) + '</span>') + '</div>' +
       (a.kids && a.kids.length && a.guardian ? '<div class="ad">' + esc(a.kids.map(function (k) { return k.name + (k.grade ? '(' + k.grade + ')' : ''); }).join('、')) + '</div>' : '') +
       (a.note ? '<div class="ad">連絡事項: ' + esc(a.note) + '</div>' : '') +
-      (a.received ? '<div class="ad" style="color:var(--bad);font-weight:700">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button></div></div>';
+      (a.received ? '<div class="ad" style="color:var(--bad);font-weight:700">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button>' + (a.received ? '' : '<button class="sbtn" data-q="' + esc(a.id) + '">受付待ちへ</button>') + '</div></div>';
   }).join('');
 }
 function bindRecv(box, apps, how, redraw) {
+  Array.prototype.forEach.call(box.querySelectorAll('[data-q]'), function (b) {
+    b.onclick = function () { b.disabled = true; api('o_queue_add', { id: b.dataset.q }).then(function (x) { toast(x.note || '受付待ちに入れました(QR受付画面に出ます)'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  });
   Array.prototype.forEach.call(box.querySelectorAll('[data-id]'), function (b) {
     b.onclick = function () {
       b.disabled = true;
@@ -788,6 +795,137 @@ function drawScan(r) {
   }
   $('#sres').innerHTML = h; bindMaps($('#sres'));
   bindRecv($('#sres'), r.apps || [], 'QR', function () { drawScan(r); });
+}
+
+/* ---------- カメラ読み取り(この画面のカメラ。LINEの読み取りが使えないとき・連続で読むとき) ---------- */
+var CAM = null;
+function camStop() { if (CAM) { CAM.stop(); CAM = null; } }
+function camScan(o) {   // o: { onCode(code), host(要素。無ければ全画面), keep(true=読んだあとも続ける) }
+  camStop();
+  var host = o.host, ov = null;
+  if (!host) { ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px'; document.body.appendChild(ov); host = ov; }
+  host.innerHTML = '<video playsinline muted style="width:100%;max-width:520px;border-radius:14px;background:#000"></video><p class="cam-m" style="margin:10px 0;' + (ov ? 'color:#fff' : '') + '">QRを枠の中に映してください</p><div class="inrow"><button class="sbtn cam-x" type="button">' + (ov ? '閉じる' : 'カメラを止める') + '</button><label class="sbtn" style="cursor:pointer">写真から読む<input type="file" class="cam-f" accept="image/*" capture="environment" style="display:none"></label></div><canvas style="display:none"></canvas>';
+  var video = $('video', host), cv = $('canvas', host), ctx = cv.getContext('2d', { willReadFrequently: true }), msg = $('.cam-m', host);
+  var stream = null, raf = 0, alive = true, busy = false, last = '', lastAt = 0, det = null;
+  function say(t) { msg.textContent = t; }
+  function stop() { alive = false; cancelAnimationFrame(raf); if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } if (ov) ov.remove(); else host.innerHTML = ''; }
+  CAM = { stop: stop };
+  function got(code) {
+    var now = Date.now(); if (code === last && now - lastAt < 3000) return; last = code; lastAt = now;
+    if (navigator.vibrate) navigator.vibrate(80);
+    if (!o.keep) { camStop(); }
+    o.onCode(code);
+  }
+  function decodeCanvas() {
+    if (!window.jsQR) { say('QRを読む部品を読み込めませんでした。通信状態を確認してください。'); return ''; }
+    var f = window.jsQR(ctx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'attemptBoth' });
+    return f ? f.data : '';
+  }
+  function tick() {
+    if (!alive) return;
+    raf = requestAnimationFrame(tick);
+    if (busy || video.readyState < 2 || !video.videoWidth) return;
+    busy = true;
+    var finish = function () { setTimeout(function () { busy = false; }, 250); };
+    var fromCanvas = function () {
+      var sc = Math.min(1, 720 / Math.max(video.videoWidth, video.videoHeight)); cv.width = Math.round(video.videoWidth * sc); cv.height = Math.round(video.videoHeight * sc);
+      ctx.drawImage(video, 0, 0, cv.width, cv.height); var c = decodeCanvas(); if (c) got(c); finish();
+    };
+    if (det) det.detect(video).then(function (r) { if (r.length && r[0].rawValue) { got(r[0].rawValue); finish(); } else fromCanvas(); }).catch(function () { det = null; fromCanvas(); });
+    else fromCanvas();
+  }
+  $('.cam-x', host).onclick = camStop;
+  $('.cam-f', host).onchange = function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    createImageBitmap(f).then(function (bm) {
+      var sc = Math.min(1, 1600 / Math.max(bm.width, bm.height)); cv.width = Math.round(bm.width * sc); cv.height = Math.round(bm.height * sc); ctx.drawImage(bm, 0, 0, cv.width, cv.height);
+      var c = decodeCanvas(); if (c) got(c); else say('写真からQRを読めませんでした。QRを大きく写して、もう一度お試しください。');
+    }).catch(function () { say('写真を開けませんでした。'); });
+  };
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { say('この画面ではカメラを使えません。「写真から読む」か、QRスキャナー(入力欄)をお使いください。'); return; }
+  navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } }).then(function (st) {
+    if (!alive) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+    stream = st; video.srcObject = st; return video.play();
+  }).then(function () {
+    if (!alive) return;
+    if ('BarcodeDetector' in window) { try { det = new window.BarcodeDetector({ formats: ['qr_code'] }); } catch (e) { det = null; } }
+    say('カメラ起動中。QRを枠の中に映してください。'); raf = requestAnimationFrame(tick);
+  }).catch(function (e) {
+    say('カメラを起動できません(' + (e && e.name || 'エラー') + ')。スマホ/ブラウザの設定でカメラを「許可」にするか、「写真から読む」をお使いください。');
+  });
+}
+document.addEventListener('visibilitychange', function () { if (document.hidden) camStop(); });
+
+/* ---------- QR受付画面(大きな画面): 受付待ちの方を1人ずつ「受け取りました」で進める ---------- */
+var DK = { mode: 'matsuri', timer: 0, items: [], total: 0, done: 0, busy: false };
+function deskView() {
+  DK.items = []; DK.total = 0; DK.done = 0;
+  sub('QR受付画面', '<div class="card" style="padding:12px"><div class="seg" id="dmode"><button data-m="matsuri" aria-pressed="true">祭礼</button><button data-m="engeikai" aria-pressed="false">演芸会</button></div>' +
+    '<div class="inrow" style="margin-top:10px"><input id="dcode" autocomplete="off" placeholder="QRスキャナーで読む / お名前・会員番号で探す" aria-label="QRまたはお名前"><button class="sbtn fill" id="dok">受付待ちへ</button><button class="sbtn" id="dcam">📷 カメラ</button></div>' +
+    '<div id="dcamhost" style="margin-top:8px"></div><div id="dmsg" class="small" style="margin-top:8px;min-height:20px"></div><div id="dres"></div></div>' +
+    '<div id="dnow"></div><div id="dnext"></div>', 'officer');
+  document.body.classList.add('deskmode');
+  Array.prototype.forEach.call(document.querySelectorAll('#dmode button'), function (b) { b.onclick = function () { DK.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#dmode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }; });
+  function msg(t, bad) { var m = $('#dmsg'); if (m) { m.textContent = t; m.style.color = bad ? 'var(--bad)' : ''; m.style.fontWeight = bad ? '700' : ''; } }
+  function queueApps(apps, who) {
+    var todo = apps.filter(function (a) { return !a.received; });
+    if (!apps.length) return msg(who + ': 申込が見つかりません', true);
+    if (!todo.length) return msg(who + ': すでに受取済みです(' + (apps[0].receivedAt || '') + ')', true);
+    var chain = Promise.resolve();
+    todo.forEach(function (a) { chain = chain.then(function () { return api('o_queue_add', { id: a.id }); }); });
+    chain.then(function () { msg(who + ' を受付待ちに入れました'); load(); }).catch(function (e) { msg(e.message, true); });
+  }
+  function submit(v) {
+    v = String(v || '').trim(); if (!v) return;
+    $('#dres').innerHTML = '';
+    var isCode = /^(HMT_FESTIVAL:|HMD1:)/i.test(v) || /^[A-Za-z2-9]{8}$/.test(v);
+    if (isCode) {
+      msg('確認中…');
+      api('o_scan', { mode: DK.mode, code: v }).then(function (r) { $('#dcode').value = ''; queueApps((r.apps || []).filter(function (a) { return r.mode === 'matsuri' ? true : a.event === '演芸会' || true; }), (r.person.memberName || r.person.name) + ' 様'); })
+        .catch(function (e) { msg(e.message, true); });
+    } else {
+      msg('探しています…');
+      api('o_find', { event: DK.mode === 'engeikai' ? '演芸会' : '祭礼', q: v }).then(function (d) {
+        $('#dcode').value = '';
+        if (!d.results.length) return msg('該当する方がいません', true);
+        var one = d.results.length === 1 && d.results[0].apps.length === 1;
+        if (one) return queueApps(d.results[0].apps, d.results[0].memberName + ' 様');
+        msg('');
+        var all = []; d.results.forEach(function (g) { all = all.concat(g.apps); });
+        $('#dres').innerHTML = d.results.map(function (g) { return '<div style="margin-top:8px"><b>' + esc(g.memberName) + ' 様</b> <span class="muted">' + esc([g.district, g.group && g.group + '班'].filter(Boolean).join(' ')) + '</span>' + (g.apps.length ? appRowsHtml(g.apps, false) : '<div class="muted">申込なし</div>') + '</div>'; }).join('');
+        bindRecv($('#dres'), all, '検索', function () { $('#dres').innerHTML = ''; load(); });
+      }).catch(function (e) { msg(e.message, true); });
+    }
+  }
+  $('#dok').onclick = function () { submit($('#dcode').value); };
+  $('#dcode').onkeydown = function (e) { if (e.key === 'Enter') submit($('#dcode').value); };
+  $('#dcam').onclick = function () { camScan({ host: $('#dcamhost'), keep: true, onCode: function (c) { submit(c); } }); };
+  function draw() {
+    var it = DK.items[0], now = $('#dnow'); if (!now) return;
+    if (!it) now.innerHTML = '<div class="card" style="text-align:center;padding:48px 16px"><div style="font-size:clamp(28px,5vw,48px);font-weight:800;color:var(--muted,#667)">お待ちの方はいません</div><div class="small" style="margin-top:10px">本日 受取 ' + DK.done + '件</div></div>';
+    else now.innerHTML = '<div class="card" style="text-align:center;padding:28px 16px;border:3px solid var(--accent,#2b6cb0)"><div><span class="tg">' + esc(it.event) + '</span> <span class="tg">' + (it.channel === '紙申込書' ? '紙の申込(引換券)' : esc(it.channel)) + '</span></div>' +
+      '<div style="font-size:clamp(18px,3vw,28px);margin-top:14px" class="muted">申込者名</div><div style="font-size:clamp(40px,8vw,84px);font-weight:900;line-height:1.15;word-break:break-all">' + esc(it.name) + ' 様</div>' +
+      '<div style="font-size:clamp(18px,3vw,28px);margin-top:14px" class="muted">数量</div><div style="font-size:clamp(72px,16vw,180px);font-weight:900;line-height:1;color:#1a7f4b">' + it.units + '<span style="font-size:.35em">個</span></div>' +
+      (it.people.length ? '<div class="muted" style="font-size:clamp(14px,2.4vw,22px);margin-top:10px">' + esc(it.people.join('、')) + '</div>' : '') + (it.note ? '<div class="small" style="margin-top:6px">連絡事項: ' + esc(it.note) + '</div>' : '') +
+      '<button class="btn" id="ddone" style="margin-top:22px;font-size:clamp(22px,4vw,40px);padding:clamp(16px,3vw,32px)">受け取りました</button>' +
+      '<div class="inrow" style="justify-content:center;margin-top:12px"><button class="sbtn" id="dlater">後にする</button><button class="sbtn" id="dcancel" style="color:var(--bad);border-color:var(--bad)">取り消す</button></div></div>';
+    var nx = $('#dnext'); if (nx) nx.innerHTML = '<div class="card"><b>お待ちの方 ' + DK.total + '人</b> <span class="muted">/ 本日の受取 ' + DK.done + '件</span>' + DK.items.slice(1, 8).map(function (x, i) { return '<div class="mrow' + (i === 0 ? ' first' : '') + '"><div class="nm" style="font-size:18px">' + esc(x.name) + ' 様 <span class="muted">' + x.units + '個 ・ ' + esc(x.event) + '</span></div></div>'; }).join('') + '</div>';
+    var act = function (op) {
+      return function () {
+        if (DK.busy) return; DK.busy = true; var cur = DK.items[0];
+        ['#ddone', '#dlater', '#dcancel'].forEach(function (k) { var b = $(k); if (b) b.disabled = true; });
+        api('o_queue_done', { qid: cur.qid, op: op }).then(function () { toast(op === 'done' ? '受け取りました ✓' : op === 'later' ? '後回しにしました' : '取り消しました'); }).catch(function (e) { toast(e.message); })
+          .then(function () { DK.busy = false; load(); });
+      };
+    };
+    if ($('#ddone')) { $('#ddone').onclick = act('done'); $('#dlater').onclick = act('later'); $('#dcancel').onclick = function () { if (window.confirm('この方を受付待ちから外します。よろしいですか?')) act('cancel')(); }; }
+  }
+  function load() {
+    if (!$('#dnow')) { clearInterval(DK.timer); camStop(); return; }
+    api('o_queue_list').then(function (d) { if (DK.busy) return; DK.items = d.items; DK.total = d.total; DK.done = d.done; draw(); }).catch(function () {});
+  }
+  clearInterval(DK.timer); DK.timer = setInterval(function () { if (!document.hidden) load(); }, 3000);
+  load();
 }
 
 /* ---------- メールBOX ---------- */
@@ -1501,7 +1639,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_scan|o_desk|o_docs|o_doc)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -1512,7 +1650,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
+  ({ o_desk: deskView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_scan: scanView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
