@@ -426,7 +426,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-5 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1007,7 +1007,7 @@ function eventView() {
       var pl = s.people.filter(function (p) { return !p.event || p.event === ev.name; });
       h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>' + esc(ev.name) + 'の対象者</b>' + (pl.length ? pl.map(function (p) {
         return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + (ev.name === '祭礼' ? gradeTag(p.grade) : '') + '</div><button class="sbtn" data-pe="' + esc(p.id) + '|' + esc(ev.name) + '">直す</button></div>';
-      }).join('') : '<p class="muted" style="margin:6px 0 0">まだ登録がありません。</p>') + '<div style="height:8px"></div><button class="btn ghost" data-pn="' + esc(ev.name) + '">＋ ' + esc(ev.name) + '対象者登録</button>' + (ev.name === '祭礼' ? '<p class="small" style="margin:6px 0 0">生年月日(例 2018-05-03)で登録すると、学年が毎年自動で変わります。</p>' : '') + '</div>';
+      }).join('') : '<p class="muted" style="margin:6px 0 0">まだ登録がありません。</p>') + '<div style="height:8px"></div><button class="btn ghost" data-pn="' + esc(ev.name) + '">＋ ' + esc(ev.name) + '対象者登録</button>' + (ev.name === '祭礼' ? '<p class="small" style="margin:6px 0 0">生年月日で登録すると、学年が毎年自動で変わります。</p>' : '<p class="small" style="margin:6px 0 0">70歳以上の方が対象です。</p>') + '</div>';
       h += '<div style="height:12px"></div>' + (ev.open ? '<button class="btn" data-ap="' + esc(ev.name) + '">' + (ev.apps.length ? 'もう1件 申し込む' : '申し込む') + '</button>' : '') + '</div>';
     });
     sub('イベント', h);
@@ -1023,17 +1023,30 @@ function eventView() {
     });
   }).catch(function (e) { offErr('イベント', e, 'home'); });
 }
+function gradeLabel(y, m, d, year) {
+  var age = year - y - ((m > 4 || (m === 4 && d > 1)) ? 1 : 0);
+  if (age < 0) return '';
+  if (age >= 12) return '中学生以上(対象外)';
+  if (age >= 6) return '小学校' + (age - 5) + '年生(対象)';
+  return age === 5 ? '年長(対象)' : age === 4 ? '年中(対象)' : age === 3 ? '年少(対象)' : '未就学(対象)';
+}
 function evPersonView(id) {
   var go2 = function (s) {
     var p = id === 'new' ? null : s.people.filter(function (x) { return x.id === id; })[0];
     if (id !== 'new' && !p) return go('event');
-    var ev = (p && p.event) || EV.pev || '祭礼', fest = ev === '祭礼';
-    sub(ev + '対象者' + (p ? 'を直す' : '登録'), '<div class="card"><div class="field"><label class="l" for="pn">お名前<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' +
-      (fest ? '<div class="field"><label class="l" for="pb">生年月日 または 学年<span class="req">必須</span></label><p class="hint">例: 2018-05-03 ／ 小3 ／ 年長</p><input class="inp" id="pb" maxlength="20" value="' + esc(p ? p.birth : '') + '"></div>' : '') +
+    var ev = (p && p.event) || EV.pev || '祭礼', fest = ev === '祭礼', Y = s.year, bm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p ? p.birth : '');
+    var opts = function (from, to, sel, unit, desc) { var o = '<option value="">--</option>'; for (var i = from; i <= to; i++) { var v = desc ? to - (i - from) : i; o += '<option value="' + v + '"' + (sel === v ? ' selected' : '') + '>' + v + unit + '</option>'; } return o; };
+    var form = fest ?
+      '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">生年月日<span class="req">必須</span></span><div class="inrow" style="gap:6px"><select class="inp" id="by" aria-label="年">' + opts(Y - 12, Y, bm ? +bm[1] : 0, '年', true) + '</select><select class="inp" id="bm" aria-label="月">' + opts(1, 12, bm ? +bm[2] : 0, '月') + '</select><select class="inp" id="bd" aria-label="日">' + opts(1, 31, bm ? +bm[3] : 0, '日') + '</select></div><p class="hint">対象は小学生以下のお子様です(生まれ年は ' + (Y - 12) + '〜' + Y + ' 年)。</p><div id="gl" style="font-size:17px;font-weight:700;margin-top:6px;min-height:26px"></div></div>' :
+      '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">あなた(またはご家族)は70歳以上ですか?<span class="req">必須</span></span><label class="opt"><input type="checkbox" id="o70"' + (p ? ' checked' : '') + '><span>はい(70歳以上です)</span></label></div>';
+    sub(ev + '対象者' + (p ? 'を直す' : '登録'), '<div class="card"><div class="field"><label class="l" for="pn">氏名<span class="req">必須</span></label><input class="inp" id="pn" maxlength="30" value="' + esc(p ? p.name : '') + '"></div>' + form +
       '<button class="btn" id="psv">保存する</button>' + (p ? '<div style="height:10px"></div><button class="btn ghost" id="pdl" style="color:var(--bad);border-color:var(--bad)">この方を削除</button>' : '') + '</div>', EV.back || 'event');
+    function showGrade() { var gl = $('#gl'); if (!gl) return; var y = +$('#by').value, m = +$('#bm').value, d = +$('#bd').value; gl.textContent = y && m && d ? '学年: ' + gradeLabel(y, m, d, Y) : ''; }
+    if (fest) { ['by', 'bm', 'bd'].forEach(function (k) { $('#' + k).onchange = showGrade; }); showGrade(); }
     $('#psv').onclick = function () {
       var b = $('#psv'); b.disabled = true;
-      api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: fest ? $('#pb').value : '' }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      var birth = fest ? ($('#by').value && $('#bm').value && $('#bd').value ? $('#by').value + '-' + $('#bm').value + '-' + $('#bd').value : '') : '';
+      api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: birth, over70: fest ? false : $('#o70').checked }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
     var d = $('#pdl'); if (d) d.onclick = function () {
       if (!window.confirm('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
