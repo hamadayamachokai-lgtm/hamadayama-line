@@ -427,7 +427,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -714,16 +714,19 @@ function drawCirc() {
 
 var SC = { mode: 'matsuri' };
 var MODE_LABEL = { matsuri: '祭礼', engeikai: '演芸会', disaster: '災害' };
-var MODE_HINT = { matsuri: '会員証のQRで、お菓子の申込を確認して「渡した」を記録します。', engeikai: '会員証のQRで、来場を記録します(同じ方は1回だけ数えます)。', disaster: '会員証のQRで、会員・世帯・登録されているご家族を確認します。' };
+var MODE_HINT = { matsuri: '会員証のQRで、お菓子の申込を確認して「渡した」を記録します。', engeikai: '会員証のQRで、来場を記録し、お土産の申込があれば「渡した」を記録します(同じ方は来場を1回だけ数えます)。', disaster: '会員証のQRで、会員・世帯・登録されているご家族を確認します。' };
 function scanView() {
   var can = false; try { can = !!(window.liff && liff.isApiAvailable && liff.isApiAvailable('scanCodeV2')); } catch (e) { can = false; }
   sub('QRチェックイン', '<div class="seg" id="smode">' + Object.keys(MODE_LABEL).map(function (k) { return '<button data-m="' + k + '" aria-pressed="' + (SC.mode === k) + '">' + MODE_LABEL[k] + '</button>'; }).join('') + '</div>' +
     '<p class="muted" id="shint" style="margin:0 4px 12px"></p>' +
     (can ? '<button class="btn" id="sgo">' + svg('o_checkin').replace('<svg', '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"') + 'QRを読み取る</button>' : '<div class="banner advisory" style="margin-bottom:12px"><div>この画面では、カメラでの読み取りが使えません。下に会員コードを入力してください(LINEアプリで開くと読み取れます)。</div></div>') +
-    '<div class="card" style="margin-top:14px"><h2>会員コードを入力</h2><div class="inrow"><input id="scode" maxlength="14" autocomplete="off" autocapitalize="characters" placeholder="例: K7M2Q9XT" aria-label="会員コード"><button class="sbtn fill" id="sok">確認</button></div></div><div id="sres"></div>', 'officer');
+    '<div class="card" style="margin-top:14px"><h2>会員コードを入力</h2><div class="inrow"><input id="scode" maxlength="60" autocomplete="off" autocapitalize="characters" placeholder="例: K7M2Q9XT" aria-label="会員コード"><button class="sbtn fill" id="sok">確認</button></div></div><div id="sres"></div>' +
+    '<div class="card" style="margin-top:14px" id="fcard"><h2>お名前で探して受付</h2><p class="muted" style="margin:0 0 8px">QRを持っていない・わからない方向けです(祭礼・演芸会)。お名前の一部、会員番号、お子様のお名前で探せます。</p><div class="inrow"><input id="fq" autocomplete="off" placeholder="例: 田中" aria-label="お名前または会員番号"><button class="sbtn fill" id="fok">探す</button></div></div><div id="fres"></div>', 'officer');
   function hint() { $('#shint').textContent = MODE_HINT[SC.mode]; }
   hint();
-  Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (b) { b.onclick = function () { SC.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); hint(); $('#sres').innerHTML = ''; }; });
+  Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (b) { b.onclick = function () { SC.mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#smode button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); hint(); $('#sres').innerHTML = ''; fvis(); }; });
+  $('#fok').onclick = doFind; $('#fq').onkeydown = function (e) { if (e.key === 'Enter') doFind(); };
+  function fvis() { $('#fcard').style.display = SC.mode === 'disaster' ? 'none' : ''; $('#fres').innerHTML = ''; } fvis();
   $('#sok').onclick = function () { var v = $('#scode').value; if (!v.trim()) return toast('会員コードを入力してください'); doScan(v); };
   if (can) $('#sgo').onclick = function () {
     liff.scanCodeV2().then(function (r) { if (r && r.value) doScan(r.value); }).catch(function (e) { toast('読み取りできませんでした: ' + (e && e.message || e)); });
@@ -734,17 +737,49 @@ function doScan(code) {
   api('o_scan', { mode: SC.mode, code: code }).then(function (r) { $('#scode').value = ''; drawScan(r); window.scrollTo(0, $('#sres').offsetTop - 70); })
     .catch(function (e) { $('#sres').innerHTML = '<div class="card scanres warn"><b>確認できませんでした</b><p>' + esc(e.message) + '</p></div>'; });
 }
+function appRowsHtml(apps, first) {
+  return apps.map(function (a, i) {
+    var paper = a.channel === '紙申込書';
+    return '<div class="mrow' + (i === 0 && first ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + a.units + '個 ／ ' + esc(a.guardian || a.people.join('、')) + (paper ? ' <span class="tg">紙の申込(引換券)</span>' : ' <span class="tg">' + esc(a.channel) + '</span>') + '</div>' +
+      (a.kids && a.kids.length && a.guardian ? '<div class="ad">' + esc(a.kids.map(function (k) { return k.name + (k.grade ? '(' + k.grade + ')' : ''); }).join('、')) + '</div>' : '') +
+      (a.note ? '<div class="ad">連絡事項: ' + esc(a.note) + '</div>' : '') +
+      (a.received ? '<div class="ad" style="color:var(--bad);font-weight:700">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button></div></div>';
+  }).join('');
+}
+function bindRecv(box, apps, how, redraw) {
+  Array.prototype.forEach.call(box.querySelectorAll('[data-id]'), function (b) {
+    b.onclick = function () {
+      b.disabled = true;
+      api('o_receive', { id: b.dataset.id, received: b.dataset.r === '1', how: how }).then(function (x) {
+        apps.forEach(function (a) { if (a.id === x.id) { a.received = x.received; a.receivedAt = x.receivedAt; } });
+        redraw(); toast(x.received ? '受取済みにしました' : '取り消しました');
+      }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  });
+}
+function findDraw(d) {
+  var box = $('#fres'), all = [];
+  box.innerHTML = d.results.length ? d.results.map(function (g) {
+    all = all.concat(g.apps);
+    return '<div class="card scanres ' + (g.apps.length ? 'good' : 'warn') + '"><div class="nm" style="font-size:18px;font-weight:700">' + esc(g.memberName) + ' 様</div><div class="muted">' + esc([g.district, g.group && g.group + '班', g.memberNo].filter(Boolean).join(' ・ ')) + '</div>' +
+      (g.apps.length ? appRowsHtml(g.apps, false) : '<p style="margin:8px 0 0"><b>' + esc(d.event) + 'の申込は見つかりません。</b></p>') + '</div>';
+  }).join('') : '<div class="card scanres warn"><b>該当する方がいません</b><p class="muted">お名前の一部、会員番号で探せます。お子様のお名前でも探せます。</p></div>';
+  bindRecv(box, all, '検索', function () { findDraw(d); });
+}
+function doFind() {
+  var q = $('#fq').value.trim(); if (!q) return toast('お名前か会員番号を入れてください');
+  var ev = SC.mode === 'engeikai' ? '演芸会' : '祭礼';
+  $('#fres').innerHTML = '<div class="card"><div class="skel" style="height:80px"></div></div>';
+  api('o_find', { event: ev, q: q }).then(findDraw).catch(function (e) { $('#fres').innerHTML = '<div class="card scanres warn"><b>探せませんでした</b><p>' + esc(e.message) + '</p></div>'; });
+}
 function drawScan(r) {
   var p = r.person, h = '';
   var who = '<div class="nm" style="font-size:19px;font-weight:700">' + esc(p.memberName || p.name) + ' 様</div><div class="muted">' + esc([p.district, p.group && p.group + '班', p.memberNo, p.role].filter(Boolean).join(' ・ ')) + (p.memberName && p.name !== p.memberName ? '(' + esc(p.name) + ')' : '') + '</div>';
   if (r.mode === 'matsuri') {
-    h = '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込</h2>' + who + (r.apps.length ? r.apps.map(function (a, i) {
-      return '<div class="mrow' + (i === 0 ? ' first' : '') + '" style="margin-top:8px"><div><div class="nm">' + a.units + '個 ／ ' + esc(a.guardian) + '</div><div class="ad">' + esc(a.kids.map(function (k) { return k.name + (k.grade ? '(' + k.grade + ')' : ''); }).join('、')) + '</div>' +
-        (a.received ? '<div class="ad">受取済み ' + esc(a.receivedAt) + '</div>' : '') + '</div><div class="acts"><button class="sbtn ' + (a.received ? '' : 'ok') + '" data-id="' + esc(a.id) + '" data-r="' + (a.received ? 0 : 1) + '">' + (a.received ? '受取を取り消す' : '渡した(受取済みにする)') + '</button></div></div>';
-    }).join('') : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
+    h = '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込' + (r.via ? ' <span class="tg">' + esc(r.via) + '</span>' : '') + '</h2>' + who + (r.apps.length ? appRowsHtml(r.apps, true) : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
   } else if (r.mode === 'engeikai') {
     h = '<div class="card scanres ' + (r.already ? 'warn' : 'good') + '"><h2>演芸会 ' + r.year + '</h2>' + who + '<p style="margin:10px 0 0"><b>' + (r.already ? 'すでに来場を記録済みです(' + esc(r.already) + ')' : '✓ 来場を記録しました') + '</b></p><p class="muted" style="margin:4px 0 0">来場者 合計 ' + r.checkedIn + ' 人</p>' +
-      (r.apps && r.apps.length ? r.apps.map(function (a) { return '<p class="muted" style="margin:6px 0 0">申込: ' + a.units + '個 ／ ' + esc(a.people.join('、')) + '</p>'; }).join('') : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + '</div>';
+      (r.apps && r.apps.length ? '<h2 style="margin-top:12px">お土産の申込</h2>' + appRowsHtml(r.apps, true) : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + '</div>';
   } else {
     var hh = r.household;
     h = '<div class="card scanres good"><h2>災害 確認</h2>' + who + (r.already ? '<p class="muted" style="margin:8px 0 0">記録済み(' + esc(r.already) + ')</p>' : '<p class="muted" style="margin:8px 0 0">確認を記録しました</p>') + '<p class="muted" style="margin:4px 0 0">確認済み 合計 ' + r.checkedIn + ' 人</p></div>' +
@@ -752,15 +787,7 @@ function drawScan(r) {
       '<div class="card"><h2>LINE登録のご家族</h2>' + (r.family && r.family.length ? r.family.map(function (f) { return '<div class="mrow first" style="border:0;padding:4px 0"><span class="nm">' + esc(f.name) + '</span> <span class="muted">' + esc(f.relation) + '</span></div>'; }).join('') : '<p class="muted">登録はありません。</p>') + '</div>';
   }
   $('#sres').innerHTML = h; bindMaps($('#sres'));
-  Array.prototype.forEach.call(document.querySelectorAll('#sres [data-id]'), function (b) {
-    b.onclick = function () {
-      b.disabled = true;
-      api('o_receive', { id: b.dataset.id, received: b.dataset.r === '1' }).then(function (x) {
-        r.apps.forEach(function (a) { if (a.id === x.id) { a.received = x.received; a.receivedAt = x.receivedAt; } });
-        drawScan(r); toast(x.received ? '受取済みにしました' : '取り消しました');
-      }).catch(function (e) { b.disabled = false; toast(e.message); });
-    };
-  });
+  bindRecv($('#sres'), r.apps || [], 'QR', function () { drawScan(r); });
 }
 
 /* ---------- メールBOX ---------- */
@@ -995,9 +1022,11 @@ function eventView() {
     if (s.noMember) return sub('イベント', '<div class="notice-box">ご自身の会員番号が確認できないため、この機能はまだ使えません。役員にお問い合わせください。</div>');
     var h = '<p class="muted" style="margin:0 0 12px">' + esc(s.year) + '年度のお申し込みです。ご家族は同じ「対象者」を共有します。</p>';
     s.events.forEach(function (ev) {
-      h += '<div class="card"><h2>' + esc(ev.name) + '</h2>' +
+      var chs = ev.apps.map(function (a) { return a.channel === '紙申込書' ? '紙の申込書' : a.channel === 'グーグルフォーム' ? 'フォーム' : a.channel; });
+      h += '<div class="card"><h2>' + esc(ev.name) + (ev.apps.length ? ' <span class="tg ok">申込済み(' + esc(chs.join('・')) + ')</span>' : '') + '</h2>' +
         (ev.open ? '<span class="tg ok">予約受付中' + (ev.end ? ' 〜' + esc(fmtDate(ev.end)) : '') + '</span>' : '<span class="tg">' + (ev.state === 'イベント終了' ? 'イベントは終了しました' : ev.state === '予約終了' ? '予約の受付は終了しました' : ev.start ? '受付期間外(' + esc(fmtDate(ev.start)) + '〜' + esc(fmtDate(ev.end)) + ')' : 'まだ予約は始まっていません') + '</span>') + (ev.date ? '<span class="tg">イベント日 ' + esc(fmtDate(ev.date)) + '</span>' : '') +
         (ev.note ? '<div class="mbody" style="margin-top:8px">' + linkify(ev.note) + '</div>' : '');
+      if (ev.apps.length) h += '<p class="small" style="margin:10px 0 0">' + (ev.apps.some(function (a) { return a.channel === '紙申込書'; }) ? '紙でお申し込みの方は、引換券で受け取れます。' : '') + '当日は、<b>会員証のQR</b>を受付で見せてください(フォームのQRメールをお持ちの方はそれでも大丈夫です)。QRがわからないときは、お名前で受付できます。</p>';
       if (ev.apps.length) h += '<div style="margin-top:10px">' + ev.apps.map(function (a) {
         return '<div class="rp' + (a.mine ? ' me' : '') + '"><div class="who">' + esc(a.channel) + 'から申込 ・ ' + esc(fmtMd(a.date)) + (a.received ? ' ・ 受取済み' : '') + '</div>' +
           '<div class="tx">' + a.people.map(function (p) { return esc(p.name) + gradeTag(p.grade); }).join('、') + ' ／ ' + a.count + '個' + (a.note ? '<br><span class="muted">' + esc(a.note) + '</span>' : '') + '</div>' +
