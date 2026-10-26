@@ -445,7 +445,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-21 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261026-22 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -641,7 +641,7 @@ function drawRoster() {
     var f = feeT[m.fee] || ['', ''];
     return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><div class="nm" style="font-size:19px;font-weight:700">' + esc(m.name) + '</div><span class="muted" style="white-space:nowrap">' + esc(m.no) + '</span></div>' +
       (m.kana ? '<div class="muted">' + esc(m.kana) + '</div>' : '') +
-      '<div class="ad" style="margin-top:4px">' + esc([m.district, m.group && m.group + '班'].filter(Boolean).join(' ')) + ' ・ ' + esc(m.address) + '</div>' +
+      '<div class="ad" style="margin-top:4px">' + esc([m.district, m.group && m.group + '班'].filter(Boolean).join(' ')) + ' ・ ' + esc(m.address) + '</div>' + addrNote(m) +
       '<div style="margin-top:6px">' + (m.status ? '<span class="tg">' + esc(m.status) + '</span> ' : '') + (m.circ ? '<span class="tg imp">回覧元</span> ' : '') + (f[0] ? '<span class="tg">' + esc(R.data.year + '年度 ' + f[0]) + '</span> ' : '') + (m.count ? '<span class="tg">' + m.count + '人</span>' : '') + '</div>' +
       (m.head && !m.circ ? '<div class="ad">回覧元: ' + esc(m.head) + '</div>' : '') +
       (m.kind ? '<div class="ad">住居種別: ' + esc(m.kind) + '</div>' : '') +
@@ -682,7 +682,7 @@ function drawUnpaid() {
       (g.head ? '<p class="muted" style="margin:0 0 4px">回覧元: ' + esc(g.head) + '</p>' : '') +
       rows.map(function (x, i) {
         var m = x[0];
-        return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div></div><div class="acts">' + mapBtn(m.map) +
+        return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div>' + addrNote(m) + '</div><div class="acts">' + mapBtn(m.map) +
           '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済にする') + '</button>' +
           '<button class="sbtn" data-st="退会" data-g="' + gi + '" data-m="' + x[1] + '">退会にする</button><button class="sbtn" data-st="休会" data-g="' + gi + '" data-m="' + x[1] + '">休会にする</button>' +
           '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にメール</button>' + docBtn(m) + '</div></div>';
@@ -709,6 +709,7 @@ function drawUnpaid() {
   });
 }
 
+function addrNote(m) { return m.addrNote ? '<div class="ad" style="color:#a15c00;font-size:13px;margin-top:2px">⚠ ' + esc(m.addrNote) + '</div>' : ''; }
 function docBtn(m) { return '<button class="sbtn blue" data-doc="' + esc(m.no) + '" data-n="' + (m.docs || 0) + '" data-nm="' + esc(m.name) + '"' + (m.docs ? '' : ' style="opacity:.55"') + '>格納書類' + (m.docs ? '(' + m.docs + ')' : '') + '</button>'; }
 function bindDocs(root) {
   Array.prototype.forEach.call((root || document).querySelectorAll('[data-doc]'), function (b) {
