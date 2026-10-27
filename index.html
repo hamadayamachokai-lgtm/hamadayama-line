@@ -542,7 +542,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-15 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-16 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1952,7 +1952,7 @@ function bdComposer(ph, o) {
     '<div class="battr" id="battr"' + (BD.open ? '' : ' hidden') + '><div class="brw"><button type="button" class="ch ph" id="bpick">📷 写真をつける</button><input type="file" id="bfile" accept="image/*" hidden></div>' + rows +
     (gs.length ? '<div class="small" style="margin:2px 2px 0">' + esc(o.note || '') + '</div>' : '') + '</div>' +
     '<div class="bemo" id="bemop" hidden>' + EMOJIS.map(function (e) { return '<button type="button" data-em="' + e + '">' + e + '</button>'; }).join('') + '</div>' +
-    '<div class="brw2"><button type="button" class="batt' + (any ? ' on' : '') + '" id="battbtn" aria-label="写真・カテゴリなどをつける" aria-expanded="' + !!BD.open + '">＋</button><button type="button" class="batt" id="bemob" aria-label="絵文字" aria-expanded="false">😊</button>' +
+    '<div class="brw2"><button type="button" class="batt' + (any ? ' on' : '') + '" id="battbtn" aria-label="写真・カテゴリなどをつける" aria-expanded="' + !!BD.open + '">＋</button><button type="button" class="batt" id="bemob" aria-label="絵文字" aria-expanded="false"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><circle cx="11" cy="13" r="8" stroke-dasharray="2.7 2.4"/><circle cx="8.4" cy="11.8" r=".7" fill="currentColor" stroke="none"/><circle cx="13.6" cy="11.8" r=".7" fill="currentColor" stroke="none"/><path d="M8 15.3c1.5 1.7 4.5 1.7 6 0"/><path d="M19 2.5v5M16.5 5h5"/></svg></button>' +
     '<textarea id="bin" rows="1" maxlength="' + (o.max || 2000) + '" placeholder="' + ph + '" aria-label="' + ph + '"></textarea><button type="button" id="bsend" class="bsend" aria-label="送る">' + svg('send') + '</button></div></div>';
 }
 function bdPhotosDraw() {
