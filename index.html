@@ -240,6 +240,13 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .ats{display:flex;gap:4px;margin:0 0 4px;flex-wrap:wrap}.at{font-size:10.5px;font-weight:700;line-height:1;padding:3px 6px;border-radius:999px;background:#eef1f6;color:#5b6678}.at.sm{background:#e3eefc;color:#2a5fa8}.at.sf{background:#fde8f0;color:#b03a6a}.at.c{background:#fff4d6;color:#8a6410}
 .bmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:3px 6px 0;font-size:11.5px;color:var(--sub)}
 .bmeta .bl{color:var(--navy);font-weight:700;text-decoration:none}
+.bph{display:block;max-width:100%;max-height:300px;border-radius:12px;margin-top:6px;background:#eee}.bt .bph:first-child{margin-top:0}
+.bpvs{display:flex;gap:8px;padding:0 2px 8px;overflow-x:auto}.bpv{position:relative;flex:0 0 auto;width:64px;height:64px;border-radius:10px;overflow:hidden;background:#eee;font-size:11px;display:flex;align-items:center;justify-content:center}.bpv img{width:100%;height:100%;object-fit:cover}.bpv button{all:unset;position:absolute;top:0;right:0;width:22px;height:22px;text-align:center;line-height:22px;background:rgba(0,0,0,.55);color:#fff;font-size:15px;cursor:pointer}
+.brw .ch.ph{background:#eef3fb;color:var(--navy);border-color:#cdd9ee}
+.opt2{font-weight:400;color:var(--sub);font-size:12px;margin-left:4px}.at.sn{background:#eef1f6;color:#5b6678}
+.rfold{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#eef3fb;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer}
+.battr{max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.bname{font-size:11.5px;color:var(--sub);margin:0 6px 2px}
 .bq{all:unset;cursor:pointer;font-size:10.5px;color:#a39d90;padding:6px 2px;min-height:16px}.bq:disabled{opacity:.6;cursor:default}
 .bb .rxrow{margin-top:6px}.bb .rxp{height:24px;font-size:12px;padding:0 8px 0 6px;border-width:1px}.bb .rxp .e{font-size:13px}.bb .rxadd{height:24px;width:28px;border-width:1px}.bb .rxt{grid-template-columns:repeat(5,1fr)}
 .bsep{text-align:center;font-size:12px;color:var(--sub);margin:14px 0 10px;font-weight:700}
@@ -478,7 +485,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -631,12 +638,13 @@ function rosterView() {
     var ds = []; d.members.forEach(function (m) { if (m.district && ds.indexOf(m.district) < 0) ds.push(m.district); });
     sub('会員名簿', '<div class="card"><p class="muted" style="margin:0 0 8px">見るだけの名簿です。お名前・ふりがな・住所・会員番号の一部で探せます(空白で区切ると、すべてを含む方)。</p>' +
       '<input id="rq" autocomplete="off" placeholder="例: 田中 / たなか / 浜田山1" aria-label="検索" style="width:100%;font-size:20px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px">' +
+      '<button type="button" id="rfold" class="rfold" aria-expanded="true"></button><div id="rflt">' +
       '<div class="chips" id="rdist" style="margin-top:10px"><button data-d="" aria-pressed="' + (!R.dist) + '">すべて</button>' + ds.map(function (x) { return '<button data-d="' + esc(x) + '" aria-pressed="' + (R.dist === x) + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
       '<div class="chips" id="rgrp" style="margin-top:6px"></div>' +
       '<div style="display:grid;gap:8px;margin-top:10px">' + rSel('gift', '商品券', ['', 'あり', 'なし'].map(function (x) { return [x, x ? '商品券 ' + x : '商品券: すべて']; })) +
       rSel('kind', '住居種別', [['', '住居種別: すべて']].concat(rOpts(d.members, 'kind').map(function (x) { return [x, x]; }))) +
       rSel('method', '町会費納入方法', [['', '町会費納入方法: すべて']].concat(rOpts(d.members, 'method').map(function (x) { return [x, x]; }))) + '</div>' +
-      '<div class="chips" id="ropt" style="margin-top:6px"><button data-o="unpaid" aria-pressed="false">未納の方だけ</button><button data-o="all" aria-pressed="false">退会・休会も表示</button></div></div>' +
+      '<div class="chips" id="ropt" style="margin-top:6px"><button data-o="unpaid" aria-pressed="false">未納の方だけ</button><button data-o="all" aria-pressed="false">退会・休会も表示</button></div></div></div>' +
       '<div id="rcnt" class="muted" style="margin:4px 4px 8px"></div><div id="rlist"></div>', R.from);
     $('#rq').oninput = function () { R.q = this.value; R.n = 40; drawRoster(); };
     Array.prototype.forEach.call(document.querySelectorAll('#rdist button'), function (b) {
@@ -646,11 +654,19 @@ function rosterView() {
       b.onclick = function () { var k = b.dataset.o; R[k] = !R[k]; b.setAttribute('aria-pressed', R[k] ? 'true' : 'false'); R.n = 40; drawRoster(); };
     });
     Array.prototype.forEach.call(document.querySelectorAll('select[data-rs]'), function (e) { e.onchange = function () { R[e.dataset.rs] = e.value; R.n = 40; drawRoster(); }; });
-    drawRoster();
+    $('#rfold').onclick = function () { R.fold = !R.fold; rFoldDraw(); };
+    R.fold = false; drawRoster();
   }).catch(function (e) { offErr('会員名簿', e, R.from); });
 }
 function rSel(k, label, opts) {
   return '<select data-rs="' + k + '" aria-label="' + esc(label) + '" style="width:100%;font-size:17px;padding:10px;border:2px solid var(--line);border-radius:10px;background:#fff">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+}
+/** 絞り込みの部分をたたむ。たたんでいる間は、いま選んでいる条件を1行で見せる */
+function rFoldDraw() {
+  var b = $('#rfold'); if (!b) return;
+  var t = [R.dist, R.grps.length ? R.grps.map(function (g) { var m = R.data.members.filter(function (x) { return x.district === R.dist && x.group === g && x.head; })[0]; return m ? m.head : g + '班'; }).join('・') : '', R.unpaid ? '未納のみ' : '', R.gift ? '商品券' + R.gift : '', R.kind, R.method, R.all ? '退会・休会も' : ''].filter(Boolean).join(' / ');
+  $('#rflt').hidden = !!R.fold; b.setAttribute('aria-expanded', String(!R.fold));
+  b.innerHTML = '<span>' + (R.fold ? '絞り込み: ' + esc(t || 'なし') : '絞り込みを閉じる') + '</span><span aria-hidden="true">' + (R.fold ? '▾' : '▴') + '</span>';
 }
 function rOpts(list, k) { var a = []; list.forEach(function (m) { if (m[k] && a.indexOf(m[k]) < 0) a.push(m[k]); }); return a; }
 function drawRoster() {
@@ -670,7 +686,7 @@ function drawRoster() {
     for (var i = 0; i < terms.length; i++) if (m._k.indexOf(terms[i]) < 0) return false;
     return true;
   });
-  $('#rcnt').textContent = hit.length + '件' + (hit.length > R.n ? '(先頭の ' + R.n + '件を表示)' : '');
+  rFoldDraw(); $('#rcnt').textContent = hit.length + '件' + (hit.length > R.n ? '(先頭の ' + R.n + '件を表示)' : '');
   var feeT = { paid: ['納入済', 'ok'], unpaid: ['未納', 'warn'], exempt: ['対象外・別途回収', ''], na: ['', ''] };
   $('#rlist').innerHTML = hit.slice(0, R.n).map(function (m, i) {
     var f = feeT[m.fee] || ['', ''];
@@ -1155,7 +1171,7 @@ function mailView() {
       var rows = d.mails.filter(function (m) { return MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === '未対応'); });
       $('#mlist').innerHTML = rows.length ? rows.map(function (m) {
         return '<button class="ml' + (m.unread ? ' un' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
-          '<div class="sj">' + esc(m.subject) + '</div><div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + '</div>' +
+          '<div class="sj">' + (mailCat(m.subject) ? '<span class="at c" style="font-size:11px;margin-right:6px;vertical-align:2px">' + esc(mailCat(m.subject)) + '</span>' : '') + esc(mailSubj(m.subject)) + '</div><div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + '</div>' +
           (m.important ? '<span class="tg imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="tg">問い合わせ</span>' : '') + statusTag(m.status) + (m.replies ? '<span class="tg">返信 ' + m.replies + '</span>' : '') + '</button>';
       }).join('') : '<div class="card"><p class="muted" style="margin:0">' + (MB.filter === 'all' ? 'メールはまだありません。' : 'この条件のメールはありません。') + '</p></div>';
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .ml'), function (b) { b.onclick = function () { go('mail/' + b.dataset.id); }; });
@@ -1170,33 +1186,35 @@ function mailDetailView(id) {
   sub('メール', '<div class="skel" style="height:300px"></div>', 'mail');
   api('mail_get', { id: id }).then(function (m) { setBadge(m.badge); drawMail(m); }).catch(function (e) { offErr('メール', e, 'mail'); });
 }
+function mailCat(subject) { var m = /^【([^】]{1,12})】/.exec(subject || ''); return m ? m[1] : ''; }
+function mailSubj(subject) { return String(subject || '').replace(/^【[^】]{1,12}】/, ''); }
+function mBubble(o) {   // o: {mine, name, date, body, rk, rid}
+  return '<div class="brow' + (o.mine ? ' me' : '') + '">' + (o.name ? '<div class="bname">' + esc(o.name) + '</div>' : '') + '<div class="bb"><div class="bt">' + bodyHtml(o.body) + '</div>' +
+    (o.rk ? '<div class="rxbox" data-rk="' + o.rk + '" data-rid="' + esc(o.rid) + '"></div>' : '') + '</div><div class="bmeta"><span>' + esc(fmtMd(o.date)) + '</span></div></div>';
+}
 function drawMail(m) {
-  var h = '<div class="card"><div style="font-size:19px;font-weight:700;line-height:1.4">' + esc(m.subject) + '</div>' +
-    '<div class="muted" style="margin-top:4px">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + '</div>' +
-    (m.important ? '<span class="tg imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="tg">問い合わせ</span>' : '') + (m.mine ? '' : '<span class="tg">宛先: ' + esc(m.to) + '</span>') +
-    '<div class="mbody">' + linkify(m.body) + '</div><div id="rx"></div>' +
-    (m.readers ? '<p class="small" style="margin:14px 0 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + '</p>' : '') +
+  var cat = mailCat(m.subject);
+  var h = '<div class="card" style="padding:12px 14px"><div style="font-size:17px;font-weight:700;line-height:1.4">' + (cat ? '<span class="at c" style="font-size:11px;margin-right:6px;vertical-align:2px">' + esc(cat) + '</span>' : '') + esc(mailSubj(m.subject)) + '</div>' +
+    '<div class="muted" style="margin-top:2px;font-size:13px">' + esc(m.mine ? '送信 → ' + m.to : m.sender + ' → ' + m.to) + '</div>' +
+    (m.important ? '<span class="tg imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="tg">問い合わせ</span>' : '') +
+    (m.readers ? '<p class="small" style="margin:8px 0 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + '</p>' : '') +
     (m.repliers && m.repliers.length ? '<p class="small" style="margin:2px 0 0">返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') + '</p>' : '') +
-    '<p class="small" style="margin:6px 0 0">' + esc(m.expires) + ' まで掲載</p></div>';
+    '<p class="small" style="margin:4px 0 0">' + esc(m.expires) + ' まで掲載</p></div>';
   if (m.status) {
-    h += '<div class="card"><h2>対応状況</h2><p style="margin:0 0 10px">' + statusTag(m.status) + (m.status === '対応済み' ? '<span class="muted"> ' + esc(m.handler) + ' さん ・ ' + esc(fmtMd(m.handledAt)) + '</span>' : '') + '</p>' +
-      (m.canStatus ? '<button class="btn ghost" id="mst">' + (m.status === '対応済み' ? '未対応に戻す' : '対応済みにする') + '</button>' : '') + '</div>';
+    h += '<div class="card" style="padding:12px 14px"><p style="margin:0">' + statusTag(m.status) + (m.status === '対応済み' ? '<span class="muted"> ' + esc(m.handler) + ' さん ・ ' + esc(fmtMd(m.handledAt)) + '</span>' : '') + '</p>' +
+      (m.canStatus ? '<button class="btn ghost" id="mst" style="margin-top:10px">' + (m.status === '対応済み' ? '未対応に戻す' : '対応済みにする') + '</button>' : '') + '</div>';
   }
-  h += '<div class="card"><h2>返信' + (m.replies.length ? '(' + m.replies.length + ')' : '') + '</h2>' + (m.replies.length ? m.replies.map(function (r) {
-    return '<div class="rp' + (r.mine ? ' me' : '') + '"><div class="who">' + esc(r.mine ? 'あなた' : r.name) + ' ・ ' + esc(fmtMd(r.at)) + '</div><div class="tx">' + linkify(r.body) + '</div><div class="rxbox" data-rk="mail_reply" data-rid="' + esc(r.id) + '"></div></div>';
-  }).join('') : '<p class="muted" style="margin:0 0 8px">まだ返信はありません。</p>') +
-    '<textarea class="inp" id="rbody" maxlength="2000" placeholder="返信を書く" aria-label="返信"></textarea><div style="height:10px"></div><button class="btn" id="rsend">返信を送る</button>' +
-    '<p class="small" style="margin:8px 0 0">返信は、あなたと送信者・役員だけに見えます。</p></div>';
+  h += '<div id="blist">' + mBubble({ mine: m.mine, name: m.mine ? '' : m.sender, date: m.date, body: m.body }).replace('</div></div><div class="bmeta">', '</div><div id="rx"></div></div><div class="bmeta">') +
+    (m.replies.length ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
+    m.replies.map(function (r) { return mBubble({ mine: r.mine, name: r.mine ? '' : r.name, date: r.at, body: r.body, rk: 'mail_reply', rid: r.id }); }).join('') + '</div>' +
+    '<p class="small" style="text-align:center;margin:6px 0">返信は、あなたと送信者・役員だけに見えます。</p>';
   if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このメールを削除する') + '</button><div style="height:20px"></div>';
-  sub('メール', h, 'mail');
+  h += bdComposer('返信を書く', { max: 2000 });
+  sub('メール', h, 'mail'); document.body.classList.add('bchat');
   if (m.react) reactBind('mail', m.id, m.react);
   reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
   var st = $('#mst'); if (st) st.onclick = function () { st.disabled = true; api('mail_status', { id: m.id, status: m.status === '対応済み' ? '未対応' : '対応済み' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { st.disabled = false; toast(e.message); }); };
-  $('#rsend').onclick = function () {
-    var t = $('#rbody').value; if (!t.trim()) return toast('返信の内容を入力してください');
-    var b = $('#rsend'); b.disabled = true;
-    api('mail_reply', { id: m.id, body: t }).then(function () { toast('返信しました'); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); });
-  };
+  bdComposerBind(function (t, ph) { return api('mail_reply', { id: m.id, body: t, photos: ph }).then(function () { toast('返信しました'); mailDetailView(m.id); }); });
   var dl = $('#mdel'); if (dl) dl.onclick = function () {
     if (!window.confirm(m.mine ? 'このメールの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このメールを削除します。よろしいですか?')) return;
     dl.disabled = true; api('mail_delete', { id: m.id }).then(function () { toast('削除しました'); go('mail'); }).catch(function (e) { dl.disabled = false; toast(e.message); });
@@ -1238,7 +1256,7 @@ function reactBindAll(kind, list, parent, sel) {
     if (it && it.react) { it.react.items = parent.items; reactBind(kind, it.id, it.react, box); }
   });
 }
-var MT = { type: '全員' };
+var MT = { type: '全員', cat: '' };
 function mailNewView() {
   var staff = isOfficer();
   if (!staff) return drawMailNew(null);
@@ -1246,17 +1264,18 @@ function mailNewView() {
   api('mail_targets').then(drawMailNew).catch(function (e) { offErr('新しいメール', e, 'mail'); });
 }
 function drawMailNew(tg) {
+  BD.open = false;
   var staff = !!tg, types = [['全員', '全員'], ['役員', '役員のみ'], ['班', '班'], ['個人', '個人'], ['イベント', '申込者']];
   var h = '<div class="card">';
   if (staff) {
     h += '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">宛先</span><div class="chips" id="mtype" style="margin-bottom:6px">' + types.map(function (t) { return '<button data-t="' + t[0] + '" aria-pressed="' + (MT.type === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div><div id="msub"></div></div>';
   } else h += '<div class="notice-box">役員全員に届きます。お返事は、このメールBOXで確認できます。</div>';
-  h += '<div class="field"><label class="l" for="msj">件名<span class="req">必須</span></label><input class="inp" id="msj" maxlength="80"></div>' +
-    '<div class="field"><label class="l" for="mbd">本文<span class="req">必須</span></label><textarea class="inp" id="mbd" maxlength="3000" style="min-height:160px"></textarea></div>' +
-    (staff ? '<label class="opt" style="margin-bottom:16px"><input type="checkbox" id="mimp"><span>重要(赤い印をつける)</span></label>' : '') +
-    '<button class="btn" id="msend">' + (staff ? '送信する' : '役員に送る') + '</button><p class="small" style="margin:8px 0 0">送ったメールは30日で自動で消えます。送信後も、メールBOXから取り消せます。</p></div>';
-  sub(staff ? '新しいメール' : '役員に問い合わせる', h, 'mail');
-  if (MT.prefill) { $('#msj').value = MT.prefill.subject; $('#mbd').value = MT.prefill.body; MT.prefill = null; }
+  h += '<div class="field"><label class="l" for="msj">件名<span class="opt2">(なくてもOK)</span></label><input class="inp" id="msj" maxlength="80" placeholder="空なら本文から自動で"></div>' +
+    (staff ? '<label class="opt" style="margin-bottom:6px"><input type="checkbox" id="mimp"><span>重要(赤い印をつける)</span></label>' : '') +
+    '<p class="small" style="margin:8px 0 0">下の入力欄に本文を書いて送ります。「＋」でカテゴリ(回覧・祭礼・演芸会 など)と写真をつけられます。送ったメールは30日で自動で消えます。</p></div>' +
+    bdComposer(staff ? 'メールを書く' : '役員へのメッセージ', { groups: mailGroups(), max: 3000, note: 'カテゴリは、件名の頭に【 】で付きます。' });
+  sub(staff ? '新しいメール' : '役員に問い合わせる', h, 'mail'); document.body.classList.add('bchat');
+  if (MT.prefill) { $('#msj').value = MT.prefill.subject; $('#bin').value = MT.prefill.body; MT.prefill = null; }
   var picks = {};
   function drawSub() {
     var t = MT.type, el = $('#msub'); if (!el) return;
@@ -1277,19 +1296,16 @@ function drawMailNew(tg) {
     drawSub();
     Array.prototype.forEach.call(document.querySelectorAll('#mtype button'), function (b) { b.onclick = function () { MT.type = b.dataset.t; Array.prototype.forEach.call(document.querySelectorAll('#mtype button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); drawSub(); }; });
   }
-  $('#msend').onclick = function () {
-    var subj = $('#msj').value.trim(), body = $('#mbd').value.trim();
-    if (!subj || !body) return toast('件名と本文を入力してください');
-    var req = { subject: subj, body: body };
+  bdComposerBind(function (body, ph) {
+    var req = { subject: $('#msj').value.trim(), body: body.trim(), photos: ph, cat: MT.cat || '' };
     if (staff) {
       req.targetType = MT.type; req.important = $('#mimp').checked;
       if (MT.type === '班' || MT.type === 'イベント') req.targetValue = $('#mval').value;
-      if (MT.type === '個人') { req.targetIds = Object.keys(picks); if (!req.targetIds.length) return toast('宛先の方を選んでください'); }
-      if (MT.type === '全員' && !window.confirm('全員に送ります。よろしいですか?')) return;
+      if (MT.type === '個人') { req.targetIds = Object.keys(picks); if (!req.targetIds.length) return Promise.reject(new Error('宛先の方を選んでください')); }
+      if (MT.type === '全員' && !window.confirm('全員に送ります。よろしいですか?')) return Promise.reject(new Error('送信をやめました'));
     }
-    var b = $('#msend'); b.disabled = true;
-    api('mail_send', req).then(function () { toast('送信しました'); go('mail'); }).catch(function (e) { b.disabled = false; toast(e.message); });
-  };
+    return api('mail_send', req).then(function () { toast('送信しました'); MT.cat = ''; go('mail'); });
+  });
 }
 
 /* ---------- 推理 ---------- */
@@ -1765,7 +1781,7 @@ try { var _ba = JSON.parse(localStorage.getItem('hmt_bdattr') || '{}'); BD.sex =
 function bdSave() { try { localStorage.setItem('hmt_bdattr', JSON.stringify({ sex: BD.sex, age: BD.age, cat: BD.cat })); } catch (e) {} }
 function bdAttrHtml(a) {
   if (!a) return '';
-  var t = [a.sex ? '<span class="at s' + (a.sex === '男' ? 'm' : 'f') + '">' + (a.sex === '男' ? '♂' : '♀') + '</span>' : '', a.age ? '<span class="at">' + esc(a.age) + '</span>' : '', a.cat ? '<span class="at c">' + esc(a.cat) + '</span>' : ''].join('');
+  var t = [a.sex ? '<span class="at s' + (a.sex === '男' ? 'm' : a.sex === '女' ? 'f' : 'n') + '">' + (a.sex === '男' ? '♂' : a.sex === '女' ? '♀' : '－') + '</span>' : '', a.age ? '<span class="at">' + esc(a.age) + '</span>' : '', a.cat ? '<span class="at c">' + esc(a.cat) + '</span>' : ''].join('');
   return t ? '<div class="ats">' + t + '</div>' : '';
 }
 function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff, link}
@@ -1776,7 +1792,7 @@ function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff,
     (x.mine || o.staff ? '<button type="button" class="bq" data-op="delete|' + tid + '">削除</button>' : '') +
     (o.staff ? '<button type="button" class="bq" data-op="' + (hid ? 'show' : 'hide') + '|' + tid + '">' + (hid ? '再表示' : '非表示') + '</button>' : '') +
     (!x.mine ? '<button type="button" class="bq" data-rp="' + tid + '"' + (x.reported ? ' disabled' : '') + '>' + (x.reported ? '依頼済み' : '削除依頼') + '</button>' : '') + '</div>';
-  return '<div class="brow' + (x.mine ? ' me' : '') + '"><div class="bb">' + bdAttrHtml(x.attr) + '<div class="bt' + (o.clamp ? ' clamp' : '') + '">' + linkify(x.body) + '</div>' +
+  return '<div class="brow' + (x.mine ? ' me' : '') + '"><div class="bb">' + bdAttrHtml(x.attr) + '<div class="bt' + (o.clamp ? ' clamp' : '') + '">' + bodyHtml(x.body) + '</div>' +
     (hid ? '' : '<div class="rxbox" data-rk="' + o.kind + '" data-rid="' + tid + '"></div>') + '</div>' + meta + '</div>';
 }
 function bdBind(items, par, kind, list, redraw, opt) {
@@ -1795,30 +1811,67 @@ function bdBind(items, par, kind, list, redraw, opt) {
     };
   });
 }
-/** 画面の下に固定する入力欄。属性(性別・年代・カテゴリ)は、小さなボタンをおしたときだけ出る */
-function bdComposer(ph, withAttr) {
-  var a = BD.sex || BD.age || BD.cat;
-  var chips = function (key, list) { return list.map(function (v) { return '<button type="button" class="ch' + (BD[key] === v ? ' on' : '') + '" data-ak="' + key + '" data-av="' + esc(v) + '" aria-pressed="' + (BD[key] === v) + '">' + (v === '男' ? '♂ 男' : v === '女' ? '♀ 女' : esc(v)) + '</button>'; }).join(''); };
-  return '<div class="bcomp" id="bcomp">' + (withAttr ? '<div class="battr" id="battr"' + (BD.open ? '' : ' hidden') + '><div class="brw">' + chips('sex', ['男', '女']) + '</div><div class="brw">' + chips('age', ['〜10代', '20代', '30代', '40代', '50代', '60代', '70代', '80代〜']) + '</div><div class="brw">' + chips('cat', ['雑談', '質問', '困りごと', 'お知らせ', '防犯', '防災', 'ごみ・環境', 'イベント']) + '</div><div class="small" style="margin:2px 2px 0">名前は出ません。つけなくてもOK(次回も覚えています)。</div></div>' : '') +
-    '<div class="brw2">' + (withAttr ? '<button type="button" class="batt' + (a ? ' on' : '') + '" id="battbtn" aria-label="性別・年代・カテゴリをつける" aria-expanded="' + !!BD.open + '">' + (a ? '🏷' : '＋') + '</button>' : '') +
-    '<textarea id="bin" rows="1" maxlength="' + (withAttr ? 2000 : 800) + '" placeholder="' + ph + '" aria-label="' + ph + '"></textarea><button type="button" id="bsend" class="bsend" aria-label="送る">' + svg('send') + '</button></div></div>';
+/** 本文の中の写真の印 [[写真:ID]] を、写真に直して表示する */
+function phUrl(id, w) { return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 800); }
+function bodyHtml(b) {
+  var ids = [], txt = String(b == null ? '' : b).replace(/\n?\[\[写真:([A-Za-z0-9_-]+)\]\]/g, function (m, id) { ids.push(id); return ''; });
+  return (txt.trim() ? linkify(txt) : '') + ids.map(function (id) {
+    return '<a class="bphl" href="https://drive.google.com/file/d/' + encodeURIComponent(id) + '/view" target="_blank" rel="noopener"><img class="bph" loading="lazy" alt="写真" src="' + phUrl(id) + '"></a>';
+  }).join('');
+}
+function bodyText(b) { return String(b == null ? '' : b).replace(/\n?\[\[写真:[A-Za-z0-9_-]+\]\]/g, '').trim() || (/\[\[写真:/.test(b) ? '(写真)' : ''); }
+var BC = { photos: [], busy: 0 };
+var BD_CHOICES = {
+  sex: ['男', '女', '性別なし'], age: ['赤ちゃん', '未就学児', '〜10代', '20代', '30代', '40代', '50代', '60代', '70代', '80代〜'],
+  cat: ['トラブル相談', 'YouTube', '音楽', '浜小', '高中', '受験', '塾', '特売', 'レシピ', '公共交通機関', '雑談', 'テレビ', '質問', '相談', 'お知らせ', 'イベント', '町内', '選挙', '探してます']
+};
+var MAIL_CATS = ['回覧', '祭礼', '演芸会', 'ピラティス', 'コンサート', 'イベント全般', '相談', '悩み'];
+function bdGroups() { return [{ o: BD, k: 'sex', list: BD_CHOICES.sex, save: bdSave }, { o: BD, k: 'age', list: BD_CHOICES.age, save: bdSave }, { o: BD, k: 'cat', list: BD_CHOICES.cat, save: bdSave }]; }
+function mailGroups() { return [{ o: MT, k: 'cat', list: MAIL_CATS }]; }
+/** 画面の下に固定する入力欄。「＋」を押すと、写真と(あれば)カテゴリなどが出る */
+function bdComposer(ph, o) {
+  o = o || {}; var gs = o.groups || []; BC.photos = []; BC.busy = 0; BC.groups = gs;
+  var any = gs.some(function (g) { return g.o[g.k]; });
+  var chip = function (gi, v) { var g = gs[gi]; return '<button type="button" class="ch' + (g.o[g.k] === v ? ' on' : '') + '" data-g="' + gi + '" data-av="' + esc(v) + '" aria-pressed="' + (g.o[g.k] === v) + '">' + esc(v) + '</button>'; };
+  var rows = gs.map(function (g, gi) { return '<div class="brw">' + g.list.map(function (v) { return chip(gi, v); }).join('') + '</div>'; }).join('');
+  return '<div class="bcomp" id="bcomp"><div class="bpvs" id="bpvs" hidden></div>' +
+    '<div class="battr" id="battr"' + (BD.open ? '' : ' hidden') + '><div class="brw"><button type="button" class="ch ph" id="bpick">📷 写真をつける</button><input type="file" id="bfile" accept="image/*" hidden></div>' + rows +
+    (gs.length ? '<div class="small" style="margin:2px 2px 0">' + esc(o.note || '') + '</div>' : '') + '</div>' +
+    '<div class="brw2"><button type="button" class="batt' + (any ? ' on' : '') + '" id="battbtn" aria-label="写真・カテゴリなどをつける" aria-expanded="' + !!BD.open + '">＋</button>' +
+    '<textarea id="bin" rows="1" maxlength="' + (o.max || 2000) + '" placeholder="' + ph + '" aria-label="' + ph + '"></textarea><button type="button" id="bsend" class="bsend" aria-label="送る">' + svg('send') + '</button></div></div>';
+}
+function bdPhotosDraw() {
+  var el = $('#bpvs'); if (!el) return;
+  el.hidden = !BC.photos.length && !BC.busy;
+  el.innerHTML = BC.photos.map(function (p, i) { return '<span class="bpv"><img alt="えらんだ写真" src="' + p.src + '"><button type="button" data-rmp="' + i + '" aria-label="写真をはずす">×</button></span>'; }).join('') + (BC.busy ? '<span class="bpv ld">送信中…</span>' : '');
+  Array.prototype.forEach.call(el.querySelectorAll('[data-rmp]'), function (b) { b.onclick = function () { BC.photos.splice(+b.dataset.rmp, 1); bdPhotosDraw(); }; });
 }
 function bdComposerBind(sendFn) {
-  var ta = $('#bin'), btn = $('#bsend');
+  var ta = $('#bin'), btn = $('#bsend'), gs = BC.groups || [];
   function grow() { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 130) + 'px'; }
   ta.oninput = grow;
   var ab = $('#battbtn');
-  if (ab) ab.onclick = function () { BD.open = !BD.open; $('#battr').hidden = !BD.open; ab.setAttribute('aria-expanded', String(BD.open)); };
-  Array.prototype.forEach.call(document.querySelectorAll('[data-ak]'), function (c) {
+  ab.onclick = function () { BD.open = !BD.open; $('#battr').hidden = !BD.open; ab.setAttribute('aria-expanded', String(BD.open)); ab.textContent = BD.open ? '×' : '＋'; };
+  function mark() { var a = gs.some(function (g) { return g.o[g.k]; }) || BC.photos.length; ab.classList.toggle('on', !!a); }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-g]'), function (c) {
     c.onclick = function () {
-      var k = c.dataset.ak, v = c.dataset.av; BD[k] = BD[k] === v ? '' : v; bdSave();
-      Array.prototype.forEach.call(document.querySelectorAll('[data-ak=' + k + ']'), function (d) { var on = d.dataset.av === BD[k]; d.classList.toggle('on', on); d.setAttribute('aria-pressed', String(on)); });
-      if (ab) { var a = BD.sex || BD.age || BD.cat; ab.classList.toggle('on', !!a); ab.textContent = a ? '🏷' : '＋'; }
+      var g = gs[+c.dataset.g], v = c.dataset.av; g.o[g.k] = g.o[g.k] === v ? '' : v; if (g.save) g.save();
+      Array.prototype.forEach.call(document.querySelectorAll('[data-g="' + c.dataset.g + '"]'), function (d) { var on = d.dataset.av === g.o[g.k]; d.classList.toggle('on', on); d.setAttribute('aria-pressed', String(on)); });
+      mark();
     };
   });
+  var pk = $('#bpick'), fi = $('#bfile');
+  pk.onclick = function () { if (BC.photos.length + BC.busy >= 3) return toast('写真は3枚までです'); fi.click(); };
+  fi.onchange = function () {
+    var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return;
+    BC.busy++; bdPhotosDraw();
+    shrinkImage(f, 1000).then(function (data) { return api('photo_up', { data: data }).then(function (r) { BC.photos.push({ id: r.id, src: data }); }); })
+      .catch(function (e) { toast(e.message || '写真を送れませんでした'); }).then(function () { BC.busy--; bdPhotosDraw(); mark(); });
+  };
   btn.onclick = function () {
-    var t = ta.value; if (!t.trim()) return;
-    btn.disabled = true; sendFn(t).then(function () { ta.value = ''; grow(); btn.disabled = false; }).catch(function (e) { btn.disabled = false; toast(e.message); });
+    var t = ta.value; if (BC.busy) return toast('写真を送っています。少しお待ちください');
+    if (!t.trim() && !BC.photos.length) return;
+    btn.disabled = true; sendFn(t, BC.photos.map(function (p) { return p.id; })).then(function () { ta.value = ''; grow(); BC.photos = []; bdPhotosDraw(); mark(); btn.disabled = false; }).catch(function (e) { btn.disabled = false; toast(e.message); });
   };
 }
 function bdToBottom() { setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); }
@@ -1828,7 +1881,7 @@ function boardView() {
     api('board_list').then(function (d) {
       var kept = first ? '' : ($('#bin') ? $('#bin').value : ''), sy = window.scrollY;
       var h = '<div class="bnote">名前は出ません。電話番号・住所などは書かないでください。投稿は180日で消えます。</div><div id="blist">' +
-        (d.posts.length ? d.posts.map(function (p) { return bdBubble(p, { kind: 'board', staff: d.staff, link: true, clamp: true }); }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ投稿はありません。最初のひとことをどうぞ。</p></div>') + '</div>' + bdComposer('いまどうしてる?', true);
+        (d.posts.length ? d.posts.map(function (p) { return bdBubble(p, { kind: 'board', staff: d.staff, link: true, clamp: true }); }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ投稿はありません。最初のひとことをどうぞ。</p></div>') + '</div>' + bdComposer('いまどうしてる?', { groups: bdGroups(), note: '名前は出ません。つけなくてもOK(次回も覚えています)。' });
       sub('Tweet', h);
       document.body.classList.add('bchat');
       $('#bin').value = kept;
@@ -1836,7 +1889,7 @@ function boardView() {
       Array.prototype.forEach.call(document.querySelectorAll('#blist .bt, #blist [data-cm]'), function (el) {
         el.onclick = function (ev) { ev.preventDefault(); var row = el.closest('.brow'), c = row.querySelector('[data-cm]'); var id = c ? c.dataset.cm : ''; if (id) go('board/' + id); };
       });
-      bdComposerBind(function (t) { return api('board_post', { body: t, sex: BD.sex, age: BD.age, cat: BD.cat }).then(function () { load(false); }); });
+      bdComposerBind(function (t, ph) { return api('board_post', { body: t, photos: ph, sex: BD.sex, age: BD.age, cat: BD.cat }).then(function () { load(false); }); });
       if (first) bdToBottom(); else window.scrollTo(0, sy);
     }).catch(function (e) { offErr('Tweet', e, 'home'); });
   }
@@ -1852,13 +1905,13 @@ function boardDetailView(id) {
       var h = '<div id="blist">' + bdBubble(post, { kind: 'board', staff: p.staff }) + (p.staff && p.reports ? '<div class="small" style="text-align:center">削除依頼 ' + p.reports + '件</div>' : '') +
         '<div class="bsep">コメント' + (p.comments.length ? ' ' + p.comments.length : '') + '</div>' +
         (p.comments.length ? p.comments.map(function (c) { return bdBubble(c, { kind: 'comment', staff: p.staff }); }).join('') : '<p class="muted" style="text-align:center;margin:8px 0">まだコメントはありません。</p>') + '</div>' +
-        (p.status === '公開' ? bdComposer('コメントを書く', false) : '');
+        (p.status === '公開' ? bdComposer('コメントを書く', { max: 800 }) : '');
       sub('Tweet', h, 'board');
       if (p.status === '公開') document.body.classList.add('bchat');
       if ($('#bin')) $('#bin').value = kept;
       reactBindAll('board', [{ id: p.id, react: p.react }], p.react, '.rxbox[data-rk=board]');
       bdBind(null, p.react, 'comment', p.comments, function () { load(false); }, { postId: p.id, onDelPost: function () { go('board'); } });
-      if ($('#bsend')) bdComposerBind(function (t) { return api('board_comment', { id: p.id, body: t }).then(function () { load(false); bdToBottom(); }); });
+      if ($('#bsend')) bdComposerBind(function (t, ph) { return api('board_comment', { id: p.id, body: t, photos: ph }).then(function () { load(false); bdToBottom(); }); });
       if (first && p.comments.length) bdToBottom(); else if (!first) window.scrollTo(0, sy);
     }).catch(function (e) { offErr('Tweet', e, 'board'); });
   }
