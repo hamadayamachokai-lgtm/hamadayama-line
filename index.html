@@ -249,7 +249,7 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .rfold{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#eef3fb;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer}
 .battr{max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .icg{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.icg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px;border-radius:12px;border:2px solid transparent;background:#f3efe6}.icg button.on{border-color:var(--navy);background:#e6ebf4}
-.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
+body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding-bottom:8px}.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
 .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .thf{margin-top:4px}.th{display:flex;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.th.gone{opacity:.6}.thl{display:flex;flex-direction:column;align-items:center}.thline{flex:1;width:2px;background:var(--line);margin:6px 0 2px;border-radius:2px;min-height:10px}
 .thr{flex:1;min-width:0}.thh{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.thno{margin-left:auto;font-size:10px;color:#b9b3a6}
@@ -411,6 +411,19 @@ var NAVLABEL = { dashboard: 'ダッシュ', suginami: '杉並', blog: 'ブログ
 var HASH = { card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' };
 function bdgCls(k) { var lv = S.me && S.me.badges && S.me.badges[k + '_lv']; return lv ? ' ' + lv : ''; }
 function badgeOf(k) { var n = S.me && S.me.badges && +S.me.badges[k]; return n > 0 ? n : 0; }
+/* キーボードが出たら、入力欄をキーボードの上に出す(下のメニューは隠す) */
+(function () {
+  var vv = window.visualViewport; if (!vv) return;
+  function fit() {
+    try {
+      var kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)), on = kb > 80 && !!document.querySelector('.bcomp:not(.inl)');
+      document.body.classList.toggle('kb', on); document.documentElement.style.setProperty('--kb', on ? kb + 'px' : '0px');
+      if (on) { var a = document.activeElement; if (a && a.id === 'bin') setTimeout(function () { try { window.scrollTo(0, document.body.scrollHeight); } catch (e) {} }, 50); }
+    } catch (e) {}
+  }
+  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
+  document.addEventListener('focusout', function () { setTimeout(fit, 120); });
+})();
 function renderNav(h) {
   var el = $('#bnav');
   if (!S.me || S.me.state !== 'approved') { if (el) el.parentNode.removeChild(el); document.body.classList.remove('hasnav'); return; }
@@ -521,7 +534,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-13 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-14 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
