@@ -229,7 +229,26 @@ button.mi{cursor:pointer;min-height:32px}
 .rxt{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin:8px 0 0;padding:6px;border:1.5px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(31,58,95,.12)}
 .rxt button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0 4px;border:0;border-radius:12px;background:none;font:inherit;color:var(--sub);cursor:pointer}
 .rxt button .e{font-size:22px;line-height:1.2}.rxt button .t{font-size:10px;font-weight:700;line-height:1.2;text-align:center;word-break:break-all}.rxt button.on{background:#eef3fb;color:var(--navy)}
-.rxwho{font-size:12px;color:var(--sub);line-height:1.6;margin:6px 2px 0}.rxwho span{white-space:nowrap}
+.rp .rxrow{margin-top:8px}.rp .rxp{height:26px;font-size:12.5px;padding:0 9px 0 7px}.rp .rxp .e{font-size:14px}.rp .rxadd{height:26px;width:32px}.rp .rxt{box-shadow:0 6px 16px rgba(31,58,95,.1)}
+/* Tweet(吹き出し) */
+body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+.bnote{font-size:11.5px;color:var(--sub);text-align:center;margin:2px 8px 10px}
+.brow{display:flex;flex-direction:column;align-items:flex-start;margin:0 0 12px;max-width:100%}.brow.me{align-items:flex-end}
+.bb{max-width:86%;box-sizing:border-box;padding:9px 12px 8px;border-radius:4px 18px 18px 18px;background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(31,58,95,.05)}
+.brow.me .bb{border-radius:18px 4px 18px 18px;background:#d9f2c9;border-color:#c5e6b2}
+.bt{font-size:16px;line-height:1.55;white-space:pre-wrap;word-break:break-word;cursor:pointer}.bt.clamp{display:-webkit-box;-webkit-line-clamp:8;-webkit-box-orient:vertical;overflow:hidden}
+.ats{display:flex;gap:4px;margin:0 0 4px;flex-wrap:wrap}.at{font-size:10.5px;font-weight:700;line-height:1;padding:3px 6px;border-radius:999px;background:#eef1f6;color:#5b6678}.at.sm{background:#e3eefc;color:#2a5fa8}.at.sf{background:#fde8f0;color:#b03a6a}.at.c{background:#fff4d6;color:#8a6410}
+.bmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:3px 6px 0;font-size:11.5px;color:var(--sub)}
+.bmeta .bl{color:var(--navy);font-weight:700;text-decoration:none}
+.bq{all:unset;cursor:pointer;font-size:10.5px;color:#a39d90;padding:6px 2px;min-height:16px}.bq:disabled{opacity:.6;cursor:default}
+.bb .rxrow{margin-top:6px}.bb .rxp{height:24px;font-size:12px;padding:0 8px 0 6px;border-width:1px}.bb .rxp .e{font-size:13px}.bb .rxadd{height:24px;width:28px;border-width:1px}.bb .rxt{grid-template-columns:repeat(5,1fr)}
+.bsep{text-align:center;font-size:12px;color:var(--sub);margin:14px 0 10px;font-weight:700}
+.bcomp{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(58px + env(safe-area-inset-bottom));width:min(100%,520px);box-sizing:border-box;z-index:5;background:rgba(255,253,248,.97);border-top:1px solid var(--line);padding:8px 10px}
+.brw{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}.brw .ch{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub)}.brw .ch.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.brw2{display:flex;gap:8px;align-items:flex-end}
+.brw2 textarea{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.4;padding:9px 12px;border:1.5px solid var(--line);border-radius:20px;background:#fff;resize:none;max-height:130px}
+.bsend{all:unset;cursor:pointer;flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:#06c755;color:#fff;display:flex;align-items:center;justify-content:center}.bsend svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.bsend:disabled{opacity:.5}
+.batt{all:unset;cursor:pointer;flex:0 0 auto;width:34px;height:40px;text-align:center;font-size:20px;color:var(--sub);line-height:40px}.batt.on{color:var(--navy)}
 .mbody{white-space:pre-wrap;word-break:break-word;line-height:1.7;margin:10px 0 0}
 .small{font-size:12px;color:var(--sub);line-height:1.6}
 .rp{padding:10px 12px;border-radius:12px;background:#eef2f9;margin:8px 0;max-width:92%}
@@ -312,7 +331,7 @@ var IC = {
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
   pin: '<path d="M12 21s-6-5.5-6-10a6 6 0 0112 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>',
-  back: '<path d="M15 5l-7 7 7 7"/>', hourglass: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>', send: '<path d="M4 12l16-8-6 16-2-7z"/>', hourglass: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
   stop: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', x: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>', dash: '<path d="M6 12h12"/>', person: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'
 };
@@ -341,7 +360,7 @@ function api(action, extra) {
 function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
 
 /* ---------- 画面の骨組み ---------- */
-function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
+function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); document.body.classList.remove('bchat'); $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
 function sub(title, body, backTo) {
   setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
   $('#bk').onclick = function () { go(backTo || 'home'); };
@@ -459,7 +478,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
 }
@@ -1164,13 +1183,14 @@ function drawMail(m) {
       (m.canStatus ? '<button class="btn ghost" id="mst">' + (m.status === '対応済み' ? '未対応に戻す' : '対応済みにする') + '</button>' : '') + '</div>';
   }
   h += '<div class="card"><h2>返信' + (m.replies.length ? '(' + m.replies.length + ')' : '') + '</h2>' + (m.replies.length ? m.replies.map(function (r) {
-    return '<div class="rp' + (r.mine ? ' me' : '') + '"><div class="who">' + esc(r.mine ? 'あなた' : r.name) + ' ・ ' + esc(fmtMd(r.at)) + '</div><div class="tx">' + linkify(r.body) + '</div></div>';
+    return '<div class="rp' + (r.mine ? ' me' : '') + '"><div class="who">' + esc(r.mine ? 'あなた' : r.name) + ' ・ ' + esc(fmtMd(r.at)) + '</div><div class="tx">' + linkify(r.body) + '</div><div class="rxbox" data-rk="mail_reply" data-rid="' + esc(r.id) + '"></div></div>';
   }).join('') : '<p class="muted" style="margin:0 0 8px">まだ返信はありません。</p>') +
     '<textarea class="inp" id="rbody" maxlength="2000" placeholder="返信を書く" aria-label="返信"></textarea><div style="height:10px"></div><button class="btn" id="rsend">返信を送る</button>' +
     '<p class="small" style="margin:8px 0 0">返信は、あなたと送信者・役員だけに見えます。</p></div>';
   if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このメールを削除する') + '</button><div style="height:20px"></div>';
   sub('メール', h, 'mail');
   if (m.react) reactBind('mail', m.id, m.react);
+  reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
   var st = $('#mst'); if (st) st.onclick = function () { st.disabled = true; api('mail_status', { id: m.id, status: m.status === '対応済み' ? '未対応' : '対応済み' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { st.disabled = false; toast(e.message); }); };
   $('#rsend').onclick = function () {
     var t = $('#rbody').value; if (!t.trim()) return toast('返信の内容を入力してください');
@@ -1186,27 +1206,23 @@ function drawMail(m) {
 function reactHtml(r, open) {
   var plus = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="12" r="8.5"/><path d="M8 14c.8 1.2 1.8 1.8 3 1.8s2.2-.6 3-1.8M8.5 9.8h.01M13.5 9.8h.01M19 3v5M16.5 5.5h5"/></svg>';
   var pills = r.items.filter(function (it) { return r.counts[it.k]; }).map(function (it) {
-    return '<button type="button" class="rxp' + (r.mine === it.k ? ' on' : '') + '" data-rx="' + it.k + '" aria-pressed="' + (r.mine === it.k) + '" aria-label="' + esc(it.t) + ' ' + r.counts[it.k] + '人"><span class="e">' + it.e + '</span>' + r.counts[it.k] + '</button>';
+    return '<button type="button" class="rxp' + (r.mine === it.k ? ' on' : '') + '" data-rx="' + it.k + '" aria-pressed="' + (r.mine === it.k) + '" aria-label="' + esc(it.t) + ' ' + r.counts[it.k] + '"><span class="e">' + it.e + '</span>' + r.counts[it.k] + '</button>';
   }).join('');
   var tray = open ? '<div class="rxt" role="group" aria-label="反応をえらぶ">' + r.items.map(function (it) {
     return '<button type="button"' + (r.mine === it.k ? ' class="on"' : '') + ' data-rx="' + it.k + '" aria-label="' + esc(it.t) + '"><span class="e">' + it.e + '</span><span class="t">' + esc(it.t) + '</span></button>';
   }).join('') + '</div>' : '';
-  var who = r.items.filter(function (it) { return r.counts[it.k]; }).map(function (it) {
-    var names = (r.mine === it.k ? ['あなた'] : []).concat(r.who[it.k] || []), shown = names.slice(0, 5);
-    return '<span>' + it.e + ' ' + esc(shown.join('・')) + (names.length > shown.length ? ' ほか' + (names.length - shown.length) + '人' : '') + '</span>';
-  }).join('　');
-  return '<div class="rxrow">' + pills + '<button type="button" class="rxadd" id="rxadd" aria-expanded="' + !!open + '" aria-label="反応をつける">' + plus + '</button></div>' + tray + (who ? '<div class="rxwho">' + who + '</div>' : '');
+  return '<div class="rxrow">' + pills + '<button type="button" class="rxadd" aria-expanded="' + !!open + '" aria-label="反応をつける">' + plus + '</button></div>' + tray;
 }
-function reactBind(kind, id, r) {
-  var box = $('#rx'); if (!box) return;
+function reactBind(kind, id, r, box) {
+  box = box || $('#rx'); if (!box) return;
   var busy = false, open = false;
   function draw() {
     box.innerHTML = reactHtml(r, open);
-    $('#rxadd').onclick = function () { open = !open; draw(); };
+    box.querySelector('.rxadd').onclick = function () { open = !open; draw(); };
     Array.prototype.forEach.call(box.querySelectorAll('[data-rx]'), function (b) {
       b.onclick = function () {
         if (busy) return; busy = true; b.disabled = true;
-        api('react', { kind: kind, id: id, key: b.dataset.rx }).then(function (x) { r.counts = x.counts; r.who = x.who; r.mine = x.mine; busy = false; open = false; draw(); })
+        api('react', { kind: kind, id: id, key: b.dataset.rx }).then(function (x) { r.counts = x.counts; r.mine = x.mine; busy = false; open = false; draw(); })
           .catch(function (e) { busy = false; b.disabled = false; toast(e.message); });
       };
     });
@@ -1214,6 +1230,14 @@ function reactBind(kind, id, r) {
   draw();
 }
 
+/** 返信・コメントごとの反応(種類の一覧は、親の反応と同じものを使う) */
+function reactBindAll(kind, list, parent, sel) {
+  if (!parent) return;
+  Array.prototype.forEach.call(document.querySelectorAll(sel), function (box) {
+    var it = list.filter(function (x) { return x.id === box.dataset.rid; })[0];
+    if (it && it.react) { it.react.items = parent.items; reactBind(kind, it.id, it.react, box); }
+  });
+}
 var MT = { type: '全員' };
 function mailNewView() {
   var staff = isOfficer();
@@ -1735,60 +1759,110 @@ function tipsView() {
   }).catch(function (e) { offErr('豆知識', e, 'home'); });
 }
 
-/* ---------- Tweet(町会掲示板) ---------- */
-var BD = { cat: 'all' };
+/* ---------- Tweet(町会掲示板): LINEのトークのような吹き出し。名前は出さない ---------- */
+var BD = { sex: '', age: '', cat: '', open: false };
+try { var _ba = JSON.parse(localStorage.getItem('hmt_bdattr') || '{}'); BD.sex = _ba.sex || ''; BD.age = _ba.age || ''; BD.cat = _ba.cat || ''; } catch (e) {}
+function bdSave() { try { localStorage.setItem('hmt_bdattr', JSON.stringify({ sex: BD.sex, age: BD.age, cat: BD.cat })); } catch (e) {} }
+function bdAttrHtml(a) {
+  if (!a) return '';
+  var t = [a.sex ? '<span class="at s' + (a.sex === '男' ? 'm' : 'f') + '">' + (a.sex === '男' ? '♂' : '♀') + '</span>' : '', a.age ? '<span class="at">' + esc(a.age) + '</span>' : '', a.cat ? '<span class="at c">' + esc(a.cat) + '</span>' : ''].join('');
+  return t ? '<div class="ats">' + t + '</div>' : '';
+}
+function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff, link}
+  var hid = x.status !== '公開', tid = esc(x.id);
+  var meta = '<div class="bmeta"><span>' + esc(fmtMd(x.date)) + '</span>' +
+    (o.link ? '<a href="#" class="bl" data-cm="' + tid + '">💬 ' + (x.comments ? x.comments : 'コメント') + '</a>' : '') +
+    (hid ? '<span class="tg warn" style="margin:0">' + esc(x.status) + '</span>' : '') +
+    (x.mine || o.staff ? '<button type="button" class="bq" data-op="delete|' + tid + '">削除</button>' : '') +
+    (o.staff ? '<button type="button" class="bq" data-op="' + (hid ? 'show' : 'hide') + '|' + tid + '">' + (hid ? '再表示' : '非表示') + '</button>' : '') +
+    (!x.mine ? '<button type="button" class="bq" data-rp="' + tid + '"' + (x.reported ? ' disabled' : '') + '>' + (x.reported ? '依頼済み' : '削除依頼') + '</button>' : '') + '</div>';
+  return '<div class="brow' + (x.mine ? ' me' : '') + '"><div class="bb">' + bdAttrHtml(x.attr) + '<div class="bt' + (o.clamp ? ' clamp' : '') + '">' + linkify(x.body) + '</div>' +
+    (hid ? '' : '<div class="rxbox" data-rk="' + o.kind + '" data-rid="' + tid + '"></div>') + '</div>' + meta + '</div>';
+}
+function bdBind(items, par, kind, list, redraw, opt) {
+  reactBindAll(kind, list, par, '.rxbox[data-rk=' + kind + ']');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-rp]'), function (b) {
+    b.onclick = function () {
+      if (!window.confirm('削除依頼を出します。数人から依頼があると、いったん非表示になり、役員が確認します。よろしいですか?')) return;
+      b.disabled = true; api('board_report', { id: b.dataset.rp }).then(function () { toast('削除依頼を出しました'); redraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-op]'), function (b) {
+    b.onclick = function () {
+      var x = b.dataset.op.split('|');
+      if (x[0] === 'delete' && !window.confirm('削除します。よろしいですか?')) return;
+      b.disabled = true; api('board_action', { id: x[1], op: x[0] }).then(function () { toast('完了しました'); if (opt && opt.onDelPost && x[0] === 'delete' && x[1] === opt.postId) opt.onDelPost(); else redraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+  });
+}
+/** 画面の下に固定する入力欄。属性(性別・年代・カテゴリ)は、小さなボタンをおしたときだけ出る */
+function bdComposer(ph, withAttr) {
+  var a = BD.sex || BD.age || BD.cat;
+  var chips = function (key, list) { return list.map(function (v) { return '<button type="button" class="ch' + (BD[key] === v ? ' on' : '') + '" data-ak="' + key + '" data-av="' + esc(v) + '" aria-pressed="' + (BD[key] === v) + '">' + (v === '男' ? '♂ 男' : v === '女' ? '♀ 女' : esc(v)) + '</button>'; }).join(''); };
+  return '<div class="bcomp" id="bcomp">' + (withAttr ? '<div class="battr" id="battr"' + (BD.open ? '' : ' hidden') + '><div class="brw">' + chips('sex', ['男', '女']) + '</div><div class="brw">' + chips('age', ['〜10代', '20代', '30代', '40代', '50代', '60代', '70代', '80代〜']) + '</div><div class="brw">' + chips('cat', ['雑談', '質問', '困りごと', 'お知らせ', '防犯', '防災', 'ごみ・環境', 'イベント']) + '</div><div class="small" style="margin:2px 2px 0">名前は出ません。つけなくてもOK(次回も覚えています)。</div></div>' : '') +
+    '<div class="brw2">' + (withAttr ? '<button type="button" class="batt' + (a ? ' on' : '') + '" id="battbtn" aria-label="性別・年代・カテゴリをつける" aria-expanded="' + !!BD.open + '">' + (a ? '🏷' : '＋') + '</button>' : '') +
+    '<textarea id="bin" rows="1" maxlength="' + (withAttr ? 2000 : 800) + '" placeholder="' + ph + '" aria-label="' + ph + '"></textarea><button type="button" id="bsend" class="bsend" aria-label="送る">' + svg('send') + '</button></div></div>';
+}
+function bdComposerBind(sendFn) {
+  var ta = $('#bin'), btn = $('#bsend');
+  function grow() { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 130) + 'px'; }
+  ta.oninput = grow;
+  var ab = $('#battbtn');
+  if (ab) ab.onclick = function () { BD.open = !BD.open; $('#battr').hidden = !BD.open; ab.setAttribute('aria-expanded', String(BD.open)); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ak]'), function (c) {
+    c.onclick = function () {
+      var k = c.dataset.ak, v = c.dataset.av; BD[k] = BD[k] === v ? '' : v; bdSave();
+      Array.prototype.forEach.call(document.querySelectorAll('[data-ak=' + k + ']'), function (d) { var on = d.dataset.av === BD[k]; d.classList.toggle('on', on); d.setAttribute('aria-pressed', String(on)); });
+      if (ab) { var a = BD.sex || BD.age || BD.cat; ab.classList.toggle('on', !!a); ab.textContent = a ? '🏷' : '＋'; }
+    };
+  });
+  btn.onclick = function () {
+    var t = ta.value; if (!t.trim()) return;
+    btn.disabled = true; sendFn(t).then(function () { ta.value = ''; grow(); btn.disabled = false; }).catch(function (e) { btn.disabled = false; toast(e.message); });
+  };
+}
+function bdToBottom() { setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); }
 function boardView() {
   sub('Tweet', '<div class="skel" style="height:300px"></div>');
-  api('board_list').then(function (d) {
-    var h = '<button class="btn" id="bnew">✎ 投稿する</button><div id="blist" style="margin-top:14px"></div>' +
-      '<p class="small" style="margin:8px 4px">投稿は180日で自動で消えます。不適切な投稿は「通報」してください(3人の通報で、いったん非表示になります)。</p>';
-    sub('Tweet', h);
-    function draw() {
-      var rows = d.posts;
-      $('#blist').innerHTML = rows.length ? rows.map(function (p) {
-        return '<button class="ml" data-id="' + esc(p.id) + '"><div class="sj">' + esc(p.title) + '</div><div class="mt">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div>' + (p.comments ? '<span class="tg">コメント ' + p.comments + '</span>' : '') + (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + '</button>';
-      }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はまだありません。</p></div>';
-      Array.prototype.forEach.call(document.querySelectorAll('#blist .ml'), function (b) { b.onclick = function () { go('board/' + b.dataset.id); }; });
-    }
-    $('#bnew').onclick = function () { go('boardnew'); };
-    draw();
-  }).catch(function (e) { offErr('Tweet', e, 'home'); });
+  function load(first) {
+    api('board_list').then(function (d) {
+      var kept = first ? '' : ($('#bin') ? $('#bin').value : ''), sy = window.scrollY;
+      var h = '<div class="bnote">名前は出ません。電話番号・住所などは書かないでください。投稿は180日で消えます。</div><div id="blist">' +
+        (d.posts.length ? d.posts.map(function (p) { return bdBubble(p, { kind: 'board', staff: d.staff, link: true, clamp: true }); }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ投稿はありません。最初のひとことをどうぞ。</p></div>') + '</div>' + bdComposer('いまどうしてる?', true);
+      sub('Tweet', h);
+      document.body.classList.add('bchat');
+      $('#bin').value = kept;
+      bdBind(d.items, d, 'board', d.posts, function () { load(false); });
+      Array.prototype.forEach.call(document.querySelectorAll('#blist .bt, #blist [data-cm]'), function (el) {
+        el.onclick = function (ev) { ev.preventDefault(); var row = el.closest('.brow'), c = row.querySelector('[data-cm]'); var id = c ? c.dataset.cm : ''; if (id) go('board/' + id); };
+      });
+      bdComposerBind(function (t) { return api('board_post', { body: t, sex: BD.sex, age: BD.age, cat: BD.cat }).then(function () { load(false); }); });
+      if (first) bdToBottom(); else window.scrollTo(0, sy);
+    }).catch(function (e) { offErr('Tweet', e, 'home'); });
+  }
+  load(true);
 }
-function boardNewView() {
-  sub('Tweetする', '<div class="card"><div class="field"><label class="l" for="bt">タイトル<span class="req">必須</span></label><input class="inp" id="bt" maxlength="60"></div>' +
-    '<div class="field"><label class="l" for="bb">本文<span class="req">必須</span></label><textarea class="inp" id="bb" maxlength="2000" style="min-height:160px"></textarea></div>' +
-    '<div class="notice-box">電話番号・住所などの個人情報は書かないでください。町会員全員に見えます。</div><button class="btn" id="bsv">投稿する</button></div>', 'board');
-  $('#bsv').onclick = function () { var b = $('#bsv'); b.disabled = true; api('board_post', { title: $('#bt').value, body: $('#bb').value }).then(function (r) { toast('投稿しました'); go('board/' + r.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
-}
+function boardNewView() { go('board'); }
 function boardDetailView(id) {
   sub('Tweet', '<div class="skel" style="height:300px"></div>', 'board');
-  api('board_get', { id: id }).then(function (p) {
-    var act = function (tid, mine, reported, status) {
-      return '<div class="inrow" style="margin-top:8px;flex-wrap:wrap">' + (mine || p.staff ? '<button class="sbtn" data-op="delete|' + esc(tid) + '">削除</button>' : '') +
-        (!mine ? '<button class="sbtn" data-rp="' + esc(tid) + '"' + (reported ? ' disabled' : '') + '>' + (reported ? '通報済み' : '通報') + '</button>' : '') +
-        (p.staff ? '<button class="sbtn" data-op="' + (status === '公開' ? 'hide' : 'show') + '|' + esc(tid) + '">' + (status === '公開' ? '非表示にする' : '再表示') + '</button>' : '') + '</div>';
-    };
-    var h = '<div class="card"><div style="font-size:19px;font-weight:700;line-height:1.4">' + esc(p.title) + '</div><div class="muted" style="margin-top:4px">' + esc(p.by) + ' ・ ' + esc(fmtMd(p.date)) + '</div>' +
-      (p.status !== '公開' ? '<span class="tg warn">' + esc(p.status) + '</span>' : '') + (p.staff && p.reports ? '<span class="tg warn">通報 ' + p.reports + '</span>' : '') +
-      '<div class="mbody">' + linkify(p.body) + '</div>' + (p.status === '公開' ? '<div id="rx"></div>' : '') + act(p.id, p.mine, p.reported, p.status) + '</div>' +
-      '<div class="card"><h2>コメント' + (p.comments.length ? '(' + p.comments.length + ')' : '') + '</h2>' + (p.comments.length ? p.comments.map(function (c) {
-        return '<div class="rp' + (c.mine ? ' me' : '') + '"><div class="who">' + esc(c.mine ? 'あなた' : c.by) + ' ・ ' + esc(fmtMd(c.date)) + (c.status !== '公開' ? ' ・ ' + esc(c.status) : '') + '</div><div class="tx">' + linkify(c.body) + '</div>' + act(c.id, c.mine, c.reported, c.status) + '</div>';
-      }).join('') : '<p class="muted" style="margin:0 0 8px">まだコメントはありません。</p>') +
-      (p.status === '公開' ? '<textarea class="inp" id="cb" maxlength="800" placeholder="コメントを書く" aria-label="コメント"></textarea><div style="height:10px"></div><button class="btn" id="csv">コメントする</button>' : '') + '</div>';
-    sub('Tweet', h, 'board');
-    if (p.react && p.status === '公開') reactBind('board', p.id, p.react);
-    var cs = $('#csv'); if (cs) cs.onclick = function () { var t = $('#cb').value; if (!t.trim()) return toast('コメントを入力してください'); cs.disabled = true; api('board_comment', { id: p.id, body: t }).then(function () { toast('投稿しました'); boardDetailView(id); }).catch(function (e) { cs.disabled = false; toast(e.message); }); };
-    Array.prototype.forEach.call(document.querySelectorAll('[data-rp]'), function (b) {
-      b.onclick = function () { if (!window.confirm('この投稿を通報します。よろしいですか?')) return; b.disabled = true; api('board_report', { id: b.dataset.rp }).then(function () { toast('通報しました'); boardDetailView(id); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
-    });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-op]'), function (b) {
-      b.onclick = function () {
-        var x = b.dataset.op.split('|');
-        if (x[0] === 'delete' && !window.confirm('削除します。よろしいですか?')) return;
-        b.disabled = true; api('board_action', { id: x[1], op: x[0] }).then(function () { toast('完了しました'); if (x[0] === 'delete' && x[1] === p.id) go('board'); else boardDetailView(id); }).catch(function (e) { b.disabled = false; toast(e.message); });
-      };
-    });
-  }).catch(function (e) { offErr('Tweet', e, 'board'); });
+  function load(first) {
+    api('board_get', { id: id }).then(function (p) {
+      var kept = first ? '' : ($('#bin') ? $('#bin').value : ''), sy = window.scrollY;
+      var post = { id: p.id, date: p.date, attr: p.attr, body: p.body, status: p.status, mine: p.mine, reported: p.reported, react: p.react, comments: 0 };
+      var h = '<div id="blist">' + bdBubble(post, { kind: 'board', staff: p.staff }) + (p.staff && p.reports ? '<div class="small" style="text-align:center">削除依頼 ' + p.reports + '件</div>' : '') +
+        '<div class="bsep">コメント' + (p.comments.length ? ' ' + p.comments.length : '') + '</div>' +
+        (p.comments.length ? p.comments.map(function (c) { return bdBubble(c, { kind: 'comment', staff: p.staff }); }).join('') : '<p class="muted" style="text-align:center;margin:8px 0">まだコメントはありません。</p>') + '</div>' +
+        (p.status === '公開' ? bdComposer('コメントを書く', false) : '');
+      sub('Tweet', h, 'board');
+      if (p.status === '公開') document.body.classList.add('bchat');
+      if ($('#bin')) $('#bin').value = kept;
+      reactBindAll('board', [{ id: p.id, react: p.react }], p.react, '.rxbox[data-rk=board]');
+      bdBind(null, p.react, 'comment', p.comments, function () { load(false); }, { postId: p.id, onDelPost: function () { go('board'); } });
+      if ($('#bsend')) bdComposerBind(function (t) { return api('board_comment', { id: p.id, body: t }).then(function () { load(false); bdToBottom(); }); });
+      if (first && p.comments.length) bdToBottom(); else if (!first) window.scrollTo(0, sy);
+    }).catch(function (e) { offErr('Tweet', e, 'board'); });
+  }
+  load(true);
 }
 
 /* ---------- 助け合い(災害時) ---------- */
