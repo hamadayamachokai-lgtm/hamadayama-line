@@ -212,7 +212,7 @@ button.mi{cursor:pointer;min-height:32px}
 .scanres{border-left:5px solid var(--navy)}
 .scanres.good{border-left-color:var(--ok)} .scanres.warn{border-left-color:var(--warn)}
 .inrow{display:flex;gap:8px}.inrow input{flex:1;min-width:0;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:17px;letter-spacing:.1em;text-transform:uppercase;background:#fff}
-/* メールBOX */
+/* チャット */
 .ml{all:unset;display:block;box-sizing:border-box;width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 14px 12px 30px;margin-bottom:10px;position:relative;cursor:pointer}
 .ml:active{transform:scale(.99)}
 .ml .dt{position:absolute;left:11px;top:19px;width:11px;height:11px;border-radius:50%;background:#d92d20}
@@ -256,13 +256,13 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .tk{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px}.tk.w{background:#fde4e1;color:#b3261e}.tk.o{background:var(--ok-bg);color:var(--ok)}
 .tgs{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}.thb{font-size:16px;line-height:1.55;margin-top:4px;white-space:pre-wrap;word-break:break-word}
 .tha{display:flex;gap:16px;margin-top:6px;align-items:center}.thbtn{all:unset;cursor:pointer;font-size:14px;color:var(--sub);display:inline-flex;gap:4px;align-items:center;min-height:34px}
-.hpm{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f3f6fb}.hpmg{margin-top:6px;padding:6px 10px;background:#fff;border-radius:10px;border:1px solid var(--line)}
+.sbtn.xs{min-height:28px;padding:0 10px;font-size:12px;border-radius:9px;border-width:1px}.sbtn.xs.big,.sbtn.big{min-height:44px;padding:0 22px;font-size:15px}.sbtn.xs.ur{color:#c0322b;border-color:#c0322b}.sbtn.xs.on{background:#c0322b;color:#fff;border-color:#c0322b}.sbtn.xs.dg{color:var(--bad);border-color:var(--bad)}.hpops{margin-top:8px;flex-wrap:wrap;gap:6px}.tk.urg{background:#c0322b;color:#fff}.at.urg{background:#fde3e3;color:#c0322b}.hptp{margin:0 0 8px;padding:8px;border-radius:12px;background:#f3f6fb}.hpf{margin-top:8px}.hpm{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f3f6fb}.hpmg{margin-top:6px;padding:6px 10px;background:#fff;border-radius:10px;border:1px solid var(--line)}
 .hav{all:unset;cursor:pointer;display:inline-flex;vertical-align:middle;margin-right:8px}
 .bname{font-size:11.5px;color:var(--sub);margin:0 6px 2px}
 .bq{all:unset;cursor:pointer;font-size:10.5px;color:#a39d90;padding:6px 2px;min-height:16px}.bq:disabled{opacity:.6;cursor:default}
 .bb .rxrow{margin-top:6px}.bb .rxp{height:24px;font-size:12px;padding:0 8px 0 6px;border-width:1px}.bb .rxp .e{font-size:13px}.bb .rxadd{height:24px;width:28px;border-width:1px}.bb .rxt{grid-template-columns:repeat(5,1fr)}
 .bsep{text-align:center;font-size:12px;color:var(--sub);margin:14px 0 10px;font-weight:700}
-.bcomp{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(58px + env(safe-area-inset-bottom));width:min(100%,520px);box-sizing:border-box;z-index:5;background:rgba(255,253,248,.97);border-top:1px solid var(--line);padding:8px 10px}
+.bcomp{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom));width:min(100%,520px);box-sizing:border-box;z-index:5;background:rgba(255,253,248,.97);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 10px 10px}
 .brw{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}.brw .ch{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--sub)}.brw .ch.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .brw2{display:flex;gap:8px;align-items:flex-end}
 .brw2 textarea{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.4;padding:9px 12px;border:1.5px solid var(--line);border-radius:20px;background:#fff;resize:none;max-height:130px}
@@ -356,7 +356,7 @@ var IC = {
 };
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
-  card: '会員証', dashboard: 'ダッシュボード', mail: 'メールBOX', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
+  card: '会員証', dashboard: 'ダッシュボード', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更申請',
   o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
@@ -457,7 +457,7 @@ function formView(prefill, isEdit) {
     '<div class="field"><label class="l" for="f1">LINE会員氏名<span class="req">必須</span></label><p class="hint">ご本人のお名前(フルネーム)をご入力ください。</p><input class="inp" id="f1" autocomplete="name" maxlength="30" value="' + esc(f.lineName || me.displayName || '') + '"><div class="err" id="e1"></div></div>' +
     '<div class="field"><label class="l" for="f2">町会費納入者のお名前<span class="req">必須</span></label><p class="hint">町会費をお支払いいただいている方(世帯主など)のお名前です。<b>管理組合で加入している場合は、建物名(マンション名)</b>をご入力ください。</p><input class="inp" id="f2" maxlength="60" value="' + esc(f.payerName || '') + '"><div class="err" id="e2"></div></div>' +
     '<div class="field"><label class="l" for="f3">納入者の住所<span class="req">必須</span></label><p class="hint">例えば、<br><b>3-1-1 浜田山町会マンション1120</b><br>のように、町会費納入者の住所を全部記載してください(半角・全角は問いません)。<br>※会員様が管理組合加入者の場合は、こちらに記載していただいた住所が判定基準になります。</p><input class="inp" id="f3" maxlength="100" autocomplete="street-address" value="' + esc(f.payerAddress || '') + '"><div class="err" id="e3"></div></div>' +
-    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">アイコン<span class="opt2">(任意)</span></span><p class="hint">TweetやメールBOXの吹き出しに出る絵です。あとから変えられます。決めなければ 👥 になります。</p>' + iconGrid(FI.v) + '</div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">アイコン<span class="opt2">(任意)</span></span><p class="hint">Tweetやチャットの吹き出しに出る絵です。あとから変えられます。決めなければ 👥 になります。</p>' + iconGrid(FI.v) + '</div>' +
     '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">納入者との関係<span class="req">必須</span></span><div class="opts" id="rels" role="radiogroup">' + relHtml + '</div>' +
     '<div id="relnote" style="display:none;margin-top:10px"><p class="hint">状況を教えてください(例: 実家に同居している、マンションの管理人 など)</p><textarea class="inp" id="f4" maxlength="100">' + esc(f.relationNote || '') + '</textarea></div><div class="err" id="e4"></div></div>' +
     '<button class="btn" id="sb" type="submit">' + (isEdit ? 'この内容で修正する' : 'この内容で申請する') + '</button>' +
@@ -521,7 +521,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-11 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-13 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1193,13 +1193,13 @@ function deskView() {
   load();
 }
 
-/* ---------- メールBOX ---------- */
+/* ---------- チャット ---------- */
 function fmtMd(t) { t = String(t || ''); return t.length >= 16 ? (+t.slice(5, 7)) + '/' + (+t.slice(8, 10)) + ' ' + t.slice(11, 16) : t; }
 function setBadge(n) { if (!S.me) return; S.me.badges = Object.assign({}, S.me.badges, { mail: n }); var h = (location.hash || '').replace('#', '').split('/')[0]; renderNav(h); }
 var MB = { filter: 'all' };
 function statusTag(st) { return st ? '<span class="tg ' + (st === '対応済み' ? 'ok' : 'warn') + '">' + esc(st) + '</span>' : ''; }
 function mailView() {
-  if (!MEM.mail_list) sub('メールBOX', '<div class="skel" style="height:260px"></div>');
+  if (!MEM.mail_list) sub('チャット', '<div class="skel" style="height:260px"></div>');
   swrList('mail_list', function (d) {
     setBadge(d.unread);
     var staff = d.canBroadcast;
@@ -1214,11 +1214,11 @@ function mailView() {
       }).join('') : '<div class="card"><p class="muted" style="margin:0">' + (MB.filter === 'all' ? 'メールはまだありません。' : 'この条件のメールはありません。') + '</p></div>';
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .ml'), function (b) { b.onclick = function () { go('mail/' + b.dataset.id); }; });
     }
-    sub('メールBOX', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたメールは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
+    sub('チャット', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたメールは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
     $('#mnew').onclick = function () { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); };
     Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (b) { b.setAttribute('aria-pressed', b.dataset.f === MB.filter ? 'true' : 'false'); b.onclick = function () { MB.filter = b.dataset.f; Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
     draw();
-  }, function (e) { offErr('メールBOX', e, 'home'); });
+  }, function (e) { offErr('チャット', e, 'home'); });
 }
 function mailDetailView(id) {
   sub('メール', '<div class="skel" style="height:300px"></div>', 'mail');
@@ -1346,8 +1346,8 @@ function drawMailTo(tg, staff) {
 function mailWriteView() {
   var staff = isOfficer();
   if (!MT.ready) return go('mailnew');
-  var h = '<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;gap:8px;align-items:center"><div><span class="muted" style="font-size:12px">宛先</span><div style="font-weight:700" id="mto">' + esc(MT.label) + '</div></div><button class="sbtn" id="mchg" style="min-height:36px;padding:0 12px">変更</button></div>' +
-    '<div class="bnote">下の入力欄に書いて送ります。「＋」で、写真・重要・タグ(回覧 祭礼 など)をつけられます。<br>送ったメールは30日で自動で消えます。</div><div id="blist"></div>' +
+  var h = '<div class="card" style="padding:6px 10px;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><span class="muted" style="font-size:11px">宛先 </span><b id="mto" style="font-size:15px">' + esc(MT.label) + '</b></div><button class="sbtn" id="mchg" style="min-height:28px;padding:0 10px;font-size:12.5px;border-radius:9px">変更</button></div>' +
+    '<div class="bnote" style="margin:0 4px 4px;font-size:11.5px;line-height:1.45">下の欄に書いて送ります。「＋」で写真・重要・タグをつけられます。30日で自動で消えます。</div><div id="blist"></div>' +
     bdComposer('メッセージを書く', { groups: mailGroups(), max: 3000, note: 'タグは、相手にわかりやすいように件名の頭に【 】で付きます。' });
   sub('新しいメール', h, 'mail'); document.body.classList.add('bchat'); BD.open = false;
   if (MT.prefill) { $('#bin').value = MT.prefill.subject + '\n' + MT.prefill.body; MT.prefill = null; }
@@ -1895,9 +1895,9 @@ function iconView() {
   var me = S.me;
   function draw() {
     var cur = me.iconSet ? me.icon : '';
-    sub('アイコン', '<div class="card"><div style="text-align:center"><div id="icbig">' + av(me.icon, 'lg', me.photo) + '</div><p class="muted" style="margin:8px 0 0">メールBOX・助け合い・Tweetの吹き出しに出ます。<br>お名前は出ません。</p></div></div>' +
+    sub('アイコン', '<div class="card"><div style="text-align:center"><div id="icbig">' + av(me.icon, 'lg', me.photo) + '</div><p class="muted" style="margin:8px 0 0">チャット・助け合い・Tweetの吹き出しに出ます。<br>お名前は出ません。</p></div></div>' +
       '<div class="card"><h2>絵から選ぶ</h2>' + iconGrid(cur) + '<button class="btn ghost" id="icreset" style="margin-top:14px">決めない(👥にもどす)</button></div>' +
-      '<div class="card"><h2>写真にする(任意)</h2><p class="hint" style="margin:0 0 10px">丸く切り取って、小さく表示します。メールBOXと助け合いでは写真が出ます。</p><input type="file" id="icfile" accept="image/*" hidden>' +
+      '<div class="card"><h2>写真にする(任意)</h2><p class="hint" style="margin:0 0 10px">丸く切り取って、小さく表示します。チャットと助け合いでは写真が出ます。</p><input type="file" id="icfile" accept="image/*" hidden>' +
       '<button class="btn ghost" id="icpick">📷 写真をえらぶ</button>' + (me.photo ? '<div style="height:8px"></div><button class="btn ghost" id="icnophoto">写真をはずす</button>' +
       '<label class="opt" style="margin-top:12px"><input type="checkbox" id="ictw"' + (me.tweetPhoto ? ' checked' : '') + '><span>Tweetでも写真を出す</span></label><div class="notice-box" style="margin-top:8px">Tweetは名前を出さない場所です。顔が分かる写真を出すと、だれの投稿か分かってしまいます。ふだんは、チェックを外したまま(Tweetでは絵が出ます)をおすすめします。</div>' : '') + '</div>', 'home');
     Array.prototype.forEach.call(document.querySelectorAll('#icg button'), function (b) { b.onclick = function () { set({ icon: b.dataset.i }, 'アイコンを変えました'); }; });
@@ -2020,7 +2020,7 @@ function boardDetailView(id) {
 }
 
 /* ---------- 助け合い(災害時)。Threadsのような、1本のながれ ---------- */
-var HP = { tab: 'open', d: null, kind: 'お願い', cat: '', scale: '1人' };
+var HP = { tab: 'open', d: null, kind: 'お願い', tags: [], scale: '1人', tagOpen: false, form: null };
 function refreshBadges() { return api('badges').then(function (b) { if (!S.me) return; S.me.badges = b; saveMe(S.me); renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
 function helpView() {
   if (!MEM.help_list) sub('助け合い', '<div class="skel" style="height:300px"></div>');
@@ -2030,60 +2030,83 @@ function helpReload(keep) {
   var kept = keep && $('#bin') ? $('#bin').value : '', y = window.scrollY;
   return api('help_list').then(function (d) { MEM.help_list = d; HP.d = d; drawHelp(); if ($('#bin')) $('#bin').value = kept; window.scrollTo(0, y); refreshBadges(); }).catch(function (e) { toast(e.message); });
 }
-function hpGroups(d) { return [{ o: HP, k: 'cat', list: d.cats }, { o: HP, k: 'scale', list: d.scales }]; }
+var HPTXT = { raise: 'チャットを定期的にご確認ください。依頼者から連絡がきます' };
+function hpKindLabel(x) { return x.kind === 'お願い' ? 'できます' : 'お願いしたい'; }
+function hpTagPanel(d) {
+  var ch = function (attr, v, on) { return '<button type="button" class="ch' + (on ? ' on' : '') + '" ' + attr + '="' + esc(v) + '" aria-pressed="' + on + '">' + esc(v) + '</button>'; };
+  return '<div class="hptp" id="htp"' + (HP.tagOpen ? '' : ' hidden') + '><div class="small" style="margin:0 2px 2px">カテゴリ(いくつでも)</div><div class="brw">' + d.cats.map(function (v) { return ch('data-ht', v, HP.tags.indexOf(v) >= 0); }).join('') + '</div>' +
+    '<div class="small" style="margin:6px 2px 2px">年代(いくつでも)</div><div class="brw">' + d.ages.map(function (v) { return ch('data-ht', v, HP.tags.indexOf(v) >= 0); }).join('') + '</div>' +
+    (HP.kind === 'お願い' ? '<div class="small" style="margin:6px 2px 2px">ほしい人数(先着で、そろったら自動で締め切ります)</div><div class="brw">' + d.scales.map(function (v) { return ch('data-hs', v, HP.scale === v); }).join('') + '</div>' : '') +
+    '<div class="small" style="margin:6px 2px 0">電話番号・番地は書かないでください。投稿はすぐ、みんなに見えます。</div></div>';
+}
 function drawHelp() {
   var d = HP.d, items = d.items, open = items.filter(function (x) { return x.status === '公開' || x.status === '成立'; });
   var reqs = open.filter(function (x) { return x.kind === 'お願い' && !x.mine && x.status === '公開' && !x.raised; }).length;
-  var list = HP.tab === 'mine' ? items.filter(function (x) { return x.mine || x.connectedMe; }) : HP.tab === 'req' ? open.filter(function (x) { return x.kind === 'お願い'; }) : HP.tab === 'off' ? open.filter(function (x) { return x.kind === 'できます'; }) : open;
-  var me = S.me || {};
-  var pre = '<div class="chips" id="hk" style="margin:0 0 8px"><button data-k="お願い" aria-pressed="' + (HP.kind === 'お願い') + '">お願い(手伝ってほしい)</button><button data-k="できます" aria-pressed="' + (HP.kind === 'できます') + '">できます(手伝える)</button></div>';
+  var list = HP.tab === 'mine' ? items.filter(function (x) { return x.mine || x.raised; }) : HP.tab === 'req' ? open.filter(function (x) { return x.kind === 'お願い'; }) : HP.tab === 'off' ? open.filter(function (x) { return x.kind === 'できます'; }) : open;
+  var pre = '<div class="chips" id="hk" style="margin:0 0 6px"><button data-k="お願い" aria-pressed="' + (HP.kind === 'お願い') + '">お願い</button><button data-k="できます" aria-pressed="' + (HP.kind === 'できます') + '">できます</button>' +
+    '<button type="button" id="htog" aria-pressed="' + (HP.tags.length > 0) + '" aria-expanded="' + !!HP.tagOpen + '">🏷 タグ' + (HP.tags.length ? ' ' + HP.tags.length : '') + (HP.tagOpen ? ' ▲' : ' ▼') + '</button></div>' + hpTagPanel(d);
   BD.open = false;
-  var h = '<div class="banner warning" style="margin-bottom:12px"><div><b>災害モード中</b><div>連絡先は公開しません。つながった方とは、メールの「助け合い相手」で3日間だけ連絡できます。</div></div></div>' +
-    bdComposer(HP.kind === 'お願い' ? 'いま、何が必要ですか?' : 'どんなことができますか?', { groups: hpGroups(d), max: 1000, inline: true, pre: pre, note: '内容の種類と、ほしい人数(お願いのとき)です。電話番号・番地は書かないでください。投稿はすぐ、みんなに見えます。' }) +
+  var h = '<div class="banner warning" style="margin-bottom:12px"><div><b>災害モード中</b><div>連絡先は公開しません。「できます」を押した方と依頼者は、メールの「助け合い相手」で3日間だけ連絡できます。</div></div></div>' +
+    bdComposer(HP.kind === 'お願い' ? 'いま、何が必要ですか?' : 'どんなことができますか?', { max: 1000, inline: true, pre: pre }) +
     '<div class="chips" id="hts" style="margin:4px 0 2px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんな</button><button data-t="req" aria-pressed="' + (HP.tab === 'req') + '">お願い' + (reqs ? ' ' + reqs : '') + '</button><button data-t="off" aria-pressed="' + (HP.tab === 'off') + '">できます</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分</button></div>' +
     '<div class="thf">' + (list.length ? list.map(function (x) { return hpCell(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はありません。</p></div>') + '</div>';
   sub('助け合い', h);
-  Array.prototype.forEach.call(document.querySelectorAll('#hts button'), function (b) { b.onclick = function () { HP.tab = b.dataset.t; var k = $('#bin').value; drawHelp(); $('#bin').value = k; }; });
-  Array.prototype.forEach.call(document.querySelectorAll('#hk button'), function (b) { b.onclick = function () { HP.kind = b.dataset.k; Array.prototype.forEach.call(document.querySelectorAll('#hk button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); $('#bin').placeholder = HP.kind === 'お願い' ? 'いま、何が必要ですか?' : 'どんなことができますか?'; }; });
-  bdComposerBind(function (t, ph) { return api('help_post', { kind: HP.kind, cat: HP.cat, scale: HP.kind === 'お願い' ? HP.scale : '', body: t, photos: ph }).then(function () { toast('投稿しました'); HP.tab = 'open'; return helpReload(false); }); });
+  var redo = function () { var k = $('#bin').value; drawHelp(); $('#bin').value = k; };
+  Array.prototype.forEach.call(document.querySelectorAll('#hts button'), function (b) { b.onclick = function () { HP.tab = b.dataset.t; redo(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('#hk button[data-k]'), function (b) { b.onclick = function () { HP.kind = b.dataset.k; redo(); }; });
+  $('#htog').onclick = function () { HP.tagOpen = !HP.tagOpen; redo(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ht]'), function (b) { b.onclick = function () { var v = b.dataset.ht, i = HP.tags.indexOf(v); if (i >= 0) HP.tags.splice(i, 1); else HP.tags.push(v); redo(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hs]'), function (b) { b.onclick = function () { HP.scale = b.dataset.hs; redo(); }; });
+  bdComposerBind(function (t, ph) { return api('help_post', { kind: HP.kind, tags: HP.tags, scale: HP.kind === 'お願い' ? HP.scale : '', body: t, photos: ph }).then(function () { toast('投稿しました'); HP.tab = 'open'; HP.tags = []; HP.tagOpen = false; return helpReload(false); }); });
   bindHelpButtons();
 }
-function hpMapUrl(m) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(m.lat + ',' + m.lng); }
-function hpMsgHtml(m) {
-  return '<div class="hpmg"><span class="muted" style="font-size:11px">' + esc(fmtMd(m.date)) + '</span>' + (m.body ? '<div>' + linkify(m.body) + '</div>' : '') + (m.lat !== null ? '<a class="sbtn" href="' + esc(hpMapUrl(m)) + '" target="_blank" rel="noopener" style="min-height:36px;margin-top:4px">📍 地図で見る</a>' : '') + '</div>';
+function hpDetailForm(x, helperId, who) {
+  var key = x.id + '|' + (helperId || ''), f = HP.form && HP.form.key === key ? HP.form : null;
+  if (!f) return '<div style="margin-top:6px"><button class="sbtn fill" data-hp="form|' + esc(x.id) + '|' + esc(helperId || '') + '">詳細を送る</button></div>';
+  return '<div class="hpf"><div class="small" style="margin:0 0 4px"><b>' + esc(who) + '</b>さんへ送ります。電話番号は書かないでください。</div>' +
+    '<label class="small" for="hf-place">対象の場所</label><div class="inrow"><input class="inp" id="hf-place" maxlength="100" placeholder="例: 3丁目のパン屋の前" style="flex:1;min-width:0"><button class="sbtn" data-hp="loc|' + esc(x.id) + '" style="min-height:44px">📍 現在地</button></div>' +
+    '<div class="small" id="hf-loc" style="margin:2px 0 0">' + (f.lat !== null ? '✅ 現在地を入れました' : '現在地を使うか、場所を文字で入れてください') + '</div>' +
+    '<label class="small" for="hf-nick" style="display:block;margin-top:6px">呼び名(苗字でもニックネームでもOK)</label><input class="inp" id="hf-nick" maxlength="30" placeholder="例: 田中" style="width:100%;box-sizing:border-box">' +
+    '<label class="small" for="hf-note" style="display:block;margin-top:6px">具体的な内容(任意)</label><textarea class="inp" id="hf-note" maxlength="300" rows="2" placeholder="例: 米10kgを2階まで" style="width:100%;box-sizing:border-box"></textarea>' +
+    '<div class="inrow" style="margin-top:8px"><button class="sbtn fill" data-hp="send|' + esc(x.id) + '|' + esc(helperId || '') + '">送る</button><button class="sbtn" data-hp="formx|' + esc(x.id) + '">閉じる</button></div></div>';
 }
 function hpCell(x, d) {
-  var gone = x.status === '完了' || x.status === 'キャンセル' || x.status === '見送り';
-  var btn = function (op, label, cls, extra) { return '<button class="sbtn ' + (cls || '') + '" style="min-height:38px;padding:0 12px' + (cls === 'dg' ? ';color:var(--bad);border-color:var(--bad)' : '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '">' + label + '</button>'; };
+  var gone = x.status === '完了' || x.status === 'キャンセル' || x.status === '見送り', open = x.status === '公開', closed = x.status === '成立';
+  var btn = function (op, label, cls, extra) { return '<button class="sbtn xs ' + (cls || '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '">' + label + '</button>'; };
   var rc = x.react || { counts: {}, mine: '' }, hearts = rc.counts.love || 0, on = rc.mine === 'love';
+  var tags = (x.tags || []).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
   var h = '<article class="th' + (gone ? ' gone' : '') + '"><div class="thl">' + av(x.icon, '', x.ph) + '<i class="thline"></i></div><div class="thr">' +
-    '<div class="thh"><b>' + esc(x.by) + '</b><span class="tk ' + (x.kind === 'お願い' ? 'w' : 'o') + '">' + esc(x.kind) + '</span><span class="muted" style="font-size:12px">' + esc(fmtMd(x.date)) + '</span>' + (x.no ? '<span class="thno">No.' + esc(x.no) + '</span>' : '') + '</div>' +
-    '<div class="tgs">' + (x.cat ? '<span class="at">' + esc(x.cat) + '</span>' : '') + (x.scale ? '<span class="at">募集 ' + esc(x.scale) + '</span>' : '') + (x.status !== '公開' ? '<span class="at c">' + esc(x.status) + '</span>' : '') + (x.connected ? '<span class="at sn">つながり ' + x.connected + '人</span>' : '') + '</div>' +
+    '<div class="thh"><b>' + esc(x.by) + '</b><span class="tk ' + (x.kind === 'お願い' ? 'w' : 'o') + '">' + esc(x.kind) + '</span>' + (x.urgent && open ? '<span class="tk urg">急募</span>' : '') + '<span class="muted" style="font-size:12px">' + esc(fmtMd(x.date)) + '</span>' + (x.no ? '<span class="thno">No.' + esc(x.no) + '</span>' : '') + '</div>' +
+    '<div class="tgs">' + tags + (x.scale ? '<span class="at">募集 ' + esc(x.scale) + (open ? '(あと' + x.left + '人)' : '') + '</span>' : '') + (closed ? '<span class="at c">募集終了</span>' : (!open ? '<span class="at c">' + esc(x.status) + '</span>' : '')) + '</div>' +
     '<div class="thb">' + bodyHtml(x.body) + '</div><div class="tha">' +
     '<button type="button" class="thbtn" data-hl="' + esc(x.id) + '" aria-pressed="' + on + '" aria-label="ハート ' + hearts + '">' + (on ? '❤️' : '🤍') + (hearts ? ' ' + hearts : '') + '</button>' +
-    '<span class="thbtn" style="cursor:default">💬 ' + x.raiseCount + '</span></div>';
-  var bs = [];
-  if (x.status === '公開' && !x.mine) bs.push(x.raised ? btn('unraise', '手上げを取り消す') : btn('raise', x.kind === 'お願い' ? 'こちら行けます!' : 'お願いしたい', 'ok', '|' + x.kind));
-  if (x.raisers && x.raisers.length && (x.status === '公開' || x.status === '成立')) h += '<div style="margin-top:8px"><b style="font-size:13px">' + (x.kind === 'お願い' ? '手を挙げた方' : 'お願いした方') + '(' + x.raisers.length + ')</b>' + x.raisers.map(function (r) {
-    return '<div class="rp" style="display:flex;gap:8px;max-width:100%">' + av(r.icon, 'sm', r.ph) + '<div style="min-width:0"><div class="who">' + esc(r.name) + ' ・ ' + esc(fmtMd(r.date)) + (r.done ? ' ・ <span class="tg ok" style="margin:0">つながり済み</span>' : '') + '</div>' + (r.msg ? '<div class="tx">' + esc(r.msg) + '</div>' : '') +
-      (x.mine && x.status === '公開' && !r.done ? '<div style="margin-top:6px"><button class="sbtn fill" style="min-height:38px" data-hp="connect|' + esc(x.id) + '|' + esc(r.name) + '|' + esc(r.id) + '">この方とつなぐ</button></div>' : '') + '</div></div>';
+    '<span class="thbtn" style="cursor:default">🙋 ' + x.raiseCount + '</span></div>';
+  // 閲覧者: できます / お願いしたい(先着)
+  if (!x.mine) {
+    if (x.raised) {
+      h += '<div class="hpm"><b style="font-size:13px">' + (x.needDetail ? '詳細を送ってください' : x.sent ? 'つながりました' : '手を挙げました') + '</b>' +
+        (x.needDetail ? hpDetailForm(x, '', x.by) : '<p class="small" style="margin:4px 0 0">' + HPTXT.raise + '</p>') +
+        '<div class="inrow" style="margin-top:6px;flex-wrap:wrap">' + (x.sent ? btn('mail', 'チャットを開く', 'fill') : btn('unraise', 'やっぱりやめる')) + '</div></div>';
+    } else if (open) h += '<div style="margin-top:8px">' + btn('raise', hpKindLabel(x), 'ok big', '|' + x.kind) + '</div>';
+    else if (closed) h += '<p class="small" style="margin:8px 0 0">募集は終了しました。</p>';
+  }
+  // 依頼者(投稿者): 手を挙げた方 → 詳細を送る / やっぱりやめる
+  if (x.raisers && x.raisers.length && x.kind === 'お願い' && !gone) h += '<div style="margin-top:8px">' + x.raisers.map(function (r) {
+    return '<div class="hpm" style="margin-top:6px"><div style="display:flex;gap:8px;align-items:center">' + av(r.icon, 'sm', r.ph) + '<div style="min-width:0"><b style="font-size:13px">' + esc(r.name) + '</b><span class="muted" style="font-size:11px"> ・ ' + esc(fmtMd(r.date)) + '</span>' + (r.sent ? ' <span class="tg ok" style="margin:0">詳細を送りました</span>' : '') + '</div></div>' +
+      (r.sent ? '' : (x.mine ? '<div style="margin-top:6px;font-size:13px"><b>助けてくれる方が挙手してくれています</b><br>詳細を送ってください</div>' + hpDetailForm(x, r.id, r.name) : '')) +
+      (x.mine ? '<div class="inrow" style="margin-top:6px;flex-wrap:wrap">' + (r.sent ? btn('mail', 'チャットを開く', 'fill') : '') + btn('release', 'やっぱりやめる', '', '|' + r.id + '|' + esc(r.name)) + '</div>' : '') + '</div>';
   }).join('') + '</div>';
-  if (x.mine && x.connected) {
-    h += '<div class="hpm"><div style="font-weight:700;font-size:13px">つながった方にだけ送る' + (x.until ? '(' + esc(x.until.slice(5).replace('-', '/')) + ' まで)' : '') + '</div>' + (x.msgs || []).map(hpMsgHtml).join('');
-    if (x.canMsg) h += '<div class="inrow" style="margin-top:8px"><input class="inp" id="hm-' + esc(x.id) + '" maxlength="300" placeholder="場所・時間など" aria-label="つながった方へのメッセージ" style="flex:1;min-width:0"><button class="sbtn fill" data-hp="msg|' + esc(x.id) + '">送る</button></div><div style="margin-top:6px"><button class="sbtn" data-hp="loc|' + esc(x.id) + '">📍 いまの現在地を送る</button></div>';
-    else h += '<p class="small" style="margin:6px 0 0">連絡できる3日間は過ぎました。</p>';
-    h += '<p class="small" style="margin:6px 0 0">やりとりは、メールBOXの【助け合い相手】でもできます。</p></div>';
-  } else if (x.connectedMe) {
-    h += '<div class="hpm"><div style="font-weight:700;font-size:13px">投稿者から' + (x.expired ? '(3日間が過ぎました)' : '(' + esc(x.until.slice(5).replace('-', '/')) + ' まで)') + '</div>' + ((x.msgs || []).length ? x.msgs.map(hpMsgHtml).join('') : '<p class="small" style="margin:4px 0 0">まだありません。</p>') +
-      '<div style="margin-top:8px"><button class="sbtn fill" data-hp="mail|' + esc(x.id) + '">メールBOX(助け合い相手)を開く</button></div></div>';
-  }
+  else if (x.raisers && x.raisers.length && x.kind === 'できます' && !gone && (x.mine || d.staff)) h += '<p class="small" style="margin:8px 0 0">お願いしたい方: ' + x.raisers.map(function (r) { return esc(r.name) + (r.sent ? '(詳細あり)' : '(詳細まち)'); }).join('、') + '。詳細は、チャットに届きます。</p>';
+  if (x.mine && x.asked > 0 && !gone) h += '<div class="hpm" style="margin-top:8px"><b style="font-size:13px">助け合いは、無事に終わりましたか?</b><div class="inrow" style="margin-top:6px">' + btn('done', '完了しました', 'fill') + '</div></div>';
+  // 投稿者(と役員)の操作。小さめ
   if (x.mine || d.staff) {
-    if ((x.status === '成立') || (x.status === '公開' && x.connected)) bs.push(btn('done', '完了しました', 'ok'));
-    if (x.status === '成立') bs.push(btn('reopen', '追加募集!', 'fill'));
+    var bs = [];
+    if (open) { bs.push(btn('urgent', x.urgent ? '急募をはずす' : '急募', x.urgent ? 'on' : 'ur')); bs.push(btn('close', '募集終了')); }
+    if (closed && x.left > 0) bs.push(btn('reopen', '追加募集'));
     if (['承認待ち', '公開', '成立'].indexOf(x.status) >= 0) bs.push(btn('cancel', 'キャンセル', 'dg'));
-    if (d.staff) bs.push(btn('remove', '削除', 'dg'));
+    bs.push(btn('remove', '削除', 'dg'));
+    h += '<div class="inrow hpops">' + bs.join('') + '</div>';
   }
-  if (bs.length) h += '<div class="inrow" style="margin-top:8px;flex-wrap:wrap">' + bs.join('') + '</div>';
   return h + '</div></article>';
 }
 function bindHelpButtons() {
@@ -2100,19 +2123,27 @@ function bindHelpButtons() {
   Array.prototype.forEach.call(document.querySelectorAll('[data-hp]'), function (b) {
     b.onclick = function () {
       var x = b.dataset.hp.split('|'), id = x[1], op = x[0];
-      var run = function (action, extra, ok) { b.disabled = true; return api(action, Object.assign({ id: id }, extra)).then(function () { toast(ok); after(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
-      if (op === 'raise') { askText(x[2] === 'できます' ? 'お願いする' : '行けます!', 'ひとこと(任意・例: 土曜なら行けます)').then(function (m) { if (m !== null) run('help_raise', { message: m }, x[2] === 'できます' ? 'お願いしました' : '手を挙げました'); }); }
-      else if (op === 'unraise') run('help_unraise', {}, '取り消しました');
-      else if (op === 'connect') { if (window.confirm(x[2] + 'さんとつなぎます。連絡先は公開されません。メールBOXの「助け合い相手」で、つながった日から3日間だけ連絡できます。よろしいですか?')) run('help_connect', { helperId: x[3] }, 'つなぎました。メールBOXをご確認ください'); }
-      else if (op === 'msg') { var el = $('#hm-' + id), t = el ? el.value.trim() : ''; if (!t) return toast('送る内容を入力してください'); run('help_msg', { body: t }, '送りました'); }
+      var run = function (action, extra, ok) { b.disabled = true; return api(action, Object.assign({ id: id }, extra)).then(function (r) { if (ok) toast(ok); after(); return r; }).catch(function (e) { b.disabled = false; toast(e.message); if (e.code === 'full' || e.code === 'not_found') after(); }); };
+      if (op === 'raise') { b.disabled = true; api('help_raise', { id: id }).then(function () { window.alert(x[2] === 'お願い' ? HPTXT.raise : 'お願いしました。つづけて「詳細を送る」を入力してください'); after(); }).catch(function (e) { b.disabled = false; window.alert(e.message); after(); }); }
+      else if (op === 'unraise') { if (window.confirm('やめます。よろしいですか?')) run('help_unraise', {}, 'やめました'); }
+      else if (op === 'release') { if (window.confirm(x[3] + 'さんとの助け合いを、やめます。よろしいですか?')) run('help_release', { helperId: x[2] }, 'やめました'); }
+      else if (op === 'form') { HP.form = { key: id + '|' + x[2], lat: null, lng: null }; var k = $('#bin').value; drawHelp(); $('#bin').value = k; }
+      else if (op === 'formx') { HP.form = null; var k2 = $('#bin').value; drawHelp(); $('#bin').value = k2; }
       else if (op === 'loc') {
-        if (!navigator.geolocation) return toast('この端末では、現在地を取得できません。場所をテキストで送ってください');
-        if (!window.confirm('いまの現在地を、つながった方に送ります。よろしいですか?')) return;
+        if (!navigator.geolocation) return toast('この端末では、現在地を取得できません。場所を文字で入れてください');
         b.disabled = true; toast('現在地を取得しています…');
-        navigator.geolocation.getCurrentPosition(function (p) { run('help_msg', { lat: p.coords.latitude, lng: p.coords.longitude }, '現在地を送りました'); }, function () { b.disabled = false; toast('現在地を取得できませんでした。場所をテキストで送ってください'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+        navigator.geolocation.getCurrentPosition(function (p) { b.disabled = false; if (HP.form) { HP.form.lat = p.coords.latitude; HP.form.lng = p.coords.longitude; } var el = $('#hf-loc'); if (el) el.textContent = '✅ 現在地を入れました'; }, function () { b.disabled = false; toast('現在地を取得できませんでした。場所を文字で入れてください'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+      }
+      else if (op === 'send') {
+        var f = HP.form || {}, place = ($('#hf-place') || {}).value || '', nick = (($('#hf-nick') || {}).value || '').trim();
+        if (!nick) return toast('呼び名を入力してください'); if (!place.trim() && f.lat === null) return toast('対象の場所を、現在地か文字で入れてください');
+        var ex = { helperId: x[2], place: place.trim(), nick: nick, note: ($('#hf-note') || {}).value || '' }; if (f.lat !== null && f.lat !== undefined) { ex.lat = f.lat; ex.lng = f.lng; }
+        run('help_detail', ex, '送りました。チャットで連絡できます').then(function (r) { if (r) HP.form = null; });
       }
       else if (op === 'mail') go('mail');
       else if (op === 'done') { if (window.confirm('完了にします。よろしいですか?')) run('help_status', { op: 'done' }, '完了しました。ありがとうございました'); }
+      else if (op === 'urgent') run('help_status', { op: 'urgent' }, '');
+      else if (op === 'close') { if (window.confirm('募集を終了します。よろしいですか?')) run('help_status', { op: 'close' }, '募集を終了しました'); }
       else if (op === 'reopen') run('help_status', { op: 'reopen' }, '追加で募集します');
       else if (op === 'cancel') { if (window.confirm('この投稿をキャンセルします。よろしいですか?')) run('help_status', { op: 'cancel' }, 'キャンセルしました'); }
       else if (op === 'remove') { if (window.confirm('この投稿を削除します。よろしいですか?')) run('help_status', { op: 'remove' }, '削除しました'); }
