@@ -525,9 +525,16 @@ function statusView() {
 }
 
 /* ---------- ホーム ---------- */
+function disKindText(k) {
+  if (!k) return '';
+  if (/^震度/.test(k)) return k + 'の地震です。';
+  var m = /^大雨 (.+)$/.exec(k); if (m) return '大雨(' + m[1] + ')です。';
+  return k === 'その他' ? '' : k + 'です。';
+}
 function heroNotes(me) {
   var b = me.badges || {}, n = [], sa = b.sched_ask;
-  if (me.disaster) n.push({ k: 'help', t: '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
+  if (me.disaster && me.drill) n.push({ k: 'help', t: '防災訓練中です。<br>助け合いがデモモードで使えます。', l: '助け合い' });
+  else if (me.disaster) n.push({ k: 'help', t: (disKindText(me.disasterKind) ? esc(disKindText(me.disasterKind)) + '<br>' : '') + '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
   if (+b.mail > 0) n.push({ k: 'mail', t: 'チャットに通知がきてます。<br>確認してください。', l: 'チャット' });
   if (+b.dashboard > 0) n.push({ k: 'dashboard', t: '掲示板に新しいお知らせがあります。', l: '掲示板' });
   if (sa && sa.n) n.push({ k: 'o_sched', t: '役員予定が' + (sa.days <= 0 ? '今日' : sa.days === 1 ? '明日' : sa.days + '日後') + 'にあります。<br>参加の表明ご協力お願いします。', l: '役員予定表' });
@@ -542,7 +549,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-17 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-18 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2063,7 +2070,7 @@ function drawHelp() {
   var pre = '<div class="chips" id="hk" style="margin:0 0 6px"><button data-k="お願い" aria-pressed="' + (HP.kind === 'お願い') + '">お願い</button><button data-k="できます" aria-pressed="' + (HP.kind === 'できます') + '">できます</button>' +
     '<button type="button" id="htog" aria-pressed="' + (HP.tags.length > 0) + '" aria-expanded="' + !!HP.tagOpen + '">🏷 タグ' + (HP.tags.length ? ' ' + HP.tags.length : '') + (HP.tagOpen ? ' ▲' : ' ▼') + '</button></div>' + hpTagPanel(d);
   BD.open = false;
-  var h = '<div class="banner warning" style="margin-bottom:12px"><div><b>災害モード中</b><div>連絡先は公開しません。「できます」を押した方と依頼者は、メールの「助け合い相手」で3日間だけ連絡できます。</div></div></div>' +
+  var h = (S.me && S.me.drill ? '<div class="banner advisory" style="margin-bottom:12px"><div><b>防災訓練中(デモモード)</b><div>マッチングまで試せます。そのあとのチャットは、機械の自動応答です。実際の会員の方には何も届きません。</div></div></div>' : '<div class="banner warning" style="margin-bottom:12px"><div><b>災害モード中</b><div>連絡先は公開しません。「できます」を押した方と依頼者は、チャットの「助け合い相手」で3日間だけ連絡できます。</div></div></div>') +
     bdComposer(HP.kind === 'お願い' ? 'いま、何が必要ですか?' : 'どんなことができますか?', { max: 1000, inline: true, pre: pre }) +
     '<div class="chips" id="hts" style="margin:4px 0 2px"><button data-t="open" aria-pressed="' + (HP.tab === 'open') + '">みんな</button><button data-t="req" aria-pressed="' + (HP.tab === 'req') + '">お願い' + (reqs ? ' ' + reqs : '') + '</button><button data-t="off" aria-pressed="' + (HP.tab === 'off') + '">できます</button><button data-t="mine" aria-pressed="' + (HP.tab === 'mine') + '">自分</button></div>' +
     '<div class="thf">' + (list.length ? list.map(function (x) { return hpCell(x, d); }).join('') : '<div class="card"><p class="muted" style="margin:0">投稿はありません。</p></div>') + '</div>';
@@ -2170,16 +2177,36 @@ function bindHelpButtons() {
 function helpNewView() { go('help'); }
 
 /* ---------- 管理者: 災害モード・書類の更新 ---------- */
+var DM = { kind: '', note: '', drill: false };
+var DLINK = { '大雨 レベル5特別警報': 'https://www.jma.go.jp/jma/kishou/know/tokubetsu-keiho/', '大雨 レベル4危険警報': 'https://www.jma.go.jp/jma/kishou/know/bosai/warning.html', '大雨 レベル3警報': 'https://www.jma.go.jp/jma/kishou/know/bosai/warning.html' };
 function disasterView() {
   sub('災害モード', '<div class="skel" style="height:200px"></div>', 'officer');
   api('a_disaster_get').then(function (d) {
-    sub('災害モード', '<div class="card"><h2>いまの状態</h2><div class="banner ' + (d.on ? 'warning' : 'ok') + '" style="margin:0"><div><b>' + (d.on ? '災害モード ON' : '平常(OFF)') + '</b><div>' + (d.on ? '「助け合い」が使えます。' + (d.since ? '(' + esc(fmtMd(d.since)) + ' から)' : '') : '「助け合い」はグレーで、使えません。') + '</div></div></div>' +
-      '<div style="height:14px"></div><button class="btn ' + (d.on ? 'ghost' : 'red') + '" id="dm">' + (d.on ? '災害モードを終了する(OFF)' : '災害モードにする(助け合いをONにする)') + '</button>' +
-      '<p class="small" style="margin:10px 0 0">ONにすると、会員のメニューの「助け合い」が使えるようになり、お願いの投稿があると赤いバッジが出ます。OFFにすると、助け合いは見えなくなります(投稿は残ります)。</p></div>', 'officer');
-    $('#dm').onclick = function () {
-      if (!window.confirm(d.on ? '災害モードを終了します。助け合いが使えなくなります。よろしいですか?' : '災害モードにします。会員全員の「助け合い」が使えるようになります。よろしいですか?')) return;
-      $('#dm').disabled = true; api('a_disaster_set', { on: !d.on }).then(function () { toast(d.on ? '災害モードを終了しました' : '災害モードにしました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { $('#dm').disabled = false; toast(e.message); });
-    };
+    DM.kind = d.kind || ''; DM.note = d.note || ''; DM.drill = !!d.drill;
+    function draw() {
+      var st = d.on ? (d.drill ? '防災訓練中(デモモード)' : '災害モード ON' + (d.kind ? '(' + (d.kind === 'その他' && d.note ? d.note : d.kind) + ')' : '')) : '平常(OFF)';
+      var ch = function (k) { return '<button type="button" class="ch' + (DM.kind === k && !DM.drill ? ' on' : '') + '" data-dk="' + esc(k) + '" aria-pressed="' + (DM.kind === k && !DM.drill) + '"' + (DM.drill ? ' disabled' : '') + '>' + esc(k) + '</button>'; };
+      var groups = d.kinds.map(function (g) { return '<div class="small" style="margin:10px 2px 4px"><b>' + esc(g[0]) + '</b></div><div class="brw">' + g[1].map(ch).join('') + '</div>' + (g[0] === '大雨' ? '<p class="small" style="margin:4px 2px 0">目安(気象庁): <a href="' + DLINK['大雨 レベル5特別警報'] + '" target="_blank" rel="noopener">レベル5特別警報</a> ・ <a href="' + DLINK['大雨 レベル4危険警報'] + '" target="_blank" rel="noopener">レベル4危険警報</a> ・ <a href="' + DLINK['大雨 レベル3警報'] + '" target="_blank" rel="noopener">レベル3警報</a></p>' : ''); }).join('');
+      sub('災害モード', '<div class="card"><h2>いまの状態</h2><div class="banner ' + (d.on ? 'warning' : 'ok') + '" style="margin:0"><div><b>' + esc(st) + '</b><div>' + (d.on ? '「助け合い」が使えます。' + (d.since ? '(' + esc(fmtMd(d.since)) + ' から)' : '') : '「助け合い」はグレーで、使えません。') + '</div></div></div></div>' +
+        '<div class="card"><h2>' + (d.on ? '内容を変える' : '発令する') + '</h2><label style="display:flex;gap:8px;align-items:center;font-weight:700"><input type="checkbox" id="dd"' + (DM.drill ? ' checked' : '') + '> 訓練(デモモード)にする</label>' +
+        '<p class="small" style="margin:2px 0 0">訓練中は、助け合いでマッチングまでできますが、そのあとのチャットは機械の自動応答になります(本物の会員どうしのやりとりは起きません)。ホームには「防災訓練中です」と出ます。</p>' +
+        '<div id="dkinds" style="' + (DM.drill ? 'opacity:.45' : '') + '">' + groups + '<div id="dnote" class="field" style="margin-top:8px' + (DM.kind === 'その他' && !DM.drill ? '' : ';display:none') + '"><input class="inp" id="dnt" maxlength="40" placeholder="災害の名前(空でもOK)" aria-label="その他の災害の名前" value="' + esc(DM.note) + '"></div></div>' +
+        '<div style="height:14px"></div><button class="btn red" id="dm">' + (d.on ? 'この内容に変える' : (DM.drill ? '訓練を始める' : '災害モードにする(助け合いをONにする)')) + '</button>' + (d.on ? '<div style="height:8px"></div><button class="btn ghost" id="doff">終了する(OFF)</button>' : '') +
+        '<p class="small" style="margin:10px 0 0">ONにすると、会員のメニューの「助け合い」が使えるようになり、ホームの上に知らせが出ます。OFFにすると、助け合いは見えなくなります(投稿は残ります)。本番と訓練の投稿は、混ざりません。</p></div>', 'officer');
+      $('#dd').onchange = function () { DM.drill = $('#dd').checked; draw(); };
+      Array.prototype.forEach.call(document.querySelectorAll('[data-dk]'), function (b) { b.onclick = function () { DM.kind = b.dataset.dk; DM.note = ($('#dnt') || {}).value || DM.note; draw(); }; });
+      $('#dm').onclick = function () {
+        if ($('#dnt')) DM.note = $('#dnt').value;
+        if (!DM.drill && !DM.kind) return toast('災害の種類を選んでください');
+        if (!window.confirm(DM.drill ? '訓練(デモモード)を始めます。会員全員のホームに「防災訓練中です」と出ます。よろしいですか?' : '災害モードにします(' + (DM.kind === 'その他' && DM.note ? DM.note : DM.kind) + ')。会員全員のホームに知らせが出て、「助け合い」が使えるようになります。よろしいですか?')) return;
+        $('#dm').disabled = true; api('a_disaster_set', { on: true, drill: DM.drill, kind: DM.drill ? '' : DM.kind, note: DM.note }).then(function () { toast(DM.drill ? '訓練を始めました' : '災害モードにしました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { $('#dm').disabled = false; toast(e.message); });
+      };
+      var off = $('#doff'); if (off) off.onclick = function () {
+        if (!window.confirm('終了します。助け合いが使えなくなります。よろしいですか?')) return;
+        off.disabled = true; api('a_disaster_set', { on: false }).then(function () { toast('終了しました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { off.disabled = false; toast(e.message); });
+      };
+    }
+    draw();
   }).catch(function (e) { offErr('災害モード', e, 'officer'); });
 }
 function docsAdminView() {
@@ -2309,7 +2336,7 @@ function startMe() {
   return api('me', { nobadge: true }).catch(function (e) { if (cached && e && e.code === 'network') { toast(e.message); return null; } throw e; }).then(function (me) {
     if (!me) return bp;
     if (S.me && S.me.badges) me.badges = S.me.badges;   // 新しいバッジが届くまで、前の値のまま
-    var same = cached && cached.state === me.state && JSON.stringify([cached.role, cached.menu]) === JSON.stringify([me.role, me.menu]);
+    var same = cached && cached.state === me.state && JSON.stringify([cached.role, cached.menu, cached.disaster, cached.drill, cached.disasterKind]) === JSON.stringify([me.role, me.menu, me.disaster, me.drill, me.disasterKind]);
     S.me = me;
     if (!same) route();
     saveMe(me);
