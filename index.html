@@ -45,7 +45,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .chip.bad{background:var(--bad-bg);color:var(--bad)} .chip.mute{background:var(--mute-bg);color:var(--sub)}
 .sheet{margin:-36px 12px 0;position:relative}
 .sheet.flat{margin-top:0}
-.hero.short{padding-bottom:28px}
+.hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
 
 /* カード・ボタン */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px}
@@ -125,7 +125,7 @@ textarea.inp{min-height:96px;resize:vertical}
 .ntc button{all:unset;display:block;width:100%;cursor:pointer}
 .ntc .d{font-size:12.5px;color:var(--sub)}
 .ntc .ti{font-weight:700}
-.ntc .bd{display:none;margin-top:6px;white-space:pre-wrap;word-break:break-word;font-size:15.5px}
+.ntc .bd{display:block;margin-top:6px;white-space:pre-wrap;word-break:break-word;font-size:15.5px}
 .ntc.open .bd{display:block}
 
 /* 天気・防災 */
@@ -213,12 +213,12 @@ button.mi{cursor:pointer;min-height:32px}
 .scanres.good{border-left-color:var(--ok)} .scanres.warn{border-left-color:var(--warn)}
 .inrow{display:flex;gap:8px}.inrow input{flex:1;min-width:0;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:17px;letter-spacing:.1em;text-transform:uppercase;background:#fff}
 /* チャット */
-.ml{all:unset;display:block;box-sizing:border-box;width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 14px 12px 30px;margin-bottom:10px;position:relative;cursor:pointer}
+.ml{all:unset;display:block;box-sizing:border-box;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px 7px 26px;margin-bottom:5px;position:relative;cursor:pointer}
 .ml:active{transform:scale(.99)}
-.ml .dt{position:absolute;left:11px;top:19px;width:11px;height:11px;border-radius:50%;background:#d92d20}
-.ml .sj{font-size:16.5px;line-height:1.4}
+.ml .dt{position:absolute;left:10px;top:14px;width:9px;height:9px;border-radius:50%;background:#d92d20}
+.ml .sj{font-size:15px;line-height:1.35;display:flex;align-items:center;gap:5px;min-width:0}.ml .sx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ml .rc{font-size:12px;color:var(--sub);flex-shrink:0}.ml .at{flex-shrink:0}.at.imp{background:#fde3e3;color:#c0322b}
 .ml.un .sj{font-weight:700}
-.ml .mt{font-size:13px;color:var(--sub);margin-top:2px}
+.ml .mt{font-size:11.5px;color:var(--sub);margin-top:1px}
 .tg{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;margin:6px 6px 0 0;background:var(--mute-bg);color:var(--sub)}
 .tg.imp{background:#fde4e1;color:#b3261e} .tg.warn{background:var(--warn-bg);color:var(--warn)} .tg.ok{background:var(--ok-bg);color:var(--ok)}
 .rxrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 0}
@@ -249,7 +249,7 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .rfold{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#eef3fb;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer}
 .battr{max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .icg{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.icg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px;border-radius:12px;border:2px solid transparent;background:#f3efe6}.icg button.on{border-color:var(--navy);background:#e6ebf4}
-body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding-bottom:8px}.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
+body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding-bottom:8px}.bemo[hidden]{display:none}.bemo{display:flex;flex-wrap:wrap;gap:2px;padding:4px 2px 6px}.bemo button{all:unset;font-size:24px;width:40px;height:38px;text-align:center;cursor:pointer;border-radius:8px}.bemo button:active{background:#eef1f6}.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
 .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .thf{margin-top:4px}.th{display:flex;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.th.gone{opacity:.6}.thl{display:flex;flex-direction:column;align-items:center}.thline{flex:1;width:2px;background:var(--line);margin:6px 0 2px;border-radius:2px;min-height:10px}
 .thr{flex:1;min-width:0}.thh{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.thno{margin-left:auto;font-size:10px;color:#b9b3a6}
@@ -322,7 +322,7 @@ function toast(m) { var t = $('#toast'); t.textContent = m; t.className = 'on'; 
 var IC = {
   card: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6.5 16c.6-1.5 4.4-1.5 5 0M14 10h4M14 13h3"/>',
   dashboard: '<path d="M5 20V11M11 20V4M17 20v-6M3 20h18"/>',
-  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  mail: '<path d="M5 4h14a2 2 0 012 2v9a2 2 0 01-2 2h-8l-5 4v-4H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M8 9h8M8 12.5h5"/>',
   event: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   help: '<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/>',
   suginami: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M12 8v5M12 16v.5"/>',
@@ -356,7 +356,7 @@ var IC = {
 };
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
-  card: '会員証', dashboard: 'ダッシュボード', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
+  card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更申請',
   o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
@@ -407,7 +407,7 @@ function sub(title, body, backTo) {
 }
 function isOfficer() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'officer'; })); }
 function isAdmin() { return !!(S.me && S.me.menu && S.me.menu.some(function (m) { return m.section === 'admin'; })); }
-var NAVLABEL = { dashboard: 'ダッシュ', suginami: '杉並', blog: 'ブログ', board: 'Tweet', help: '助け合い' };
+var NAVLABEL = { dashboard: '掲示板', suginami: '杉並', blog: 'ブログ', board: 'Tweet', help: '助け合い' };
 var HASH = { card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather' };
 function bdgCls(k) { var lv = S.me && S.me.badges && S.me.badges[k + '_lv']; return lv ? ' ' + lv : ''; }
 function badgeOf(k) { var n = S.me && S.me.badges && +S.me.badges[k]; return n > 0 ? n : 0; }
@@ -525,19 +525,28 @@ function statusView() {
 }
 
 /* ---------- ホーム ---------- */
+function heroNotes(me) {
+  var b = me.badges || {}, n = [], sa = b.sched_ask;
+  if (me.disaster) n.push({ k: 'help', t: '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
+  if (+b.mail > 0) n.push({ k: 'mail', t: 'チャットに通知がきてます。<br>確認してください。', l: 'チャット' });
+  if (+b.dashboard > 0) n.push({ k: 'dashboard', t: '掲示板に新しいお知らせがあります。', l: '掲示板' });
+  if (sa && sa.n) n.push({ k: 'o_sched', t: '役員予定が' + (sa.days <= 0 ? '今日' : sa.days === 1 ? '明日' : sa.days + '日後') + 'にあります。<br>参加の表明ご協力お願いします。', l: '役員予定表' });
+  return n.length ? '<div class="hnotes">' + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '" aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
+}
 function homeView() {
   var me = S.me, sections = {}, order = [];
   me.menu.forEach(function (m) { if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
-  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div></div><div class="pad sheet flat">';
+  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-14 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-15 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
+  Array.prototype.forEach.call(document.querySelectorAll('.hn'), function (b) { b.onclick = function () { openTile(b.dataset.hk); }; });
   prefetchLists();
 }
 function openTile(k) {
@@ -573,24 +582,17 @@ function errCard(e) { return '<div class="center"><div class="bigicon bad">' + s
 
 /* ---------- ダッシュボード ---------- */
 function dashView() {
-  sub('ダッシュボード', '<div class="skel"></div><div class="skel"></div>');
+  sub('掲示板', '<div class="skel"></div><div class="skel"></div>');
   api('dashboard').then(function (d) {
     var f = FEE[d.fee.state] || FEE.unlinked;
-    var h = (d.sched && d.sched.length ? '<div class="card" id="dsch"><h2>役員の予定(3日以内)</h2>' + d.sched.map(function (e) { return schedCard(e, false); }).join('') + '<p class="muted" style="margin:8px 0 0">役員・管理者だけに表示されます。</p></div>' : '') + '<div class="card"><h2>' + d.year + '年度 町会費</h2><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="big">' + f[1] + '</div>' +
-      '<div class="muted">' + (d.fee.state === 'unpaid' ? 'お支払いがまだ確認できていません' : d.fee.state === 'unlinked' ? '会員番号の紐づけ後に表示されます' : d.fee.state === 'paid' ? 'ありがとうございます' : '') + '</div></div></div>';
-    if (d.fee.years && d.fee.years.length) h += '<div class="years">' + d.fee.years.map(function (y) { return '<span class="chip ' + (y.paid ? 'ok' : 'warn') + '">' + y.year + ' ' + (y.paid ? '済' : '未') + '</span>'; }).join('') + '</div>';
-    h += '</div>';
-    if (d.member) h += '<div class="card"><h2>登録情報</h2><dl class="kv"><dt>会員番号</dt><dd>' + esc(d.memberNo) + '</dd><dt>班</dt><dd>' + esc(d.member.group) + '班(' + esc(d.member.district) + ')</dd><dt>お名前</dt><dd>' + esc(d.member.name) + '</dd></dl></div>';
-    h += '<div class="card"><h2>町会からのお知らせ</h2>' + (d.notices.length ? d.notices.map(function (n, i) {
-      return '<div class="ntc" data-i="' + i + '"><button type="button" aria-expanded="false"><div class="d">' + (n.isNew ? '<span class="tg imp" style="margin:0 6px 0 0">新着</span>' : '') + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></button></div>';
-    }).join('') : '<p class="muted" style="margin:0">いまのところ、お知らせはありません。</p>') + '</div>';
-    sub('ダッシュボード', h);
+    var h = '<div class="card"><h2>町会からのお知らせ</h2>' + (d.notices.length ? d.notices.map(function (n) {
+      return '<div class="ntc open"><div class="d">' + (n.isNew ? '<span class="tg imp" style="margin:0 6px 0 0">新着</span>' : '') + esc(n.date) + '</div><div class="ti">' + esc(n.title) + '</div><div class="bd">' + linkify(n.body) + '</div></div>';
+    }).join('') : '<p class="muted" style="margin:0">いまのところ、お知らせはありません。</p>') + '</div>' +
+      (d.sched && d.sched.length ? '<div class="card" id="dsch"><h2>役員の予定(3日以内)</h2>' + d.sched.map(function (e) { return schedCard(e, false); }).join('') + '<p class="muted" style="margin:8px 0 0">役員・管理者だけに表示されます。</p></div>' : '');
+    sub('掲示板', h);
     schedBind(document);
     if (S.me.badges && S.me.badges.dashboard) { S.me.badges.dashboard = 0; renderNav('dash'); }
-    Array.prototype.forEach.call(document.querySelectorAll('.ntc button'), function (b) {
-      b.onclick = function (ev) { if (ev.target.tagName === 'A') return; var p = b.parentNode; p.classList.toggle('open'); b.setAttribute('aria-expanded', p.classList.contains('open')); };
-    });
-  }).catch(function (e) { sub('ダッシュボード', errCard(e)); });
+  }).catch(function (e) { sub('掲示板', errCard(e)); });
 }
 
 /* ---------- 杉並(防災) ---------- */
@@ -790,7 +792,7 @@ function drawUnpaid() {
         return '<div class="mrow' + (i === 0 ? ' first' : '') + (m.paid ? ' done' : '') + '"><div><div class="nm">' + (m.paid ? '✓ ' : '') + esc(m.name) + '</div><div class="ad">' + esc(m.address) + '</div>' + addrNote(m) + '</div><div class="acts">' + mapBtn(m.map) +
           '<button class="sbtn ' + (m.paid ? '' : 'ok') + '" data-g="' + gi + '" data-m="' + x[1] + '">' + (m.paid ? '済 → 未納に戻す' : '納入済にする') + '</button>' +
           '<button class="sbtn" data-st="退会" data-g="' + gi + '" data-m="' + x[1] + '">退会にする</button><button class="sbtn" data-st="休会" data-g="' + gi + '" data-m="' + x[1] + '">休会にする</button>' +
-          '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にメール</button>' + docBtn(m) + '</div></div>';
+          '<button class="sbtn" data-mail="1" data-g="' + gi + '" data-m="' + x[1] + '">役員にチャット</button>' + docBtn(m) + '</div></div>';
       }).join('') + '</div>';
   });
   $('#ugrp').innerHTML = U.grp ? '<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>' + esc(U.grp) + '班</b> だけ表示中</span><button class="sbtn" id="ugrpx">すべての班に戻す</button></div>' : '';
@@ -1216,26 +1218,27 @@ function mailView() {
   swrList('mail_list', function (d) {
     setBadge(d.unread);
     var staff = d.canBroadcast;
-    var head = '<button class="btn" id="mnew">' + (staff ? '✉ 新しいメールを送る' : '✉ 役員に問い合わせる') + '</button>' +
+    var head = '<button class="btn" id="mnew">' + (staff ? '💬 新しいチャットを始める' : '💬 役員にチャットで問い合わせる') + '</button>' +
       '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">すべて</button><button data-f="unread" aria-pressed="false">未読 ' + d.unread + '</button>' + (staff || d.mails.some(function (m) { return m.mine; }) ? '<button data-f="todo" aria-pressed="false">未対応</button>' : '') + '</div>';
     function draw() {
       var rows = d.mails.filter(function (m) { return MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === '未対応'); });
       $('#mlist').innerHTML = rows.length ? rows.map(function (m) {
+        var cat = mailCat(m.subject), sn = Array.from(mailSubj(m.subject).replace(/\s+/g, ' ').trim()), sj = sn.slice(0, 15).join('') + (sn.length > 15 ? '…' : '');
         return '<button class="ml' + (m.unread ? ' un' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
-          '<div class="sj">' + (m.mine ? '' : av(m.icon, 'sm', m.ph)) + (mailCat(m.subject) ? '<span class="at c" style="font-size:11px;margin-right:6px;vertical-align:2px">' + esc(mailCat(m.subject)) + '</span>' : '') + esc(mailSubj(m.subject)) + '</div><div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + '</div>' +
-          (m.important ? '<span class="tg imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="tg">問い合わせ</span>' : '') + statusTag(m.status) + (m.replies ? '<span class="tg">返信 ' + m.replies + '</span>' : '') + '</button>';
-      }).join('') : '<div class="card"><p class="muted" style="margin:0">' + (MB.filter === 'all' ? 'メールはまだありません。' : 'この条件のメールはありません。') + '</p></div>';
+          '<div class="sj">' + (cat ? '<span class="at c">' + esc(cat) + '</span>' : '') + (m.important ? '<span class="at imp">重要</span>' : '') + '<span class="sx">' + esc(sj || '(写真)') + '</span>' + (m.replies ? '<span class="rc">💬' + m.replies + '</span>' : '') + '</div>' +
+          '<div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + (m.kind === '問い合わせ' ? ' ・ 問い合わせ' : '') + (m.status ? ' ・ ' + esc(m.status) : '') + '</div></button>';
+      }).join('') : '<div class="card"><p class="muted" style="margin:0">' + (MB.filter === 'all' ? 'チャットはまだありません。' : 'この条件のチャットはありません。') + '</p></div>';
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .ml'), function (b) { b.onclick = function () { go('mail/' + b.dataset.id); }; });
     }
-    sub('チャット', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたメールは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
+    sub('チャット', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
     $('#mnew').onclick = function () { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); };
     Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (b) { b.setAttribute('aria-pressed', b.dataset.f === MB.filter ? 'true' : 'false'); b.onclick = function () { MB.filter = b.dataset.f; Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
     draw();
   }, function (e) { offErr('チャット', e, 'home'); });
 }
 function mailDetailView(id) {
-  sub('メール', '<div class="skel" style="height:300px"></div>', 'mail');
-  api('mail_get', { id: id }).then(function (m) { setBadge(m.badge); drawMail(m); }).catch(function (e) { offErr('メール', e, 'mail'); });
+  sub('チャット', '<div class="skel" style="height:300px"></div>', 'mail');
+  api('mail_get', { id: id }).then(function (m) { setBadge(m.badge); drawMail(m); }).catch(function (e) { offErr('チャット', e, 'mail'); });
 }
 function mailCat(subject) { var m = /^【([^】]{1,12})】/.exec(subject || ''); return m ? m[1] : ''; }
 function mailSubj(subject) { return String(subject || '').replace(/^【[^】]{1,12}】/, ''); }
@@ -1259,15 +1262,15 @@ function drawMail(m) {
     (m.replies.length ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
     m.replies.map(function (r) { return mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rk: 'mail_reply', rid: r.id }); }).join('') + '</div>' +
     '<p class="small" style="text-align:center;margin:6px 0">返信は、あなたと送信者・役員だけに見えます。</p>';
-  if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このメールを削除する') + '</button><div style="height:20px"></div>';
+  if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このチャットを削除する') + '</button><div style="height:20px"></div>';
   h += bdComposer('返信を書く', { max: 2000 });
-  sub('メール', h, 'mail'); document.body.classList.add('bchat');
+  sub('チャット', h, 'mail'); document.body.classList.add('bchat');
   if (m.react) reactBind('mail', m.id, m.react);
   reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
   var st = $('#mst'); if (st) st.onclick = function () { st.disabled = true; api('mail_status', { id: m.id, status: m.status === '対応済み' ? '未対応' : '対応済み' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { st.disabled = false; toast(e.message); }); };
   bdComposerBind(function (t, ph) { return api('mail_reply', { id: m.id, body: t, photos: ph }).then(function () { toast('返信しました'); mailDetailView(m.id); }); });
   var dl = $('#mdel'); if (dl) dl.onclick = function () {
-    if (!window.confirm(m.mine ? 'このメールの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このメールを削除します。よろしいですか?')) return;
+    if (!window.confirm(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?')) return;
     dl.disabled = true; api('mail_delete', { id: m.id }).then(function () { toast('削除しました'); go('mail'); }).catch(function (e) { dl.disabled = false; toast(e.message); });
   };
 }
@@ -1362,7 +1365,7 @@ function mailWriteView() {
   var h = '<div class="card" style="padding:6px 10px;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><span class="muted" style="font-size:11px">宛先 </span><b id="mto" style="font-size:15px">' + esc(MT.label) + '</b></div><button class="sbtn" id="mchg" style="min-height:28px;padding:0 10px;font-size:12.5px;border-radius:9px">変更</button></div>' +
     '<div class="bnote" style="margin:0 4px 4px;font-size:11.5px;line-height:1.45">下の欄に書いて送ります。「＋」で写真・重要・タグをつけられます。30日で自動で消えます。</div><div id="blist"></div>' +
     bdComposer('メッセージを書く', { groups: mailGroups(), max: 3000, note: 'タグは、相手にわかりやすいように件名の頭に【 】で付きます。' });
-  sub('新しいメール', h, 'mail'); document.body.classList.add('bchat'); BD.open = false;
+  sub('新しいチャット', h, 'mail'); document.body.classList.add('bchat'); BD.open = false;
   if (MT.prefill) { $('#bin').value = MT.prefill.subject + '\n' + MT.prefill.body; MT.prefill = null; }
   $('#mchg').onclick = function () { MT.ready = false; mailNewViewKeep(); };
   bdComposerBind(function (body, ph) {
@@ -1939,6 +1942,7 @@ var MAIL_CATS = ['回覧', '祭礼', '演芸会', 'ピラティス', 'コンサ�
 function bdGroups() { return [{ o: BD, k: 'sex', list: BD_CHOICES.sex, save: bdSave }, { o: BD, k: 'age', list: BD_CHOICES.age, save: bdSave }, { o: BD, k: 'cat', list: BD_CHOICES.cat, save: bdSave }]; }
 function mailGroups() { return [{ o: MT, k: 'imp', list: ['重要'] }, { o: MT, k: 'cat', list: MAIL_CATS }]; }
 /** 画面の下に固定する入力欄。「＋」を押すと、写真と(あれば)カテゴリなどが出る */
+var EMOJIS = ['😀','😊','😂','🥰','😍','😭','😢','😅','🤔','😮','🙏','👍','👏','🙌','💪','❤️','💕','✨','🎉','🌸','🌞','☔','⛄','🍙','🍵','🍺','🎵','📷','🚲','🏠','⚠️','🆗','🙇','😴','🤗','😎','👋','🔥','💯','🌈']; 
 function bdComposer(ph, o) {
   o = o || {}; var gs = o.groups || []; BC.photos = []; BC.busy = 0; BC.groups = gs;
   var any = gs.some(function (g) { return g.o[g.k]; });
@@ -1947,7 +1951,8 @@ function bdComposer(ph, o) {
   return '<div class="bcomp' + (o.inline ? ' inl' : '') + '" id="bcomp">' + (o.pre || '') + '<div class="bpvs" id="bpvs" hidden></div>' +
     '<div class="battr" id="battr"' + (BD.open ? '' : ' hidden') + '><div class="brw"><button type="button" class="ch ph" id="bpick">📷 写真をつける</button><input type="file" id="bfile" accept="image/*" hidden></div>' + rows +
     (gs.length ? '<div class="small" style="margin:2px 2px 0">' + esc(o.note || '') + '</div>' : '') + '</div>' +
-    '<div class="brw2"><button type="button" class="batt' + (any ? ' on' : '') + '" id="battbtn" aria-label="写真・カテゴリなどをつける" aria-expanded="' + !!BD.open + '">＋</button>' +
+    '<div class="bemo" id="bemop" hidden>' + EMOJIS.map(function (e) { return '<button type="button" data-em="' + e + '">' + e + '</button>'; }).join('') + '</div>' +
+    '<div class="brw2"><button type="button" class="batt' + (any ? ' on' : '') + '" id="battbtn" aria-label="写真・カテゴリなどをつける" aria-expanded="' + !!BD.open + '">＋</button><button type="button" class="batt" id="bemob" aria-label="絵文字" aria-expanded="false">😊</button>' +
     '<textarea id="bin" rows="1" maxlength="' + (o.max || 2000) + '" placeholder="' + ph + '" aria-label="' + ph + '"></textarea><button type="button" id="bsend" class="bsend" aria-label="送る">' + svg('send') + '</button></div></div>';
 }
 function bdPhotosDraw() {
@@ -1970,6 +1975,9 @@ function bdComposerBind(sendFn) {
       mark();
     };
   });
+  var eb = $('#bemob'), ep = $('#bemop');
+  eb.onclick = function () { ep.hidden = !ep.hidden; eb.setAttribute('aria-expanded', String(!ep.hidden)); };
+  Array.prototype.forEach.call(ep.querySelectorAll('[data-em]'), function (e) { e.onclick = function () { var v = e.dataset.em, st = ta.selectionStart == null ? ta.value.length : ta.selectionStart, en = ta.selectionEnd == null ? st : ta.selectionEnd; ta.value = ta.value.slice(0, st) + v + ta.value.slice(en); ta.selectionStart = ta.selectionEnd = st + v.length; grow(); }; });
   var pk = $('#bpick'), fi = $('#bfile');
   pk.onclick = function () { if (BC.photos.length + BC.busy >= 3) return toast('写真は3枚までです'); fi.click(); };
   fi.onchange = function () {
