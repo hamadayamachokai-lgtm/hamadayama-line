@@ -542,7 +542,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-16 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-17 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1248,12 +1248,7 @@ function mBubble(o) {   // o: {mine, name, date, body, rk, rid}
 }
 function drawMail(m) {
   var cat = mailCat(m.subject);
-  var h = '<div class="card" style="padding:12px 14px"><div style="font-size:17px;font-weight:700;line-height:1.4">' + (cat ? '<span class="at c" style="font-size:11px;margin-right:6px;vertical-align:2px">' + esc(cat) + '</span>' : '') + esc(mailSubj(m.subject)) + '</div>' +
-    '<div class="muted" style="margin-top:2px;font-size:13px">' + esc(m.mine ? '送信 → ' + m.to : m.sender + ' → ' + m.to) + '</div>' +
-    (m.important ? '<span class="tg imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="tg">問い合わせ</span>' : '') +
-    (m.readers ? '<p class="small" style="margin:8px 0 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + '</p>' : '') +
-    (m.repliers && m.repliers.length ? '<p class="small" style="margin:2px 0 0">返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') + '</p>' : '') +
-    '<p class="small" style="margin:4px 0 0">' + esc(m.expires) + ' まで掲載</p></div>';
+  var h = (cat || m.important || m.kind === '問い合わせ' ? '<div class="tgs" style="margin:0 4px 8px">' + (cat ? '<span class="at c">' + esc(cat) + '</span>' : '') + (m.important ? '<span class="at imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="at">問い合わせ</span>' : '') + '</div>' : '');
   if (m.status) {
     h += '<div class="card" style="padding:12px 14px"><p style="margin:0">' + statusTag(m.status) + (m.status === '対応済み' ? '<span class="muted"> ' + esc(m.handler) + ' さん ・ ' + esc(fmtMd(m.handledAt)) + '</span>' : '') + '</p>' +
       (m.canStatus ? '<button class="btn ghost" id="mst" style="margin-top:10px">' + (m.status === '対応済み' ? '未対応に戻す' : '対応済みにする') + '</button>' : '') + '</div>';
@@ -1261,7 +1256,8 @@ function drawMail(m) {
   h += '<div id="blist">' + mBubble({ mine: m.mine, icon: m.icon, ph: m.ph, name: m.mine ? '' : m.sender, date: m.date, body: m.body }).replace('</div></div><div class="bmeta">', '</div><div id="rx"></div></div><div class="bmeta">') +
     (m.replies.length ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
     m.replies.map(function (r) { return mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rk: 'mail_reply', rid: r.id }); }).join('') + '</div>' +
-    '<p class="small" style="text-align:center;margin:6px 0">返信は、あなたと送信者・役員だけに見えます。</p>';
+    (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') +
+    '<p class="small" style="text-align:center;margin:6px 0">返信は、あなたと送信者・役員だけに見えます。(' + esc(m.expires) + ' まで)</p>';
   if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このチャットを削除する') + '</button><div style="height:20px"></div>';
   h += bdComposer('返信を書く', { max: 2000 });
   sub('チャット', h, 'mail'); document.body.classList.add('bchat');
