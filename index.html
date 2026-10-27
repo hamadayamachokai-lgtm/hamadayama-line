@@ -297,6 +297,8 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .thumbs button{all:unset;position:relative;width:76px;height:52px;border-radius:8px;overflow:hidden;border:1.5px solid var(--line);background:#fff;cursor:pointer}
 .thumbs img{width:100%;height:100%;object-fit:cover}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.qr{margin:10px 4px 6px}.qrc{font-size:13px;color:#667;margin-bottom:6px}.qrb{display:flex;flex-wrap:wrap;gap:8px}.qrq{border:1px solid #06c755;background:#fff;color:#06a147;border-radius:20px;padding:8px 14px;font-size:15px}.qrq:disabled{opacity:.5}
+.dlgx{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}.dlgb{background:#fff;border-radius:16px;max-width:360px;width:100%;padding:20px 18px 14px;box-shadow:0 8px 30px rgba(0,0,0,.3)}.dlgm{font-size:16px;line-height:1.7;color:#222;word-break:break-all;margin-bottom:16px}.dlgbt{display:flex;gap:10px}.dlgbt button{flex:1;min-height:46px;font-size:16px;border-radius:12px}
 </style>
 </head>
 <body>
@@ -316,6 +318,19 @@ var $ = function (s, el) { return (el || document).querySelector(s); };
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function linkify(s) { return esc(s).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
 var toastT;
+var DLGQ = null;
+function dlg(msg, yes, ok, no) {
+  var old = document.getElementById('dlgx'); if (old) old.remove();
+  var w = document.createElement('div'); w.id = 'dlgx'; w.className = 'dlgx';
+  var h = '<div class="dlgb"><div class="dlgm">' + esc(msg).replace(/\n/g, '<br>') + '</div><div class="dlgbt">' + (yes ? '<button type="button" class="ghost" id="dlgn">' + esc(no || 'やめる') + '</button>' : '') + '<button type="button" id="dlgy">' + esc(ok || (yes ? 'はい' : 'OK')) + '</button></div></div>';
+  w.innerHTML = h; document.body.appendChild(w);
+  var close = function () { w.remove(); };
+  document.getElementById('dlgy').onclick = function () { close(); if (yes) yes(); else if (DLGQ) { var f = DLGQ; DLGQ = null; f(); } };
+  if (yes) document.getElementById('dlgn').onclick = close;
+  w.onclick = function (ev) { if (ev.target === w && yes) close(); };
+}
+function cf(msg, yes, ok) { dlg(msg, yes, ok); }
+function nt(msg, done) { DLGQ = done || null; dlg(msg, null, 'OK'); }
 function toast(m) { var t = $('#toast'); t.textContent = m; t.className = 'on'; clearTimeout(toastT); toastT = setTimeout(function () { t.className = ''; }, 2600); }
 
 /* ---------- アイコン ---------- */
@@ -537,6 +552,9 @@ function heroNotes(me) {
   else if (me.disaster) n.push({ k: 'help', t: (disKindText(me.disasterKind) ? esc(disKindText(me.disasterKind)) + '<br>' : '') + '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
   if (+b.mail > 0) n.push({ k: 'mail', t: 'チャットに通知がきてます。<br>確認してください。', l: 'チャット' });
   if (+b.dashboard > 0) n.push({ k: 'dashboard', t: '掲示板に新しいお知らせがあります。', l: '掲示板' });
+  if (+b.help > 0 && !me.drill) n.push({ k: 'help', t: '助け合いに通知がきてます。<br>確認してください。', l: '助け合い' });
+  if (+b.help > 0 && me.drill) n.push({ k: 'help', t: '助け合い(訓練)に通知がきてます。<br>確認してください。', l: '助け合い' });
+  if (+b.board > 0) n.push({ k: 'board', t: 'あなたのTweetに返信がきてます。<br>確認してください。', l: 'Tweet' });
   if (sa && sa.n) n.push({ k: 'o_sched', t: '役員予定が' + (sa.days <= 0 ? '今日' : sa.days === 1 ? '明日' : sa.days + '日後') + 'にあります。<br>参加の表明ご協力お願いします。', l: '役員予定表' });
   return n.length ? '<div class="hnotes">' + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '" aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
 }
@@ -549,7 +567,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261027-18 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -815,12 +833,14 @@ function drawUnpaid() {
   Array.prototype.forEach.call(document.querySelectorAll('#ulist [data-g]:not([data-st]):not([data-mail])'), function (b) {
     b.onclick = function () {
       var m = U.data.groups[+b.dataset.g].members[+b.dataset.m], to = !m.paid;
-      if (!to && !window.confirm(m.name + ' さんを「未納」に戻しますか?')) return;
+      var go1 = function () {
       b.disabled = true;
       api('o_setfee', { memberNo: m.no, paid: to }).then(function () {
         m.paid = to; var g = U.data.groups[+b.dataset.g]; g.paid += to ? 1 : -1;
         var y = window.scrollY; drawUnpaid(); window.scrollTo(0, y); toast(to ? '納入済みにしました' : '未納に戻しました');
       }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+      if (to) go1(); else cf(m.name + ' さんを「未納」に戻しますか?', go1);
     };
   });
 }
@@ -1205,7 +1225,7 @@ function deskView() {
           .then(function () { DK.busy = false; load(); });
       };
     };
-    if ($('#ddone')) { $('#ddone').onclick = act('done'); $('#dlater').onclick = act('later'); $('#dcancel').onclick = function () { if (window.confirm('この方を受付待ちから外します。よろしいですか?')) act('cancel')(); }; }
+    if ($('#ddone')) { $('#ddone').onclick = act('done'); $('#dlater').onclick = act('later'); $('#dcancel').onclick = function () { cf('この方を受付待ちから外します。よろしいですか?', function () { act('cancel')(); }); }; }
   }
   function load() {
     if (!$('#dnow')) { clearInterval(DK.timer); camStop(); return; }
@@ -1266,15 +1286,18 @@ function drawMail(m) {
     (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') +
     '<p class="small" style="text-align:center;margin:6px 0">返信は、あなたと送信者・役員だけに見えます。(' + esc(m.expires) + ' まで)</p>';
   if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このチャットを削除する') + '</button><div style="height:20px"></div>';
+  if (m.kind === '助け合い') h += '<div class="qr"><div class="qrc">※簡単返信※ 選択アイコンから挨拶送信もできます。</div><div class="qrb">' + ['よろしくお願いします', 'お待ちしてます', 'ありがとうございます'].map(function (t) { return '<button type="button" class="qrq" data-q="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div></div>';
   h += bdComposer('返信を書く', { max: 2000 });
   sub('チャット', h, 'mail'); document.body.classList.add('bchat');
   if (m.react) reactBind('mail', m.id, m.react);
   reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
   var st = $('#mst'); if (st) st.onclick = function () { st.disabled = true; api('mail_status', { id: m.id, status: m.status === '対応済み' ? '未対応' : '対応済み' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { st.disabled = false; toast(e.message); }); };
   bdComposerBind(function (t, ph) { return api('mail_reply', { id: m.id, body: t, photos: ph }).then(function () { toast('返信しました'); mailDetailView(m.id); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.qrq'), function (q) { q.onclick = function () { Array.prototype.forEach.call(document.querySelectorAll('.qrq'), function (x) { x.disabled = true; }); api('mail_reply', { id: m.id, body: q.dataset.q, photos: [] }).then(function () { toast('送りました'); mailDetailView(m.id); }).catch(function (e) { Array.prototype.forEach.call(document.querySelectorAll('.qrq'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
   var dl = $('#mdel'); if (dl) dl.onclick = function () {
-    if (!window.confirm(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?')) return;
+    cf(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?', function () {
     dl.disabled = true; api('mail_delete', { id: m.id }).then(function () { toast('削除しました'); go('mail'); }).catch(function (e) { dl.disabled = false; toast(e.message); });
+    });
   };
 }
 /* ===== 反応(いいね・了解 など) ===== */
@@ -1377,9 +1400,10 @@ function mailWriteView() {
       req.targetType = MT.type;
       if (MT.type === '班' || MT.type === 'イベント') req.targetValue = MT.val;
       if (MT.type === '個人') req.targetIds = Object.keys(MT.picks);
-      if (MT.type === '全員' && !window.confirm('全員に送ります。よろしいですか?')) return Promise.reject(new Error('送信をやめました'));
     } else if (MT.type === '個人') { req.targetType = '個人'; req.targetRefs = Object.keys(MT.refs); }
-    return api('mail_send', req).then(function () { toast('送信しました'); MT.cat = ''; MT.imp = ''; MT.ready = false; go('mail'); });
+    var sendIt = function () { return api('mail_send', req).then(function () { toast('送信しました'); MT.cat = ''; MT.imp = ''; MT.ready = false; go('mail'); }); };
+    if (staff && MT.type === '全員') return new Promise(function (res, rej) { cf('全員に送ります。よろしいですか?', function () { sendIt().then(res, rej); }); setTimeout(function () { var d = document.getElementById('dlgn'); if (d) { var o = d.onclick; d.onclick = function () { o(); rej(new Error('送信をやめました')); }; } }, 0); });
+    return sendIt();
   });
 }
 function mailNewViewKeep() { var p = MT.prefill; MT.prefill = null; mailNewView(); MT.prefill = p; }
@@ -1435,9 +1459,10 @@ function mysVote() {
   $('#mbk').onclick = mysRound;
   Array.prototype.forEach.call(document.querySelectorAll('[data-p]'), function (b) {
     b.onclick = function () {
-      if (!window.confirm(b.dataset.p + ' に投票しますか?')) return;
+      cf(b.dataset.p + ' に投票しますか?', function () {
       Array.prototype.forEach.call(document.querySelectorAll('[data-p]'), function (x) { x.disabled = true; });
       api('mystery_vote', { key: st.key, vote: b.dataset.p, round: MY.round }).then(mysResult).catch(function (e) { toast(e.message); mysVote(); });
+      });
     };
   });
 }
@@ -1466,7 +1491,7 @@ function imgAdminView() {
       h += '<div class="card"><h2>' + esc(p.name) + (p.rare ? ' <span class="tg">レア編</span>' : '') + '</h2>' + sec('証言のときの画像', 'witness', '証言') + sec('犯人のときの画像', 'culprit', '犯人') + '</div>';
     });
     sub('推理の画像', h, 'officer');
-    Array.prototype.forEach.call(document.querySelectorAll('.thumbs button'), function (b) { b.onclick = function () { if (!window.confirm('この画像を無効にします(ゲームで表示されなくなります)。よろしいですか?')) return; api('a_img_toggle', { id: b.dataset.id, enabled: false }).then(function () { toast('無効にしました'); imgAdminView(); }).catch(function (e) { toast(e.message); }); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.thumbs button'), function (b) { b.onclick = function () { cf('この画像を無効にします(ゲームで表示されなくなります)。よろしいですか?', function () { api('a_img_toggle', { id: b.dataset.id, enabled: false }).then(function () { toast('無効にしました'); imgAdminView(); }).catch(function (e) { toast(e.message); }); }); }; });
     Array.prototype.forEach.call(document.querySelectorAll('input[type=file]'), function (inp) {
       inp.onchange = function () {
         var f = inp.files && inp.files[0]; if (!f) return;
@@ -1525,7 +1550,7 @@ function readFileData(f) {
 function schedBind(root) {
   Array.prototype.forEach.call(root.querySelectorAll('.sch a[data-ext]'), function (a) { a.onclick = function (ev) { ev.preventDefault(); openExternal(a.href); }; });
   Array.prototype.forEach.call(root.querySelectorAll('.sch .nx'), function (b) {
-    b.onclick = function () { if (!window.confirm('この追記を削除します。よろしいですか?')) return; var box = b.closest('.sch'); api('a_sched_note_delete', { noteId: b.closest('.note').dataset.nid }).then(function (r) { schedPut(box, r.event); toast('削除しました'); }).catch(function (e) { toast(e.message); }); };
+    b.onclick = function () { cf('この追記を削除します。よろしいですか?', function () { var box = b.closest('.sch'); api('a_sched_note_delete', { noteId: b.closest('.note').dataset.nid }).then(function (r) { schedPut(box, r.event); toast('削除しました'); }).catch(function (e) { toast(e.message); }); }); };
   });
   Array.prototype.forEach.call(root.querySelectorAll('.sch .nadd'), function (b) {
     b.onclick = function () {
@@ -1602,7 +1627,7 @@ function schedAdminView() {
         .catch(function (e) { toast(e.message || '読み取れませんでした'); }).then(function () { inp.value = ''; });
     };
     Array.prototype.forEach.call(document.querySelectorAll('.pvrow .x[data-id]'), function (b) {
-      b.onclick = function () { if (!window.confirm('この予定を削除します(回答も消えます)。よろしいですか?')) return; api('a_sched_delete', { id: b.dataset.id }).then(function () { toast('削除しました'); schedAdminView(); }).catch(function (e) { toast(e.message); }); };
+      b.onclick = function () { cf('この予定を削除します(回答も消えます)。よろしいですか?', function () { api('a_sched_delete', { id: b.dataset.id }).then(function () { toast('削除しました'); schedAdminView(); }).catch(function (e) { toast(e.message); }); }); };
     });
   }).catch(function (e) { sub('予定の登録', errCard(e), 'officer'); });
 }
@@ -1648,8 +1673,9 @@ function eventView() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { go('evreg/' + b.dataset.pn); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
       b.onclick = function () {
-        if (!window.confirm('この申込を取り消します。よろしいですか?')) return;
+        cf('この申込を取り消します。よろしいですか?', function () {
         b.disabled = true; api('ev_cancel', { id: b.dataset.cx }).then(function () { toast('取り消しました'); eventView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        });
       };
     });
   }).catch(function (e) { offErr('イベント', e, 'home'); });
@@ -1706,8 +1732,9 @@ function evRegView(name) {
     Array.prototype.forEach.call(document.querySelectorAll('#exl [data-pe]'), function (b) { b.onclick = function () { EV.pev = name; EV.back = 'evreg/' + name; go('evperson/' + b.dataset.pe); }; });
     Array.prototype.forEach.call(document.querySelectorAll('#exl [data-pd]'), function (b) {
       b.onclick = function () {
-        if (!window.confirm('「' + b.dataset.n + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
+        cf('「' + b.dataset.n + '」さんを削除します。すでにした申込には影響しません。よろしいですか?', function () {
         b.disabled = true; api('ev_person_delete', { id: b.dataset.pd }).then(function () { toast('削除しました'); EV.state = null; evRegView(name); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        });
       };
     });
     $('#rsv').onclick = function () {
@@ -1763,8 +1790,9 @@ function evPersonView(id) {
       api('ev_person_save', { id: p ? p.id : '', event: ev, name: $('#pn').value, birth: birth, over70: fest ? false : $('#o70').checked, guardian: $('#gn') ? $('#gn').value : '', email: $('#gm') ? $('#gm').value : '' }).then(function () { toast('保存しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
     var d = $('#pdl'); if (d) d.onclick = function () {
-      if (!window.confirm('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?')) return;
+      cf('「' + p.name + '」さんを削除します。すでにした申込には影響しません。よろしいですか?', function () {
       d.disabled = true; api('ev_person_delete', { id: p.id }).then(function () { toast('削除しました'); EV.state = null; go(EV.back || 'event'); }).catch(function (e) { d.disabled = false; toast(e.message); });
+      });
     };
   };
   if (EV.state) go2(EV.state); else evLoad().then(go2).catch(function (e) { offErr('対象者', e, 'event'); });
@@ -1846,7 +1874,7 @@ function tipsView() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-ch]'), function (b) { b.onclick = function () { send({ choice: +b.dataset.ch }, b); }; });
     var ts = $('#txs'); if (ts) ts.onclick = function () { var v = $('#tx').value; if (!v.trim()) return toast('答えを入力してください'); send({ text: v }, ts); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-da]'), function (b) {
-      b.onclick = function () { if (!window.confirm('この答えを消します。よろしいですか?')) return; b.disabled = true; api('tips_ans_delete', { id: b.dataset.da }).then(function () { tipsView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+      b.onclick = function () { cf('この答えを消します。よろしいですか?', function () { b.disabled = true; api('tips_ans_delete', { id: b.dataset.da }).then(function () { tipsView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); }); };
     });
   }).catch(function (e) { offErr('豆知識', e, 'home'); });
 }
@@ -1875,15 +1903,18 @@ function bdBind(items, par, kind, list, redraw, opt) {
   reactBindAll(kind, list, par, '.rxbox[data-rk=' + kind + ']');
   Array.prototype.forEach.call(document.querySelectorAll('[data-rp]'), function (b) {
     b.onclick = function () {
-      if (!window.confirm('削除依頼を出します。数人から依頼があると、いったん非表示になり、役員が確認します。よろしいですか?')) return;
+      cf('削除依頼を出します。数人から依頼があると、いったん非表示になり、役員が確認します。よろしいですか?', function () {
       b.disabled = true; api('board_report', { id: b.dataset.rp }).then(function () { toast('削除依頼を出しました'); redraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      });
     };
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-op]'), function (b) {
     b.onclick = function () {
       var x = b.dataset.op.split('|');
-      if (x[0] === 'delete' && !window.confirm('削除します。よろしいですか?')) return;
+      var go2 = function () {
       b.disabled = true; api('board_action', { id: x[1], op: x[0] }).then(function () { toast('完了しました'); if (opt && opt.onDelPost && x[0] === 'delete' && x[1] === opt.postId) opt.onDelPost(); else redraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+      if (x[0] === 'delete') cf('削除します。よろしいですか?', go2); else go2();
     };
   });
 }
@@ -1997,6 +2028,7 @@ function bdComposerBind(sendFn) {
 }
 function bdToBottom() { setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); }
 function boardView() {
+  seenBoard();
   if (!MEM.board_list) sub('Tweet', '<div class="skel" style="height:300px"></div>');
   function load(first) {
     var had = first && !!MEM.board_list;
@@ -2021,7 +2053,9 @@ function boardView() {
   load(true);
 }
 function boardNewView() { go('board'); }
+function seenBoard() { if (S.me && S.me.badges && +S.me.badges.board > 0) { S.me.badges.board = 0; try { saveMe(S.me); } catch (e) {} api('board_seen').catch(function () {}); } }
 function boardDetailView(id) {
+  seenBoard();
   sub('Tweet', '<div class="skel" style="height:300px"></div>', 'board');
   function load(first) {
     api('board_get', { id: id }).then(function (p) {
@@ -2148,9 +2182,9 @@ function bindHelpButtons() {
     b.onclick = function () {
       var x = b.dataset.hp.split('|'), id = x[1], op = x[0];
       var run = function (action, extra, ok) { b.disabled = true; return api(action, Object.assign({ id: id }, extra)).then(function (r) { if (ok) toast(ok); after(); return r; }).catch(function (e) { b.disabled = false; toast(e.message); if (e.code === 'full' || e.code === 'not_found') after(); }); };
-      if (op === 'raise') { b.disabled = true; api('help_raise', { id: id }).then(function () { window.alert(x[2] === 'お願い' ? HPTXT.raise : 'お願いしました。つづけて「詳細を送る」を入力してください'); after(); }).catch(function (e) { b.disabled = false; window.alert(e.message); after(); }); }
-      else if (op === 'unraise') { if (window.confirm('やめます。よろしいですか?')) run('help_unraise', {}, 'やめました'); }
-      else if (op === 'release') { if (window.confirm(x[3] + 'さんとの助け合いを、やめます。よろしいですか?')) run('help_release', { helperId: x[2] }, 'やめました'); }
+      if (op === 'raise') { b.disabled = true; api('help_raise', { id: id }).then(function () { nt(x[2] === 'お願い' ? HPTXT.raise : 'お願いしました。つづけて「詳細を送る」を入力してください', after); }).catch(function (e) { b.disabled = false; nt(e.message, after); }); }
+      else if (op === 'unraise') { cf('やめます。よろしいですか?', function () { run('help_unraise', {}, 'やめました'); }); }
+      else if (op === 'release') { cf(x[3] + 'さんとの助け合いを、やめます。よろしいですか?', function () { run('help_release', { helperId: x[2] }, 'やめました'); }); }
       else if (op === 'form') { HP.form = { key: id + '|' + x[2], lat: null, lng: null }; var k = $('#bin').value; drawHelp(); $('#bin').value = k; }
       else if (op === 'formx') { HP.form = null; var k2 = $('#bin').value; drawHelp(); $('#bin').value = k2; }
       else if (op === 'loc') {
@@ -2165,12 +2199,12 @@ function bindHelpButtons() {
         run('help_detail', ex, '送りました。チャットで連絡できます').then(function (r) { if (r) HP.form = null; });
       }
       else if (op === 'mail') go('mail');
-      else if (op === 'done') { if (window.confirm('完了にします。よろしいですか?')) run('help_status', { op: 'done' }, '完了しました。ありがとうございました'); }
+      else if (op === 'done') { cf('完了にします。よろしいですか?', function () { run('help_status', { op: 'done' }, '完了しました。ありがとうございました'); }); }
       else if (op === 'urgent') run('help_status', { op: 'urgent' }, '');
-      else if (op === 'close') { if (window.confirm('募集を終了します。よろしいですか?')) run('help_status', { op: 'close' }, '募集を終了しました'); }
+      else if (op === 'close') { cf('募集を終了します。よろしいですか?', function () { run('help_status', { op: 'close' }, '募集を終了しました'); }); }
       else if (op === 'reopen') run('help_status', { op: 'reopen' }, '追加で募集します');
-      else if (op === 'cancel') { if (window.confirm('この投稿をキャンセルします。よろしいですか?')) run('help_status', { op: 'cancel' }, 'キャンセルしました'); }
-      else if (op === 'remove') { if (window.confirm('この投稿を削除します。よろしいですか?')) run('help_status', { op: 'remove' }, '削除しました'); }
+      else if (op === 'cancel') { cf('この投稿をキャンセルします。よろしいですか?', function () { run('help_status', { op: 'cancel' }, 'キャンセルしました'); }); }
+      else if (op === 'remove') { cf('この投稿を削除します。よろしいですか?', function () { run('help_status', { op: 'remove' }, '削除しました'); }); }
     };
   });
 }
@@ -2198,12 +2232,14 @@ function disasterView() {
       $('#dm').onclick = function () {
         if ($('#dnt')) DM.note = $('#dnt').value;
         if (!DM.drill && !DM.kind) return toast('災害の種類を選んでください');
-        if (!window.confirm(DM.drill ? '訓練(デモモード)を始めます。会員全員のホームに「防災訓練中です」と出ます。よろしいですか?' : '災害モードにします(' + (DM.kind === 'その他' && DM.note ? DM.note : DM.kind) + ')。会員全員のホームに知らせが出て、「助け合い」が使えるようになります。よろしいですか?')) return;
+        cf(DM.drill ? '訓練(デモモード)を始めます。会員全員のホームに「防災訓練中です」と出ます。よろしいですか?' : '災害モードにします(' + (DM.kind === 'その他' && DM.note ? DM.note : DM.kind) + ')。会員全員のホームに知らせが出て、「助け合い」が使えるようになります。よろしいですか?', function () {
         $('#dm').disabled = true; api('a_disaster_set', { on: true, drill: DM.drill, kind: DM.drill ? '' : DM.kind, note: DM.note }).then(function () { toast(DM.drill ? '訓練を始めました' : '災害モードにしました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { $('#dm').disabled = false; toast(e.message); });
+        });
       };
       var off = $('#doff'); if (off) off.onclick = function () {
-        if (!window.confirm('終了します。助け合いが使えなくなります。よろしいですか?')) return;
+        cf('終了します。助け合いが使えなくなります。よろしいですか?', function () {
         off.disabled = true; api('a_disaster_set', { on: false }).then(function () { toast('終了しました'); loadMe().then(function () { disasterView(); }); }).catch(function (e) { off.disabled = false; toast(e.message); });
+        });
       };
     }
     draw();
