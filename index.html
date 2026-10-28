@@ -357,7 +357,6 @@ var IC = {
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
   o_desk: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9h8M8 12h5"/>',
   o_roster: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8 9.5h5M8 12.5h3"/>',
-  o_viewer: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 3 2 4-4"/>',
   a_admin: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
   a_image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/>',
   a_disaster: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
@@ -376,7 +375,7 @@ var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
   o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
-  o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
+  a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
@@ -569,7 +568,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-11 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-12 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -581,11 +580,11 @@ function openTile(k) {
   if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
-  if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
+  if (k === 'a_admin') return openLink(k);
   go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
-  api('o_links').then(function (d) { var u = k === 'a_admin' ? d.admin : d.viewer; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
+  api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
 }
 function openExternal(url) { try { if (window.liff && liff.isInClient && liff.isInClient()) { liff.openWindow({ url: url, external: true }); return; } } catch (e) { /* 下へ */ } window.open(url, '_blank', 'noopener'); }
 
