@@ -569,7 +569,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-10 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1131,7 +1131,7 @@ function drawScan(r) {
     h = '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込' + (r.via ? ' <span class="tg">' + esc(r.via) + '</span>' : '') + '</h2>' + who + (r.apps.length ? appRowsHtml(r.apps, true) : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
   } else if (r.mode === 'engeikai') {
     h = '<div class="card scanres ' + (r.already ? 'warn' : 'good') + '"><h2>演芸会 ' + r.year + '</h2>' + who + '<p style="margin:10px 0 0"><b>' + (r.already ? 'すでに来場を記録済みです(' + esc(r.already) + ')' : '✓ 来場を記録しました') + '</b></p><p class="muted" style="margin:4px 0 0">来場者 合計 ' + r.checkedIn + ' 人</p>' +
-      (r.apps && r.apps.length ? '<h2 style="margin-top:12px">お土産の申込</h2>' + appRowsHtml(r.apps, true) : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + '</div>';
+      (r.apps && r.apps.length ? '<h2 style="margin-top:12px">お土産の申込</h2>' + appRowsHtml(r.apps, true) : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + (r.apps && r.apps.length && r.lineApp === false ? '<p style="margin:8px 0 0;color:#b87400"><b>⚠ LINEでの申込ではありません。</b><br><span class="muted">演芸会のQRが使えるのは、LINEで申し込んだ方だけです(紙の申込の方は、QRなしでご案内ください)。</span></p>' : '') + '</div>';
   } else {
     var hh = r.household;
     h = '<div class="card scanres good"><h2>災害 確認</h2>' + who + (r.already ? '<p class="muted" style="margin:8px 0 0">記録済み(' + esc(r.already) + ')</p>' : '<p class="muted" style="margin:8px 0 0">確認を記録しました</p>') + '<p class="muted" style="margin:4px 0 0">確認済み 合計 ' + r.checkedIn + ' 人</p></div>' +
@@ -1460,11 +1460,17 @@ var MY = { story: null, round: 1, tab: 'monthly' };
 function mysteryView() {
   sub('歴史推理', '<div class="skel" style="height:240px"></div>');
   api('mystery_rank').then(function (r) {
-    var me = r.total.me;
-    sub('歴史推理', '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">戦国武将たちの証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目3点・2回目2点・3回目1点)。</p>' +
-      '<button class="btn" id="mgo">🔍 事件をはじめる</button>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
+    var me = r.total.me, nm = r.nick || r.lineName;
+    var nickCard = r.needNick || MY.editNick ? '<div class="card"><h2>ランキングの名前</h2><p style="margin:0 0 10px;line-height:1.7">ランキングに出る名前を決めてください(個人情報保護のため、ニックネームがおすすめです)。入れなければ、LINEの会員名「' + esc(r.lineName) + '」で参加します。</p>' +
+      '<input id="mnick" maxlength="12" autocomplete="off" placeholder="ニックネーム(12文字まで)" value="' + esc(r.nick || '') + '" aria-label="ニックネーム" style="width:100%;font-size:18px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px"><div style="height:10px"></div>' +
+      '<button class="btn" id="mnickok">この名前にする</button><div style="height:8px"></div><button class="btn ghost" id="mnickno">入れずに、LINEの会員名で参加する</button></div>' : '';
+    sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">戦国武将たちの証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目3点・2回目2点・3回目1点)。</p>' +
+      '<button class="btn" id="mgo">🔍 事件をはじめる</button><p class="muted" style="margin:10px 0 0">ランキングの名前: <b>' + esc(nm) + '</b> <a href="#" id="mnickchg" style="color:var(--brand,#06c755)">変える</a></p>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
       '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
     $('#mgo').onclick = startMystery;
+    function saveNick(v) { api('mystery_nick', { nick: v }).then(function () { MY.editNick = false; toast(v ? 'ニックネームを決めました' : 'LINEの会員名で参加します'); mysteryView(); }).catch(function (e) { toast(e.message); }); }
+    if ($('#mnickok')) { $('#mnickok').onclick = function () { saveNick($('#mnick').value.trim()); }; $('#mnickno').onclick = function () { saveNick(''); }; }
+    $('#mnickchg').onclick = function (ev) { ev.preventDefault(); MY.editNick = true; mysteryView(); };
     function draw() {
       var d = r[MY.tab];
       $('#mrk').innerHTML = d.top.length ? '<table class="stable rk"><tr><th>順位</th><th>名前</th><th>得点</th><th>正解</th></tr>' + d.top.map(function (x) { return '<tr class="' + (x.me ? 'me' : '') + '"><td>' + x.rank + '位</td><td>' + esc(x.name) + (x.me ? '(あなた)' : '') + '</td><td>' + x.points + '</td><td>' + x.wins + '/' + x.plays + '</td></tr>'; }).join('') + '</table>' : '<p class="muted">まだ記録がありません。最初の挑戦者になりましょう!</p>';
