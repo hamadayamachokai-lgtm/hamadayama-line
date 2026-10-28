@@ -569,7 +569,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-2 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-3 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -635,7 +635,7 @@ function suginamiView() {
       ? '<div class="banner ' + top + '">' + svg('alert').replace('<svg', '<svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"') + '<div><b>杉並区に警報・注意報が出ています</b><ul class="wlist">' +
         w.items.map(function (i) { return '<li><span>' + esc(i.name) + '</span><span>' + esc(i.status) + '</span></li>'; }).join('') + '</ul></div></div>'
       : '<div class="banner ok">' + svg('check').replace('<svg', '<svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"') + '<div><b>いま、杉並区に出ている警報・注意報はありません</b></div></div>';
-    sub('杉並(防災)', head + '<p class="muted" style="margin:-4px 4px 14px">気象庁 発表: ' + esc(fmtDt(w.reportDatetime)) + '</p>' + links);
+    sub('杉並(防災)', head + '<p class="muted" style="margin:-4px 4px 14px">' + (w.checkedAt ? '最後に確認: ' + esc(fmtDt(w.checkedAt)) + '(約10分ごとに気象庁へ確認)<br>' : '') + '気象庁の直近の発表: ' + esc(fmtDt(w.reportDatetime)) + '<br><span style="font-size:12px">※警報・注意報が出たり解除されたりしたときだけ新しくなるため、平穏が続くと日付は古いままです。</span></p>' + links);
   }).catch(function (e) { sub('杉並(防災)', '<div class="banner advisory"><div><b>警報・注意報を取得できませんでした</b><br>' + esc(e.message) + '<br>下の気象庁のページで最新の情報をご確認ください。</div></div>' + links); });
 }
 
