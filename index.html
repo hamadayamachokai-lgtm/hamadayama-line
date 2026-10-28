@@ -569,7 +569,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-7 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -685,31 +685,54 @@ function officerView() {
 
 function pct(o) { return '<div class="bar" aria-hidden="true"><i style="width:' + o.rate + '%"></i></div>'; }
 var SUMD = '', SUMY = 0;
+/** ゲージ(円)。p=0〜100 */
+function ringG(p, size) {
+  var R = 42, C = 2 * Math.PI * R, v = Math.max(0, Math.min(100, p)), col = v >= 90 ? '#1b7a43' : v >= 60 ? '#b87400' : '#c0322b';
+  return '<svg viewBox="0 0 110 110" width="' + (size || 110) + '" height="' + (size || 110) + '" role="img" aria-label="' + p + '%"><circle cx="55" cy="55" r="' + R + '" fill="none" stroke="#e3e8ef" stroke-width="13"/><circle cx="55" cy="55" r="' + R + '" fill="none" stroke="' + col + '" stroke-width="13" stroke-linecap="round" stroke-dasharray="' + (C * v / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 55 55)"/><text x="55" y="62" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2933">' + p + '%</text></svg>';
+}
+/** 地区別(対象・納入・未納・率)。上に全体の円ゲージ、下に地区ごとの棒ゲージ */
+function distGauge(title, note, g) {
+  var t = g.total, h = '<div class="card"><h2>' + title + '</h2>' + (note ? '<p class="muted" style="margin:0 0 8px">' + note + '</p>' : '');
+  if (!g.districts.length) return h + '<p class="muted">対象の方がいません。</p></div>';
+  h += '<div style="display:flex;gap:12px;align-items:center;margin:4px 0 10px">' + ringG(t.rate) + '<div style="line-height:1.7">対象 <b>' + t.target + '</b><br>納入 <b>' + t.paid + '</b><br>未納 <b style="color:#c0322b">' + t.unpaid + '</b></div></div>';
+  g.districts.forEach(function (r) {
+    h += '<div style="padding:8px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>' + esc(r.name) + '</b><b style="font-size:18px">' + r.rate + '%</b></div>' + pct(r) +
+      '<div class="muted" style="margin-top:3px">対象 ' + r.target + ' ／ 納入 ' + r.paid + ' ／ 未納 ' + r.unpaid + '</div></div>';
+  });
+  return h + '</div>';
+}
+/** イベント1つ分: お菓子用意数・申込数・受取数、流入経路別ゲージ */
+function evCard(title, e) {
+  var tile = function (l, v) { return '<div style="background:#f3f5f8;border-radius:10px;padding:8px 6px;text-align:center"><div class="muted" style="font-size:12.5px">' + l + '</div><div style="font-size:24px;font-weight:700">' + v + '</div></div>'; };
+  var h = '<div class="card"><h2>' + title + '</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' + tile('お菓子用意数', e.prepared == null ? '-' : e.prepared) + tile('申込数', e.units) + tile('受取数', e.received) + '</div>';
+  if (e.prepared) h += '<div style="display:flex;gap:12px;align-items:center;margin-top:10px">' + ringG(Math.round(e.received / e.prepared * 100), 84) + '<div class="muted">受取数 ÷ お菓子用意数<br>(用意 ' + e.prepared + ' 個のうち ' + e.received + ' 個)</div></div>';
+  h += '<div style="font-weight:700;margin:12px 0 4px">流入経路別(申込数)</div>';
+  e.channels.forEach(function (c) {
+    var p = e.units ? Math.round(c.units / e.units * 100) : 0;
+    h += '<div style="padding:6px 0"><div style="display:flex;justify-content:space-between"><span>' + esc(c.name) + '</span><span><b>' + c.units + '</b> 個 <span class="muted">(' + p + '%)</span></span></div>' + pct({ rate: p }) + '</div>';
+  });
+  return h + (e.checkedIn ? '<p class="muted" style="margin:6px 0 0">QRチェックイン来場 ' + e.checkedIn + '人</p>' : '') + '</div>';
+}
 function sumView() {
   sub('集計結果', '<div class="skel" style="height:300px"></div>', 'officer');
   api('o_summary', { district: SUMD, year: SUMY }).then(function (d) {
-    var t = d.total, h = '';
-    h += '<div class="chips" id="sumd" role="group" aria-label="丁目" style="margin:0 0 10px">' + [''].concat(d.districts.map(function (x) { return x.name; })).map(function (n) { return '<button type="button" data-d="' + esc(n) + '" aria-pressed="' + (SUMD === n) + '">' + (n ? esc(n) : '全体') + '</button>'; }).join('') + '</div>';
-    h += '<div class="card"><h2>' + d.year + '年度 町会費' + (SUMD ? '(' + esc(SUMD) + ')' : '') + '</h2><div class="big">' + t.rate + '<small style="font-size:18px">%</small></div><p class="muted" style="margin:4px 0 8px">納入 ' + t.paid + ' / 対象 ' + t.target + ' 世帯(未納 ' + t.unpaid + ')</p>' + pct(t) +
-      '<p class="muted" style="margin:10px 0 0">対象外 ' + t.exempt + ' 世帯・お休み ' + t.na + ' 世帯 ／ 在籍世帯数(回覧元の合計) ' + d.enrolled + '</p></div>';
-    function tbl(title, rows) {
-      return '<div class="card"><h2>' + title + '</h2><table class="stable"><tr><th></th><th>納入</th><th>対象</th><th>未納</th><th>率</th></tr>' + rows.map(function (r) {
-        return '<tr><td>' + esc(r.name) + '</td><td>' + r.paid + '</td><td>' + r.target + '</td><td>' + r.unpaid + '</td><td><b>' + r.rate + '%</b></td></tr>';
-      }).join('') + '</table></div>';
-    }
-    var pp = d.people;
-    h = '<div class="chips" id="sumy" role="group" aria-label="年度" style="margin:0 0 10px">' + pp.years.map(function (y) { return '<button type="button" data-y="' + y + '" aria-pressed="' + (y === d.year) + '">' + y + '年度</button>'; }).join('') + '</div>' + h;
+    var t = d.total, pp = d.people, h = '';
+    h += '<div class="chips" id="sumy" role="group" aria-label="年度" style="margin:0 0 8px">' + pp.years.map(function (y) { return '<button type="button" data-y="' + y + '" aria-pressed="' + (y === d.year) + '">' + y + '年度</button>'; }).join('') + '</div>';
+    h += '<div class="chips" id="sumd" role="group" aria-label="丁目" style="margin:0 0 10px">' + [''].concat(d.districts.map(function (x) { return x.name; })).map(function (n) { return '<button type="button" data-d="' + esc(n) + '" aria-pressed="' + (SUMD === n) + '">' + (n || '全体') + '</button>'; }).join('') + '</div>';
+    h += '<div class="card"><h2>' + d.year + '年度 町会費' + (SUMD ? '(' + esc(SUMD) + ')' : '') + '</h2><div style="display:flex;gap:12px;align-items:center">' + ringG(t.rate, 120) + '<div style="line-height:1.7">納入 <b>' + t.paid + '</b> / 対象 <b>' + t.target + '</b> 世帯<br>未納 <b style="color:#c0322b">' + t.unpaid + '</b><br><span class="muted">対象外 ' + t.exempt + '・お休み ' + t.na + '</span></div></div></div>';
+    h += distGauge('地区別 現金回収(訪問回収を含む)', '町会費 納入チェックの対象の方', d.cash);
+    h += distGauge('地区別 別途回収(振込・訪問)', '管理システム「対象外」タブの回収状況から', d.extra);
+    h += '<div class="card"><h2>納め方別' + (SUMD ? '(' + esc(SUMD) + ')' : '') + '</h2><table class="stable"><tr><th></th><th>納入対象数</th><th>済み</th><th>未納</th><th>率</th></tr>' + d.methods.map(function (r) {
+      return '<tr><td>' + esc(r.name) + '</td><td>' + r.target + '</td><td>' + r.paid + '</td><td>' + r.unpaid + '</td><td><b>' + r.rate + '%</b></td></tr>';
+    }).join('') + '</table></div>';
+    d.events.forEach(function (e) { h += evCard((e.name === '祭礼' ? '祭礼菓子配布' : e.name) + '(' + d.year + '年度)', e); });
     h += '<div class="card"><h2>会員人数・回覧元・商品券(いま現在)' + (SUMD ? '(' + esc(SUMD) + ')' : '') + '</h2><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">' +
       [['在籍世帯数', pp.households, '世帯'], ['回覧元数', pp.heads, '人'], ['商品券(回覧元の●)', pp.gifts, '件']].map(function (x) {
-        return '<div style="background:var(--bg,#f6f6f6);border-radius:10px;padding:10px"><div class="muted">' + x[0] + '</div><div class="big" style="font-size:28px">' + x[1] + '<small style="font-size:14px"> ' + x[2] + '</small></div></div>';
+        return '<div style="background:#f3f5f8;border-radius:10px;padding:10px"><div class="muted">' + x[0] + '</div><div class="big" style="font-size:28px">' + x[1] + '<small style="font-size:14px"> ' + x[2] + '</small></div></div>';
       }).join('') + '</div>' + (pp.giftTexts.length ? '<p class="muted" style="margin:10px 0 0">商品券の内訳: ' + pp.giftTexts.map(function (g) { return esc(g.text) + ' ' + g.n + '件'; }).join(' / ') + '</p>' : '') + '</div>' +
       '<div class="card"><h2>丁目別(会員・回覧元・商品券)</h2><table class="stable"><tr><th></th><th>会員</th><th>回覧元</th><th>商品券</th></tr>' + pp.districts.map(function (r) {
         return '<tr><td>' + esc(r.name) + '</td><td>' + r.members + '</td><td>' + r.heads + '</td><td>' + r.gifts + '</td></tr>';
       }).join('') + '</table></div>';
-    h += tbl('丁目別', d.districts) + tbl('納め方別' + (SUMD ? '(' + SUMD + ')' : ''), d.methods);
-    h += '<div class="card"><h2>祭礼菓子・演芸会</h2>' + d.events.map(function (e) {
-      return '<div style="padding:8px 0;border-top:1px solid var(--line)"><b>' + esc(e.name) + '</b><div class="muted">申込 ' + e.apps + '件・' + e.units + '個' + (e.name === '祭礼' ? ' / 受取済み ' + e.received + '個' : '') + ' / QR来場 ' + e.checkedIn + '人</div></div>';
-    }).join('') + '</div>';
     sub('集計結果', h, 'officer');
     Array.prototype.forEach.call(document.querySelectorAll('#sumy button'), function (b) { b.onclick = function () { SUMY = Number(b.dataset.y); sumView(); }; });
     Array.prototype.forEach.call(document.querySelectorAll('#sumd button'), function (b) { b.onclick = function () { SUMD = b.dataset.d; sumView(); }; });
