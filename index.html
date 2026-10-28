@@ -251,6 +251,8 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .icg{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.icg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px;border-radius:12px;border:2px solid transparent;background:#f3efe6}.icg button.on{border-color:var(--navy);background:#e6ebf4}
 body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding-bottom:8px}.bemo[hidden]{display:none}.bemo{display:flex;flex-wrap:wrap;gap:2px;padding:4px 2px 6px}.bemo button{all:unset;font-size:24px;width:40px;height:38px;text-align:center;cursor:pointer;border-radius:8px}.bemo button:active{background:#eef1f6}.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
 .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.tw{display:flex;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.tw.gone{opacity:.6}.tw .thr{flex:1;min-width:0}.tw .bt{margin-top:4px}.tw .ats{margin-top:3px}.tw .rxbox{margin-top:6px}#blist .tw:first-child{padding-top:4px}
+.hcrow{display:flex;gap:12px;align-items:center;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer}.hcrow input{width:24px;height:24px;flex:none;accent-color:var(--navy)}.hcrow.on{background:#eef4ff}.hcrow b{font-size:17px}
 .thf{margin-top:4px}.th{display:flex;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.th.gone{opacity:.6}.thl{display:flex;flex-direction:column;align-items:center}.thline{flex:1;width:2px;background:var(--line);margin:6px 0 2px;border-radius:2px;min-height:10px}
 .thr{flex:1;min-width:0}.thh{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.thno{margin-left:auto;font-size:10px;color:#b9b3a6}
 .tk{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px}.tk.w{background:#fde4e1;color:#b3261e}.tk.o{background:var(--ok-bg);color:var(--ok)}
@@ -346,7 +348,7 @@ var IC = {
   mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
   headchg: '<path d="M17 3l4 4-4 4M21 7H8a4 4 0 00-4 4M7 21l-4-4 4-4M3 17h13a4 4 0 004-4"/>',
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
-  board: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+  board: '<circle cx="6" cy="6" r="2.6"/><path d="M6 9v6"/><circle cx="6" cy="18" r="2"/><path d="M12 5.5h9M12 9.5h6M12 17h9"/>',
   o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
   o_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h4M7 17h7"/>',
   a_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
@@ -372,7 +374,7 @@ var IC = {
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
-  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更申請',
+  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
   o_sched: '役員の予定', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   o_viewer: '管理システム(閲覧)', a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
@@ -567,7 +569,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-2 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -578,7 +580,7 @@ function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
   if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
-  if (k === 'headchg') return openExternal('https://forms.gle/8bjUouj9LuuiJ3E18');
+  if (k === 'headchg') return headchgEntry();
   if (k === 'o_viewer' || k === 'a_admin') return openLink(k);
   go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
@@ -1888,8 +1890,19 @@ function bdAttrHtml(a) {
   var t = [a.sex ? '<span class="at s' + (a.sex === '男' ? 'm' : a.sex === '女' ? 'f' : 'n') + '">' + (a.sex === '男' ? '♂' : a.sex === '女' ? '♀' : '－') + '</span>' : '', a.age ? '<span class="at">' + esc(a.age) + '</span>' : '', a.cat ? '<span class="at c">' + esc(a.cat) + '</span>' : ''].join('');
   return t ? '<div class="ats">' + t + '</div>' : '';
 }
-function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff, link}
+function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff, link, thread, line}
   var hid = x.status !== '公開', tid = esc(x.id);
+  if (o.thread) {   // Threads のような、かざりの少ない1本のながれ
+    var cmt = o.link ? '<a href="#" class="bl" data-cm="' + tid + '">💬 ' + (x.comments ? x.comments : 'コメント') + '</a>' : '';
+    return '<article class="tw' + (x.mine ? ' me' : '') + (hid ? ' gone' : '') + '"><div class="thl">' + av(x.icon, '', x.ph) + (o.line ? '<i class="thline"></i>' : '') + '</div><div class="thr">' +
+      '<div class="thh"><b>' + (x.mine ? 'あなた' : '町会の方') + '</b><span class="muted" style="font-size:12px">' + esc(fmtMd(x.date)) + '</span>' + (hid ? '<span class="tg warn" style="margin:0">' + esc(x.status) + '</span>' : '') + '</div>' +
+      bdAttrHtml(x.attr) + '<div class="bt' + (o.clamp ? ' clamp' : '') + '">' + bodyHtml(x.body) + '</div>' +
+      (hid ? '' : '<div class="rxbox" data-rk="' + o.kind + '" data-rid="' + tid + '"></div>') +
+      '<div class="bmeta" style="margin-left:0">' + cmt +
+      (x.mine || o.staff ? '<button type="button" class="bq" data-op="delete|' + tid + '">削除</button>' : '') +
+      (o.staff ? '<button type="button" class="bq" data-op="' + (hid ? 'show' : 'hide') + '|' + tid + '">' + (hid ? '再表示' : '非表示') + '</button>' : '') +
+      (!x.mine ? '<button type="button" class="bq" data-rp="' + tid + '"' + (x.reported ? ' disabled' : '') + '>' + (x.reported ? '依頼済み' : '削除依頼') + '</button>' : '') + '</div></div></article>';
+  }
   var meta = '<div class="bmeta"><span>' + esc(fmtMd(x.date)) + '</span>' +
     (o.link ? '<a href="#" class="bl" data-cm="' + tid + '">💬 ' + (x.comments ? x.comments : 'コメント') + '</a>' : '') +
     (hid ? '<span class="tg warn" style="margin:0">' + esc(x.status) + '</span>' : '') +
@@ -2036,13 +2049,13 @@ function boardView() {
       var f = first && (stale || !had);
       var kept = f ? '' : ($('#bin') ? $('#bin').value : ''), sy = window.scrollY;
       var h = '<div class="bnote">名前は出ません。電話番号・住所などは書かないでください。投稿は180日で消えます。</div><div id="blist">' +
-        (d.posts.length ? d.posts.map(function (p) { return bdBubble(p, { kind: 'board', staff: d.staff, link: true, clamp: true }); }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ投稿はありません。最初のひとことをどうぞ。</p></div>') + '</div>' + bdComposer('いまどうしてる?', { groups: bdGroups(), note: '名前は出ません。つけなくてもOK(次回も覚えています)。' });
+        (d.posts.length ? d.posts.map(function (p) { return bdBubble(p, { kind: 'board', staff: d.staff, link: true, clamp: true, thread: true, line: p.comments > 0 }); }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ投稿はありません。最初のひとことをどうぞ。</p></div>') + '</div>' + bdComposer('いまどうしてる?', { groups: bdGroups(), note: '名前は出ません。つけなくてもOK(次回も覚えています)。' });
       sub('Tweet', h);
       document.body.classList.add('bchat');
       $('#bin').value = kept;
       bdBind(d.items, d, 'board', d.posts, function () { load(false); });
       Array.prototype.forEach.call(document.querySelectorAll('#blist .bt, #blist [data-cm]'), function (el) {
-        el.onclick = function (ev) { ev.preventDefault(); var row = el.closest('.brow'), c = row.querySelector('[data-cm]'); var id = c ? c.dataset.cm : ''; if (id) go('board/' + id); };
+        el.onclick = function (ev) { ev.preventDefault(); var row = el.closest('.tw'), c = row.querySelector('[data-cm]'); var id = c ? c.dataset.cm : ''; if (id) go('board/' + id); };
       });
       bdComposerBind(function (t, ph) { return api('board_post', { body: t, photos: ph, sex: BD.sex, age: BD.age, cat: BD.cat }).then(function () { load(false); }); });
       if (f) bdToBottom(); else window.scrollTo(0, sy);
@@ -2053,6 +2066,44 @@ function boardView() {
   load(true);
 }
 function boardNewView() { go('board'); }
+var HC_FORM = 'https://forms.gle/8bjUouj9LuuiJ3E18';
+/** 回覧元ご本人なら専用画面、そうでなければGoogleフォーム */
+function headchgEntry() { api('h_info').then(function (d) { if (d.isHead) go('headchg'); else openExternal(HC_FORM); }).catch(function (e) { toast(e.message); }); }
+function headchgView() {
+  sub('回覧元変更', '<div class="skel" style="height:300px"></div>', 'home');
+  api('h_info').then(function (d) {
+    if (!d.isHead) { sub('回覧元変更', '<div class="card"><p style="margin:0 0 10px">回覧元の変更は、下のフォームからお申し込みください。</p><button class="btn" id="hcform">フォームを開く</button></div>', 'home'); $('#hcform').onclick = function () { openExternal(HC_FORM); }; return; }
+    var pick = null, busy = false;
+    sub('回覧元変更', '<div class="card"><h2>' + esc(d.district + ' ' + d.group + '班') + '</h2><p class="muted" style="margin:0 0 6px">いまの回覧元: <b>' + esc(d.me.name) + '</b>(あなた)<br>' +
+      '新しく回覧元になる方に、チェックをつけてください(1人)。</p><div id="hclist">' +
+      d.members.map(function (m, i) { return '<label class="hcrow" data-i="' + i + '"><input type="checkbox" data-i="' + i + '" aria-label="' + esc(m.name) + '"><span><b>' + esc(m.name) + '</b><span class="muted" style="display:block;font-size:13px">' + esc(m.address || '(住所なし)') + '</span></span></label>'; }).join('') +
+      (d.members.length ? '' : '<p>この班に、ほかの会員が見つかりません。役員にご相談ください。</p>') + '</div></div>' +
+      '<div class="card" id="hcform" hidden><h2 id="hcttl"></h2>' +
+      '<label class="muted" for="hcaddr">正しい住所(新しい回覧元の方の住所を入れてください)</label><input id="hcaddr" autocomplete="off" style="width:100%;font-size:18px;padding:10px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px;margin:4px 0 12px">' +
+      '<label class="muted" for="hcnote">備考(なくてもOK)</label><textarea id="hcnote" rows="3" maxlength="300" placeholder="例: 12月から交代します" style="width:100%;font-size:17px;padding:10px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px;margin:4px 0 12px;font-family:inherit"></textarea>' +
+      '<button class="btn" id="hcgo">この内容で申請する</button><p class="small" style="margin:8px 2px 0">押すと、名簿(スプレッドシート)にすぐ反映され、役員にチャットでお知らせします。あなたは回覧元ではなくなります。</p></div>', 'home');
+    Array.prototype.forEach.call(document.querySelectorAll('#hclist input'), function (c) {
+      c.onchange = function () {
+        Array.prototype.forEach.call(document.querySelectorAll('#hclist input'), function (x) { if (x !== c) x.checked = false; x.closest('.hcrow').classList.toggle('on', x.checked); });
+        pick = c.checked ? d.members[+c.dataset.i] : null;
+        $('#hcform').hidden = !pick;
+        if (pick) { $('#hcttl').textContent = '新しい回覧元: ' + pick.name + ' 様'; $('#hcaddr').value = pick.address || ''; $('#hcform').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      };
+    });
+    $('#hcgo').onclick = function () {
+      if (!pick || busy) return;
+      var addr = $('#hcaddr').value.trim(), note = $('#hcnote').value.trim();
+      if (!addr) return toast('正しい住所を入れてください');
+      cf(d.group + '班の回覧元を ' + pick.name + ' 様に変更します。\nあなたは回覧元ではなくなります。よろしいですか?', function () {
+        busy = true; $('#hcgo').disabled = true;
+        api('h_circ_change', { memberNo: pick.no, address: addr, note: note }).then(function (r) {
+          busy = false;
+          nt(r.group + '班の回覧元を ' + r.name + ' 様に変更しました。役員にもお知らせしました。', function () { startMe(); go('home'); });
+        }).catch(function (e) { busy = false; var g = $('#hcgo'); if (g) g.disabled = false; toast(e.message); });
+      }, '変更する');
+    };
+  }).catch(function (e) { offErr('回覧元変更', e, 'home'); });
+}
 function seenBoard() { if (S.me && S.me.badges && +S.me.badges.board > 0) { S.me.badges.board = 0; try { saveMe(S.me); } catch (e) {} api('board_seen').catch(function () {}); } }
 function boardDetailView(id) {
   seenBoard();
@@ -2061,9 +2112,9 @@ function boardDetailView(id) {
     api('board_get', { id: id }).then(function (p) {
       var kept = first ? '' : ($('#bin') ? $('#bin').value : ''), sy = window.scrollY;
       var post = { id: p.id, date: p.date, attr: p.attr, body: p.body, status: p.status, mine: p.mine, reported: p.reported, react: p.react, comments: 0 };
-      var h = '<div id="blist">' + bdBubble(post, { kind: 'board', staff: p.staff }) + (p.staff && p.reports ? '<div class="small" style="text-align:center">削除依頼 ' + p.reports + '件</div>' : '') +
+      var h = '<div id="blist">' + bdBubble(post, { kind: 'board', staff: p.staff, thread: true, line: p.comments.length > 0 }) + (p.staff && p.reports ? '<div class="small" style="text-align:center">削除依頼 ' + p.reports + '件</div>' : '') +
         '<div class="bsep">コメント' + (p.comments.length ? ' ' + p.comments.length : '') + '</div>' +
-        (p.comments.length ? p.comments.map(function (c) { return bdBubble(c, { kind: 'comment', staff: p.staff }); }).join('') : '<p class="muted" style="text-align:center;margin:8px 0">まだコメントはありません。</p>') + '</div>' +
+        (p.comments.length ? p.comments.map(function (c, i) { return bdBubble(c, { kind: 'comment', staff: p.staff, thread: true, line: i < p.comments.length - 1 }); }).join('') : '<p class="muted" style="text-align:center;margin:8px 0">まだコメントはありません。</p>') + '</div>' +
         (p.status === '公開' ? bdComposer('コメントを書く', { max: 800 }) : '');
       sub('Tweet', h, 'board');
       if (p.status === '公開') document.body.classList.add('bchat');
@@ -2332,7 +2383,7 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
