@@ -569,7 +569,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1284,9 +1284,9 @@ function mailView() {
     setBadge(d.unread);
     var staff = d.canBroadcast;
     var head = '<button class="btn" id="mnew">' + (staff ? '💬 新しいチャットを始める' : '💬 役員にチャットで問い合わせる') + '</button>' +
-      '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">すべて</button><button data-f="unread" aria-pressed="false">未読 ' + d.unread + '</button>' + (staff || d.mails.some(function (m) { return m.mine; }) ? '<button data-f="todo" aria-pressed="false">未対応</button>' : '') + '</div>';
+      '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">すべて</button><button data-f="unread" aria-pressed="false">未読 ' + d.unread + '</button>' + (staff || d.mails.some(function (m) { return m.mine; }) ? '<button data-f="todo" aria-pressed="false">未対応</button>' : '') + (d.mails.some(function (m) { return m.watch; }) ? '<button data-f="watch" aria-pressed="false">👀 見守り ' + d.mails.filter(function (m) { return m.watch; }).length + '</button>' : '') + '</div>';
     function draw() {
-      var rows = d.mails.filter(function (m) { return MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === '未対応'); });
+      var rows = d.mails.filter(function (m) { return MB.filter === 'watch' ? m.watch : !m.watch && (MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === '未対応')); });   // 見守り(助け合いのチャット)は、専用のボタンの中だけ
       $('#mlist').innerHTML = rows.length ? rows.map(function (m) {
         var cat = mailCat(m.subject), sn = Array.from(mailSubj(m.subject).replace(/\s+/g, ' ').trim()), sj = sn.slice(0, 15).join('') + (sn.length > 15 ? '…' : '');
         return '<button class="ml' + (m.unread ? ' un' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
