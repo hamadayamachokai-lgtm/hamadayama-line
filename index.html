@@ -218,6 +218,14 @@ button.mi{cursor:pointer;min-height:32px}
 .ml .dt{position:absolute;left:10px;top:14px;width:9px;height:9px;border-radius:50%;background:#d92d20}
 .ml .sj{font-size:15px;line-height:1.35;display:flex;align-items:center;gap:5px;min-width:0}.ml .sx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ml .rc{font-size:12px;color:var(--sub);flex-shrink:0}.ml .at{flex-shrink:0}.at.imp{background:#fde3e3;color:#c0322b}
 .ml.un .sj{font-weight:700}
+.mlw{position:relative}#mf{gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#mf button{padding:6px 8px;font-size:12.5px;border-width:1px;flex:0 0 auto;white-space:nowrap}.mlw .ml{padding-right:40px}
+.mdx{all:unset;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--sub);cursor:pointer}.mdx:active{background:var(--bad-bg);color:var(--bad)}
+.sti{display:inline-flex;vertical-align:-3px}.sti.s0{color:#d97706}.sti.s1{color:#2563eb}.sti.s2{color:#16a34a}
+.stbar{display:flex;align-items:center;gap:4px;margin:0 4px 8px;font-size:12px;color:var(--sub)}
+.stbar button{all:unset;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.45}.stbar button[aria-pressed=true]{opacity:1;background:var(--mute-bg);box-shadow:0 0 0 1.5px currentColor}
+.wbn{margin:0 0 10px;padding:8px 12px;border-radius:12px;background:var(--mute-bg);font-size:12.5px;line-height:1.5;color:var(--sub)}.wbn b{color:var(--ink,#222)}
+.wbn .wr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}.wbn .rd{font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;background:#fff;border:1px solid var(--line)}.wbn .rd.un{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.wbn #mstop{all:unset;margin-left:auto;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--bad);color:var(--bad);cursor:pointer}
 .ml .mt{font-size:11.5px;color:var(--sub);margin-top:1px}
 .tg{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;margin:6px 6px 0 0;background:var(--mute-bg);color:var(--sub)}
 .tg.imp{background:#fde4e1;color:#b3261e} .tg.warn{background:var(--warn-bg);color:var(--warn)} .tg.ok{background:var(--ok-bg);color:var(--ok)}
@@ -568,7 +576,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261028-12 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261029-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1276,23 +1284,37 @@ function deskView() {
 function fmtMd(t) { t = String(t || ''); return t.length >= 16 ? (+t.slice(5, 7)) + '/' + (+t.slice(8, 10)) + ' ' + t.slice(11, 16) : t; }
 function setBadge(n) { if (!S.me) return; S.me.badges = Object.assign({}, S.me.badges, { mail: n }); var h = (location.hash || '').replace('#', '').split('/')[0]; renderNav(h); }
 var MB = { filter: 'all' };
-function statusTag(st) { return st ? '<span class="tg ' + (st === '対応済み' ? 'ok' : 'warn') + '">' + esc(st) + '</span>' : ''; }
+var STS_ = ['未対応', '対応中', 'クローズ'];
+/** 対応状況のアイコン(○ 未対応 / ◐ 対応中 / ✓ クローズ)。役員以上だけに表示 */
+function stIcon(st, sz) {
+  var i = Math.max(0, STS_.indexOf(st === '対応済み' ? 'クローズ' : st)), n = sz || 16;
+  var g = i === 0 ? '' : i === 1 ? '<path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>' : '<path d="M7.8 12.4l3 3 5.4-6.2"/>';
+  return '<span class="sti s' + i + '" role="img" aria-label="' + STS_[i] + '" title="' + STS_[i] + '"><svg width="' + n + '" height="' + n + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/>' + g + '</svg></span>';
+}
+var TRASH_ = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4L18 7M9 7V4.5h6V7"/></svg>';
 function mailView() {
   if (!MEM.mail_list) sub('チャット', '<div class="skel" style="height:260px"></div>');
   swrList('mail_list', function (d) {
     setBadge(d.unread);
     var staff = d.canBroadcast;
     var head = '<button class="btn" id="mnew">' + (staff ? '💬 新しいチャットを始める' : '💬 役員にチャットで問い合わせる') + '</button>' +
-      '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">すべて</button><button data-f="unread" aria-pressed="false">未読 ' + d.unread + '</button>' + (staff || d.mails.some(function (m) { return m.mine; }) ? '<button data-f="todo" aria-pressed="false">未対応</button>' : '') + (d.mails.some(function (m) { return m.watch; }) ? '<button data-f="watch" aria-pressed="false">👀 見守り ' + d.mails.filter(function (m) { return m.watch; }).length + '</button>' : '') + '</div>';
+      '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">全体</button><button data-f="unread" aria-pressed="false">未読' + (d.unread ? ' ' + d.unread : '') + '</button>' +
+      (staff ? '<button data-f="未対応" aria-pressed="false">未対応</button><button data-f="対応中" aria-pressed="false">対応中</button><button data-f="watch" aria-pressed="false">👀見守り' + (d.mails.filter(function (m) { return m.watch; }).length ? ' ' + d.mails.filter(function (m) { return m.watch; }).length : '') + '</button><button data-f="クローズ" aria-pressed="false">クローズ</button>' : '') + '</div>';
     function draw() {
-      var rows = d.mails.filter(function (m) { return MB.filter === 'watch' ? m.watch : !m.watch && (MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === '未対応')); });   // 見守り(助け合いのチャット)は、専用のボタンの中だけ
+      var rows = d.mails.filter(function (m) { return MB.filter === 'watch' ? m.watch : !m.watch && (MB.filter === 'all' || (MB.filter === 'unread' ? m.unread : m.status === MB.filter)); });   // 見守り(助け合いのチャット)は、専用のボタンの中だけ
       $('#mlist').innerHTML = rows.length ? rows.map(function (m) {
         var cat = mailCat(m.subject), sn = Array.from(mailSubj(m.subject).replace(/\s+/g, ' ').trim()), sj = sn.slice(0, 15).join('') + (sn.length > 15 ? '…' : '');
-        return '<button class="ml' + (m.unread ? ' un' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
+        return '<div class="mlw"><button class="ml' + (m.unread ? ' un' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
           '<div class="sj">' + (cat ? '<span class="at c">' + esc(cat) + '</span>' : '') + (m.important ? '<span class="at imp">重要</span>' : '') + '<span class="sx">' + esc(sj || '(写真)') + '</span>' + (m.replies ? '<span class="rc">💬' + m.replies + '</span>' : '') + '</div>' +
-          '<div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + (m.kind === '問い合わせ' ? ' ・ 問い合わせ' : '') + (m.watch ? ' ・ 見守り' : '') + (m.status ? ' ・ ' + esc(m.status) : '') + '</div></button>';
+          '<div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + (m.kind === '問い合わせ' ? ' ・ 問い合わせ' : '') + (m.watch ? ' ・ 見守り' : '') + (m.status ? ' ' + stIcon(m.status, 14) : '') + '</div></button>' + (m.canDelete ? '<button type="button" class="mdx" data-del="' + esc(m.id) + '" aria-label="このチャットを削除">' + TRASH_ + '</button>' : '') + '</div>';
       }).join('') : '<div class="card"><p class="muted" style="margin:0">' + (MB.filter === 'all' ? 'チャットはまだありません。' : 'この条件のチャットはありません。') + '</p></div>';
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .ml'), function (b) { b.onclick = function () { go('mail/' + b.dataset.id); }; });
+      Array.prototype.forEach.call(document.querySelectorAll('#mlist .mdx'), function (b) { b.onclick = function () {
+        var m = d.mails.filter(function (x) { return x.id === b.dataset.del; })[0]; if (!m) return;
+        cf(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?', function () {
+          b.disabled = true; api('mail_delete', { id: m.id }).then(function () { d.mails = d.mails.filter(function (x) { return x.id !== m.id; }); MEM.mail_list = d; toast('削除しました'); draw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        });
+      }; });
     }
     sub('チャット', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
     $('#mnew').onclick = function () { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); };
@@ -1313,24 +1335,26 @@ function mBubble(o) {   // o: {mine, name, date, body, rk, rid}
 function drawMail(m) {
   var cat = mailCat(m.subject);
   var h = (cat || m.important || m.kind === '問い合わせ' ? '<div class="tgs" style="margin:0 4px 8px">' + (cat ? '<span class="at c">' + esc(cat) + '</span>' : '') + (m.important ? '<span class="at imp">重要</span>' : '') + (m.kind === '問い合わせ' ? '<span class="at">問い合わせ</span>' : '') + '</div>' : '');
-  if (m.status) {
-    h += '<div class="card" style="padding:12px 14px"><p style="margin:0">' + statusTag(m.status) + (m.status === '対応済み' ? '<span class="muted"> ' + esc(m.handler) + ' さん ・ ' + esc(fmtMd(m.handledAt)) + '</span>' : '') + '</p>' +
-      (m.canStatus ? '<button class="btn ghost" id="mst" style="margin-top:10px">' + (m.status === '対応済み' ? '未対応に戻す' : '対応済みにする') + '</button>' : '') + '</div>';
+  if (m.watch) {   // 見守り(役員以上): 上に案内・双方の既読・小さな解除ボタン
+    h += '<div class="wbn">👀 <b>本チャットは会員同士のマッチングです。</b>トラブル発見したら強制解除します。<br><span style="opacity:.8">見るだけです(あなたの既読は付きません。名前は出しません)</span>' +
+      '<div class="wr">' + (m.parties || []).map(function (p) { return '<span class="rd' + (p.unread ? ' un' : '') + '">' + esc(p.who) + ' ' + (p.unread ? '未読' : '既読') + '</span>'; }).join('') +
+      (m.canStop ? '<button type="button" id="mstop">解除</button>' : '') + '</div></div>';
+  }
+  if (m.status) {   // 対応状況(役員以上だけ)。アイコンをタップで変える
+    h += '<div class="stbar"><span>対応</span>' + STS_.map(function (x) { return '<button type="button" data-st="' + x + '" aria-pressed="' + (m.status === x) + '" aria-label="' + x + '" title="' + x + '"' + (m.canStatus ? '' : ' disabled') + '>' + stIcon(x, 20) + '</button>'; }).join('') +
+      '<span>' + esc(m.status) + (m.status !== '未対応' && m.handler ? ' ・ ' + esc(m.handler) + 'さん ' + esc(fmtMd(m.handledAt)) : '') + '</span></div>';
   }
   h += '<div id="blist">' + mBubble({ mine: m.mine, icon: m.icon, ph: m.ph, name: m.mine ? '' : m.sender, date: m.date, body: m.body }).replace('</div></div><div class="bmeta">', '</div><div id="rx"></div></div><div class="bmeta">') +
     (m.replies.length ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
     m.replies.map(function (r) { return r.sys ? '<div class="bsep sysn">' + esc(r.body) + '</div>' : mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rk: 'mail_reply', rid: r.id }); }).join('') + '</div>' +
     (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') ;
-  if (m.canDelete) h += '<button class="btn ghost" id="mdel" style="color:var(--bad);border-color:var(--bad)">' + (m.mine ? '送信を取り消す(削除)' : 'このチャットを削除する') + '</button><div style="height:20px"></div>';
-  if (m.canStop) h += '<button class="btn ghost" id="mstop" style="color:var(--bad);border-color:var(--bad);margin-top:6px">⛔ STOP:この助け合いを強制的に解除する(管理者のみ)</button><div style="height:12px"></div>';
-  if (m.watch) h += '<p class="small" style="text-align:center;margin:10px 0">👀 見守り中です(見るだけ。既読は付かず、履歴も残りません)</p>';
   if (m.stopped) h += '<p class="small" style="text-align:center;margin:10px 0;color:var(--bad)">このマッチングは解除されました。これ以上、書き込めません。</p>';
   var QRS = ['よろしくお願いします', 'ありがとうございます', '承知しました', 'OKです！'];
   if (m.canReply !== false) h += bdComposer('返信を書く', { max: 2000, pre: '<div class="qrs" id="qrs" hidden>' + QRS.map(function (t) { return '<button type="button" class="qrq" data-q="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div>' });
   sub('チャット', h, 'mail'); document.body.classList.add('bchat');
   if (m.react) reactBind('mail', m.id, m.react);
   reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
-  var st = $('#mst'); if (st) st.onclick = function () { st.disabled = true; api('mail_status', { id: m.id, status: m.status === '対応済み' ? '未対応' : '対応済み' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { st.disabled = false; toast(e.message); }); };
+  Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (st) { st.onclick = function () { if (st.dataset.st === m.status) return; Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = true; }); api('mail_status', { id: m.id, status: st.dataset.st }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; delete MEM.mail_list; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
   if (m.canReply !== false) bdComposerBind(function (t, ph) { return api('mail_reply', { id: m.id, body: t, photos: ph }).then(function () { toast('返信しました'); mailDetailView(m.id); }); });
   var qs = $('#qrs'), qi = $('#bin');
   if (qs && qi) {
@@ -1340,11 +1364,6 @@ function drawMail(m) {
     Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (q) { q.onclick = function () { Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (x) { x.disabled = true; }); api('mail_reply', { id: m.id, body: q.dataset.q, photos: [] }).then(function () { toast('送りました'); mailDetailView(m.id); }).catch(function (e) { Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
   }
   var sp = $('#mstop'); if (sp) sp.onclick = function () { cf('この助け合いのマッチングを強制的に解除します。両方の方に「解除しました」と表示され、以後は書き込めなくなります。よろしいですか?', function () { sp.disabled = true; api('mail_stop', { id: m.id }).then(function () { toast('解除しました'); mailDetailView(m.id); }).catch(function (e) { sp.disabled = false; toast(e.message); }); }); };
-  var dl = $('#mdel'); if (dl) dl.onclick = function () {
-    cf(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?', function () {
-    dl.disabled = true; api('mail_delete', { id: m.id }).then(function () { toast('削除しました'); go('mail'); }).catch(function (e) { dl.disabled = false; toast(e.message); });
-    });
-  };
 }
 /* ===== 反応(いいね・了解 など) ===== */
 function reactHtml(r, open) {
