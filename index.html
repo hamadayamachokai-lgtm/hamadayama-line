@@ -227,7 +227,7 @@ button.mi{cursor:pointer;min-height:32px}
 .mlw{position:relative;overflow:hidden;border-radius:12px}.mlf{position:relative;touch-action:pan-y;transition:transform .18s ease;will-change:transform}.mlf.drag{transition:none}
 .swa{position:absolute;top:0;bottom:5px;display:flex;align-items:stretch}.swa.l{left:0}.swa.r{right:0}.swa button{all:unset;box-sizing:border-box;min-width:84px;flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;font-weight:700;color:#fff;padding:0 8px;white-space:nowrap}
 .mlw:not([data-sw=l]) .swa.l,.mlw:not([data-sw=r]) .swa.r{visibility:hidden}
-.swa::after{content:'';position:absolute;top:0;bottom:0;width:28px;background:var(--lc,#6b7280)}.swa.l::after{left:100%}.swa.r::after{right:100%}
+
 
 .swa.l button[data-pin]{background:#e0a100;font-size:24px;min-width:72px}.swa.r button{background:#6b7280}.swa.r button+button,.swa.l button+button{border-left:1px solid rgba(255,255,255,.3)}
 .swa.r button[data-sst=対応中],.swa.r button[data-sst=進行中]{background:#2563eb}.swa.r button[data-sst=クローズ]{background:#16a34a}.swa.r button[data-sst=キャンセル]{background:#6b7280}.swa.r button[aria-pressed=true]{box-shadow:inset 0 0 0 3px rgba(255,255,255,.7)}.swa .sti{color:#fff}
@@ -335,6 +335,10 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 <script src="qr.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+/* 画面のいちばん上に、まぎれこんだ文字(ファイルを手で直したときの入力ミスなど)があれば消す */
+(function () { try { Array.prototype.slice.call(document.body.childNodes).forEach(function (n) { if (n.nodeType === 3 && n.nodeValue.trim()) n.parentNode.removeChild(n); }); } catch (e) { /* 消せなくても使える */ } })();
+</script>
 <script>
 (function () {
 'use strict';
@@ -595,7 +599,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261029-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261029-9 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1477,7 +1481,7 @@ function swipeBind(w, d, redraw) {
       if (Math.abs(dx) < 8) return;
       st.drag = true; closeOthers(); try { f.setPointerCapture(st.id); } catch (er) { /* 無くても動く */ }
     }
-    set(Math.max(-WR() - 28, Math.min(WL() + 28, st.base + dx)), false);   // 少し(1文字ぶん)行き過ぎても動く。指を離すと元の位置に収まる
+    set(Math.max(-WR() - 14, Math.min(WL() + 14, st.base + dx)), false);   // 少し行き過ぎても動く。指を離すと元の位置に収まる
   });
   function end() {
     if (!st) return; var was = st.drag; st = null;
