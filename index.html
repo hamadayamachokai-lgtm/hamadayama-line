@@ -612,7 +612,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-2 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-4 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1978,7 +1978,7 @@ function reportDraw() {
   h += order.length ? order.map(function (dep) {
     var list = by[dep] || [];
     return '<div class="card" data-dept="' + esc(dep) + '"><h2>' + esc(dep) + '</h2>' +
-      (rep ? '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">今年度達成できたこと・注視したこと(任意)</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 8px 10px 0">この文章を保存</button><button class="sbtn rpai" style="margin:6px 0 10px;background:#fff;color:var(--brand,#06a77d);border:1.5px solid currentColor">AIにまかせる</button>' : '') + '</div>' : '') +
+      (rep ? '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">今年度達成できたこと・注視したこと(任意)</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>' : '') +
       (list.length ? list.map(function (i) {
         var meta = [i.count ? '回数: ' + i.count : '', i.people ? '参加: ' + i.people : ''].filter(Boolean).join('　');
         return '<div class="rpitem" data-id="' + esc(i.id) + '">' + (i.date ? '<div class="rd">' + esc(i.date) + '</div>' : '') + '<div class="rc">' + esc(i.content) + '</div>' + (meta ? '<div class="rm">' + esc(meta) + '</div>' : '') + (i.note ? '<div class="rm">備考: ' + esc(i.note) + '</div>' : '') +
@@ -1989,14 +1989,6 @@ function reportDraw() {
   $('#rpy').onchange = function () { RP.year = +this.value; reportView(); };
   Array.prototype.forEach.call(document.querySelectorAll('.rpseg button'), function (b) { b.onclick = function () { RP.kind = b.dataset.k; reportDraw(); }; });
   if ($('#rpadd')) $('#rpadd').onclick = function () { reportForm(null); };
-  Array.prototype.forEach.call(document.querySelectorAll('.rpai'), function (b) {
-    b.onclick = function () {
-      var card = b.closest('.card'), dep = card.dataset.dept, ta = card.querySelector('.rpsx');
-      if (ta.value.trim() && !window.confirm('いま入っている文章を、AIの文章案に置き換えます。よろしいですか?')) return;
-      b.disabled = true; b.textContent = '作成中…';
-      api('o_report_ai', { year: d.year, dept: dep }).then(function (r) { ta.value = r.text; toast('AIが文章案を作りました。直して「この文章を保存」を押してください'); }).catch(function (e) { toast(e.message); }).then(function () { b.disabled = false; b.textContent = 'AIにまかせる'; });
-    };
-  });
   Array.prototype.forEach.call(document.querySelectorAll('.rpsb'), function (b) {
     b.onclick = function () {
       var card = b.closest('.card'), dep = card.dataset.dept; b.disabled = true;
