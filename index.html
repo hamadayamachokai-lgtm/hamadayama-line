@@ -218,6 +218,9 @@ button.mi{cursor:pointer;min-height:32px}
 .ml .dt{position:absolute;left:10px;top:14px;width:9px;height:9px;border-radius:50%;background:#d92d20}
 .ml .sj{font-size:15px;line-height:1.35;display:flex;align-items:center;gap:5px;min-width:0}.ml .sx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ml .rc{font-size:12px;color:var(--sub);flex-shrink:0}.ml .at{flex-shrink:0}.at.imp{background:#fde3e3;color:#c0322b}
 .ml.un .sj{font-weight:700}
+.cacts{display:flex;justify-content:center;gap:22px;margin:2px 0 14px}.cacts button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--sub);padding:4px 8px;border-radius:10px}.cacts button:active{background:var(--mute-bg)}.cacts #cdel{color:var(--bad)}
+.bov{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:#fff}.bov .h{font-weight:700}.bov .m{font-size:13.5px;color:var(--sub);white-space:pre-wrap;margin-top:3px}
+.supb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}.supb .ok{font-weight:700;color:var(--ok)}.supb .mini{all:unset;cursor:pointer;font-size:12px;color:var(--sub);text-decoration:underline}
 .mlw{position:relative}#mf{gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#mf button{padding:6px 8px;font-size:12.5px;border-width:1px;flex:0 0 auto;white-space:nowrap}.mlw .ml{padding-right:40px}
 .mdx{all:unset;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--sub);cursor:pointer}.mdx:active{background:var(--bad-bg);color:var(--bad)}
 .sti{display:inline-flex;vertical-align:-3px}.sti.s0{color:#d97706}.sti.s1{color:#2563eb}.sti.s2{color:#16a34a}
@@ -454,7 +457,7 @@ function renderNav(h) {
   var items = [['home', 'ホーム', 'home', true]];
   S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
-  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
+  var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^(bosai|profile)/.test(h) ? 'card' : /^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
   var keep = el ? el.scrollLeft : 0;
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
   el.innerHTML = items.map(function (it) {
@@ -536,14 +539,17 @@ function statusView() {
     suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' },
     removed: { icon: 'stop', cls: 'bad', t: 'ご利用を終了しました', d: '詳しくは、町会の役員へお問い合わせください。' }
   }[me.state];
+  if (me.state === 'removed' && me.selfClosed) cfg = { icon: 'stop', cls: 'warn', t: 'LINE会員登録を解除しました', d: 'もう一度使うときは、登録しなおしてください(役員の承認が必要です)。' };
   var html = '<div class="card"><div class="center" style="padding:12px 0 4px"><div class="bigicon ' + cfg.cls + '">' + svg(cfg.icon) + '</div><h2 style="justify-content:center;margin-bottom:6px">' + cfg.t + '</h2><p class="muted" style="margin:0">' + cfg.d + '</p></div></div>';
-  if (me.reason) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : me.state === 'removed' ? '削除の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
+  if (me.reason && !me.selfClosed) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : me.state === 'removed' ? '削除の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
   if (me.state !== 'suspended' && me.state !== 'removed') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
   if (me.state === 'pending') html += '<div class="notice-box">承認の連絡は届きません。数日後に、この画面を開き直してご確認ください。</div><div class="btns"><button class="btn" id="rl">承認されたか確認する</button><button class="btn ghost" id="ed">申請内容を修正する</button></div>';
   if (me.state === 'rejected') html += '<div class="btns"><button class="btn" id="ed">内容を直して再申請する</button></div>';
-  if (me.state === 'suspended' || me.state === 'removed') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
+  if (me.state === 'removed' && me.selfClosed) html += '<div class="btns"><button class="btn" id="rg">もう一度登録する</button></div>';
+  else if (me.state === 'suspended' || me.state === 'removed') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
   setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>浜田山町会</h1><div class="sub">LINE会員</div></div><div class="pad sheet">' + html + '</div>');
-  var rl = $('#rl'), ed = $('#ed');
+  var rl = $('#rl'), ed = $('#ed'), rg = $('#rg');
+  if (rg) rg.onclick = function () { formView(S.me.profile, false); };
   if (rl) rl.onclick = function () { rl.disabled = true; loadMe().then(function () { if (S.me.state === 'approved') route(); else { statusView(); toast('まだ承認待ちです'); } }).catch(function (e) { rl.disabled = false; toast(e.message); }); };
   if (ed) ed.onclick = function () { formView(S.me.profile, true); };
 }
@@ -576,7 +582,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261029-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261029-2 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -609,8 +615,79 @@ function cardView() {
       '<div class="nm">' + esc(c.name) + '</div><div class="row"><span class="chip role">' + esc(c.role) + '</span><span class="no">' + (c.memberNo ? esc(c.memberNo) : '会員番号 未設定') + '</span></div>' +
       '<div class="gold"></div><div class="qrbox">' + (qr || '<div style="display:grid;place-items:center;height:100%;color:#1b2438;font-weight:700">QRを表示できません</div>') + '</div><div class="code">' + esc(c.code) + '</div></div>' +
       '<div class="card" style="margin-top:16px"><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="muted">' + c.year + '年度 町会費</div><div class="big">' + f[1] + '</div></div></div></div>' +
+      '<div class="cacts"><button type="button" id="cedit" aria-label="編集">' + ICO_EDIT_ + '編集</button><button type="button" id="cdel" aria-label="削除(LINE会員登録の解除)">' + ICO_TRASH_ + '削除</button></div>' +
       '<p class="muted" style="text-align:center">受付では、この画面を見せてください。<br>画面の明るさを上げると読み取りやすくなります。</p>');
+    $('#cedit').onclick = function () {
+      askChoice('編集するもの', ['会員登録の内容', '防災登録(世帯ごと)', '祭礼菓子配布の対象者登録', '演芸会(お土産引換)の対象者登録']).then(function (v) {
+        if (!v) return;
+        go(v === '会員登録の内容' ? 'profile' : v.indexOf('防災') === 0 ? 'bosai' : v.indexOf('祭礼') === 0 ? 'evreg/' + encodeURIComponent('祭礼') : 'evreg/' + encodeURIComponent('演芸会'));
+      });
+    };
+    $('#cdel').onclick = function () {
+      if (isOfficer()) return toast('役員・管理者の方は、先に管理者に役割を外してもらってから解除してください。');
+      cf('LINEの会員登録を解除します。会員証・申込などが使えなくなります(もう一度登録することはできます)。よろしいですか?', function () {
+        cf('本当に解除しますか?この操作は、役員に連絡しないと元に戻せません。', function () {
+          api('account_close').then(function () { return loadMe(); }).then(function () { toast('登録を解除しました'); statusView(); }).catch(function (e) { toast(e.message); });
+        }, '解除する');
+      }, '次へ');
+    };
   }).catch(function (e) { sub('会員証', errCard(e)); });
+}
+var ICO_EDIT_ = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>';
+var ICO_TRASH_ = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4L18 7M9 7V4.5h6V7"/></svg>';
+
+/* ---------- 会員証から: 会員登録の編集・防災登録 ---------- */
+function profileView() {
+  var me = S.me, f = me.profile || {};
+  var relHtml = me.relations.map(function (r) { return '<label class="opt"><input type="radio" name="rel" value="' + esc(r) + '"' + (f.relation === r ? ' checked' : '') + '><span>' + esc(r) + '</span></label>'; }).join('');
+  sub('会員登録の内容', '<div class="card"><div class="field"><label class="l" for="pf1">LINE会員氏名<span class="req">必須</span></label><input class="inp" id="pf1" maxlength="30" value="' + esc(f.lineName || '') + '"></div>' +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">納入者との関係<span class="req">必須</span></span><div class="opts" id="rels" role="radiogroup">' + relHtml + '</div>' +
+    '<div id="relnote" style="display:none;margin-top:10px"><textarea class="inp" id="pf4" maxlength="100" placeholder="状況を教えてください">' + esc(f.relationNote || '') + '</textarea></div></div>' +
+    '<dl class="kv" style="margin:6px 0 10px"><dt>納入者</dt><dd>' + esc(f.payerName) + '</dd><dt>住所</dt><dd>' + esc(f.payerAddress) + '</dd></dl><p class="small" style="margin:0 0 12px">納入者・住所を変えたいときは、役員へご連絡ください。</p>' +
+    '<button class="btn" id="pfsv">保存する</button></div>', 'card');
+  function syncNote() { var r = document.querySelector('input[name=rel]:checked'); $('#relnote').style.display = r && r.value === 'どれにしたらいいかわからない' ? 'block' : 'none'; }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=rel]'), function (i) { i.onchange = syncNote; }); syncNote();
+  $('#pfsv').onclick = function () {
+    var r = document.querySelector('input[name=rel]:checked'), b = $('#pfsv'); b.disabled = true;
+    api('profile_save', { form: { lineName: $('#pf1').value.trim(), relation: r ? r.value : '', relationNote: $('#pf4').value.trim() } }).then(function (m2) { S.me = m2; toast('保存しました'); go('card'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+  };
+}
+var BO = { state: null };
+function bosaiView() {
+  sub('防災登録', '<div class="skel" style="height:260px"></div>', 'card');
+  api('bo_state').then(function (s) {
+    BO.state = s;
+    var h = '<div class="notice-box">災害のとき、町会の役員が会員証のQRを読むと、ここに登録した内容が見えます。<b>登録は任意です</b>(必須ではありません)。世帯ごとに登録できます(本世帯・息子さん夫婦世帯など)。</div>' +
+      '<div class="card"><h2>登録した世帯</h2>' + (s.households.length ? s.households.map(function (x) {
+        return '<button type="button" class="bov" data-id="' + esc(x.id) + '" style="all:unset;display:block;box-sizing:border-box;width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;background:#fff;cursor:pointer"><div class="h" style="font-weight:700">' + esc(x.label) + ' ・ ' + x.count + '人</div>' +
+          (x.members ? '<div class="m" style="font-size:13.5px;color:var(--sub);white-space:pre-wrap;margin-top:3px">' + esc(x.members) + '</div>' : '') + (x.care ? '<div class="m" style="font-size:13.5px;margin-top:3px">配慮: ' + esc(x.care) + '</div>' : '') + '</button>';
+      }).join('') : '<p class="muted" style="margin:0">まだ登録がありません。</p>') + (s.households.length < s.max ? '<button class="btn" id="boadd" style="margin-top:12px">＋ 世帯を登録する</button>' : '') + '</div>' +
+      '<div class="card"><h2>LINE登録のご家族</h2>' + (s.family.length ? s.family.map(function (f) { return '<div style="padding:3px 0"><b>' + esc(f.name) + '</b> <span class="muted">' + esc(f.relation) + '</span></div>'; }).join('') : '<p class="muted" style="margin:0">なし</p>') + '<p class="small" style="margin:8px 0 0">同じ会員番号でLINE登録されている方です。役員の画面にも表示されます。</p></div>';
+    sub('防災登録', h, 'card');
+    $('#boadd') && ($('#boadd').onclick = function () { go('bosaiedit/new'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.bov'), function (b) { b.onclick = function () { go('bosaiedit/' + b.dataset.id); }; });
+  }).catch(function (e) { offErr('防災登録', e, 'card'); });
+}
+function bosaiEditView(id) {
+  var go2 = function (s) {
+    var x = id === 'new' ? null : s.households.filter(function (h) { return h.id === id; })[0];
+    if (id !== 'new' && !x) return go('bosai');
+    x = x || { label: s.households.length ? '' : '本世帯', count: '', members: '', care: '', tel: '', note: '' };
+    sub(id === 'new' ? '世帯を登録' : '世帯を直す', '<div class="card">' +
+      '<div class="field"><label class="l" for="bl">世帯の呼び名<span class="req">必須</span></label><input class="inp" id="bl" maxlength="30" placeholder="例: 本世帯 / 息子さん夫婦世帯" value="' + esc(x.label) + '"></div>' +
+      '<div class="field"><label class="l" for="bc">世帯の人数<span class="req">必須</span></label><input class="inp" id="bc" inputmode="numeric" maxlength="2" placeholder="例: 4" value="' + esc(x.count) + '"></div>' +
+      '<div class="field"><label class="l" for="bm">世帯のメンバー<span class="opt2">(任意)</span></label><textarea class="inp" id="bm" maxlength="300" placeholder="お名前を1人ずつ(改行で区切る)">' + esc(x.members) + '</textarea></div>' +
+      '<div class="field"><label class="l" for="bk2">配慮が必要な方<span class="opt2">(任意)</span></label><textarea class="inp" id="bk2" maxlength="200" placeholder="例: 90歳の祖母(車いす)、乳児、持病の薬 など">' + esc(x.care) + '</textarea></div>' +
+      '<div class="field"><label class="l" for="bt">連絡先<span class="opt2">(任意)</span></label><input class="inp" id="bt" maxlength="30" inputmode="tel" value="' + esc(x.tel) + '"></div>' +
+      '<div class="field"><label class="l" for="bn">メモ<span class="opt2">(任意)</span></label><textarea class="inp" id="bn" maxlength="300" placeholder="例: 2階の寝室に1人">' + esc(x.note) + '</textarea></div>' +
+      '<button class="btn" id="bsv">保存する</button>' + (id !== 'new' ? '<div style="height:10px"></div><button class="btn ghost" id="bdl" style="color:var(--bad);border-color:var(--bad)">この世帯の登録を削除する</button>' : '') + '</div>', 'bosai');
+    $('#bsv').onclick = function () {
+      var b = $('#bsv'); b.disabled = true;
+      api('bo_save', { id: id === 'new' ? '' : id, label: $('#bl').value, count: $('#bc').value, members: $('#bm').value, care: $('#bk2').value, tel: $('#bt').value, note: $('#bn').value }).then(function () { toast('保存しました'); go('bosai'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+    var d = $('#bdl'); if (d) d.onclick = function () { cf('「' + x.label + '」の登録を削除します。よろしいですか?', function () { d.disabled = true; api('bo_delete', { id: id }).then(function () { toast('削除しました'); go('bosai'); }).catch(function (e) { d.disabled = false; toast(e.message); }); }); };
+  };
+  if (BO.state) go2(BO.state); else api('bo_state').then(function (s) { BO.state = s; go2(s); }).catch(function (e) { offErr('防災登録', e, 'bosai'); });
 }
 function errCard(e) { return '<div class="center"><div class="bigicon bad">' + svg('alert') + '</div><p>' + esc(e.message) + '</p></div>'; }
 
@@ -1140,12 +1217,23 @@ function drawScan(r) {
     h = '<div class="card scanres ' + (r.already ? 'warn' : 'good') + '"><h2>演芸会 ' + r.year + '</h2>' + who + '<p style="margin:10px 0 0"><b>' + (r.already ? 'すでに来場を記録済みです(' + esc(r.already) + ')' : '✓ 来場を記録しました') + '</b></p><p class="muted" style="margin:4px 0 0">来場者 合計 ' + r.checkedIn + ' 人</p>' +
       (r.apps && r.apps.length ? '<h2 style="margin-top:12px">お土産の申込</h2>' + appRowsHtml(r.apps, true) : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + (r.apps && r.apps.length && r.lineApp === false ? '<p style="margin:8px 0 0;color:#b87400"><b>⚠ LINEでの申込ではありません。</b><br><span class="muted">演芸会のQRが使えるのは、LINEで申し込んだ方だけです(紙の申込の方は、QRなしでご案内ください)。</span></p>' : '') + '</div>';
   } else {
-    var hh = r.household;
-    h = '<div class="card scanres good"><h2>災害 確認</h2>' + who + (r.already ? '<p class="muted" style="margin:8px 0 0">記録済み(' + esc(r.already) + ')</p>' : '<p class="muted" style="margin:8px 0 0">確認を記録しました</p>') + '<p class="muted" style="margin:4px 0 0">確認済み 合計 ' + r.checkedIn + ' 人</p></div>' +
-      (hh ? '<div class="card"><h2>世帯</h2><div class="nm">' + esc(hh.name) + ' 様 (' + hh.count + '人)</div><div class="ad">' + esc(hh.district) + ' ' + esc(hh.group) + '班 ・ ' + esc(hh.address) + '</div>' + (hh.head ? '<div class="ad">回覧元: ' + esc(hh.head) + '</div>' : '') + '<div class="acts" style="margin-top:8px">' + mapBtn(hh.map) + '</div></div>' : '') +
+    var hh = r.household, sp = r.supply || {};
+    h = '<div class="card scanres good"><h2>災害 確認</h2><dl class="kv"><dt>LINE会員氏名</dt><dd><b>' + esc(p.lineName || p.name) + '</b></dd><dt>会員本人氏名</dt><dd><b>' + esc(p.memberName || '(名簿にありません)') + '</b></dd>' +
+      '<dt>区分</dt><dd>' + esc([p.district, p.group && p.group + '班', p.memberNo, p.role].filter(Boolean).join(' ・ ')) + '</dd>' +
+      '<dt>安否</dt><dd><b>' + (r.already ? '記録済み' : '✓ 記録しました') + '</b> <span class="muted">' + esc(fmtMd(r.already || r.recordedAt || '')) + '</span></dd>' +
+      '<dt>物資お渡し</dt><dd><div class="supb">' + (sp.done ? '<span class="ok">✓ 確認済み</span><span class="muted">' + esc(fmtMd(sp.at)) + '</span><button type="button" class="mini" id="supundo">取り消す</button>' : '<button type="button" class="btn" id="supgo" style="min-height:42px;padding:8px 16px">お渡し確認</button>') + '</div></dd></dl>' +
+      '<p class="muted" style="margin:8px 0 0">確認済み 合計 ' + r.checkedIn + ' 人 ・ 物資お渡し 合計 ' + (r.suppliesGiven || 0) + ' 人</p></div>' +
+      '<div class="card"><h2>防災登録(世帯)</h2>' + (r.households && r.households.length ? r.households.map(function (x) {
+        return '<div class="bov"><div class="h">' + esc(x.label) + ' ・ ' + x.count + '人</div>' + (x.members ? '<div class="m">' + esc(x.members) + '</div>' : '') + (x.care ? '<div class="m" style="color:#b3261e">配慮: ' + esc(x.care) + '</div>' : '') + (x.tel ? '<div class="m">連絡先: ' + esc(x.tel) + '</div>' : '') + (x.note ? '<div class="m">' + esc(x.note) + '</div>' : '') + '</div>';
+      }).join('') : '<p class="muted" style="margin:0">防災登録はありません。<br>(会員が、会員証の「編集」から登録できます。任意です)</p>') + '</div>' +
+      (hh ? '<div class="card"><h2>お住まい</h2><div class="nm">' + esc(hh.name) + ' 様</div><div class="ad">' + esc(hh.district) + ' ' + esc(hh.group) + '班 ・ ' + esc(hh.address) + '</div>' + (hh.head ? '<div class="ad">回覧元: ' + esc(hh.head) + '</div>' : '') + '<div class="muted" style="margin-top:4px">名簿の会員数: ' + hh.count + '人(世帯数ではありません)</div><div class="acts" style="margin-top:8px">' + mapBtn(hh.map) + '</div></div>' : '') +
       '<div class="card"><h2>LINE登録のご家族</h2>' + (r.family && r.family.length ? r.family.map(function (f) { return '<div class="mrow first" style="border:0;padding:4px 0"><span class="nm">' + esc(f.name) + '</span> <span class="muted">' + esc(f.relation) + '</span></div>'; }).join('') : '<p class="muted">登録はありません。</p>') + '</div>';
   }
   $('#sres').innerHTML = h; bindMaps($('#sres'));
+  var sg = $('#supgo'), su = $('#supundo');
+  function supSend(done) { return api('o_supply', { key: r.supply.key, isNo: r.supply.isNo, name: (r.person.memberName || r.person.name), done: done }).then(function (x) { r.supply.done = x.done; r.supply.at = x.at; r.suppliesGiven = Math.max(0, (r.suppliesGiven || 0) + (x.done ? 1 : -1)); drawScan(r); }).catch(function (e) { toast(e.message); }); }
+  if (sg) sg.onclick = function () { sg.disabled = true; supSend(true); };
+  if (su) su.onclick = function () { cf('物資お渡しの記録を取り消します。よろしいですか?', function () { supSend(false); }); };
   bindRecv($('#sres'), r.apps || [], 'QR', function () { drawScan(r); });
 }
 
@@ -2447,6 +2535,9 @@ function route() {
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
+  if (h === 'bosaiedit' && seg) return bosaiEditView(seg);
+  if (h === 'bosai') return bosaiView();
+  if (h === 'profile') return profileView();
   if (h === 'evguardian') return evGuardianView();
   if (h === 'evapply' && seg) return evApplyView(decodeURIComponent(seg));
   if (h === 'evperson' && seg) return evPersonView(seg);
