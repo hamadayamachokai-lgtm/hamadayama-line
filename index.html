@@ -327,6 +327,8 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .dlgx{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}.dlgb{background:#fff;border-radius:16px;max-width:360px;width:100%;padding:20px 18px 14px;box-shadow:0 8px 30px rgba(0,0,0,.3)}.dlgm{font-size:16px;line-height:1.7;color:#222;word-break:break-all;margin-bottom:16px}.dlgbt{display:flex;gap:10px}.dlgbt button{flex:1;min-height:46px;font-size:16px;border-radius:12px}
 
 /* 総会: 事業報告・計画 / 総会資料 */
+.rpflow{display:flex;gap:6px;align-items:stretch;margin:0 0 10px;font-size:12.5px}.rpflow .st{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:7px 8px;text-align:center;line-height:1.35}.rpflow .st b{display:block;font-size:13px}.rpflow .st.ok{border-color:#06c755;background:#effaf3}.rpflow .st.now{border-color:var(--navy)}.rpflow .ar{align-self:center;color:var(--sub)}
+.rpnext{margin:12px 0}.rpnext .btn[disabled]{opacity:.45}.rpnext .why{font-size:12.5px;color:var(--sub);margin:6px 2px 0}.rpsubm{border:2px solid var(--line);border-radius:14px;padding:12px;margin:12px 0;background:#fff}.rpsubm.done{border-color:#06c755;background:#effaf3}.rpsubm .why{font-size:12.5px;color:var(--sub);margin:6px 2px 0}.rpitem .pd{width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:10px;border:1.5px solid var(--line);margin:4px 0}
 .rpseg{display:flex;gap:6px;margin:0 0 10px}.rpseg button{all:unset;flex:1;text-align:center;padding:10px 0;border-radius:12px;background:#e8ecf4;font-weight:700;color:var(--sub);cursor:pointer}.rpseg button.on{background:var(--navy);color:#fff}
 .rpitem{border-top:1px solid var(--line);padding:10px 0}.rpitem:first-of-type{border-top:0}.rpitem .rd{font-size:13px;color:var(--sub)}.rpitem .rc{white-space:pre-wrap;margin:2px 0}.rpitem .rm{font-size:13px;color:var(--sub)}
 .rpitem .rb{display:flex;gap:8px;margin-top:4px}.rpitem .rb button{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:var(--navy);padding:4px 10px;border-radius:8px;background:#eef2f9}
@@ -614,7 +616,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-8 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261031-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2057,6 +2059,28 @@ function repBind(d) {
     Array.prototype.forEach.call(card.querySelectorAll('.ad'), function (b) { b.onclick = function () { add(b.dataset.c, 'event', '追加'); }; });
   });
 }
+function repScopeDept(d) { if (!d.admin) return d.myDept; var pick = lsGet('rpShow') || d.myDept || ''; return pick && pick !== '*' ? pick : ''; }
+function repTimeLabel(t) { return t ? String(t).slice(5, 16).replace('-', '/') : ''; }
+/** ①事業報告 → ②事業計画 → ③提出 の進み具合 */
+function repFlowHtml(d, dep) {
+  var pg = (d.prog || {})[dep] || { reportTotal: 0, unanswered: 0, planCount: 0, reportOk: false, planOk: false }, sb = (d.subs || {})[dep];
+  var s3 = sb ? (sb.dirty ? '提出後に修正あり' : '提出済 ' + repTimeLabel(sb.at)) : (pg.reportOk && pg.planOk ? '提出できます' : '下書き(途中保存)');
+  return '<div class="rpflow"><div class="st ' + (pg.reportOk ? 'ok' : RP.kind === '報告' ? 'now' : '') + '"><b>① 事業報告</b>' + (pg.reportOk ? '入力済み' : pg.unanswered + '件 未入力') + '</div><span class="ar">▶</span>' +
+    '<div class="st ' + (pg.planOk ? 'ok' : RP.kind === '計画' ? 'now' : '') + '"><b>② 事業計画</b>' + (pg.planOk ? pg.planCount + '件' : '未登録') + '</div><span class="ar">▶</span>' +
+    '<div class="st ' + (sb && !sb.dirty ? 'ok' : '') + '"><b>③ 提出</b>' + esc(s3) + '</div></div>';
+}
+function repNextHtml(d, dep) {
+  var pg = (d.prog || {})[dep] || {};
+  return '<div class="rpnext"><button class="btn" id="rpgoplan"' + (pg.reportOk ? '' : ' disabled') + '>報告が終わりました → 事業計画の登録へ</button>' +
+    '<div class="why">' + (pg.reportOk ? '次は、来年度の計画を登録します(今年の報告をもとに下書きができます)。' : (pg.reportTotal ? '入力していない項目が ' + pg.unanswered + ' 件あります。数字を入れるか、「今回は対象外」にしてください。' : '事業報告の項目がありません。')) + '</div></div>';
+}
+function repSubmitHtml(d, dep) {
+  var pg = (d.prog || {})[dep] || {}, sb = (d.subs || {})[dep], ok = pg.reportOk && pg.planOk;
+  var why = !pg.reportOk ? '事業報告に、まだ入力していない項目があります。' : !pg.planOk ? '事業計画を登録すると、提出できます。' : '';
+  return '<div class="rpsubm' + (sb && !sb.dirty ? ' done' : '') + '"><b>提出</b>' + (sb ? '<div style="margin:4px 0">' + (sb.dirty ? '提出後に修正があります。再提出すると、管理システムに反映されます。' : '提出済みです(' + esc(sb.at) + ' ' + esc(sb.by) + ')。') + 'あとから直して、再提出もできます。</div>' : '<div style="margin:4px 0">報告と計画がそろうと提出できます。入力した内容は、そのつど自動で保存されています(途中でやめても、続きから再開できます)。</div>') +
+    '<button class="btn" id="rpsubmit"' + (ok && (!sb || sb.dirty) ? '' : ' disabled') + ' style="margin-top:6px">' + (sb ? (sb.dirty ? '修正を再提出する' : '提出済み') : '提出する') + '</button>' +
+    '<button class="sbtn" id="rpsave" style="margin-top:6px;width:100%">ここまでを保存して閉じる</button>' + (why ? '<div class="why">' + esc(why) + '</div>' : '') + '</div>';
+}
 function reportDraw() {
   var d0 = RP.data;
   if (RP.kind === '報告' && d0.canEdit && !RP.seeded[d0.year]) {
@@ -2073,7 +2097,7 @@ function reportDraw() {
   if (d.admin) { var pick = lsGet('rpShow') || d.myDept || ''; if (pick && pick !== '*') order = order.filter(function (k) { return k === pick; }).concat(order.indexOf(pick) < 0 ? [pick] : []); }
   var h = '<p class="muted" style="margin:0 4px 8px">総会で配る「事業報告書」「事業計画書」の元になります。' + (d.admin ? '管理者は、すべての部を見られます。' : 'ここには、あなたの職務(<b>' + esc(d.job || d.myDept) + '</b>)の分だけが出ます。') + 'あとから何度でも直せます。</p>' +
     '<p class="muted" style="margin:0 4px 10px">' + d.year + '年の総会(' + reiwaY(d.year - 2019) + 'の報告 / ' + reiwaY(d.year - 2018) + 'の計画)の分です。今日の日付から、自動で決まります。</p>' +
-    '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
+    (repScopeDept(d) ? repFlowHtml(d, repScopeDept(d)) : '') + '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
     (d.admin ? '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">表示する部(管理者は選べます。職務を設定すると、その部が最初に出ます)</label><select id="rpshow" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)"><option value="*">すべての部</option>' + d.depts.map(function (x) { return '<option' + (x === (lsGet('rpShow') || d.myDept || '*') ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
     (d.canEdit && rep && d.prevPlanCount && order.some(function (k) { return !RP_MODE[k]; }) ? '<button class="btn" id="rpcarry" style="margin-bottom:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">' + (d.year - 1) + '年の事業計画(' + d.prevPlanCount + '件)から取り込む</button><p class="muted" style="margin:0 4px 10px;font-size:12px">前の年に入れた「計画」を、この報告の下書きにします。あとから回数・参加人数・備考を入れてください。</p>' : '') +
     (d.canEdit && (!rep || order.some(function (k) { return !RP_MODE[k]; })) ? '<button class="btn" id="rpadd" style="margin-bottom:12px">＋ ' + (rep ? '報告' : '計画') + 'を追加する</button>' : (!d.canEdit ? '<div class="card"><p class="muted" style="margin:0">この年(' + d.year + '年)の分は、見るだけです(' + d.minYear + '年の総会の分から入力できます)。</p></div>' : '')) + '<div id="rpform"></div>';
@@ -2084,11 +2108,17 @@ function reportDraw() {
       ((rep && dep === '防犯部') ? '' : '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>') +
       (list.length ? list.map(function (i) {
         var meta = [i.count ? '回数: ' + i.count : '', i.people ? '参加: ' + i.people : ''].filter(Boolean).join('　');
-        return '<div class="rpitem" data-id="' + esc(i.id) + '">' + (i.date ? '<div class="rd">' + esc(i.date) + '</div>' : '') + '<div class="rc">' + esc(i.content) + '</div>' + (meta ? '<div class="rm">' + esc(meta) + '</div>' : '') + (i.note ? '<div class="rm">備考: ' + esc(i.note) + '</div>' : '') +
-          (d.canEdit ? '<div class="rb"><button data-a="edit">直す</button><button data-a="del">削除</button></div>' : '') + '</div>';
+        return '<div class="rpitem" data-id="' + esc(i.id) + '">' + (!rep && d.canEdit ? '<input class="pd" type="text" maxlength="40" placeholder="時期(例: 5月・9月 ／ 通年)" value="' + esc(i.date) + '" aria-label="時期">' : (i.date ? '<div class="rd">' + esc(i.date) + '</div>' : '')) + '<div class="rc">' + esc(i.content) + '</div>' + (meta ? '<div class="rm">' + esc(meta) + '</div>' : '') + (i.note ? '<div class="rm">備考: ' + esc(i.note) + '</div>' : '') +
+          (d.canEdit ? '<div class="rb"><button data-a="edit">内容を直す</button><button data-a="del">' + (rep ? '削除' : 'やらない(削除)') + '</button></div>' : '') + '</div>';
       }).join('') : '<p class="muted" style="margin:0">まだ入力がありません。' + (d.canEdit ? '「＋ 追加する」から入れてください。' : '') + '</p>') + '</div>';
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
+  var sd = repScopeDept(d);
+  if (sd && d.canEdit) h += rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd);
   sub('事業報告・計画', h, 'officer');
+  if ($('#rpgoplan')) $('#rpgoplan').onclick = function () { var b = this; b.disabled = true; api('o_report_plan_seed', { year: d.year, dept: sd }).then(function (r) { RP.data = r; RP.kind = '計画'; reportDraw(); window.scrollTo(0, 0); toast(r.seeded ? '今年の報告をもとに、計画の下書きを入れました。時期などを入れてください' : '事業計画の登録へ進みました'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  if ($('#rpsubmit')) $('#rpsubmit').onclick = function () { var b = this; b.disabled = true; api('o_report_submit', { year: d.year, dept: sd }).then(function (r) { RP.data = r; reportDraw(); window.scrollTo(0, 0); toast('提出しました。管理システムに届きました'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  if ($('#rpsave')) $('#rpsave').onclick = function () { toast('保存しました。続きは、いつでもここから再開できます'); setTimeout(function () { go('home'); }, 400); };
+  Array.prototype.forEach.call(document.querySelectorAll('.rpitem .pd'), function (inp) { inp.onchange = function () { var id = inp.closest('.rpitem').dataset.id; api('o_report_fill', { year: d.year, id: id, date: inp.value }).then(function (r) { RP.data = r; toast('保存しました'); }).catch(function (e) { toast(e.message); }); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.rpseg button'), function (b) { b.onclick = function () { RP.kind = b.dataset.k; reportDraw(); }; });
   if ($('#rpadd')) $('#rpadd').onclick = function () { reportForm(null); };
   repBind(d);
