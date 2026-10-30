@@ -332,6 +332,8 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .rpitem .rb{display:flex;gap:8px;margin-top:4px}.rpitem .rb button{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:var(--navy);padding:4px 10px;border-radius:8px;background:#eef2f9}
 .rpform label{display:block;font-size:13px;color:var(--sub);margin:8px 0 2px}.rpform input,.rpform select,.rpform textarea{width:100%;box-sizing:border-box;font:inherit;padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;background:#fff}
 .rpform .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rpck{display:flex;align-items:flex-start;gap:8px;border-top:1px solid var(--line);padding:10px 0}.rpck:first-of-type{border-top:0}.rpck label{flex:1;display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.5;cursor:pointer}.rpck input[type=checkbox]{width:26px;height:26px;flex:none;margin-top:1px}.rpck .x{all:unset;cursor:pointer;color:#b3261e;font-size:13px;font-weight:700;padding:4px 8px;border-radius:8px;background:#fdecea}
+.rpgrp{border-top:1px solid var(--line);padding:10px 0}.rpgrp:first-of-type{border-top:0}.rpgrp .gt{font-weight:700;margin-bottom:6px}.rpgrp .gr{display:flex;gap:6px;align-items:center;margin:6px 0}.rpgrp input,.rpadd2 input,.rpck input[type=text]{font:inherit;padding:9px 10px;border:1.5px solid var(--line);border-radius:10px;min-width:0;box-sizing:border-box}.rpgrp .gr input{flex:1 1 0;min-width:72px;width:0}.rpgrp .gr input[type=date]{flex:1.7 1 0;min-width:136px}.rpgrp .gr span{flex:none}.rpgrp .nt{width:100%}.rpsub{font-weight:700;margin:12px 0 2px;color:var(--navy)}.rpadd2{display:flex;gap:6px;margin:10px 0 2px}.rpadd2 input{flex:1}.rpadd2 button,.rpgrp .ad{all:unset;cursor:pointer;font-weight:700;color:var(--brand,#06c755);border:1.5px solid currentColor;border-radius:10px;padding:8px 12px;text-align:center;font-size:14px}.rphint{font-size:13px;color:var(--sub);margin:0 0 6px}
 .skdoc{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}.skdoc:first-of-type{border-top:0}.skdoc img{width:54px;height:72px;object-fit:cover;border-radius:6px;background:#eee;border:1px solid var(--line)}
 .pgv{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:10px;margin:0 -4px;padding:0 4px}.pgv .pgi{flex:0 0 100%;scroll-snap-align:center;overflow:auto;max-height:calc(100vh - 170px)}.pgv .pgi img{width:100%;display:block;border-radius:6px;background:#eee}
 .pgv.zm{scroll-snap-type:none}.pgv.zm .pgi img{width:220%;max-width:none}
@@ -612,7 +614,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-7 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1965,21 +1967,96 @@ function reportView() {
   sub('事業報告・計画', '<div class="skel" style="height:240px"></div>', 'officer');
   api('o_report_list', RP.year ? { year: RP.year } : {}).then(function (d) { RP.data = d; RP.year = d.year; reportDraw(); }).catch(function (e) { sub('事業報告・計画', errCard(e), 'officer'); });
 }
+var RP_MODE = { '町会長業務': 'check', '防災部': 'check', '施設部': 'check', '防犯部': 'tally', '事業部': 'event', '庶務部': 'note' };
+RP.seeded = {};
+function repSlash(v) { return String(v || '').replace(/-/g, '/'); }
+function repDash(v) { var m = String(v || '').match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/); return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : ''; }
+/** 報告の、部ごとのカード(毎回この形で出る): 町会長業務・防災部・施設部=出席にチェック / 防犯部=延べ人数と回数 / 事業部=日付と人数 / 庶務部=変更の備考 */
+function repCard(dep, d, list, sums) {
+  var mode = RP_MODE[dep], ro = !d.canEdit, dis = ro ? ' disabled' : '', h = '<div class="card rpc" data-dept="' + esc(dep) + '" data-mode="' + mode + '"><h2>' + esc(dep === '防災部' ? '防災部・防災会' : dep) + '　' + reiwaY(d.year - 2019) + '活動報告</h2>';
+  function addBox(ph, label, extra) { return ro ? '' : '<div class="rpadd2"><input type="text" class="ain" maxlength="200" placeholder="' + esc(ph) + '" data-x="' + esc(extra || '') + '"><button class="aok" type="button" data-x="' + esc(extra || '') + '">＋ ' + esc(label) + '</button></div>'; }
+  function delBtn(i) { return !ro && i.person === '追加' ? '<button class="x" data-a="del" type="button">削除</button>' : ''; }
+  if (mode === 'check') {
+    var main = list.filter(function (i) { return i.type !== 'text'; }), texts = list.filter(function (i) { return i.type === 'text'; });
+    h += '<p class="rphint">出席・参加したものに、チェックを入れてください。</p>' + (main.length ? main.map(function (i) { return '<div class="rpck" data-id="' + esc(i.id) + '"><label><input type="checkbox" class="rk"' + (i.checked ? ' checked' : '') + dis + '><span>' + esc(i.content) + '</span></label>' + delBtn(i) + '</div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。下の「＋ 内容の追加」から入れてください。</p>');
+    h += addBox('ほかに出席・参加したものを入れる', '内容の追加', 'check');
+    if (dep === '防災部') ['防災会', '防災部'].forEach(function (who) {
+      var ts = texts.filter(function (i) { return i.person === who; });
+      h += '<div class="rpsub">' + who + 'だけの活動</div>' + ts.map(function (i) { return '<div class="rpck" data-id="' + esc(i.id) + '"><input type="text" class="rt" style="flex:1" maxlength="200" value="' + esc(i.content) + '"' + dis + '>' + (ro ? '' : '<button class="x" data-a="del" type="button">削除</button>') + '</div>'; }).join('') + addBox(who + 'だけの活動を入れる', '内容の追加', 'text:' + who);
+    });
+  } else if (mode === 'tally') {
+    h += '<p class="rphint">延べ参加人数と回数だけ入れてください。</p>' + list.map(function (i) {
+      return '<div class="rpgrp" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + '</div><div class="gr"><input type="text" class="pp" inputmode="numeric" maxlength="40" placeholder="延べ参加人数" value="' + esc(i.people) + '"' + dis + '><span>人</span><input type="text" class="cc" inputmode="numeric" maxlength="40" placeholder="回数" value="' + esc(i.count) + '"' + dis + '><span>回</span>' + delBtn(i) + '</div></div>';
+    }).join('') + addBox('ほかの活動を入れる', '内容の追加', 'tally');
+  } else if (mode === 'event') {
+    var groups = [], gi = {};
+    list.forEach(function (i) { if (!(i.content in gi)) { gi[i.content] = groups.length; groups.push({ c: i.content, rows: [] }); } groups[gi[i.content]].rows.push(i); });
+    h += '<p class="rphint">開催した日と参加人数を入れてください。複数回あるときは「＋ 開催日を追加」。</p>' + groups.map(function (g) {
+      return '<div class="rpgrp" data-c="' + esc(g.c) + '"><div class="gt">' + esc(g.c) + '</div>' + g.rows.map(function (i) {
+        return '<div class="gr" data-id="' + esc(i.id) + '"><input type="date" class="dd" value="' + esc(repDash(i.date)) + '"' + dis + ' aria-label="日付"><input type="text" class="pp" inputmode="numeric" maxlength="40" placeholder="参加人数" value="' + esc(i.people) + '"' + dis + '><span>人</span>' + delBtn(i) + '</div>';
+      }).join('') + (ro ? '' : '<button class="ad" type="button" data-c="' + esc(g.c) + '">＋ 開催日を追加</button>') + '</div>';
+    }).join('') + addBox('新しい事業の名前', '内容の追加', 'event');
+  } else {
+    h += '<p class="rphint">数などに変更があれば、備考に書いてください。</p>' + list.map(function (i) {
+      return '<div class="rpgrp" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + '</div><div class="gr"><input type="text" class="nt" maxlength="300" placeholder="数に変更があれば記載" value="' + esc(i.note) + '"' + dis + '>' + delBtn(i) + '</div></div>';
+    }).join('') + addBox('ほかの項目を入れる', '内容の追加', 'note');
+  }
+  if (dep !== '防犯部') h += '<div class="rpsum" style="margin-top:14px"><label class="muted" style="display:block;margin-bottom:4px">今年度達成できたこと・注視したこと(任意)</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。"' + dis + '>' + esc(sums[dep] || '') + '</textarea>' + (ro ? '' : '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button>') + '</div>';
+  return h + '</div>';
+}
+function repBind(d) {
+  var save = function (id, patch, el) {
+    patch.year = d.year; patch.id = id;
+    api('o_report_fill', patch).then(function (r) { RP.data = r; d = r; toast('保存しました'); }).catch(function (e) { toast(e.message); if (el && el.type === 'checkbox') el.checked = !el.checked; });
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('.rpc'), function (card) {
+    var dep = card.dataset.dept;
+    var rowId = function (el) { var r = el.closest('[data-id]'); return r ? r.dataset.id : ''; };
+    Array.prototype.forEach.call(card.querySelectorAll('.rk'), function (c) { c.onchange = function () { save(rowId(c), { checked: c.checked ? '1' : '' }, c); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.rt'), function (c) { c.onchange = function () { save(rowId(c), { content: c.value }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.dd'), function (c) { c.onchange = function () { save(rowId(c), { date: repSlash(c.value) }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.pp'), function (c) { c.onchange = function () { save(rowId(c), { people: c.value }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.cc'), function (c) { c.onchange = function () { save(rowId(c), { count: c.value }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.nt'), function (c) { c.onchange = function () { save(rowId(c), { note: c.value }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.x[data-a=del]'), function (b) {
+      b.onclick = function () { var id = rowId(b); cf('この項目を削除します。よろしいですか?', function () { api('o_report_delete', { year: d.year, id: id }).then(function (r) { RP.data = r; reportDraw(); toast('削除しました'); }).catch(function (e) { toast(e.message); }); }); };
+    });
+    var add = function (content, type, person, extra) {
+      var p = { year: d.year, kind: '報告', dept: dep, type: type, person: person || '追加', content: content, date: '', count: '', people: '', note: '' }; for (var k in (extra || {})) p[k] = extra[k];
+      return api('o_report_save', p).then(function (r) { RP.data = r; reportDraw(); toast('追加しました'); }).catch(function (e) { toast(e.message); });
+    };
+    Array.prototype.forEach.call(card.querySelectorAll('.aok'), function (b) {
+      b.onclick = function () {
+        var inp = b.parentNode.querySelector('.ain'), v = inp.value.trim(), x = b.dataset.x || ''; if (!v) { toast('内容を入れてください'); return; }
+        if (x.indexOf('text:') === 0) add(v, 'text', x.slice(5)); else add(v, x, '追加', x === 'check' ? { checked: '1' } : {});
+      };
+    });
+    Array.prototype.forEach.call(card.querySelectorAll('.ad'), function (b) { b.onclick = function () { add(b.dataset.c, 'event', '追加'); }; });
+  });
+}
 function reportDraw() {
+  var d0 = RP.data;
+  if (RP.kind === '報告' && d0.canEdit && !RP.seeded[d0.year]) {
+    var need = (d0.admin ? Object.keys(RP_MODE) : (RP_MODE[d0.myDept] ? [d0.myDept] : [])).some(function (k) { return !d0.items.some(function (i) { return i.kind === '報告' && i.dept === k; }); });
+    RP.seeded[d0.year] = 1;
+    if (need) { sub('事業報告・計画', '<div class="skel" style="height:240px"></div>', 'officer'); api('o_report_seed', { year: d0.year }).then(function (r) { RP.data = r; reportDraw(); }).catch(function () { reportDraw(); }); return; }
+  }
   var d = RP.data, ys = [d.year - 1, d.year, d.year + 1].filter(function (y, i, a) { return a.indexOf(y) === i; }), rep = RP.kind === '報告';
   var items = d.items.filter(function (i) { return i.kind === RP.kind; }), by = {}, order = [], sums = rep ? (d.summaries || {}) : (d.goals || {});
   items.forEach(function (i) { if (!by[i.dept]) { by[i.dept] = []; order.push(i.dept); } by[i.dept].push(i); });
   if (!d.admin && d.myDept && order.indexOf(d.myDept) < 0) order.push(d.myDept);            // 自分の部は、まだ何もなくても出す
   if (d.admin) Object.keys(sums).forEach(function (k) { if (order.indexOf(k) < 0) order.push(k); });
+  if (rep) { var fx = Object.keys(RP_MODE); order = fx.filter(function (k) { return order.indexOf(k) >= 0 || (d.admin ? true : k === d.myDept); }).concat(order.filter(function (k) { return fx.indexOf(k) < 0; })); }
   if (d.admin) { var pick = lsGet('rpShow') || d.myDept || ''; if (pick && pick !== '*') order = order.filter(function (k) { return k === pick; }).concat(order.indexOf(pick) < 0 ? [pick] : []); }
   var h = '<p class="muted" style="margin:0 4px 8px">総会で配る「事業報告書」「事業計画書」の元になります。' + (d.admin ? '管理者は、すべての部を見られます。' : 'ここには、あなたの職務(<b>' + esc(d.job || d.myDept) + '</b>)の分だけが出ます。') + 'あとから何度でも直せます。</p>' +
     '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">総会を開く年</label><select id="rpy" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)">' + ys.map(function (y) { return '<option value="' + y + '"' + (y === d.year ? ' selected' : '') + '>' + y + '年の総会(' + reiwaY(y - 2019) + ' 報告 / ' + reiwaY(y - 2018) + ' 計画)</option>'; }).join('') + '</select></div>' +
     '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
     (d.admin ? '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">表示する部(管理者は選べます。職務を設定すると、その部が最初に出ます)</label><select id="rpshow" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)"><option value="*">すべての部</option>' + d.depts.map(function (x) { return '<option' + (x === (lsGet('rpShow') || d.myDept || '*') ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
-    (d.canEdit && rep && d.prevPlanCount ? '<button class="btn" id="rpcarry" style="margin-bottom:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">' + (d.year - 1) + '年の事業計画(' + d.prevPlanCount + '件)から取り込む</button><p class="muted" style="margin:0 4px 10px;font-size:12px">前の年に入れた「計画」を、この報告の下書きにします。あとから回数・参加人数・備考を入れてください。</p>' : '') +
-    (d.canEdit ? '<button class="btn" id="rpadd" style="margin-bottom:12px">＋ ' + (rep ? '報告' : '計画') + 'を追加する</button>' : '<div class="card"><p class="muted" style="margin:0">この年(' + d.year + '年)の分は、見るだけです(' + d.minYear + '年の総会の分から入力できます)。</p></div>') + '<div id="rpform"></div>';
+    (d.canEdit && rep && d.prevPlanCount && order.some(function (k) { return !RP_MODE[k]; }) ? '<button class="btn" id="rpcarry" style="margin-bottom:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">' + (d.year - 1) + '年の事業計画(' + d.prevPlanCount + '件)から取り込む</button><p class="muted" style="margin:0 4px 10px;font-size:12px">前の年に入れた「計画」を、この報告の下書きにします。あとから回数・参加人数・備考を入れてください。</p>' : '') +
+    (d.canEdit && (!rep || order.some(function (k) { return !RP_MODE[k]; })) ? '<button class="btn" id="rpadd" style="margin-bottom:12px">＋ ' + (rep ? '報告' : '計画') + 'を追加する</button>' : (!d.canEdit ? '<div class="card"><p class="muted" style="margin:0">この年(' + d.year + '年)の分は、見るだけです(' + d.minYear + '年の総会の分から入力できます)。</p></div>' : '')) + '<div id="rpform"></div>';
   h += order.length ? order.map(function (dep) {
     var list = by[dep] || [];
+    if (rep && RP_MODE[dep]) return repCard(dep, d, list, sums);
     return '<div class="card" data-dept="' + esc(dep) + '"><h2>' + esc(dep) + '</h2>' +
       ((rep && dep === '防犯部') ? '' : '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>') +
       (list.length ? list.map(function (i) {
@@ -1992,6 +2069,7 @@ function reportDraw() {
   $('#rpy').onchange = function () { RP.year = +this.value; reportView(); };
   Array.prototype.forEach.call(document.querySelectorAll('.rpseg button'), function (b) { b.onclick = function () { RP.kind = b.dataset.k; reportDraw(); }; });
   if ($('#rpadd')) $('#rpadd').onclick = function () { reportForm(null); };
+  repBind(d);
   if ($('#rpshow')) $('#rpshow').onchange = function () { lsSet('rpShow', this.value); reportDraw(); };
   if ($('#rpcarry')) $('#rpcarry').onclick = function () { var b = this; cf((d.year - 1) + '年の事業計画を、この事業報告の下書きとして入れます。よろしいですか?', function () { b.disabled = true; api('o_report_carry', { year: d.year }).then(function (r) { RP.data = r; reportDraw(); toast(r.carried ? r.carried + '件を入れました。数字などを入れてください' : '取り込めるものはありませんでした'); }).catch(function (e) { b.disabled = false; toast(e.message); }); }); };
   Array.prototype.forEach.call(document.querySelectorAll('.rpsb'), function (b) {
