@@ -612,7 +612,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-4 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-5 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1967,18 +1967,21 @@ function reportView() {
 }
 function reportDraw() {
   var d = RP.data, ys = [d.year - 1, d.year, d.year + 1].filter(function (y, i, a) { return a.indexOf(y) === i; }), rep = RP.kind === '報告';
-  var items = d.items.filter(function (i) { return i.kind === RP.kind; }), by = {}, order = [], sums = rep ? (d.summaries || {}) : {};
+  var items = d.items.filter(function (i) { return i.kind === RP.kind; }), by = {}, order = [], sums = rep ? (d.summaries || {}) : (d.goals || {});
   items.forEach(function (i) { if (!by[i.dept]) { by[i.dept] = []; order.push(i.dept); } by[i.dept].push(i); });
   if (!d.admin && d.myDept && order.indexOf(d.myDept) < 0) order.push(d.myDept);            // 自分の部は、まだ何もなくても出す
   if (d.admin) Object.keys(sums).forEach(function (k) { if (order.indexOf(k) < 0) order.push(k); });
+  if (d.admin) { var pick = lsGet('rpShow') || d.myDept || ''; if (pick && pick !== '*') order = order.filter(function (k) { return k === pick; }).concat(order.indexOf(pick) < 0 ? [pick] : []); }
   var h = '<p class="muted" style="margin:0 4px 8px">総会で配る「事業報告書」「事業計画書」の元になります。' + (d.admin ? '管理者は、すべての部を見られます。' : 'ここには、あなたの職務(<b>' + esc(d.job || d.myDept) + '</b>)の分だけが出ます。') + 'あとから何度でも直せます。</p>' +
     '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">総会を開く年</label><select id="rpy" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)">' + ys.map(function (y) { return '<option value="' + y + '"' + (y === d.year ? ' selected' : '') + '>' + y + '年の総会(' + reiwaY(y - 2019) + ' 報告 / ' + reiwaY(y - 2018) + ' 計画)</option>'; }).join('') + '</select></div>' +
     '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
+    (d.admin ? '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">表示する部(管理者は選べます。職務を設定すると、その部が最初に出ます)</label><select id="rpshow" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)"><option value="*">すべての部</option>' + d.depts.map(function (x) { return '<option' + (x === (lsGet('rpShow') || d.myDept || '*') ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
+    (d.canEdit && rep && d.prevPlanCount ? '<button class="btn" id="rpcarry" style="margin-bottom:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">' + (d.year - 1) + '年の事業計画(' + d.prevPlanCount + '件)から取り込む</button><p class="muted" style="margin:0 4px 10px;font-size:12px">前の年に入れた「計画」を、この報告の下書きにします。あとから回数・参加人数・備考を入れてください。</p>' : '') +
     (d.canEdit ? '<button class="btn" id="rpadd" style="margin-bottom:12px">＋ ' + (rep ? '報告' : '計画') + 'を追加する</button>' : '<div class="card"><p class="muted" style="margin:0">この年(' + d.year + '年)の分は、見るだけです(' + d.minYear + '年の総会の分から入力できます)。</p></div>') + '<div id="rpform"></div>';
   h += order.length ? order.map(function (dep) {
     var list = by[dep] || [];
     return '<div class="card" data-dept="' + esc(dep) + '"><h2>' + esc(dep) + '</h2>' +
-      (rep ? '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">今年度達成できたこと・注視したこと(任意)</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>' : '') +
+      '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>' +
       (list.length ? list.map(function (i) {
         var meta = [i.count ? '回数: ' + i.count : '', i.people ? '参加: ' + i.people : ''].filter(Boolean).join('　');
         return '<div class="rpitem" data-id="' + esc(i.id) + '">' + (i.date ? '<div class="rd">' + esc(i.date) + '</div>' : '') + '<div class="rc">' + esc(i.content) + '</div>' + (meta ? '<div class="rm">' + esc(meta) + '</div>' : '') + (i.note ? '<div class="rm">備考: ' + esc(i.note) + '</div>' : '') +
@@ -1989,10 +1992,12 @@ function reportDraw() {
   $('#rpy').onchange = function () { RP.year = +this.value; reportView(); };
   Array.prototype.forEach.call(document.querySelectorAll('.rpseg button'), function (b) { b.onclick = function () { RP.kind = b.dataset.k; reportDraw(); }; });
   if ($('#rpadd')) $('#rpadd').onclick = function () { reportForm(null); };
+  if ($('#rpshow')) $('#rpshow').onchange = function () { lsSet('rpShow', this.value); reportDraw(); };
+  if ($('#rpcarry')) $('#rpcarry').onclick = function () { var b = this; cf((d.year - 1) + '年の事業計画を、この事業報告の下書きとして入れます。よろしいですか?', function () { b.disabled = true; api('o_report_carry', { year: d.year }).then(function (r) { RP.data = r; reportDraw(); toast(r.carried ? r.carried + '件を入れました。数字などを入れてください' : '取り込めるものはありませんでした'); }).catch(function (e) { b.disabled = false; toast(e.message); }); }); };
   Array.prototype.forEach.call(document.querySelectorAll('.rpsb'), function (b) {
     b.onclick = function () {
       var card = b.closest('.card'), dep = card.dataset.dept; b.disabled = true;
-      api('o_report_summary', { year: d.year, dept: dep, text: card.querySelector('.rpsx').value }).then(function (r) { RP.data = r; reportDraw(); toast('保存しました'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      api(rep ? 'o_report_summary' : 'o_report_goal', { year: d.year, dept: dep, text: card.querySelector('.rpsx').value }).then(function (r) { RP.data = r; reportDraw(); toast('保存しました'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
   });
   Array.prototype.forEach.call(document.querySelectorAll('.rpitem button'), function (b) {
@@ -2014,7 +2019,7 @@ function reportForm(it) {
     '<label>開催日・時期(例: 2026/12/07 ／ 5月・9月・1月 ／ 通年)</label><div style="display:flex;gap:6px"><input id="rfh" type="text" maxlength="40" value="' + esc(f.date) + '"><input id="rfhp" type="date" style="width:46px;padding:0" aria-label="日付をカレンダーから選ぶ"></div>' +
     '<label>内容(何をしたか・する予定か)</label><textarea id="rfc" rows="4" maxlength="1500">' + esc(f.content) + '</textarea>' +
     '<div class="two"><div><label>回数</label><input id="rfn" type="text" maxlength="40" value="' + esc(f.count) + '" placeholder="例: 12回"></div><div><label>参加人数</label><input id="rfq" type="text" maxlength="40" value="' + esc(f.people) + '" placeholder="例: 約200人"></div></div>' +
-    '<label>備考</label><input id="rfm" type="text" maxlength="500" value="' + esc(f.note) + '">' +
+    '<label>備考(自由記載。そのまま報告書に載ります)</label><textarea id="rfm" rows="2" maxlength="500">' + esc(f.note) + '</textarea>' +
     '<div style="display:flex;gap:8px;margin-top:12px"><button class="sbtn" id="rfx">やめる</button><button class="btn" id="rfs" style="flex:1">' + (it ? '保存する' : '追加する') + '</button></div></div>';
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   if ($('#rfo')) $('#rfd').onchange = function () { $('#rfo').style.display = this.value === '__o' ? '' : 'none'; };
