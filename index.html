@@ -612,7 +612,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-5 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261030-6 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1981,7 +1981,7 @@ function reportDraw() {
   h += order.length ? order.map(function (dep) {
     var list = by[dep] || [];
     return '<div class="card" data-dept="' + esc(dep) + '"><h2>' + esc(dep) + '</h2>' +
-      '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>' +
+      ((rep && dep === '防犯部') ? '' : '<div class="rpsum"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + (d.canEdit ? '' : ' disabled') + '>' + esc(sums[dep] || '') + '</textarea>' + (d.canEdit ? '<button class="sbtn rpsb" style="margin:6px 0 4px">この文章を保存</button><p class="muted" style="margin:0 0 10px;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>' : '') + '</div>') +
       (list.length ? list.map(function (i) {
         var meta = [i.count ? '回数: ' + i.count : '', i.people ? '参加: ' + i.people : ''].filter(Boolean).join('　');
         return '<div class="rpitem" data-id="' + esc(i.id) + '">' + (i.date ? '<div class="rd">' + esc(i.date) + '</div>' : '') + '<div class="rc">' + esc(i.content) + '</div>' + (meta ? '<div class="rm">' + esc(meta) + '</div>' : '') + (i.note ? '<div class="rm">備考: ' + esc(i.note) + '</div>' : '') +
@@ -2028,7 +2028,7 @@ function reportForm(it) {
   $('#rfs').onclick = function () {
     var dept = $('#rfd').value === '__o' ? $('#rfo').value.trim() : $('#rfd').value, b = this; b.disabled = true;
     api('o_report_save', { year: d.year, id: it ? it.id : '', kind: it ? it.kind : RP.kind, dept: dept, person: it ? it.person : '', date: $('#rfh').value, content: $('#rfc').value, count: $('#rfn').value, people: $('#rfq').value, note: $('#rfm').value })
-      .then(function (r) { lsSet('rpDept', dept); RP.data = r; reportDraw(); toast('保存しました'); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      .then(function (r) { lsSet('rpDept', dept); RP.data = r; RP.year = r.year; reportDraw(); toast(r.movedTo ? '保存しました。日付から、令和' + (r.year - 2019) + '年度定期総会の分に入れました' : '保存しました'); }).catch(function (e) { b.disabled = false; toast(e.message); });
   };
 }
 
