@@ -2266,6 +2266,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-b / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
