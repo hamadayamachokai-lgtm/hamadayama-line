@@ -2106,7 +2106,7 @@ function repFlowHtml(d, dep) {
   var s3 = sb ? (sb.dirty ? '提出済(提出後に修正あり)' : '提出済 ' + repTimeLabel(sb.at)) : (started ? '途中保存中' : '未提出');
   var cur = RP.kind === '報告' ? 1 : (pg.planOk && pg.reportOk ? 3 : 2);
   var badge = '<i class="here">イマココ</i>';
-  return '<div class="rpflow"><div class="st ' + (pg.reportOk ? 'ok ' : '') + (cur === 1 ? 'now' : '') + '">' + (cur === 1 ? badge : '') + '<b>① 事業報告</b>' + (pg.reportOk ? '入力済み' : pg.unanswered + '件 未入力') + '</div><span class="ar">▶</span>' +
+  return '<div class="rpflow"><div class="st ' + (pg.reportOk ? 'ok ' : '') + (cur === 1 ? 'now' : '') + '">' + (cur === 1 ? badge : '') + '<b>① 事業報告</b>' + (pg.reportOk ? '入力済み' : pg.unanswered + '件 未提出') + '</div><span class="ar">▶</span>' +
     '<div class="st ' + (pg.planOk ? 'ok ' : '') + (cur === 2 ? 'now' : '') + '">' + (cur === 2 ? badge : '') + '<b>② 事業計画</b>' + (pg.planOk ? pg.planCount + '件' : '未登録') + '</div><span class="ar">▶</span>' +
     '<div class="st ' + (sb && !sb.dirty ? 'ok ' : '') + (cur === 3 ? 'now' : '') + '">' + (cur === 3 ? badge : '') + '<b>③ 提出</b>' + esc(s3) + '</div></div>';
 }
@@ -2145,7 +2145,7 @@ function repPoolNote(dep, d, rep) {
 }
 /** カードに「欄を足す」: 管理者がONにしていない欄(開催日・回数・人数・備考)を、担当者がこのカードだけに足せる */
 function repAddFieldHtml(i, f, ro, rep) {
-  if (ro || i.excluded || !f.length) return '';
+  if (ro || i.excluded) return '';
   var miss = ['date', 'count', 'people', 'note'].filter(function (k) { return f.indexOf(k) < 0; }); if (!miss.length) return '';
   var nm = { date: rep ? '日付' : '時期', count: '回数', people: '人数', note: '備考' };
   return '<div class="fadd"><button type="button" class="fadd-t" title="入力する欄を足します">＋ 入力欄を足す</button><span class="fadd-l" style="display:none">' + miss.map(function (k) { return '<button type="button" data-f="' + k + '">' + nm[k] + '</button>'; }).join('') + '</span></div>';
@@ -2172,9 +2172,9 @@ function repFillCard(dep, d, list, sums, rep) {
     var f = i.fields || ['date', 'count', 'people', 'note'], tpl = rep && i.person !== '追加' && i.type && i.type !== 'text';
     var body = f.length ? f.map(function (k) { return repRowHtml(i, k, rep, ro, false); }).join('') : '<label class="rpck" style="border:0;padding:4px 0"><span style="flex:1"><input type="checkbox" class="fk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '> ' + (rep ? '実施した(確認のみ)' : '確認した') + '</span></label>';
     return '<div class="fc' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</div>' + (i.hasPre && !i.excluded ? '<p class="muted" style="margin:0 0 6px;font-size:12px">管理者が先に入れてあります。違いがなければ、そのまま次へ進めます。直すときは、横の ✏️ を押してください。</p>' : '') + body + repAddFieldHtml(i, f, ro, rep) +
-      (ro ? '' : '<button class="xb" type="button" data-a="xmenu" data-ex="' + (i.excluded ? '1' : '0') + '" data-tpl="' + (tpl ? '1' : '0') + '" title="対象外・削除">✕</button><div class="rpbt"><button class="x pe" data-a="savequit" type="button" title="いまの内容を保存して、ホームに戻ります">💾 一旦保存して終了</button></div>') + '</div>';
+      (ro ? '' : '<button class="xb" type="button" data-a="xmenu" data-ex="' + (i.excluded ? '1' : '0') + '" data-tpl="' + (tpl ? '1' : '0') + '" title="対象外・削除">✕</button><div class="rpbt"><button class="x pe" data-a="savequit" type="button" title="いまの内容を保存して、ホームに戻ります">💾 一旦保存して終了</button>' + (rep ? '<button class="x o" data-a="excl" data-on="' + (i.excluded ? '0' : '1') + '" type="button">' + (i.excluded ? '戻す' : '今回は対象外') + '</button><button class="x" data-a="del" data-tpl="' + (tpl ? '1' : '0') + '" type="button">削除</button>' : '<button class="x" data-a="del" data-tpl="' + (tpl ? '1' : '0') + '" type="button">やらない(削除)</button>') + '</div>') + '</div>';
   }).join('') : '<p class="muted" style="margin:0 0 8px">まだ項目がありません。' + (rep ? '' : '「報告が終わりました」から進むと、今年の報告をもとに下書きが入ります。') + '</p>';
-  if (!ro) h += '<button type="button" class="addtog" style="all:unset;cursor:pointer;display:block;font-weight:700;color:var(--brand,#06c755);border:1.5px dashed currentColor;border-radius:12px;padding:10px;text-align:center;margin:6px 0">＋ 確認項目を追加</button><div class="rpadd2 addrow" style="display:none"><input type="text" class="ain" maxlength="200" placeholder="活動の名前を入れる"><button class="aok" type="button">登録</button></div><p class="muted" style="margin:4px 2px 0;font-size:12px">ほかの活動は、20件以上(80件まで)入れられます。</p>';
+  if (!ro) h += '<button type="button" class="addtog" style="all:unset;cursor:pointer;display:block;font-weight:700;color:var(--brand,#06c755);border:1.5px dashed currentColor;border-radius:12px;padding:10px;text-align:center;margin:6px 0">＋ 確認項目を追加</button><div class="rpadd2 addrow" style="display:none"><input type="text" class="ain" maxlength="200" placeholder="活動内容の名称を入力"><button class="aok" type="button">登録</button></div><p class="muted" style="margin:4px 2px 0;font-size:12px">ほかの活動は、20件以上(80件まで)入れられます。</p>';
   if (!(rep && dep === '防犯部')) h += '<div class="rpsum" style="margin-top:14px"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><div class="rpadd2"><input type="text" class="rpsx" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '" value="' + esc(sums[dep] || '') + '"' + dis + '></div>' + (ro ? '' : '<p class="muted" style="margin:4px 2px 0;font-size:12px">入力すると自動で保存されます。未記載の場合は、管理者(田辺)が対応します。</p>') + '</div>';
   return h + '</div>';
 }
@@ -2312,7 +2312,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-a / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-c / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
