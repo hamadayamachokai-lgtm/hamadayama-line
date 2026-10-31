@@ -2094,7 +2094,7 @@ function repRefreshFlow(r) {
   var fb = $('.rpflow'); if (fb && sd) { var tmp = document.createElement('div'); tmp.innerHTML = repFlowHtml(d, sd); fb.parentNode.replaceChild(tmp.firstChild, fb); }
   var bt = $('#rpbottom'); if (bt && sd && d.canEdit) { bt.innerHTML = rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd); repBindBottom(d, sd, rep); }
 }
-var RP_FLAB = { date: ['開催日', '例: 5/3・5/10 ／ 通年', ''], count: ['開催回数', '', '回'], people: ['参加人数', '', '人'], note: ['備考', '', ''] };
+var RP_FLAB = { date: ['開催日', '例: 5/3・5/10 ／ 通年', ''], count: ['開催回数', '例: 3 ／ 年6回×2(場所名)', '回'], people: ['参加人数', '', '人'], note: ['備考', '', ''] };
 /** 報告・計画の、1つの活動=1枚のカード。管理者がONにした欄(開催日・開催回数・参加人数・備考)だけを、穴埋め式で聞く */
 function repFillCard(dep, d, list, sums, rep) {
   var ro = !d.canEdit, dis = ro ? ' disabled' : '';
@@ -2104,7 +2104,7 @@ function repFillCard(dep, d, list, sums, rep) {
     var f = i.fields || ['date', 'count', 'people', 'note'], tpl = rep && i.person !== '追加' && i.type && i.type !== 'text';
     var body = f.length ? f.map(function (k) {
       var lab = RP_FLAB[k], v = k === 'date' ? i.date : k === 'count' ? i.count : k === 'people' ? i.people : i.note;
-      return '<div class="fr"><label>' + (!rep && k === 'date' ? '時期' : lab[0]) + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : 40) + '"' + (k === 'count' || k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + (i.excluded ? ' disabled' : dis) + '>' + (lab[2] ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'date' && !i.excluded && !ro ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + '</div>';
+      return '<div class="fr"><label>' + (!rep && k === 'date' ? '時期' : lab[0]) + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : k === 'count' ? 120 : 40) + '"' + (k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + (i.excluded ? ' disabled' : dis) + '>' + (lab[2] && (k !== 'count' || !v || /^\d+$/.test(String(v).trim())) ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'count' && !i.excluded && !ro ? '<button type="button" class="cal ccb" title="年◯回×場所の数 などを組み立てる">✎</button>' : '') + (k === 'date' && !i.excluded && !ro ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + '</div>';
     }).join('') : '<label class="rpck" style="border:0;padding:4px 0"><span style="flex:1"><input type="checkbox" class="fk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '> ' + (rep ? '実施した(確認のみ)' : '確認した') + '</span></label>';
     return '<div class="fc' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</div>' + (i.hasPre && !i.excluded ? '<p class="muted" style="margin:0 0 6px;font-size:12px">管理者が先に入れてあります。違いがなければ、そのまま次へ進めます。</p>' : '') + body +
       (ro ? '' : '<div class="rpbt">' + (rep ? '<button class="x o" data-a="excl" data-on="' + (i.excluded ? '0' : '1') + '" type="button">' + (i.excluded ? '戻す' : '今回は対象外') + '</button>' : '') + '<button class="x" data-a="del" data-tpl="' + (tpl ? '1' : '0') + '" type="button">' + (rep ? (tpl ? '削除(次回以降も出さない)' : '削除') : 'やらない(削除)') + '</button></div>') + '</div>';
@@ -2136,12 +2136,35 @@ function repCalOpen(cur, done) {
   ov.onclick = function (ev) { if (ev.target === ov) ov.remove(); };
   draw();
 }
+/** 回数の組み立て: 「年6回×2(浜田山1丁目公園、浜田山南公園)」のような書き方を、数字を入れるだけで作る */
+function repCountOpen(cur, done) {
+  var ov = document.createElement('div'); ov.className = 'calov'; document.body.appendChild(ov);
+  var m = /年\s*(\d+)\s*回\s*[×x*]\s*(\d+)\s*[((]?([^))]*)/.exec(cur || '') || /^\s*(\d+)\s*$/.exec(cur || '');
+  var n1 = m ? m[1] : '', n2 = m && m[2] ? m[2] : '1', pl = m && m[3] ? m[3] : '';
+  ov.innerHTML = '<div class="calbx"><div class="ch"><span>開催回数を組み立てる</span></div>' +
+    '<div class="fr" style="display:flex;gap:8px;align-items:center;margin:6px 0"><label style="flex:0 0 7.5em;font-size:13px">1か所の年間回数</label><input id="cc1" type="number" inputmode="numeric" min="0" value="' + esc(n1) + '" style="flex:1;padding:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit"><span>回</span></div>' +
+    '<div class="fr" style="display:flex;gap:8px;align-items:center;margin:6px 0"><label style="flex:0 0 7.5em;font-size:13px">場所の数</label><input id="cc2" type="number" inputmode="numeric" min="1" value="' + esc(n2) + '" style="flex:1;padding:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit"><span>か所</span></div>' +
+    '<div class="fr" style="display:flex;gap:8px;align-items:center;margin:6px 0"><label style="flex:0 0 7.5em;font-size:13px">場所の名前</label><input id="cc3" type="text" maxlength="80" placeholder="例: 浜田山1丁目公園、浜田山南公園" value="' + esc(pl) + '" style="flex:1;padding:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit"></div>' +
+    '<div class="calsel" id="ccv"></div><p class="muted" style="margin:0 0 8px;font-size:12px">月は「開催日」の欄に「5月、9月、1月」のように書きます。</p>' +
+    '<div class="calbt"><button type="button" id="ccx" style="background:#eef1f4">やめる</button><button type="button" id="ccok" style="background:var(--brand,#06c755);color:#fff">決定</button></div></div>';
+  var val = function () {
+    var a = ov.querySelector('#cc1').value.trim(), b = parseInt(ov.querySelector('#cc2').value, 10) || 1, p = ov.querySelector('#cc3').value.trim();
+    if (!a) return ''; if (b <= 1 && !p) return a;
+    return '年' + a + '回' + (b > 1 ? '×' + b : '') + (p ? '(' + p + ')' : '');
+  };
+  var upd = function () { ov.querySelector('#ccv').textContent = '入る内容: ' + (val() || '(回数を入れてください)'); };
+  Array.prototype.forEach.call(ov.querySelectorAll('input'), function (x) { x.oninput = upd; }); upd();
+  ov.querySelector('#ccx').onclick = function () { ov.remove(); };
+  ov.querySelector('#ccok').onclick = function () { var v = val(); if (!v) { toast('回数を入れてください'); return; } ov.remove(); done(v); };
+  ov.onclick = function (ev) { if (ev.target === ov) ov.remove(); };
+}
 function repFillBind(d, rep) {
   Array.prototype.forEach.call(document.querySelectorAll('.rpc2'), function (card) {
     var dep = card.dataset.dept, rowId = function (el) { var r = el.closest('[data-id]'); return r ? r.dataset.id : ''; };
     var save = function (id, patch, el) { patch.year = d.year; patch.id = id; api('o_report_fill', patch).then(function (r) { repRefreshFlow(r); d = r; toast('保存しました'); }).catch(function (e) { toast(e.message); if (el && el.type === 'checkbox') el.checked = !el.checked; }); };
     Array.prototype.forEach.call(card.querySelectorAll('.fi'), function (c) { c.onchange = function () { var p = {}; p[c.dataset.k] = c.value; save(rowId(c), p); }; });
-    Array.prototype.forEach.call(card.querySelectorAll('.cal'), function (b) { b.onclick = function () { var inp = b.parentNode.querySelector('.fi'); repCalOpen(inp.value, function (v) { inp.value = v; save(rowId(inp), { date: v }); }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.ccb'), function (b) { b.onclick = function () { var inp = b.parentNode.querySelector('.fi'); repCountOpen(inp.value, function (v) { inp.value = v; save(rowId(inp), { count: v }); }); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.cal:not(.ccb)'), function (b) { b.onclick = function () { var inp = b.parentNode.querySelector('.fi'); repCalOpen(inp.value, function (v) { inp.value = v; save(rowId(inp), { date: v }); }); }; });
     Array.prototype.forEach.call(card.querySelectorAll('.fk'), function (c) { c.onchange = function () { save(rowId(c), { checked: c.checked ? '1' : '' }, c); }; });
     var refresh = function (r, msg) { RP.data = r; reportDraw(); if (msg) toast(msg); };
     Array.prototype.forEach.call(card.querySelectorAll('.x[data-a=excl]'), function (b) { b.onclick = function () { api('o_report_fill', { year: d.year, id: rowId(b), excluded: b.dataset.on === '1' ? '1' : '' }).then(function (r) { refresh(r, b.dataset.on === '1' ? '今回は対象外にしました(報告書に載りません)' : '戻しました'); }).catch(function (e) { toast(e.message); }); }; });
