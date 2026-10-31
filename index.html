@@ -327,6 +327,25 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .dlgx{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}.dlgb{background:#fff;border-radius:16px;max-width:360px;width:100%;padding:20px 18px 14px;box-shadow:0 8px 30px rgba(0,0,0,.3)}.dlgm{font-size:16px;line-height:1.7;color:#222;word-break:break-all;margin-bottom:16px}.dlgbt{display:flex;gap:10px}.dlgbt button{flex:1;min-height:46px;font-size:16px;border-radius:12px}
 
 /* 総会: 事業報告・計画 / 総会資料 */
+.kbw{width:360px;max-width:100%;margin:0 auto;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;color:#000;background:#fff}
+.kbw .kb{background:#fff;border:2px solid #222;padding:14px 8px 12px;text-align:center;box-sizing:border-box}
+.kbw .kr{color:#e60012}
+.kbw .kbd{font-size:30px;line-height:1.25;font-weight:500}.kbw .kbp{font-size:22px;line-height:1.3}.kbw .kbo{font-size:19px;line-height:1.35}
+.kbw .kbm{display:flex;flex-direction:row-reverse;justify-content:center;gap:8px;margin:10px 0 8px}
+.kbw .kbm>div{display:flex;flex-direction:column;align-items:center}.kbw .kbm .c{display:block;line-height:1.08;height:1.08em;white-space:nowrap}.kbw .kbm .c.g{height:.5em}
+.kbw .kbm .kbt{font-weight:500}
+.kbw .kbf{font-size:15px;text-align:left;margin:3px 0 0 14px;line-height:1.4}
+.kbw .kbn{font-size:16px;line-height:1.4;margin-top:6px}
+.kbw .kbx{border:1px solid #222;font-size:11.5px;line-height:1.4;margin:8px 10px 0;padding:3px 4px}
+.kbw .kbl{display:flex;justify-content:space-around;padding:0 74px}.kbw .kbl i{display:block;width:16px;height:46px;background:#666}
+.kbed .kbfld{margin:0 0 12px}.kbed .kbfld>label{display:block;font-weight:700;margin:0 0 4px}
+.kbed input[type=text],.kbed input[type=date],.kbed input[type=time],.kbed textarea{width:100%;box-sizing:border-box;font:inherit;padding:9px;border:1.5px solid #cfd6dd;border-radius:10px;background:#fff}
+.kbed .kbpre{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 0}.kbed .kbpre button{border:1px solid #cfd6dd;background:#f6f7f9;border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;cursor:pointer}
+.kbed details.kbred{margin-top:5px}.kbed details.kbred summary{cursor:pointer;color:#e60012;font-size:13px}
+.kbed .kbch{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}.kbed .kbch br{flex-basis:100%;height:0}
+.kbed .kbc{min-width:30px;height:32px;border:1px solid #cfd6dd;background:#fff;border-radius:6px;font:inherit;font-size:16px;padding:0 4px;cursor:pointer}.kbed .kbc.on{background:#e60012;border-color:#e60012;color:#fff}
+.kbed .kbbt{display:flex;gap:6px;margin:6px 0 0}.kbed .kbbt button{border:1px solid #cfd6dd;background:#f6f7f9;border-radius:8px;padding:5px 10px;font:inherit;font-size:12.5px;cursor:pointer}
+
 .fc{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 10px;background:#fff}.fc.ex{opacity:.5}.fc.ex .gt{text-decoration:line-through}.fc .gt{font-weight:700;margin:0 0 6px;white-space:pre-wrap}.fc .fr{display:flex;align-items:center;gap:8px;margin:5px 0}.fc .fr label{flex:0 0 5.6em;font-size:13px;color:var(--sub)}.fc .fr input,.fc .fr textarea{flex:1;min-width:0;box-sizing:border-box;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)}.fc .fr .u{flex:0 0 auto;font-size:13px;color:var(--sub)}.calov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center}.calbx{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:14px 14px 18px;box-sizing:border-box}.calbx .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}.calbx .ch button{border:0;background:#eef1f4;border-radius:10px;padding:8px 14px;font:inherit}.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.calg .w{font-size:12px;color:var(--sub)}.calg button{border:0;background:#f6f7f9;border-radius:10px;padding:10px 0;font:inherit}.calg button.sel{background:var(--brand,#06c755);color:#fff;font-weight:700}.calg .e{visibility:hidden}.calsel{margin:10px 0;font-size:13px;min-height:2.6em;word-break:break-all}.calbt{display:flex;gap:8px}.calbt button{flex:1;padding:12px;border-radius:12px;border:0;font:inherit;font-weight:700}.fc .cal{flex:0 0 auto;border:0;background:#eef1f4;border-radius:10px;padding:8px 10px;font-size:16px}
 .fc .rpbt{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .rpflow{display:flex;gap:6px;align-items:stretch;margin:0 0 10px;font-size:12.5px}.rpflow .st{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:7px 8px;text-align:center;line-height:1.35}.rpflow .st b{display:block;font-size:13px}.rpflow .st.ok{border-color:#06c755;background:#effaf3}.rpflow .st.now{border-color:var(--navy)}.rpflow .ar{align-self:center;color:var(--sub)}
@@ -397,6 +416,7 @@ var IC = {
   o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
   o_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h4M7 17h7"/>',
   o_report: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 12.5l1.5 1.5 3-3M8 18h8"/>',
+  o_kanban: '<rect x="6" y="3" width="12" height="13" rx="1.5"/><path d="M9 16v5M15 16v5M9 7h6M9 10h6"/>',
   o_sokai: '<path d="M3 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0zM21 6c-3-1.5-6-1.5-9 0v13c3-1.5 6-1.5 9 0z"/>',
   a_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
@@ -421,7 +441,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
-  o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
+  o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -601,6 +621,7 @@ function heroNotes(me) {
   var b = me.badges || {}, n = [], sa = b.sched_ask;
   if (me.disaster && me.drill) n.push({ k: 'help', t: '防災訓練中です。<br>助け合いがデモモードで使えます。', l: '助け合い' });
   else if (me.disaster) n.push({ k: 'help', t: (disKindText(me.disasterKind) ? esc(disKindText(me.disasterKind)) + '<br>' : '') + '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
+  (me.tasks || []).forEach(function (x) { n.unshift({ k: x.key, t: 'あなたにタスクがあります<br>(' + esc(x.title) + ')', l: x.title }); });
   if (+b.mail > 0) n.push({ k: 'mail', t: 'チャットに通知がきてます。<br>確認してください。', l: 'チャット' });
   if (+b.dashboard > 0) n.push({ k: 'dashboard', t: '掲示板に新しいお知らせがあります。', l: '掲示板' });
   if (+b.help > 0 && !me.drill) n.push({ k: 'help', t: '助け合いに通知がきてます。<br>確認してください。', l: '助け合い' });
@@ -631,7 +652,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
   if (k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -1962,7 +1983,7 @@ function schedAdminView() {
 }
 
 /* ---------- 総会: 事業報告・事業計画 ---------- */
-var RP = { year: null, kind: '報告', data: null, edit: null };
+var RP = { dept: '', year: null, kind: '報告', data: null, edit: null };
 function reiwaY(y) { return '令和' + y + '年度'; }
 function rpLabel() { var y = RP.data ? RP.data.year : RP.year; return RP.kind === '報告' ? reiwaY(y - 2019) + ' 事業報告' : reiwaY(y - 2018) + ' 事業計画'; }
 function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
@@ -2061,9 +2082,19 @@ function repBind(d) {
     Array.prototype.forEach.call(card.querySelectorAll('.ad'), function (b) { b.onclick = function () { add(b.dataset.c, 'event', '追加'); }; });
   });
 }
-function repScopeDept(d) { if (!d.admin) return d.myDept; var pick = lsGet('rpShow') || d.myDept || ''; return pick && pick !== '*' ? pick : ''; }
+function repMine(d) { return d.myDepts && d.myDepts.length ? d.myDepts : (d.myDept ? [d.myDept] : []); }
+function repScopeDept(d) { if (!d.admin) { var mm = repMine(d); return mm.indexOf(RP.dept) >= 0 ? RP.dept : (mm[0] || ''); } var pick = lsGet('rpShow') || d.myDept || ''; return pick && pick !== '*' ? pick : ''; }
 function repTimeLabel(t) { return t ? String(t).slice(5, 16).replace('-', '/') : ''; }
 /** ①事業報告 → ②事業計画 → ③提出 の進み具合 */
+/** 兼部の人: 部を切り替えるボタン。部ごとに「提出」して完了にする */
+function repMineTabs(d) {
+  var mm = repMine(d); if (d.admin || mm.length < 2) return '';
+  var left = mm.filter(function (k) { var sb = (d.subs || {})[k]; return !(sb && !sb.dirty); });
+  return '<div class="card rpmine" style="padding:10px"><div class="muted" style="font-size:12.5px;margin:0 0 6px">兼部のため、部ごとに「提出」して完了します。</div><div style="display:flex;gap:6px;flex-wrap:wrap">' + mm.map(function (k) {
+    var sb = (d.subs || {})[k], done = sb && !sb.dirty, on = k === repScopeDept(d);
+    return '<button type="button" data-d="' + esc(k) + '" style="flex:1;min-width:30%;padding:10px 6px;border-radius:12px;font:inherit;font-weight:700;border:1.5px solid ' + (on ? 'var(--brand,#06c755)' : '#cfd6dd') + ';background:' + (on ? 'var(--brand,#06c755)' : '#fff') + ';color:' + (on ? '#fff' : '#333') + '">' + esc(k) + '<br><small style="font-weight:400">' + (done ? '✓ 提出済み' : '未提出') + '</small></button>';
+  }).join('') + '</div>' + (left.length ? '<div class="muted" style="font-size:12.5px;margin-top:6px">まだ提出していない部: ' + esc(left.join('・')) + '</div>' : '<div style="font-size:13px;margin-top:6px;color:var(--brand,#06c755);font-weight:700">すべての部を提出しました。ありがとうございました。</div>') + '</div>';
+}
 function repFlowHtml(d, dep) {
   var pg = (d.prog || {})[dep] || { reportTotal: 0, unanswered: 0, planCount: 0, reportOk: false, planOk: false }, sb = (d.subs || {})[dep];
   var s3 = sb ? (sb.dirty ? '提出後に修正あり' : '提出済 ' + repTimeLabel(sb.at)) : (pg.reportOk && pg.planOk ? '提出できます' : '下書き(途中保存)');
@@ -2181,22 +2212,23 @@ function repFillBind(d, rep) {
   });
 }
 function reportDraw() {
-  var d0 = RP.data;
+  var d0 = RP.data; if (d0.modes) RP_MODE = d0.modes;
   if (RP.kind === '報告' && d0.canEdit && !RP.seeded[d0.year]) {
-    var need = (d0.admin ? Object.keys(RP_MODE) : (RP_MODE[d0.myDept] ? [d0.myDept] : [])).some(function (k) { return !d0.items.some(function (i) { return i.kind === '報告' && i.dept === k; }); });
+    var need = (d0.admin ? Object.keys(RP_MODE) : repMine(d0).filter(function (k) { return RP_MODE[k]; })).some(function (k) { return !d0.items.some(function (i) { return i.kind === '報告' && i.dept === k; }); });
     RP.seeded[d0.year] = 1;
     if (need) { sub('事業報告・計画', '<div class="skel" style="height:240px"></div>', 'officer'); api('o_report_seed', { year: d0.year }).then(function (r) { RP.data = r; reportDraw(); }).catch(function () { reportDraw(); }); return; }
   }
   var d = RP.data, rep = RP.kind === '報告';
   var items = d.items.filter(function (i) { return i.kind === RP.kind; }), by = {}, order = [], sums = rep ? (d.summaries || {}) : (d.goals || {});
   items.forEach(function (i) { if (!by[i.dept]) { by[i.dept] = []; order.push(i.dept); } by[i.dept].push(i); });
-  if (!d.admin && d.myDept && order.indexOf(d.myDept) < 0) order.push(d.myDept);            // 自分の部は、まだ何もなくても出す
+  if (!d.admin) repMine(d).forEach(function (k) { if (order.indexOf(k) < 0) order.push(k); });            // 自分の部(兼部ならぜんぶ)は、まだ何もなくても出す
   if (d.admin) Object.keys(sums).forEach(function (k) { if (order.indexOf(k) < 0) order.push(k); });
-  { var fx = Object.keys(RP_MODE); order = fx.filter(function (k) { return order.indexOf(k) >= 0 || (d.admin ? true : k === d.myDept); }).concat(order.filter(function (k) { return fx.indexOf(k) < 0; })); }
+  { var fx = Object.keys(RP_MODE); order = fx.filter(function (k) { return order.indexOf(k) >= 0 || (d.admin ? true : repMine(d).indexOf(k) >= 0); }).concat(order.filter(function (k) { return fx.indexOf(k) < 0; })); }
+  if (!d.admin) { var sd0 = repScopeDept(d); if (sd0) order = [sd0]; }   // 兼部の人は、上のボタンで選んだ部だけを出す
   if (d.admin) { var pick = lsGet('rpShow') || d.myDept || ''; if (pick && pick !== '*') order = order.filter(function (k) { return k === pick; }).concat(order.indexOf(pick) < 0 ? [pick] : []); }
   var h = '<p class="muted" style="margin:0 4px 8px">総会で配る「事業報告書」「事業計画書」の元になります。' + (d.admin ? '管理者は、すべての部を見られます。' : 'ここには、あなたの職務(<b>' + esc(d.job || d.myDept) + '</b>)の分だけが出ます。') + 'あとから何度でも直せます。</p>' +
     '<p class="muted" style="margin:0 4px 10px">' + d.year + '年の総会(' + reiwaY(d.year - 2019) + 'の報告 / ' + reiwaY(d.year - 2018) + 'の計画)の分です。今日の日付から、自動で決まります。</p>' +
-    (repScopeDept(d) ? repFlowHtml(d, repScopeDept(d)) : '') + '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
+    repMineTabs(d) + (repScopeDept(d) ? repFlowHtml(d, repScopeDept(d)) : '') + '<div class="rpseg"><button data-k="報告" class="' + (RP.kind === '報告' ? 'on' : '') + '">' + reiwaY(d.year - 2019) + ' 事業報告</button><button data-k="計画" class="' + (RP.kind === '計画' ? 'on' : '') + '">' + reiwaY(d.year - 2018) + ' 事業計画</button></div>' +
     (d.admin ? '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">表示する部(管理者は選べます。職務を設定すると、その部が最初に出ます)</label><select id="rpshow" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)"><option value="*">すべての部</option>' + d.depts.map(function (x) { return '<option' + (x === (lsGet('rpShow') || d.myDept || '*') ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
     (d.canEdit && rep && d.prevPlanCount && order.some(function (k) { return !RP_MODE[k]; }) ? '<button class="btn" id="rpcarry" style="margin-bottom:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">' + (d.year - 1) + '年の事業計画(' + d.prevPlanCount + '件)から取り込む</button><p class="muted" style="margin:0 4px 10px;font-size:12px">前の年に入れた「計画」を、この報告の下書きにします。あとから回数・参加人数・備考を入れてください。</p>' : '') +
     (false ? '<button class="btn" id="rpadd" style="margin-bottom:12px">＋ ' + (rep ? '報告' : '計画') + 'を追加する</button>' : (!d.canEdit ? '<div class="card"><p class="muted" style="margin:0">この年(' + d.year + '年)の分は、見るだけです(' + d.minYear + '年の総会の分から入力できます)。</p></div>' : '')) + '<div id="rpform"></div>';
@@ -2217,6 +2249,7 @@ function reportDraw() {
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
   Array.prototype.forEach.call(document.querySelectorAll('.rpitem .pd'), function (inp) { inp.onchange = function () { var id = inp.closest('.rpitem').dataset.id; api('o_report_fill', { year: d.year, id: id, date: inp.value }).then(function (r) { RP.data = r; toast('保存しました'); }).catch(function (e) { toast(e.message); }); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.rpmine button'), function (b) { b.onclick = function () { RP.dept = b.dataset.d; reportDraw(); window.scrollTo(0, 0); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.rpseg button'), function (b) { b.onclick = function () { RP.kind = b.dataset.k; reportDraw(); }; });
   if ($('#rpadd')) $('#rpadd').onclick = function () { reportForm(null); };
   repBind(d);
@@ -2289,6 +2322,120 @@ function pdfEach(file, onPage) {
     return chain;
   });
 }
+/* ====== 捨て看板(デザイン案)。管理システムとLINEで同じ見た目を作る ====== */
+var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 4], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など・枠で囲みます)', 'area', 2]];
+var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー'], place: ['浜田山会館1階ホール', 'みずほ銀行前'] };
+function kbNew() { var y = new Date().getFullYear(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
+function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
+function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
+function kbRedSet(d, k) { var o = {}; ((d.red || {})[k] || []).forEach(function (i) { o[i] = 1; }); return o; }
+function kbSpan(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var c = esc(text.charAt(i)); h += s[i + off] ? '<span class="kr">' + c + '</span>' : c; } return h; }
+var KB_VMAP = { 'ー': '丨', '－': '丨', '―': '丨', '-': '丨', '(': '︵', ')': '︶', '(': '︵', ')': '︶', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄', '、': '︑', '。': '︒', '～': '︙', '〜': '︙', ':': '︰', ':': '︰' };
+/** 縦書き: 1文字ずつ積む(フォントによって縦書きの表示が崩れないように) */
+function kbVs(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var ch = text.charAt(i); if (ch === ' ' || ch === '　') { h += '<span class="c g"></span>'; continue; } var c = esc(KB_VMAP[ch] || ch); h += '<span class="c' + (s[i + off] ? ' kr' : '') + '">' + c + '</span>'; } return h; }
+function kbCols(d, k) { var off = 0, out = []; String(kbShow(d, k)).split('\n').forEach(function (l) { if (l.trim()) out.push({ t: l, off: off }); off += l.length + 1; }); return out; }
+function kbRender(d) {
+  var tc = kbCols(d, 'title'), bc = kbCols(d, 'body'), mx = function (c) { return c.reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); };
+  var fT = Math.max(22, Math.min(44, Math.floor(400 / Math.max(1, mx(tc))))), fB = Math.max(16, Math.min(26, Math.floor(400 / Math.max(1, mx(bc)))));
+  var H = Math.max(mx(tc) * fT * 1.08, mx(bc) * fB * 1.08, 40) + 8, top = '';
+  var dt = kbShow(d, 'date'); if (dt) top += '<div class="kbd">' + kbSpan(d, 'date', dt, 0) + '</div>';
+  var pl = kbShow(d, 'place'); if (pl) top += '<div class="kbp">' + kbSpan(d, 'place', pl, 0) + '</div>';
+  if (d.open) top += '<div class="kbo">開場　' + kbSpan(d, 'open', String(d.open), 0) + '</div>';
+  if (d.start) top += '<div class="kbo">開演　' + kbSpan(d, 'start', String(d.start), 0) + '</div>';
+  var mid = tc.map(function (c) { return '<div class="kbt" style="font-size:' + fT + 'px">' + kbVs(d, 'title', c.t, c.off) + '</div>'; }).join('') + bc.map(function (c) { return '<div style="font-size:' + fB + 'px">' + kbVs(d, 'body', c.t, c.off) + '</div>'; }).join('');
+  var bot = '';
+  if (d.host) bot += '<div class="kbf">主催　' + kbSpan(d, 'host', String(d.host), 0) + '</div>';
+  kbCols(d, 'sponsor').forEach(function (c, i) { bot += '<div class="kbf">' + (i ? '　　' : '協賛　') + kbSpan(d, 'sponsor', c.t, c.off) + '</div>'; });
+  kbCols(d, 'note').forEach(function (c) { bot += '<div class="kbn">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
+  var nb = kbCols(d, 'note2').map(function (c) { return kbSpan(d, 'note2', c.t, c.off); }).join('<br>');
+  return '<div class="kbw"><div class="kb">' + top + (mid ? '<div class="kbm" style="height:' + Math.round(H) + 'px">' + mid + '</div>' : '') + bot + (nb ? '<div class="kbx">' + nb + '</div>' : '') + '</div><div class="kbl"><i></i><i></i></div></div>';
+}
+function kbChips(d, k) {
+  var t = kbShow(d, k), s = kbRedSet(d, k), h = '';
+  for (var i = 0; i < t.length; i++) { var ch = t.charAt(i); h += ch === '\n' ? '<br>' : '<button type="button" class="kbc' + (s[i] ? ' on' : '') + '" data-i="' + i + '">' + esc(ch === ' ' ? '␣' : ch) + '</button>'; }
+  return h || '<span style="color:#888;font-size:12.5px">先に上の欄に文字を入れてください</span>';
+}
+/** 入力欄と「赤くする文字」の選択。root に作り、prev に仕上がりを出す。変更のたびに onChange */
+function kbEditor(root, prev, d, onChange) {
+  var draw = function () { prev.innerHTML = kbRender(d); if (onChange) onChange(); };
+  root.className = (root.className || '') + ' kbed';
+  root.innerHTML = KB_F.map(function (f) {
+    var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
+    var pre = KB_PRESET[k] ? '<div class="kbpre">' + KB_PRESET[k].map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + '</div>' : '';
+    return '<div class="kbfld"><label>' + f[1] + '</label>' + inp + pre + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
+  }).join('');
+  d.red = d.red || {};
+  var chips = function (k) { root.querySelector('[data-ch="' + k + '"]').innerHTML = kbChips(d, k); };
+  var setVal = function (k, v) { d[k] = v; var n = kbShow(d, k).length; d.red[k] = (d.red[k] || []).filter(function (i) { return i < n; }); chips(k); draw(); };
+  Array.prototype.forEach.call(root.querySelectorAll('[data-kb]'), function (el) { el.oninput = el.onchange = function () { setVal(el.dataset.kb, el.value); }; });
+  root.onclick = function (ev) {
+    var t = ev.target, k;
+    if (t.classList && t.classList.contains('kbc')) { k = t.closest('[data-ch]').dataset.ch; var i = Number(t.dataset.i), a = d.red[k] || []; d.red[k] = a.indexOf(i) >= 0 ? a.filter(function (x) { return x !== i; }) : a.concat([i]); t.classList.toggle('on'); draw(); return; }
+    if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); inp.value = t.dataset.v; setVal(k, t.dataset.v); if (!t.dataset.v) inp.focus(); return; }
+    if (t.dataset && t.dataset.all) { k = t.dataset.all; var n = kbShow(d, k).length, arr = []; for (var j = 0; j < n; j++) if (kbShow(d, k).charAt(j) !== '\n') arr.push(j); d.red[k] = arr; chips(k); draw(); return; }
+    if (t.dataset && t.dataset.none) { k = t.dataset.none; d.red[k] = []; chips(k); draw(); }
+  };
+  draw();
+}
+/* ====== 捨て看板の依頼(役員) ====== */
+var KBV = { step: 'list', d: null, list: null, arrive: '', other: false, receipt: '', qty: '', busy: false };
+function kbvYmd(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? Number(s.slice(0, 4)) + '年' + Number(s.slice(5, 7)) + '月' + Number(s.slice(8, 10)) + '日' : (s || ''); }
+function kanbanView() {
+  if (!KBV.list) { sub('捨て看板依頼', '<div class="skel" style="height:200px"></div>', 'officer'); api('o_kanban_list', {}).then(function (r) { KBV.list = r; kanbanDraw(); }).catch(function (e) { sub('捨て看板依頼', errCard(e), 'officer'); }); return; }
+  kanbanDraw();
+}
+function kanbanDraw() {
+  var st = KBV.step, h = '';
+  if (st === 'list') {
+    h = '<div class="card"><h2>捨て看板の依頼</h2><p class="muted" style="margin:0 0 10px">演芸会やヒーローショーなどの看板を、内容を入れるだけで作れます。仕上がりを確認して、よければ依頼になります。</p><button class="btn" id="kbnew">＋ 新しく依頼する</button></div>' +
+      '<div class="card"><h2>これまでの依頼</h2>' + ((KBV.list.items || []).length ? KBV.list.items.map(function (x, i) { return '<div class="kbit" data-i="' + i + '" style="border-top:1px solid var(--line);padding:10px 0"><b>' + esc(x.title) + '</b><div class="muted" style="font-size:13px">' + esc(kbvYmd(x.date) ? '開催日 ' + kbvYmd(x.date) : '') + ' ／ 到着希望 ' + esc(kbvYmd(x.arrive)) + ' ／ ' + esc(x.state) + (KBV.list.admin ? ' ／ ' + esc(x.by) : '') + '</div><button class="btn" data-i="' + i + '" style="margin-top:6px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">もう一度ひらく</button></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。</p>') + '</div>';
+    sub('捨て看板依頼', h, 'officer');
+    $('#kbnew').onclick = function () { KBV.d = kbNew(); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); };
+    Array.prototype.forEach.call(document.querySelectorAll('.kbit button'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; KBV.d = Object.assign(kbNew(), JSON.parse(JSON.stringify(x.data || {}))); KBV.d.red = KBV.d.red || {}; KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); }; });
+    return;
+  }
+  if (st === 'form') {
+    h = '<div class="card"><h2>看板の内容</h2><p class="muted" style="margin:0 0 10px">入れると、下に仕上がりが出ます。「赤くする文字を選ぶ」で、赤くしたい文字だけを選べます。</p><div id="kbroot"></div></div><div class="card"><h2>仕上がり</h2><div id="kbprev" style="overflow-x:auto"></div><button class="btn" id="kbok" style="margin-top:12px">仕上がりを確認する</button><button class="btn" id="kbcancel" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">やめる</button></div>';
+    sub('捨て看板依頼', h, 'officer');
+    kbEditor($('#kbroot'), $('#kbprev'), KBV.d, null);
+    $('#kbok').onclick = function () { if (!String(KBV.d.title || '').trim()) { toast('タイトルを入れてください'); return; } KBV.step = 'confirm'; kanbanDraw(); window.scrollTo(0, 0); };
+    $('#kbcancel').onclick = function () { KBV.step = 'list'; kanbanDraw(); };
+    return;
+  }
+  if (st === 'confirm') {
+    h = '<div class="card"><h2>この仕上がりでよろしいですか?</h2><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbyes" style="margin-top:14px">OK(これで依頼する)</button><button class="btn" id="kbback" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">直す</button></div>';
+    sub('捨て看板依頼', h, 'officer');
+    $('#kbyes').onclick = function () { KBV.step = 'order'; kanbanDraw(); window.scrollTo(0, 0); };
+    $('#kbback').onclick = function () { KBV.step = 'form'; kanbanDraw(); };
+    return;
+  }
+  if (st === 'order') {
+    var today = new Date(), ymd = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+    h = '<div class="card"><h2>あと2つ、教えてください</h2>' +
+      '<label class="muted" style="display:block;margin:6px 0 4px">① いつまでに到着してほしいですか?</label><input type="date" id="kbarr" min="' + ymd + '" value="' + esc(KBV.arrive) + '" style="width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1.5px solid #cfd6dd;border-radius:10px">' +
+      '<label class="muted" style="display:block;margin:14px 0 4px">② 領収書の宛名</label>' +
+      '<div id="kbrc"><p style="margin:0 0 8px"><b>「浜田山町会」</b>でよろしいですか?</p><div style="display:flex;gap:8px"><button class="btn" id="kbr1" style="flex:1;' + (KBV.other ? 'background:#fff;color:#555;border:1.5px solid #ccc' : '') + '">はい</button><button class="btn" id="kbr2" style="flex:1;' + (KBV.other ? '' : 'background:#fff;color:#555;border:1.5px solid #ccc') + '">いいえ(入力する)</button></div></div>' +
+      '<input type="text" id="kbrt" maxlength="60" placeholder="領収書の宛名を入力" value="' + esc(KBV.receipt) + '" style="' + (KBV.other ? '' : 'display:none;') + 'width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1.5px solid #cfd6dd;border-radius:10px;margin-top:8px">' +
+      '<label class="muted" style="display:block;margin:14px 0 4px">看板の枚数(わかれば)</label><input type="text" id="kbq" inputmode="numeric" maxlength="6" placeholder="例: 20" value="' + esc(KBV.qty) + '" style="width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1.5px solid #cfd6dd;border-radius:10px">' +
+      '<button class="btn" id="kbsend" style="margin-top:16px">この内容で依頼する</button><button class="btn" id="kbback2" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">戻る</button></div>';
+    sub('捨て看板依頼', h, 'officer');
+    var keep = function () { KBV.arrive = $('#kbarr').value; KBV.receipt = $('#kbrt').value; KBV.qty = $('#kbq').value; };
+    $('#kbr1').onclick = function () { keep(); KBV.other = false; kanbanDraw(); };
+    $('#kbr2').onclick = function () { keep(); KBV.other = true; kanbanDraw(); };
+    $('#kbback2').onclick = function () { keep(); KBV.step = 'confirm'; kanbanDraw(); };
+    $('#kbsend').onclick = function () {
+      keep(); if (!KBV.arrive) { toast('到着希望日を選んでください'); return; }
+      if (KBV.other && !KBV.receipt.trim()) { toast('領収書の宛名を入力してください'); return; }
+      var b = this; if (KBV.busy) return; KBV.busy = true; b.disabled = true;
+      api('o_kanban_submit', { data: KBV.d, arrive: KBV.arrive, receipt: KBV.other ? KBV.receipt.trim() : '浜田山町会', qty: KBV.qty }).then(function (r) { KBV.busy = false; KBV.list = r; KBV.step = 'done'; kanbanDraw(); window.scrollTo(0, 0); }).catch(function (e) { KBV.busy = false; b.disabled = false; toast(e.message); });
+    };
+    return;
+  }
+  h = '<div class="card"><h2>依頼しました</h2><p style="margin:0 0 10px">役員にお知らせが届きました。到着希望日は <b>' + esc(kbvYmd(KBV.arrive)) + '</b>、領収書の宛名は <b>' + esc(KBV.other ? KBV.receipt : '浜田山町会') + '</b> で承りました。</p><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbdone" style="margin-top:14px">閉じる</button></div>';
+  sub('捨て看板依頼', h, 'officer');
+  $('#kbdone').onclick = function () { KBV.step = 'list'; KBV.other = false; KBV.arrive = ''; KBV.receipt = ''; KBV.qty = ''; kanbanDraw(); };
+}
+
 function sokaiView() {
   sub('総会資料', '<div class="skel" style="height:200px"></div>', 'officer');
   api('o_sokai_list', SK.year ? { year: SK.year } : {}).then(function (d) { SK.data = d; SK.year = d.year; sokaiDraw(); }).catch(function (e) { sub('総会資料', errCard(e), 'officer'); });
@@ -3084,7 +3231,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -3099,7 +3246,7 @@ function route() {
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_report: reportView, o_sokai: sokaiView, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
@@ -3139,7 +3286,7 @@ function startMe() {
   return api('me', { nobadge: true }).catch(function (e) { if (cached && e && e.code === 'network') { toast(e.message); return null; } throw e; }).then(function (me) {
     if (!me) return bp;
     if (S.me && S.me.badges) me.badges = S.me.badges;   // 新しいバッジが届くまで、前の値のまま
-    var same = cached && cached.state === me.state && JSON.stringify([cached.role, cached.menu, cached.disaster, cached.drill, cached.disasterKind]) === JSON.stringify([me.role, me.menu, me.disaster, me.drill, me.disasterKind]);
+    var same = cached && cached.state === me.state && JSON.stringify([cached.role, cached.menu, cached.disaster, cached.drill, cached.disasterKind, cached.tasks || []]) === JSON.stringify([me.role, me.menu, me.disaster, me.drill, me.disasterKind, me.tasks || []]);
     S.me = me;
     if (!same) route();
     saveMe(me);
