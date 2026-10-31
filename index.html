@@ -1994,13 +1994,13 @@ function reportView() {
   RP.year = null;   // 総会の年は、今日の日付から自動で決まる(選ばない)
   api('o_report_list', {}).then(function (d) { RP.data = d; RP.year = d.year; reportDraw(); }).catch(function (e) { sub('事業報告・計画', errCard(e), 'officer'); });
 }
-var RP_MODE = { '町会長業務': 'check', '防災部': 'check', '施設部': 'check', '防犯部': 'tally', '事業部': 'event', '庶務部': 'note' };
+var RP_MODE = { '町会長業務': 'check', '防災会': 'check', '防災部': 'check', '施設部': 'check', '防犯部': 'tally', '事業部': 'event', '庶務部': 'note', 'その他': 'event' };
 RP.seeded = {};
 function repSlash(v) { return String(v || '').replace(/-/g, '/'); }
 function repDash(v) { var m = String(v || '').match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/); return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : ''; }
 /** 報告の、部ごとのカード(毎回この形で出る): 町会長業務・防災部・施設部=出席にチェック / 防犯部=延べ人数と回数 / 事業部=日付と人数 / 庶務部=変更の備考 */
 function repCard(dep, d, list, sums) {
-  var mode = RP_MODE[dep], ro = !d.canEdit, dis = ro ? ' disabled' : '', h = '<div class="card rpc" data-dept="' + esc(dep) + '" data-mode="' + mode + '"><h2>' + esc(dep === '防災部' ? '防災部・防災会' : dep) + '　' + reiwaY(d.year - 2019) + '活動報告</h2>';
+  var mode = RP_MODE[dep], ro = !d.canEdit, dis = ro ? ' disabled' : '', h = '<div class="card rpc" data-dept="' + esc(dep) + '" data-mode="' + mode + '"><h2>' + esc(dep) + '　' + reiwaY(d.year - 2019) + '活動報告</h2>';
   function addBox(ph, label, extra) { return ro ? '' : '<div class="rpadd2"><input type="text" class="ain" maxlength="200" placeholder="' + esc(ph) + '" data-x="' + esc(extra || '') + '"><button class="aok" type="button" data-x="' + esc(extra || '') + '">＋ ' + esc(label) + '</button></div>'; }
   function delBtn(i, noEx) {
     if (ro) return '';
@@ -2011,7 +2011,7 @@ function repCard(dep, d, list, sums) {
     var main = list.filter(function (i) { return i.type !== 'text'; }), texts = list.filter(function (i) { return i.type === 'text'; });
     h += '<p class="rphint">出席・参加したものに、チェックを入れてください。</p>' + (main.length ? main.map(function (i) { return '<div class="rpck' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><label><input type="checkbox" class="rk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '><span>' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</span></label><span class="rpbt">' + delBtn(i) + '</span></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。下の「＋ 内容の追加」から入れてください。</p>');
     h += addBox('ほかに出席・参加したものを入れる', '内容の追加', 'check');
-    if (dep === '防災部') ['防災会', '防災部'].forEach(function (who) {
+    if (dep === '防災部' || dep === '防災会') (dep === '防災部' && texts.some(function (i) { return i.person === '防災会'; }) ? ['防災会', '防災部'] : [dep]).forEach(function (who) {
       var ts = texts.filter(function (i) { return i.person === who; });
       h += '<div class="rpsub">' + who + 'だけの活動</div>' + ts.map(function (i) { return '<div class="rpck" data-id="' + esc(i.id) + '"><input type="text" class="rt" style="flex:1" maxlength="200" value="' + esc(i.content) + '"' + dis + '>' + (ro ? '' : '<button class="x" data-a="del" data-tpl="0" type="button">削除</button>') + '</div>'; }).join('') + addBox(who + 'だけの活動を入れる', '内容の追加', 'text:' + who);
     });
@@ -2130,7 +2130,7 @@ var RP_FLAB = { date: ['開催日', '例: 5/3・5/10 ／ 通年', ''], count: ['
 /** 報告・計画の、1つの活動=1枚のカード。管理者がONにした欄(開催日・開催回数・参加人数・備考)だけを、穴埋め式で聞く */
 function repFillCard(dep, d, list, sums, rep) {
   var ro = !d.canEdit, dis = ro ? ' disabled' : '';
-  var h = '<div class="card rpc2" data-dept="' + esc(dep) + '"><h2>' + esc(dep === '防災部' ? '防災部・防災会' : dep) + '　' + (rep ? reiwaY(d.year - 2019) + '活動報告' : reiwaY(d.year - 2018) + ' 事業計画') + '</h2>' +
+  var h = '<div class="card rpc2" data-dept="' + esc(dep) + '"><h2>' + esc(dep) + '　' + (rep ? reiwaY(d.year - 2019) + '活動報告' : reiwaY(d.year - 2018) + ' 事業計画') + '</h2>' +
     '<p class="rphint">' + (rep ? '数字などを入れてください。やらなかったものは「今回は対象外」を押します。' : '来年度の予定を入れてください(時期など)。やらないものは「やらない(削除)」を押します。') + '</p>';
   h += list.length ? list.map(function (i) {
     var f = i.fields || ['date', 'count', 'people', 'note'], tpl = rep && i.person !== '追加' && i.type && i.type !== 'text';
@@ -2327,6 +2327,12 @@ function pdfEach(file, onPage) {
 var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 3, 'align'], ['cast', '出演者(1行が1列になります)', 'area', 3, 'align'], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など)', 'area', 2]];
 var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'], sponsor: ['高井戸警察署', '東京消防庁 杉並消防署 高井戸出張所'], get note2() { return ['「令和' + (kbFy() - 2018) + '年度東京都地域の底力発展事業助成」対象事業']; } };
 function kbFy() { if (window.KB_FY) return Number(window.KB_FY); var t = new Date(); return t.getMonth() < 3 ? t.getFullYear() - 1 : t.getFullYear(); }
+/** 前の依頼をコピーして新しい依頼にする: 開催日は空にし(選び直す)、助成の「令和◯年度」は今の年度にそろえる */
+function kbCopy(data) {
+  var d = Object.assign(kbNew(), JSON.parse(JSON.stringify(data || {}))); d.red = d.red || {}; d.date = '';
+  if (d.note2) d.note2 = d.note2.replace(/令和\d+(年度東京都地域)/, '令和' + (kbFy() - 2018) + '$1');
+  return d;
+}
 function kbNew() { var y = kbFy(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', cast: '', align: { body: 'top', cast: 'top' }, note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
 function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
@@ -2468,10 +2474,10 @@ function kanbanDraw() {
   var st = KBV.step, h = '';
   if (st === 'list') {
     h = '<div class="card"><h2>捨て看板の依頼</h2><p class="muted" style="margin:0 0 10px">演芸会やヒーローショーなどの看板を、内容を入れるだけで作れます。仕上がりを確認して、よければ依頼になります。</p><button class="btn" id="kbnew">＋ 新しく依頼する</button></div>' +
-      '<div class="card"><h2>これまでの依頼</h2>' + ((KBV.list.items || []).length ? KBV.list.items.map(function (x, i) { return '<div class="kbit" data-i="' + i + '" style="border-top:1px solid var(--line);padding:10px 0"><b>' + esc(x.title) + '</b><div class="muted" style="font-size:13px">' + esc(kbvYmd(x.date) ? '開催日 ' + kbvYmd(x.date) : '') + ' ／ 到着希望 ' + esc(kbvYmd(x.arrive)) + ' ／ ' + esc(x.state) + (KBV.list.admin ? ' ／ ' + esc(x.by) : '') + '</div><button class="btn" data-i="' + i + '" style="margin-top:6px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">もう一度ひらく</button></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。</p>') + '</div>';
+      '<div class="card"><h2>これまでの依頼</h2>' + ((KBV.list.items || []).length ? KBV.list.items.map(function (x, i) { return '<div class="kbit" data-i="' + i + '" style="border-top:1px solid var(--line);padding:10px 0"><b>' + esc(x.title) + '</b><div class="muted" style="font-size:13px">' + esc(kbvYmd(x.date) ? '開催日 ' + kbvYmd(x.date) : '') + ' ／ 到着希望 ' + esc(kbvYmd(x.arrive)) + ' ／ ' + esc(x.state) + (KBV.list.admin ? ' ／ ' + esc(x.by) : '') + '</div><button class="btn" data-i="' + i + '" style="margin-top:6px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">前回をコピーして作る</button></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。</p>') + '</div>';
     sub('捨て看板依頼', h, 'officer');
     $('#kbnew').onclick = function () { KBV.d = kbNew(); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); };
-    Array.prototype.forEach.call(document.querySelectorAll('.kbit button'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; KBV.d = Object.assign(kbNew(), JSON.parse(JSON.stringify(x.data || {}))); KBV.d.red = KBV.d.red || {}; KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.kbit button'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; KBV.d = kbCopy(x.data); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); }; });
     return;
   }
   if (st === 'form') {
