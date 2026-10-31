@@ -2300,7 +2300,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-e / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-f / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
@@ -2391,7 +2391,7 @@ function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木�
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
 function kbRedSet(d, k) { var o = {}; ((d.red || {})[k] || []).forEach(function (i) { o[i] = 1; }); return o; }
 function kbSpan(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var c = esc(text.charAt(i)); h += s[i + off] ? '<span class="kr">' + c + '</span>' : c; } return h; }
-var KB_VMAP = { 'ー': '丨', '－': '丨', '―': '丨', '-': '丨', '(': '︵', ')': '︶', '(': '︵', ')': '︶', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄', '、': '︑', '。': '︒', '～': '︙', '〜': '︙', ':': '︰', ':': '︰' };
+var KB_VMAP = { 'ー': '丨', '－': '丨', '―': '丨', '-': '丨', '(': '︵', ')': '︶', '(': '︵', ')': '︶', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄', '、': '︑', '。': '︒', '～': '︙', '〜': '︙', ':': '︰', ':': '︰', '（': '︵', '）': '︶', '［': '﹇', '］': '﹈', '【': '︻', '】': '︼', '〔': '︹', '〕': '︺', '：': '︰', '…': '︙', '・': '・' };
 /** 縦書き: 1文字ずつ積む(フォントによって縦書きの表示が崩れないように) */
 function kbVs(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var ch = text.charAt(i); if (ch === ' ' || ch === '　') { h += '<span class="c g"></span>'; continue; } var c = esc(KB_VMAP[ch] || ch); h += '<span class="c' + (s[i + off] ? ' kr' : '') + '">' + c + '</span>'; } return h; }
 function kbCols(d, k) { var off = 0, out = []; String(kbShow(d, k)).split('\n').forEach(function (l) { if (l.trim()) out.push({ t: l, off: off }); off += l.length + 1; }); return out; }
