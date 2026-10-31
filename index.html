@@ -348,7 +348,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .kbed .kbbt{display:flex;gap:6px;margin:6px 0 0}.kbed .kbbt button{border:1px solid #cfd6dd;background:#f6f7f9;border-radius:8px;padding:5px 10px;font:inherit;font-size:12.5px;cursor:pointer}
 
 .fc{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin:0 0 10px;background:#fff}.fc.ex{opacity:.5}.fc.ex .gt{text-decoration:line-through}.fc .gt{font-weight:700;margin:0 0 6px;white-space:pre-wrap}.fc .fr{display:flex;align-items:center;gap:8px;margin:5px 0}.fc .fr label{flex:0 0 5.6em;font-size:13px;color:var(--sub)}.fc .fr input,.fc .fr textarea{flex:1;min-width:0;box-sizing:border-box;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)}.fc .fr .u{flex:0 0 auto;font-size:13px;color:var(--sub)}.calov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center}.calbx{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:14px 14px 18px;box-sizing:border-box}.calbx .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}.calbx .ch button{border:0;background:#eef1f4;border-radius:10px;padding:8px 14px;font:inherit}.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.calg .w{font-size:12px;color:var(--sub)}.calg button{border:0;background:#f6f7f9;border-radius:10px;padding:10px 0;font:inherit}.calg button.sel{background:var(--brand,#06c755);color:#fff;font-weight:700}.calg .e{visibility:hidden}.calsel{margin:10px 0;font-size:13px;min-height:2.6em;word-break:break-all}.calbt{display:flex;gap:8px}.calbt button{flex:1;padding:12px;border-radius:12px;border:0;font:inherit;font-weight:700}.fc .cal{flex:0 0 auto;border:0;background:#eef1f4;border-radius:10px;padding:8px 10px;font-size:16px}
-.fc .rpbt{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.fc .rpbt{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.fc{position:relative}.fc .gt{padding-right:36px}.fc .xb{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;border-radius:50%;background:#eef1f4;color:#555;font-size:15px;line-height:1;cursor:pointer}.fc .pv{display:flex;gap:8px;margin:4px 0;align-items:flex-start}.fc .pv label{flex:0 0 6.5em;font-size:13px;color:#6b7683;padding-top:2px}.fc .pvt{flex:1;white-space:pre-wrap;word-break:break-all;font-size:15px}.fc .pe{background:#fff;border:1.5px solid currentColor;color:var(--brand,#06c755);border-radius:10px;padding:6px 12px;font:inherit;font-size:13px}
 .rpflow{display:flex;gap:6px;align-items:stretch;margin:0 0 10px;font-size:12.5px}.rpflow .st{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:7px 8px;text-align:center;line-height:1.35}.rpflow .st b{display:block;font-size:13px}.rpflow .st.ok{border-color:#06c755;background:#effaf3}.rpflow .st.now{border-color:var(--navy)}.rpflow .ar{align-self:center;color:var(--sub)}
 .rpnext{margin:12px 0}.rpnext .btn[disabled]{opacity:.45}.rpnext .why{font-size:12.5px;color:var(--sub);margin:6px 2px 0}.rpsubm{border:2px solid var(--line);border-radius:14px;padding:12px;margin:12px 0;background:#fff}.rpsubm.done{border-color:#06c755;background:#effaf3}.rpsubm .why{font-size:12.5px;color:var(--sub);margin:6px 2px 0}.rpitem .pd{width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:10px;border:1.5px solid var(--line);margin:4px 0}
 .rpseg{display:flex;gap:6px;margin:0 0 10px}.rpseg button{all:unset;flex:1;text-align:center;padding:10px 0;border-radius:12px;background:#e8ecf4;font-weight:700;color:var(--sub);cursor:pointer}.rpseg button.on{background:var(--navy);color:#fff}
@@ -1991,11 +1991,11 @@ function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { re
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 記憶できなくてもよい */ } }
 function reportView() {
   sub('事業報告・計画', '<div class="skel" style="height:240px"></div>', 'officer');
-  RP.year = null;   // 総会の年は、今日の日付から自動で決まる(選ばない)
+  RP.year = null; RP.seeded = {};   // 総会の年は、今日の日付から自動で決まる(選ばない)。開くたびに、管理者があとから足したカードも取り込む
   api('o_report_list', {}).then(function (d) { RP.data = d; RP.year = d.year; reportDraw(); }).catch(function (e) { sub('事業報告・計画', errCard(e), 'officer'); });
 }
 var RP_MODE = { '町会長業務': 'check', '防災部': 'check', '施設部': 'check', '防犯部': 'tally', '事業部': 'event', '庶務部': 'note', 'その他': 'event' };
-RP.seeded = {};
+RP.seeded = {}; RP.editing = {};
 function repSlash(v) { return String(v || '').replace(/-/g, '/'); }
 function repDash(v) { var m = String(v || '').match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/); return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : ''; }
 /** 報告の、部ごとのカード(毎回この形で出る): 町会長業務・防災部・施設部=出席にチェック / 防犯部=延べ人数と回数 / 事業部=日付と人数 / 庶務部=変更の備考 */
@@ -2134,7 +2134,9 @@ function repFillCard(dep, d, list, sums, rep) {
     '<p class="rphint">' + (rep ? '数字などを入れてください。やらなかったものは「今回は対象外」を押します。' : '来年度の予定を入れてください(時期など)。やらないものは「やらない(削除)」を押します。') + '</p>';
   h += list.length ? list.map(function (i) {
     var f = i.fields || ['date', 'count', 'people', 'note'], tpl = rep && i.person !== '追加' && i.type && i.type !== 'text';
-    var body = f.length ? f.map(function (k) {
+    var vOf = function (k) { return k === 'date' ? i.date : k === 'count' ? i.count : k === 'people' ? i.people : i.note; };
+    var viewMode = !!(i.hasPre && !i.excluded && !ro && !RP.editing[i.id] && f.some(function (k) { return String(vOf(k) || '').trim() !== ''; }));
+    var body = viewMode ? f.filter(function (k) { return String(vOf(k) || '').trim() !== ''; }).map(function (k) { var lab = RP_FLAB[k]; return '<div class="fr pv"><label>' + (!rep && k === 'date' ? '時期' : (k === 'count' && i.unit ? '数' : lab[0])) + '</label><div class="pvt">' + esc(vOf(k)) + '</div></div>'; }).join('') + '<div class="rpbt"><button class="x pe" data-a="pedit" type="button">✏ 編集</button></div>' : f.length ? f.map(function (k) {
       var lab = RP_FLAB[k], v = k === 'date' ? i.date : k === 'count' ? i.count : k === 'people' ? i.people : i.note;
       if (k === 'count' && i.unit) {   // 数字だけ入れるカード(単位は管理者が決める)
         var nv = String(v || '').replace(i.unit, '').trim();
@@ -2142,8 +2144,8 @@ function repFillCard(dep, d, list, sums, rep) {
       }
       return '<div class="fr"><label>' + (!rep && k === 'date' ? '時期' : lab[0]) + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : k === 'count' ? 120 : 40) + '"' + (k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + (i.excluded ? ' disabled' : dis) + '>' + (lab[2] && (k !== 'count' || !v || /^\d+$/.test(String(v).trim())) ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'count' && !i.excluded && !ro ? '<button type="button" class="cal ccb" title="年◯回×場所の数 などを組み立てる">✎</button>' : '') + (k === 'date' && !i.excluded && !ro ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + '</div>';
     }).join('') : '<label class="rpck" style="border:0;padding:4px 0"><span style="flex:1"><input type="checkbox" class="fk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '> ' + (rep ? '実施した(確認のみ)' : '確認した') + '</span></label>';
-    return '<div class="fc' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</div>' + (i.hasPre && !i.excluded ? '<p class="muted" style="margin:0 0 6px;font-size:12px">管理者が先に入れてあります。違いがなければ、そのまま次へ進めます。</p>' : '') + body +
-      (ro ? '' : '<div class="rpbt">' + (rep ? '<button class="x o" data-a="excl" data-on="' + (i.excluded ? '0' : '1') + '" type="button">' + (i.excluded ? '戻す' : '今回は対象外') + '</button>' : '') + '<button class="x" data-a="del" data-tpl="' + (tpl ? '1' : '0') + '" type="button">' + (rep ? (tpl ? '削除(次回以降も出さない)' : '削除') : 'やらない(削除)') + '</button></div>') + '</div>';
+    return '<div class="fc' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</div>' + (i.hasPre && !i.excluded && !viewMode ? '<p class="muted" style="margin:0 0 6px;font-size:12px">管理者が先に入れてあります。違いがなければ、そのまま次へ進めます。</p>' : '') + body +
+      (ro ? '' : '<button class="xb" type="button" data-a="xmenu" data-ex="' + (i.excluded ? '1' : '0') + '" data-tpl="' + (tpl ? '1' : '0') + '" title="対象外・削除">✕</button>') + '</div>';
   }).join('') : '<p class="muted" style="margin:0 0 8px">まだ項目がありません。' + (rep ? '' : '「報告が終わりました」から進むと、今年の報告をもとに下書きが入ります。') + '</p>';
   if (!ro) h += '<div class="rpadd2"><input type="text" class="ain" maxlength="200" placeholder="他の活動を入れる(内容を入力)"><button class="aok" type="button">＋ 内容登録</button></div><p class="muted" style="margin:4px 2px 0;font-size:12px">ほかの活動は、20件以上(80件まで)入れられます。</p>';
   if (!(rep && dep === '防犯部')) h += '<div class="rpsum" style="margin-top:14px"><label class="muted" style="display:block;margin-bottom:4px">' + (rep ? '今年度達成できたこと・注視したこと(任意)' : '事業部目標(任意)') + '</label><textarea class="rpsx" rows="3" maxlength="800" placeholder="' + (rep ? '例) 他の町会と連携を図り、昨今の町会の在り方について話し合う機会を設けた。' : '例) 会員が安心して暮らせるよう、防災意識の向上と地域の絆づくりに努める。') + '"' + dis + '>' + esc(sums[dep] || '') + '</textarea>' + (ro ? '' : '<button class="btn rpsb" style="margin-top:6px">この文章を保存</button><p class="muted" style="margin:4px 0 0;font-size:12px">未記載の場合は、管理者(田辺)が対応します。</p>') + '</div>';
@@ -2203,6 +2205,19 @@ function repFillBind(d, rep) {
     Array.prototype.forEach.call(card.querySelectorAll('.cal:not(.ccb)'), function (b) { b.onclick = function () { var inp = b.parentNode.querySelector('.fi'); repCalOpen(inp.value, function (v) { inp.value = v; save(rowId(inp), { date: v }); }); }; });
     Array.prototype.forEach.call(card.querySelectorAll('.fk'), function (c) { c.onchange = function () { save(rowId(c), { checked: c.checked ? '1' : '' }, c); }; });
     var refresh = function (r, msg) { RP.data = r; reportDraw(); if (msg) toast(msg); };
+    Array.prototype.forEach.call(card.querySelectorAll('.x[data-a=pedit]'), function (b) { b.onclick = function () { RP.editing[rowId(b)] = 1; reportDraw(); }; });
+    Array.prototype.forEach.call(card.querySelectorAll('.xb'), function (b) {
+      b.onclick = function () {
+        var id = rowId(b), ex = b.dataset.ex === '1', tpl = b.dataset.tpl === '1', ov = document.createElement('div'); ov.className = 'calov'; document.body.appendChild(ov);
+        ov.innerHTML = '<div class="calbx"><div class="ch"><span>この項目をどうしますか?</span></div>' + (rep ? '<button type="button" class="xm" data-w="ex" style="display:block;width:100%;margin:8px 0;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font:inherit">' + (ex ? '対象外を戻す' : '今回は対象外にする(報告書に載せない)') + '</button>' : '') + '<button type="button" class="xm" data-w="del" style="display:block;width:100%;margin:8px 0;padding:12px;border:1.5px solid #e5b4b4;border-radius:12px;background:#fff;color:#c0392b;font:inherit">削除する' + (rep && tpl ? '(次回以降も出さない)' : '') + '</button><div class="calbt"><button type="button" id="xmx" style="background:#eef1f4">やめる</button></div></div>';
+        ov.onclick = function (ev) { if (ev.target === ov || ev.target.id === 'xmx') ov.remove(); };
+        Array.prototype.forEach.call(ov.querySelectorAll('.xm'), function (m) { m.onclick = function () {
+          var w = m.dataset.w; ov.remove();
+          if (w === 'ex') { api('o_report_fill', { year: d.year, id: id, excluded: ex ? '' : '1' }).then(function (r) { refresh(r, ex ? '戻しました' : '今回は対象外にしました(報告書に載りません)'); }).catch(function (e) { toast(e.message); }); }
+          else cf(tpl && rep ? 'この項目を、報告書から削除します。次回以降も出ません。よろしいですか?(今回だけ外すなら「対象外」を使ってください)' : 'この項目を削除します。よろしいですか?', function () { api('o_report_delete', { year: d.year, id: id }).then(function (r) { refresh(r, '削除しました'); }).catch(function (e) { toast(e.message); }); });
+        }; });
+      };
+    });
     Array.prototype.forEach.call(card.querySelectorAll('.x[data-a=excl]'), function (b) { b.onclick = function () { api('o_report_fill', { year: d.year, id: rowId(b), excluded: b.dataset.on === '1' ? '1' : '' }).then(function (r) { refresh(r, b.dataset.on === '1' ? '今回は対象外にしました(報告書に載りません)' : '戻しました'); }).catch(function (e) { toast(e.message); }); }; });
     Array.prototype.forEach.call(card.querySelectorAll('.x[data-a=del]'), function (b) {
       b.onclick = function () {
@@ -2218,9 +2233,10 @@ function repFillBind(d, rep) {
 }
 function reportDraw() {
   var d0 = RP.data; if (d0.modes) RP_MODE = d0.modes;
-  if (RP.kind === '報告' && d0.canEdit && !RP.seeded[d0.year]) {
-    var need = (d0.admin ? Object.keys(RP_MODE) : repMine(d0).filter(function (k) { return RP_MODE[k]; })).some(function (k) { return !d0.items.some(function (i) { return i.kind === '報告' && i.dept === k; }); });
+  if (d0.canEdit && !RP.seeded[d0.year]) {
+    var need = RP.kind === '報告' && (d0.admin ? Object.keys(RP_MODE) : repMine(d0).filter(function (k) { return RP_MODE[k]; })).some(function (k) { return !d0.items.some(function (i) { return i.kind === '報告' && i.dept === k; }); });
     RP.seeded[d0.year] = 1;
+    if (!need) api('o_report_seed', { year: d0.year }).then(function (r) { if (r.seeded) { RP.data = r; reportDraw(); } }).catch(function () { /* 取り込めなくても、いまの内容で使える */ });
     if (need) { sub('事業報告・計画', '<div class="skel" style="height:240px"></div>', 'officer'); api('o_report_seed', { year: d0.year }).then(function (r) { RP.data = r; reportDraw(); }).catch(function () { reportDraw(); }); return; }
   }
   var d = RP.data, rep = RP.kind === '報告';
