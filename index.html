@@ -2300,7 +2300,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-f / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-g / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
@@ -2376,8 +2376,8 @@ function pdfEach(file, onPage) {
   });
 }
 /* ====== 捨て看板(デザイン案)。管理システムとLINEで同じ見た目を作る ====== */
-var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 3, 'align'], ['cast', '出演者(1行が1列になります)', 'area', 3, 'align'], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など)', 'area', 2]];
-var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'], cast: ['三遊亭 あら馬（落語）', '三笑亭 夢太郎（落語）'], sponsor: ['高井戸警察署', '東京消防庁 杉並消防署 高井戸出張所'], get note2() { return ['「令和' + (kbFy() - 2018) + '年度東京都地域の底力発展事業助成」対象事業']; } };
+var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 3, 'align'], ['cast', '出演者(1行が1列になります)', 'area', 3, 'align'], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など)', 'area', 2], ['comment', '発注先へのコメント(なければ空のままでOK)', 'area', 2]];
+var KB_PRESET = { comment: ['出演者の後の（ ）(演目)は、なくても問題ありません', '文字の大きさは、収まる範囲で調整してもらって構いません', '急ぎです。間に合わない場合はご連絡ください'], title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'], cast: ['三遊亭 あら馬（落語）', '三笑亭 夢太郎（落語）'], sponsor: ['高井戸警察署', '東京消防庁 杉並消防署 高井戸出張所'], get note2() { return ['「令和' + (kbFy() - 2018) + '年度東京都地域の底力発展事業助成」対象事業']; } };
 function kbFy() { if (window.KB_FY) return Number(window.KB_FY); var t = new Date(); return t.getMonth() < 3 ? t.getFullYear() - 1 : t.getFullYear(); }
 /** 前の依頼をコピーして新しい依頼にする: 開催日は空にし(選び直す)、助成の「令和◯年度」は今の年度にそろえる */
 function kbCopy(data) {
@@ -2446,11 +2446,11 @@ function kbEditor(root, prev, d, onChange) {
   root.className = (root.className || '') + ' kbed';
   root.innerHTML = KB_F.map(function (f) {
     var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
-    var pre = KB_PRESET[k] ? '<div class="kbpre">' + kbPreOpts(k).map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'cast' || k === 'note2' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' + (k === 'cast' ? kbCastHist() : '') : '';
-    return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
+    var pre = KB_PRESET[k] ? '<div class="kbpre">' + kbPreOpts(k).map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'cast' || k === 'note2' || k === 'comment' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' + (k === 'cast' ? kbCastHist() : '') : '';
+    return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + (k === 'comment' ? '' : '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details>') + '</div>';
   }).join('');
   d.red = d.red || {};
-  var chips = function (k) { root.querySelector('[data-ch="' + k + '"]').innerHTML = kbChips(d, k); };
+  var chips = function (k) { var e = root.querySelector('[data-ch="' + k + '"]'); if (e) e.innerHTML = kbChips(d, k); };
   var plus30 = function (t) { var m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m) return ''; var x = (Number(m[1]) * 60 + Number(m[2]) + 30) % 1440; return ('0' + Math.floor(x / 60)).slice(-2) + ':' + ('0' + x % 60).slice(-2); };
   var lastOpen = d.open || '';
   var setVal = function (k, v) { d[k] = v; var n = kbShow(d, k).length; d.red[k] = (d.red[k] || []).filter(function (i) { return i < n; }); chips(k);
@@ -2466,7 +2466,7 @@ function kbEditor(root, prev, d, onChange) {
     if (t.classList && t.classList.contains('kbc')) { k = t.closest('[data-ch]').dataset.ch; var i = Number(t.dataset.i), a = d.red[k] || []; d.red[k] = a.indexOf(i) >= 0 ? a.filter(function (x) { return x !== i; }) : a.concat([i]); t.classList.toggle('on'); draw(); return; }
     if (t.dataset && t.dataset.sl) { d.sponsorLabel = t.dataset.sl; Array.prototype.forEach.call(root.querySelectorAll('[data-sl]'), function (b) { b.classList.toggle('on', b === t); }); var lt = root.querySelector('[data-sltxt]'); if (lt) lt.textContent = d.sponsorLabel; draw(); return; }
     if (t.dataset && t.dataset.al) { k = t.dataset.al; d.align = d.align || {}; d.align[k] = t.dataset.v; Array.prototype.forEach.call(root.querySelectorAll('[data-al="' + k + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
-    if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); var nv = t.dataset.v; if ((k === 'sponsor' || k === 'cast') && nv) { var cur = String(inp.value || '').split('\n').filter(function (x) { return x.trim(); }); if (cur.indexOf(nv) < 0) cur.push(nv); nv = cur.join('\n'); } inp.value = nv; setVal(k, nv); if (!t.dataset.v && k === 'place') inp.focus(); return; }
+    if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); var nv = t.dataset.v; if ((k === 'sponsor' || k === 'cast' || k === 'comment') && nv) { var cur = String(inp.value || '').split('\n').filter(function (x) { return x.trim(); }); if (cur.indexOf(nv) < 0) cur.push(nv); nv = cur.join('\n'); } inp.value = nv; setVal(k, nv); if (!t.dataset.v && k === 'place') inp.focus(); return; }
     if (t.dataset && t.dataset.all) { k = t.dataset.all; var n = kbShow(d, k).length, arr = []; for (var j = 0; j < n; j++) if (kbShow(d, k).charAt(j) !== '\n') arr.push(j); d.red[k] = arr; chips(k); draw(); return; }
     if (t.dataset && t.dataset.none) { k = t.dataset.none; d.red[k] = []; chips(k); draw(); }
   };
@@ -2525,6 +2525,7 @@ function kbCanvas(d, meta) {
   var ym = py + ph + 46 * s + 50; g.fillStyle = '#000'; g.font = '30px ' + F; g.textAlign = 'left'; meta = meta || {};
   var ymd = function (v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? Number(v.slice(0, 4)) + '年' + Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日' : (v || '(未定)'); };
   [['到着希望日: ' + ymd(meta.arrive)], ['領収書名: ' + (meta.receipt || '浜田山町会')]].concat(meta.qty ? [['枚数: ' + meta.qty + '枚']] : []).forEach(function (l) { g.fillText(l[0], 220, ym); ym += 44; });
+  if (d.comment && String(d.comment).trim()) { g.fillText('コメント:', 220, ym); ym += 44; g.font = '26px ' + F; String(d.comment).split('\n').forEach(function (ln) { for (var o = 0; o < ln.length || o === 0; o += 24) { g.fillText(ln.slice(o, o + 24), 240, ym); ym += 36; if (!ln.length) break; } }); }
   return cv;
 }
 /** canvas をA4のPDF(画像1枚)にして、base64 で返す */
