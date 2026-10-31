@@ -2325,7 +2325,7 @@ function pdfEach(file, onPage) {
 }
 /* ====== 捨て看板(デザイン案)。管理システムとLINEで同じ見た目を作る ====== */
 var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 3, 'align'], ['cast', '出演者(1行が1列になります)', 'area', 3, 'align'], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など)', 'area', 2]];
-var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'] };
+var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'], sponsor: ['高井戸警察署', '東京消防庁 杉並消防署 高井戸出張所'], note2: ['「令和' + (new Date().getFullYear() - 2018) + '年度東京都地域の底力発展事業助成」対象事業'] };
 function kbNew() { var y = new Date().getFullYear(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', cast: '', align: { body: 'top', cast: 'top' }, note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
 function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
@@ -2363,7 +2363,7 @@ function kbEditor(root, prev, d, onChange) {
   root.className = (root.className || '') + ' kbed';
   root.innerHTML = KB_F.map(function (f) {
     var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
-    var pre = KB_PRESET[k] ? '<div class="kbpre">' + KB_PRESET[k].map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + '</div>' : '';
+    var pre = KB_PRESET[k] ? '<div class="kbpre">' + KB_PRESET[k].map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'note2' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' : '';
     return '<div class="kbfld"><label>' + f[1] + '</label>' + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
   }).join('');
   d.red = d.red || {};
@@ -2382,7 +2382,7 @@ function kbEditor(root, prev, d, onChange) {
     var t = ev.target, k;
     if (t.classList && t.classList.contains('kbc')) { k = t.closest('[data-ch]').dataset.ch; var i = Number(t.dataset.i), a = d.red[k] || []; d.red[k] = a.indexOf(i) >= 0 ? a.filter(function (x) { return x !== i; }) : a.concat([i]); t.classList.toggle('on'); draw(); return; }
     if (t.dataset && t.dataset.al) { k = t.dataset.al; d.align = d.align || {}; d.align[k] = t.dataset.v; Array.prototype.forEach.call(root.querySelectorAll('[data-al="' + k + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
-    if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); inp.value = t.dataset.v; setVal(k, t.dataset.v); if (!t.dataset.v) inp.focus(); return; }
+    if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); var nv = t.dataset.v; if (k === 'sponsor' && nv) { var cur = String(inp.value || '').split('\n').filter(function (x) { return x.trim(); }); if (cur.indexOf(nv) < 0) cur.push(nv); nv = cur.join('\n'); } inp.value = nv; setVal(k, nv); if (!t.dataset.v && k === 'place') inp.focus(); return; }
     if (t.dataset && t.dataset.all) { k = t.dataset.all; var n = kbShow(d, k).length, arr = []; for (var j = 0; j < n; j++) if (kbShow(d, k).charAt(j) !== '\n') arr.push(j); d.red[k] = arr; chips(k); draw(); return; }
     if (t.dataset && t.dataset.none) { k = t.dataset.none; d.red[k] = []; chips(k); draw(); }
   };
