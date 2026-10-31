@@ -336,7 +336,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .kbw .kbm .kbt{font-weight:500}
 .kbw .kbf{font-size:15px;text-align:left;margin:3px 0 0 14px;line-height:1.4}
 .kbw .kbn{font-size:16px;line-height:1.4;margin-top:6px}
-.kbw .kbx{border:1px solid #222;font-size:11.5px;line-height:1.4;margin:8px 10px 0;padding:3px 4px}
+.kbw .kbx{font-size:11.5px;line-height:1.4;margin:8px 10px 0;padding:0 4px}
 .kbw .kbl{display:flex;justify-content:space-around;padding:0 74px}.kbw .kbl i{display:block;width:16px;height:46px;background:#666}
 .kbed .kbfld{margin:0 0 12px}.kbed .kbfld>label{display:block;font-weight:700;margin:0 0 4px}
 .kbed input[type=text],.kbed input[type=date],.kbed input[type=time],.kbed textarea{width:100%;box-sizing:border-box;font:inherit;padding:9px;border:1.5px solid #cfd6dd;border-radius:10px;background:#fff}
@@ -2323,8 +2323,8 @@ function pdfEach(file, onPage) {
   });
 }
 /* ====== 捨て看板(デザイン案)。管理システムとLINEで同じ見た目を作る ====== */
-var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 4], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など・枠で囲みます)', 'area', 2]];
-var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー'], place: ['浜田山会館1階ホール', 'みずほ銀行前'] };
+var KB_F = [['title', 'タイトル', 'area', 2], ['date', '開催日', 'date'], ['place', '場所', 'text'], ['open', '開場', 'time'], ['start', '開演', 'time'], ['body', '内容(1行が1列になります)', 'area', 4], ['note', '備考(無料のご案内など)', 'area', 2], ['sponsor', '協賛', 'area', 2], ['host', '主催', 'text'], ['note2', '備考(助成など)', 'area', 2]];
+var KB_PRESET = { title: ['浜田山町会防犯演芸会', '浜田山町会防災ヒーローショー', '浜田山町会ウィンターコンサート', '浜田山町会クリスマスコンサート'], place: ['浜田山会館1階ホール', 'みずほ銀行前'] };
 function kbNew() { var y = new Date().getFullYear(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
 function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
@@ -2366,7 +2366,15 @@ function kbEditor(root, prev, d, onChange) {
   }).join('');
   d.red = d.red || {};
   var chips = function (k) { root.querySelector('[data-ch="' + k + '"]').innerHTML = kbChips(d, k); };
-  var setVal = function (k, v) { d[k] = v; var n = kbShow(d, k).length; d.red[k] = (d.red[k] || []).filter(function (i) { return i < n; }); chips(k); draw(); };
+  var plus30 = function (t) { var m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m) return ''; var x = (Number(m[1]) * 60 + Number(m[2]) + 30) % 1440; return ('0' + Math.floor(x / 60)).slice(-2) + ':' + ('0' + x % 60).slice(-2); };
+  var lastOpen = d.open || '';
+  var setVal = function (k, v) { d[k] = v; var n = kbShow(d, k).length; d.red[k] = (d.red[k] || []).filter(function (i) { return i < n; }); chips(k);
+    if (k === 'open') {   // 開場を選ぶと、開演は30分後に自動で入る(自分で直した開演は、そのまま残す)
+      var auto = plus30(v), prevAuto = plus30(lastOpen);
+      if (auto && (!d.start || d.start === prevAuto)) { d.start = auto; var si = root.querySelector('[data-kb="start"]'); if (si) si.value = auto; chips('start'); }
+      lastOpen = v;
+    }
+    draw(); };
   Array.prototype.forEach.call(root.querySelectorAll('[data-kb]'), function (el) { el.oninput = el.onchange = function () { setVal(el.dataset.kb, el.value); }; });
   root.onclick = function (ev) {
     var t = ev.target, k;
@@ -2377,8 +2385,71 @@ function kbEditor(root, prev, d, onChange) {
   };
   draw();
 }
+
+/** 看板を、A4縦の画像(canvas)に描く。メールで送るPDFの元 */
+function kbCanvas(d, meta) {
+  var W = 1240, Hh = 1754, cv = document.createElement('canvas'); cv.width = W; cv.height = Hh;
+  var g = cv.getContext('2d'), F = '"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP","Meiryo",sans-serif', RED = '#e60012';
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, Hh); g.textBaseline = 'top';
+  var seg = function (parts, cx, y, size, bold) {   // parts: [[文字列, 赤か]] を中央ぞろえで描く
+    g.font = (bold ? 'bold ' : '') + size + 'px ' + F; var w = 0; parts.forEach(function (p) { p.w = g.measureText(p[0]).width; w += p.w; });
+    var x = cx - w / 2; parts.forEach(function (p) { g.fillStyle = p[1] ? RED : '#000'; g.fillText(p[0], x, y); x += p.w; });
+  };
+  seg([['捨て看板依頼書(デザイン案)', 0]], W / 2, 60, 46, true); seg([['赤くしたいところは', 0], ['赤', 1], ['で記載', 0]], W / 2, 125, 28);
+  var runs = function (str, key, off, x, y, size, align) {
+    g.font = size + 'px ' + F; var set = kbRedSet(d, key), ws = [], w = 0, i; for (i = 0; i < str.length; i++) { ws[i] = g.measureText(str.charAt(i)).width; w += ws[i]; }
+    var sx = align === 'center' ? x - w / 2 : x; for (i = 0; i < str.length; i++) { g.fillStyle = set[i + off] ? RED : '#000'; g.fillText(str.charAt(i), sx, y); sx += ws[i]; }
+  };
+  var vcol = function (c, key, xc, y, size) {
+    var set = kbRedSet(d, key); g.font = size + 'px ' + F; g.textAlign = 'center';
+    for (var i = 0; i < c.t.length; i++) { var ch = c.t.charAt(i); if (ch === ' ' || ch === '　') { y += size * .5; continue; } g.fillStyle = set[i + c.off] ? RED : '#000'; g.fillText(KB_VMAP[ch] || ch, xc, y); y += size * 1.08; }
+    g.textAlign = 'left';
+  };
+  var tc = kbCols(d, 'title'), bc = kbCols(d, 'body'), mx = function (c) { return c.reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); };
+  var fT = Math.max(22, Math.min(44, Math.floor(400 / Math.max(1, mx(tc))))), fB = Math.max(16, Math.min(26, Math.floor(400 / Math.max(1, mx(bc)))));
+  var MH = Math.max(mx(tc) * fT * 1.08, mx(bc) * fB * 1.08, 40) + 8;
+  var dt = kbShow(d, 'date'), pl = kbShow(d, 'place'), spons = kbCols(d, 'sponsor'), notes = kbCols(d, 'note'), n2 = kbCols(d, 'note2');
+  var hCss = 14 + (dt ? 37.5 : 0) + (pl ? 28.6 : 0) + (d.open ? 25.7 : 0) + (d.start ? 25.7 : 0) + ((tc.length + bc.length) ? 10 + MH + 8 : 0) + (d.host ? 24 : 0) + spons.length * 24 + notes.length * 22.4 + (notes.length ? 6 : 0) + (n2.length ? 8 + n2.length * 16 + 8 : 0) + 12 + 4;
+  var s = Math.min(2.4, 1100 / (hCss + 46)), pw = 360 * s, px = W / 2 - pw / 2, py = 190, y = py + 14 * s, cx = W / 2;
+  var top = y;
+  if (dt) { runs(dt, 'date', 0, cx, y, 30 * s, 'center'); y += 37.5 * s; }
+  if (pl) { runs(pl, 'place', 0, cx, y, 22 * s, 'center'); y += 28.6 * s; }
+  if (d.open) { runs('開場　' + d.open, 'open', -3, cx, y, 19 * s, 'center'); y += 25.7 * s; }
+  if (d.start) { runs('開演　' + d.start, 'start', -3, cx, y, 19 * s, 'center'); y += 25.7 * s; }
+  if (tc.length + bc.length) {
+    y += 10 * s; var cols = tc.map(function (c) { return { c: c, k: 'title', f: fT }; }).concat(bc.map(function (c) { return { c: c, k: 'body', f: fB }; }));
+    var tw = cols.reduce(function (m, x) { return m + x.f * s; }, 0) + 8 * s * (cols.length - 1), right = cx + tw / 2;
+    cols.forEach(function (x) { vcol(x.c, x.k, right - x.f * s / 2, y, x.f * s); right -= x.f * s + 8 * s; });
+    y += MH * s + 8 * s;
+  }
+  var lx = px + 14 * s;
+  if (d.host) { runs('主催　' + d.host, 'host', -3, lx, y, 15 * s, 'left'); y += 24 * s; }
+  spons.forEach(function (c, i) { runs((i ? '　　' : '協賛　') + c.t, 'sponsor', c.off - (i ? 2 : 3), lx, y, 15 * s, 'left'); y += 24 * s; });
+  if (notes.length) y += 6 * s;
+  notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, 16 * s, 'center'); y += 22.4 * s; });
+  if (n2.length) { y += 8 * s; n2.forEach(function (c) { runs(c.t, 'note2', c.off, cx, y, 11.5 * s, 'center'); y += 16 * s; }); y += 8 * s; }
+  y += 12 * s; var ph = y - py;
+  g.lineWidth = 2 * s; g.strokeStyle = '#222'; g.strokeRect(px, py, pw, ph);
+  g.fillStyle = '#666'; g.fillRect(px + 119 * s, py + ph, 16 * s, 46 * s); g.fillRect(px + 225 * s, py + ph, 16 * s, 46 * s);
+  var ym = py + ph + 46 * s + 50; g.fillStyle = '#000'; g.font = '30px ' + F; g.textAlign = 'left'; meta = meta || {};
+  var ymd = function (v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? Number(v.slice(0, 4)) + '年' + Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日' : (v || '(未定)'); };
+  [['到着希望日: ' + ymd(meta.arrive)], ['領収書名: ' + (meta.receipt || '浜田山町会')]].concat(meta.qty ? [['枚数: ' + meta.qty + '枚']] : []).forEach(function (l) { g.fillText(l[0], 220, ym); ym += 44; });
+  return cv;
+}
+/** canvas をA4のPDF(画像1枚)にして、base64 で返す */
+function kbPdfB64(d, meta) {
+  var cv = kbCanvas(d, meta), bin = atob(cv.toDataURL('image/jpeg', 0.9).split(',')[1]), o = [], pos = 0, out = '%PDF-1.4\n';
+  var add = function (body) { o.push(out.length); out += body; };
+  add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n'); add('2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n');
+  add('3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.28 841.89]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>\nendobj\n');
+  add('4 0 obj\n<</Type/XObject/Subtype/Image/Width ' + cv.width + '/Height ' + cv.height + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bin.length + '>>\nstream\n' + bin + '\nendstream\nendobj\n');
+  var cs = 'q 595.28 0 0 841.89 0 0 cm /Im0 Do Q\n'; add('5 0 obj\n<</Length ' + cs.length + '>>\nstream\n' + cs + 'endstream\nendobj\n');
+  var xr = out.length; out += 'xref\n0 6\n0000000000 65535 f \n'; o.forEach(function (p) { out += ('0000000000' + p).slice(-10) + ' 00000 n \n'; });
+  out += 'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n' + xr + '\n%%EOF';
+  return btoa(out);
+}
 /* ====== 捨て看板の依頼(役員) ====== */
-var KBV = { step: 'list', d: null, list: null, arrive: '', other: false, receipt: '', qty: '', busy: false };
+var KBV = { mail: '', step: 'list', d: null, list: null, arrive: '', other: false, receipt: '', qty: '', busy: false };
 function kbvYmd(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? Number(s.slice(0, 4)) + '年' + Number(s.slice(5, 7)) + '月' + Number(s.slice(8, 10)) + '日' : (s || ''); }
 function kanbanView() {
   if (!KBV.list) { sub('捨て看板依頼', '<div class="skel" style="height:200px"></div>', 'officer'); api('o_kanban_list', {}).then(function (r) { KBV.list = r; kanbanDraw(); }).catch(function (e) { sub('捨て看板依頼', errCard(e), 'officer'); }); return; }
@@ -2427,11 +2498,12 @@ function kanbanDraw() {
       keep(); if (!KBV.arrive) { toast('到着希望日を選んでください'); return; }
       if (KBV.other && !KBV.receipt.trim()) { toast('領収書の宛名を入力してください'); return; }
       var b = this; if (KBV.busy) return; KBV.busy = true; b.disabled = true;
-      api('o_kanban_submit', { data: KBV.d, arrive: KBV.arrive, receipt: KBV.other ? KBV.receipt.trim() : '浜田山町会', qty: KBV.qty }).then(function (r) { KBV.busy = false; KBV.list = r; KBV.step = 'done'; kanbanDraw(); window.scrollTo(0, 0); }).catch(function (e) { KBV.busy = false; b.disabled = false; toast(e.message); });
+      var rcp = KBV.other ? KBV.receipt.trim() : '浜田山町会', pdf = ''; try { pdf = kbPdfB64(KBV.d, { arrive: KBV.arrive, receipt: rcp, qty: KBV.qty }); } catch (e) { pdf = ''; }
+      api('o_kanban_submit', { data: KBV.d, arrive: KBV.arrive, receipt: rcp, qty: KBV.qty, pdf: pdf }).then(function (r) { KBV.busy = false; KBV.list = r; KBV.mail = r.mailNote || ''; KBV.step = 'done'; kanbanDraw(); window.scrollTo(0, 0); }).catch(function (e) { KBV.busy = false; b.disabled = false; toast(e.message); });
     };
     return;
   }
-  h = '<div class="card"><h2>依頼しました</h2><p style="margin:0 0 10px">役員にお知らせが届きました。到着希望日は <b>' + esc(kbvYmd(KBV.arrive)) + '</b>、領収書の宛名は <b>' + esc(KBV.other ? KBV.receipt : '浜田山町会') + '</b> で承りました。</p><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbdone" style="margin-top:14px">閉じる</button></div>';
+  h = '<div class="card"><h2>依頼しました</h2><p style="margin:0 0 10px">' + (/^送信済/.test(KBV.mail || '') ? '発注先に、PDFつきのメールを送りました。' : (KBV.mail && !/未設定/.test(KBV.mail) ? '依頼は届きましたが、発注先へのメールは送れませんでした(管理者が管理システムから送ります)。' : '')) + '役員にお知らせが届きました。到着希望日は <b>' + esc(kbvYmd(KBV.arrive)) + '</b>、領収書の宛名は <b>' + esc(KBV.other ? KBV.receipt : '浜田山町会') + '</b> で承りました。</p><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbdone" style="margin-top:14px">閉じる</button></div>';
   sub('捨て看板依頼', h, 'officer');
   $('#kbdone').onclick = function () { KBV.step = 'list'; KBV.other = false; KBV.arrive = ''; KBV.receipt = ''; KBV.qty = ''; kanbanDraw(); };
 }
