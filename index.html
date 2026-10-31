@@ -327,6 +327,8 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .dlgx{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}.dlgb{background:#fff;border-radius:16px;max-width:360px;width:100%;padding:20px 18px 14px;box-shadow:0 8px 30px rgba(0,0,0,.3)}.dlgm{font-size:16px;line-height:1.7;color:#222;word-break:break-all;margin-bottom:16px}.dlgbt{display:flex;gap:10px}.dlgbt button{flex:1;min-height:46px;font-size:16px;border-radius:12px}
 
 /* 総会: 事業報告・計画 / 総会資料 */
+.kbtpl{border:1.5px solid #cfd6dd;background:#fbf8ec;border-radius:12px;padding:10px;margin:0 0 12px}.kbtpl .kbtr{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.kbtpl select,.kbtpl input{flex:1;min-width:140px;font:inherit;padding:7px;border:1px solid #cfd6dd;border-radius:8px;background:#fff}.kbtpl button{border:1px solid #cfd6dd;background:#fff;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}.kbtpl .kbtd{color:#b00020}.kbtpl .kbtn{margin:6px 0 0;font-size:12.5px;color:#777}
+.kbed .kbhist{margin-top:6px}.kbed .kbhist summary{cursor:pointer;font-size:12.5px;color:#555}
 .kbw{width:360px;max-width:100%;margin:0 auto;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;color:#000;background:#fff}
 .kbw .kb{background:#fff;border:2px solid #222;padding:14px 8px 12px;text-align:center;box-sizing:border-box}
 .kbw .kr{color:#e60012}
@@ -2287,7 +2289,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-c / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261031-d / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
@@ -2404,13 +2406,36 @@ function kbChips(d, k) {
   for (var i = 0; i < t.length; i++) { var ch = t.charAt(i); h += ch === '\n' ? '<br>' : '<button type="button" class="kbc' + (s[i] ? ' on' : '') + '" data-i="' + i + '">' + esc(ch === ' ' ? '␣' : ch) + '</button>'; }
   return h || '<span style="color:#888;font-size:12.5px">先に上の欄に文字を入れてください</span>';
 }
+/** 過去の依頼や登録したテンプレートに出てきた出演者(管理システム・LINEが一覧と一緒に渡す) */
+var KB_HIST = { cast: [] }, KB_TPLS = [];
+function kbPreOpts(k) { return KB_PRESET[k]; }
+function kbCastHist() {
+  var have = {}; KB_PRESET.cast.forEach(function (v) { have[v] = 1; });
+  var l = (KB_HIST.cast || []).filter(function (v) { return v && !have[v]; });
+  if (!l.length) return '';
+  return '<details class="kbhist"><summary>過去の出演者から選ぶ(' + l.length + ')</summary><div class="kbpre">' + l.map(function (v) { return '<button type="button" data-pre="cast" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + '</div></details>';
+}
+/** テンプレート(型)。選ぶと内容が入る(開催日は空)。いまの内容を名前をつけて登録もできる。h = { pick(data), save(name)→Promise, del(id)→Promise, get()→data } */
+function kbTplMount(el, h) {
+  var draw = function () {
+    var ts = KB_TPLS || [];
+    el.innerHTML = '<div class="kbtpl"><b>テンプレート</b>' +
+      (ts.length ? '<div class="kbtr"><select data-tsel><option value="">選んでください(' + ts.length + '件)</option>' + ts.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>'; }).join('') + '</select><button type="button" data-tuse>この型を使う</button><button type="button" data-tdel class="kbtd">削除</button></div>' : '<p class="kbtn">まだありません。下で登録すると、次から選べます。</p>') +
+      '<div class="kbtr"><input type="text" data-tname maxlength="40" placeholder="登録する名前(例: 防犯演芸会)"><button type="button" data-tsave>いまの内容を登録</button></div></div>';
+    var sel = el.querySelector('[data-tsel]'), find = function () { var v = sel && sel.value; return v ? ts.filter(function (t) { return t.id === v; })[0] : null; };
+    var u = el.querySelector('[data-tuse]'); if (u) u.onclick = function () { var t = find(); if (!t) { toast('テンプレートを選んでください'); return; } var cur = h.get(); if (cur && String(cur.title || '').trim() && !confirm('いま入れている内容は、「' + t.name + '」の内容に置き換わります。よろしいですか?')) return; h.pick(t.data); };
+    var dl = el.querySelector('[data-tdel]'); if (dl) dl.onclick = function () { var t = find(); if (!t) { toast('削除するテンプレートを選んでください'); return; } if (!confirm('テンプレート「' + t.name + '」を削除します。よろしいですか?')) return; h.del(t.id).then(function () { toast('削除しました'); draw(); }).catch(function (e) { toast(e.message || String(e)); }); };
+    el.querySelector('[data-tsave]').onclick = function () { var n = el.querySelector('[data-tname]').value.trim(); if (!n) { toast('登録する名前を入れてください'); return; } var cur = h.get(); if (!cur || !String(cur.title || '').trim()) { toast('先にタイトルなどを入れてください'); return; } if (ts.some(function (t) { return t.name === n; }) && !confirm('同じ名前のテンプレートがあります。上書きしますか?')) return; h.save(n).then(function () { toast('テンプレートに登録しました'); draw(); }).catch(function (e) { toast(e.message || String(e)); }); };
+  };
+  draw();
+}
 /** 入力欄と「赤くする文字」の選択。root に作り、prev に仕上がりを出す。変更のたびに onChange */
 function kbEditor(root, prev, d, onChange) {
   var draw = function () { prev.innerHTML = kbRender(d); if (onChange) onChange(); };
   root.className = (root.className || '') + ' kbed';
   root.innerHTML = KB_F.map(function (f) {
     var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
-    var pre = KB_PRESET[k] ? '<div class="kbpre">' + KB_PRESET[k].map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'cast' || k === 'note2' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' : '';
+    var pre = KB_PRESET[k] ? '<div class="kbpre">' + kbPreOpts(k).map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'cast' || k === 'note2' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' + (k === 'cast' ? kbCastHist() : '') : '';
     return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
   }).join('');
   d.red = d.red || {};
@@ -2503,12 +2528,12 @@ function kbPdfB64(d, meta) {
   out += 'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n' + xr + '\n%%EOF';
   return btoa(out);
 }
-
 /* ====== 捨て看板の依頼(役員) ====== */
+function kbvSync(r) { if (r && r.tpls) KB_TPLS = r.tpls; if (r && r.hist) KB_HIST.cast = r.hist; }
 var KBV = { mail: '', step: 'list', d: null, list: null, arrive: '', other: false, receipt: '', qty: '20', busy: false };
 function kbvYmd(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? Number(s.slice(0, 4)) + '年' + Number(s.slice(5, 7)) + '月' + Number(s.slice(8, 10)) + '日' : (s || ''); }
 function kanbanView() {
-  if (!KBV.list) { sub('捨て看板依頼', '<div class="skel" style="height:200px"></div>', 'officer'); api('o_kanban_list', {}).then(function (r) { KBV.list = r; kanbanDraw(); }).catch(function (e) { sub('捨て看板依頼', errCard(e), 'officer'); }); return; }
+  if (!KBV.list) { sub('捨て看板依頼', '<div class="skel" style="height:200px"></div>', 'officer'); api('o_kanban_list', {}).then(function (r) { KBV.list = r; kbvSync(r); kanbanDraw(); }).catch(function (e) { sub('捨て看板依頼', errCard(e), 'officer'); }); return; }
   kanbanDraw();
 }
 function kanbanDraw() {
@@ -2522,8 +2547,10 @@ function kanbanDraw() {
     return;
   }
   if (st === 'form') {
-    h = '<div class="card"><h2>看板の内容</h2><p class="muted" style="margin:0 0 10px">入れると、下に仕上がりが出ます。「赤くする文字を選ぶ」で、赤くしたい文字だけを選べます。</p><div id="kbroot"></div></div><div class="card"><h2>仕上がり</h2><div id="kbprev" style="overflow-x:auto"></div><button class="btn" id="kbok" style="margin-top:12px">仕上がりを確認する</button><button class="btn" id="kbcancel" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">やめる</button></div>';
+    h = '<div class="card"><h2>看板の内容</h2><p class="muted" style="margin:0 0 10px">入れると、下に仕上がりが出ます。「赤くする文字を選ぶ」で、赤くしたい文字だけを選べます。</p><div id="kbtpl"></div><div id="kbroot"></div></div><div class="card"><h2>仕上がり</h2><div id="kbprev" style="overflow-x:auto"></div><button class="btn" id="kbok" style="margin-top:12px">仕上がりを確認する</button><button class="btn" id="kbcancel" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">やめる</button></div>';
     sub('捨て看板依頼', h, 'officer');
+    kbTplMount($('#kbtpl'), { get: function () { return KBV.d; }, pick: function (dt) { KBV.d = kbCopy(dt); kanbanDraw(); window.scrollTo(0, 0); },
+      save: function (n) { return api('o_kanban_tpl_save', { name: n, data: KBV.d }).then(kbvSync); }, del: function (id) { return api('o_kanban_tpl_delete', { id: id }).then(kbvSync); } });
     kbEditor($('#kbroot'), $('#kbprev'), KBV.d, null);
     $('#kbok').onclick = function () { if (!String(KBV.d.title || '').trim()) { toast('タイトルを入れてください'); return; } KBV.step = 'confirm'; kanbanDraw(); window.scrollTo(0, 0); };
     $('#kbcancel').onclick = function () { KBV.step = 'list'; kanbanDraw(); };
@@ -2556,7 +2583,7 @@ function kanbanDraw() {
       if (KBV.other && !KBV.receipt.trim()) { toast('領収書の宛名を入力してください'); return; }
       var b = this; if (KBV.busy) return; KBV.busy = true; b.disabled = true;
       var rcp = KBV.other ? KBV.receipt.trim() : '浜田山町会', pdf = ''; try { pdf = kbPdfB64(KBV.d, { arrive: KBV.arrive, receipt: rcp, qty: KBV.qty }); } catch (e) { pdf = ''; }
-      api('o_kanban_submit', { data: KBV.d, arrive: KBV.arrive, receipt: rcp, qty: KBV.qty, pdf: pdf }).then(function (r) { KBV.busy = false; KBV.list = r; KBV.mail = r.mailNote || ''; KBV.step = 'done'; kanbanDraw(); window.scrollTo(0, 0); }).catch(function (e) { KBV.busy = false; b.disabled = false; toast(e.message); });
+      api('o_kanban_submit', { data: KBV.d, arrive: KBV.arrive, receipt: rcp, qty: KBV.qty, pdf: pdf }).then(function (r) { KBV.busy = false; KBV.list = r; kbvSync(r); KBV.mail = r.mailNote || ''; KBV.step = 'done'; kanbanDraw(); window.scrollTo(0, 0); }).catch(function (e) { KBV.busy = false; b.disabled = false; toast(e.message); });
     };
     return;
   }
