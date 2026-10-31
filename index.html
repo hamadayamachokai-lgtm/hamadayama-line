@@ -2136,14 +2136,16 @@ function repFillCard(dep, d, list, sums, rep) {
     var f = i.fields || ['date', 'count', 'people', 'note'], tpl = rep && i.person !== '追加' && i.type && i.type !== 'text';
     var vOf = function (k) { return k === 'date' ? i.date : k === 'count' ? i.count : k === 'people' ? i.people : i.note; };
     var viewMode = !!(i.hasPre && !i.excluded && !ro && !RP.editing[i.id] && f.some(function (k) { return String(vOf(k) || '').trim() !== ''; }));
-    var body = viewMode ? f.filter(function (k) { return String(vOf(k) || '').trim() !== ''; }).map(function (k) { var lab = RP_FLAB[k]; return '<div class="fr pv"><label>' + (!rep && k === 'date' ? '時期' : (k === 'count' && i.unit ? '数' : lab[0])) + '</label><div class="pvt">' + esc(vOf(k)) + '</div></div>'; }).join('') + '<div class="rpbt"><button class="x pe" data-a="pedit" type="button">✏ 編集</button></div>' : f.length ? f.map(function (k) {
-      var lab = RP_FLAB[k], v = k === 'date' ? i.date : k === 'count' ? i.count : k === 'people' ? i.people : i.note;
+    var body = f.length ? f.map(function (k) {
+      var lab = RP_FLAB[k], filledPv = viewMode && String(vOf(k) || '').trim() !== '';   // 管理者が先に入れた欄は全文を表示(下の「編集」で直せる)。空の欄は、そのまま入力できる
+      if (filledPv) return '<div class="fr pv"><label>' + (!rep && k === 'date' ? '時期' : (k === 'count' && i.unit ? '数' : lab[0])) + '</label><div class="pvt">' + esc(vOf(k)) + '</div></div>';
+      var v = vOf(k);
       if (k === 'count' && i.unit) {   // 数字だけ入れるカード(単位は管理者が決める)
         var nv = String(v || '').replace(i.unit, '').trim();
         return '<div class="fr"><label>数</label><input type="text" class="fi fu" data-k="count" data-unit="' + esc(i.unit) + '" inputmode="numeric" maxlength="12" placeholder="数字だけ入れてください" value="' + esc(nv) + '"' + (i.excluded ? ' disabled' : dis) + '><span class="u">' + esc(i.unit) + '</span></div>';
       }
       return '<div class="fr"><label>' + (!rep && k === 'date' ? '時期' : lab[0]) + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : k === 'count' ? 120 : 40) + '"' + (k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + (i.excluded ? ' disabled' : dis) + '>' + (lab[2] && (k !== 'count' || !v || /^\d+$/.test(String(v).trim())) ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'count' && !i.excluded && !ro ? '<button type="button" class="cal ccb" title="年◯回×場所の数 などを組み立てる">✎</button>' : '') + (k === 'date' && !i.excluded && !ro ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + '</div>';
-    }).join('') : '<label class="rpck" style="border:0;padding:4px 0"><span style="flex:1"><input type="checkbox" class="fk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '> ' + (rep ? '実施した(確認のみ)' : '確認した') + '</span></label>';
+    }).join('') + (viewMode ? '<div class="rpbt"><button class="x pe" data-a="pedit" type="button">✏ 先に入っている内容を編集</button></div>' : '') : '<label class="rpck" style="border:0;padding:4px 0"><span style="flex:1"><input type="checkbox" class="fk"' + (i.checked ? ' checked' : '') + (i.excluded ? ' disabled' : dis) + '> ' + (rep ? '実施した(確認のみ)' : '確認した') + '</span></label>';
     return '<div class="fc' + (i.excluded ? ' ex' : '') + '" data-id="' + esc(i.id) + '"><div class="gt">' + esc(i.content) + (i.excluded ? '(対象外)' : '') + '</div>' + (i.hasPre && !i.excluded && !viewMode ? '<p class="muted" style="margin:0 0 6px;font-size:12px">管理者が先に入れてあります。違いがなければ、そのまま次へ進めます。</p>' : '') + body +
       (ro ? '' : '<button class="xb" type="button" data-a="xmenu" data-ex="' + (i.excluded ? '1' : '0') + '" data-tpl="' + (tpl ? '1' : '0') + '" title="対象外・削除">✕</button>') + '</div>';
   }).join('') : '<p class="muted" style="margin:0 0 8px">まだ項目がありません。' + (rep ? '' : '「報告が終わりました」から進むと、今年の報告をもとに下書きが入ります。') + '</p>';
