@@ -2354,7 +2354,8 @@ function kbCopy(data) {
   if (d.note2) d.note2 = d.note2.replace(/令和\d+(年度東京都地域)/, '令和' + (kbFy() - 2018) + '$1');
   return d;
 }
-function kbNew() { var y = kbFy(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', cast: '', align: { body: 'top', cast: 'top' }, note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
+function kbSL(d) { return d && d.sponsorLabel === '協賛' ? '協賛' : '協力'; }
+function kbNew() { var y = kbFy(); return { title: '', date: '', place: '浜田山会館1階ホール', open: '', start: '', body: '', cast: '', sponsorLabel: '協力', align: { body: 'top', cast: 'top' }, note: 'どなた様も無料でご観覧いただけます', sponsor: '', host: '浜田山町会', note2: '「令和' + (y - 2018) + '年度東京都地域の底力発展事業助成」対象事業', red: {} }; }
 function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
 function kbRedSet(d, k) { var o = {}; ((d.red || {})[k] || []).forEach(function (i) { o[i] = 1; }); return o; }
@@ -2375,7 +2376,7 @@ function kbRender(d) {
   var mid = tc.map(function (c) { return '<div class="kbt" style="font-size:' + fT + 'px">' + kbVs(d, 'title', c.t, c.off) + '</div>'; }).join('') + bc.map(function (c) { return '<div style="font-size:' + fB + 'px;align-self:' + al('body') + '">' + kbVs(d, 'body', c.t, c.off) + '</div>'; }).join('') + cc.map(function (c) { return '<div style="font-size:' + fB + 'px;align-self:' + al('cast') + '">' + kbVs(d, 'cast', c.t, c.off) + '</div>'; }).join('');
   var bot = '';
   if (d.host) bot += '<div class="kbf">主催　' + kbSpan(d, 'host', String(d.host), 0) + '</div>';
-  kbCols(d, 'sponsor').forEach(function (c, i) { bot += '<div class="kbf">' + (i ? '　　' : '協賛　') + kbSpan(d, 'sponsor', c.t, c.off) + '</div>'; });
+  kbCols(d, 'sponsor').forEach(function (c, i) { bot += '<div class="kbf">' + (i ? '　　' : kbSL(d) + '　') + kbSpan(d, 'sponsor', c.t, c.off) + '</div>'; });
   kbCols(d, 'note').forEach(function (c) { bot += '<div class="kbn">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
   var nb = kbCols(d, 'note2').map(function (c) { return kbSpan(d, 'note2', c.t, c.off); }).join('<br>');
   return '<div class="kbw"><div class="kb">' + top + (mid ? '<div class="kbm" style="height:' + Math.round(H) + 'px">' + mid + '</div>' : '') + bot + (nb ? '<div class="kbx">' + nb + '</div>' : '') + '</div><div class="kbl"><i></i><i></i></div></div>';
@@ -2392,7 +2393,7 @@ function kbEditor(root, prev, d, onChange) {
   root.innerHTML = KB_F.map(function (f) {
     var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
     var pre = KB_PRESET[k] ? '<div class="kbpre">' + KB_PRESET[k].map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'note2' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' : '';
-    return '<div class="kbfld"><label>' + f[1] + '</label>' + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
+    return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details></div>';
   }).join('');
   d.red = d.red || {};
   var chips = function (k) { root.querySelector('[data-ch="' + k + '"]').innerHTML = kbChips(d, k); };
@@ -2409,6 +2410,7 @@ function kbEditor(root, prev, d, onChange) {
   root.onclick = function (ev) {
     var t = ev.target, k;
     if (t.classList && t.classList.contains('kbc')) { k = t.closest('[data-ch]').dataset.ch; var i = Number(t.dataset.i), a = d.red[k] || []; d.red[k] = a.indexOf(i) >= 0 ? a.filter(function (x) { return x !== i; }) : a.concat([i]); t.classList.toggle('on'); draw(); return; }
+    if (t.dataset && t.dataset.sl) { d.sponsorLabel = t.dataset.sl; Array.prototype.forEach.call(root.querySelectorAll('[data-sl]'), function (b) { b.classList.toggle('on', b === t); }); var lt = root.querySelector('[data-sltxt]'); if (lt) lt.textContent = d.sponsorLabel; draw(); return; }
     if (t.dataset && t.dataset.al) { k = t.dataset.al; d.align = d.align || {}; d.align[k] = t.dataset.v; Array.prototype.forEach.call(root.querySelectorAll('[data-al="' + k + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
     if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); var nv = t.dataset.v; if (k === 'sponsor' && nv) { var cur = String(inp.value || '').split('\n').filter(function (x) { return x.trim(); }); if (cur.indexOf(nv) < 0) cur.push(nv); nv = cur.join('\n'); } inp.value = nv; setVal(k, nv); if (!t.dataset.v && k === 'place') inp.focus(); return; }
     if (t.dataset && t.dataset.all) { k = t.dataset.all; var n = kbShow(d, k).length, arr = []; for (var j = 0; j < n; j++) if (kbShow(d, k).charAt(j) !== '\n') arr.push(j); d.red[k] = arr; chips(k); draw(); return; }
@@ -2459,7 +2461,7 @@ function kbCanvas(d, meta) {
   }
   var lx = px + 14 * s;
   if (d.host) { runs('主催　' + d.host, 'host', -3, lx, y, 15 * s, 'left'); y += 24 * s; }
-  spons.forEach(function (c, i) { runs((i ? '　　' : '協賛　') + c.t, 'sponsor', c.off - (i ? 2 : 3), lx, y, 15 * s, 'left'); y += 24 * s; });
+  spons.forEach(function (c, i) { runs((i ? '　　' : kbSL(d) + '　') + c.t, 'sponsor', c.off - (i ? 2 : 3), lx, y, 15 * s, 'left'); y += 24 * s; });
   if (notes.length) y += 6 * s;
   notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, 16 * s, 'center'); y += 22.4 * s; });
   if (n2.length) { y += 8 * s; n2.forEach(function (c) { runs(c.t, 'note2', c.off, cx, y, 11.5 * s, 'center'); y += 16 * s; }); y += 8 * s; }
