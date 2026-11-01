@@ -2103,27 +2103,39 @@ function repMineTabs(d) {
 }
 function repFlowHtml(d, dep) {
   var pg = (d.prog || {})[dep] || { reportTotal: 0, unanswered: 0, planCount: 0, reportOk: false, planOk: false }, sb = (d.subs || {})[dep];
-  var started = (pg.reportTotal - pg.unanswered) > 0 || pg.planCount > 0;
+  var started = (pg.reportTotal - pg.unanswered) > 0 || pg.planCount > 0 || !!pg.noneR || !!pg.noneP;
   var s3 = sb ? (sb.dirty ? '提出済(提出後に修正あり)' : '提出済 ' + repTimeLabel(sb.at)) : (started ? '途中保存中' : '未提出');
   var cur = RP.kind === '報告' ? 1 : (pg.planOk && pg.reportOk ? 3 : 2);
   var badge = '<i class="here">イマココ</i>';
-  return '<div class="rpflow"><div class="st ' + (pg.reportOk ? 'ok ' : '') + (cur === 1 ? 'now' : '') + '">' + (cur === 1 ? badge : '') + '<b>① 事業報告</b>' + (pg.reportOk ? '入力済み' : pg.unanswered + '件 未提出') + '</div><span class="ar">▶</span>' +
-    '<div class="st ' + (pg.planOk ? 'ok ' : '') + (cur === 2 ? 'now' : '') + '">' + (cur === 2 ? badge : '') + '<b>② 事業計画</b>' + (pg.planOk ? pg.planCount + '件' : '未登録') + '</div><span class="ar">▶</span>' +
+  return '<div class="rpflow"><div class="st ' + (pg.reportOk ? 'ok ' : '') + (cur === 1 ? 'now' : '') + '">' + (cur === 1 ? badge : '') + '<b>① 事業報告</b>' + (pg.reportOk ? (pg.reportTotal ? '入力済み' : '項目なし') : pg.unanswered + '件 未提出') + '</div><span class="ar">▶</span>' +
+    '<div class="st ' + (pg.planOk ? 'ok ' : '') + (cur === 2 ? 'now' : '') + '">' + (cur === 2 ? badge : '') + '<b>② 事業計画</b>' + (pg.planOk ? (pg.planCount ? pg.planCount + '件' : '項目なし') : '未登録') + '</div><span class="ar">▶</span>' +
     '<div class="st ' + (sb && !sb.dirty ? 'ok ' : '') + (cur === 3 ? 'now' : '') + '">' + (cur === 3 ? badge : '') + '<b>③ 提出</b>' + esc(s3) + '</div></div>';
+}
+/** その部に確認する項目が1つもないとき(施設部・その他など)のチェック。入れると、そのまま次へ(完了)に進める */
+function repNoneHtml(d, dep, rep) {
+  var pg = (d.prog || {})[dep] || {}, n = rep ? pg.reportTotal : pg.planCount, auto = rep ? pg.autoR : pg.autoP;
+  if (n || auto || !d.canEdit) return '';
+  var on = rep ? pg.noneR : pg.noneP;
+  return '<label class="cx rpnone" style="display:flex;margin:0 0 8px;padding:10px;border:1.5px solid #cfd6dd;border-radius:12px;background:#fff"><input type="checkbox" id="rpnone"' + (on ? ' checked' : '') + '> ' + (rep ? '確認する項目なしのまま次へ' : '確認する項目なしのまま完了') + '</label>';
 }
 function repNextHtml(d, dep) {
   var pg = (d.prog || {})[dep] || {};
-  return '<div class="rpnext"><button class="rpyel" id="rpgoplan"' + (pg.reportOk ? '' : ' disabled') + '>次へ(事業報告完了) ▶</button><button class="rptmp" id="rpsave" type="button">一時保存</button>' +
-    '<div class="why">' + (pg.reportOk ? '次は、来年度の計画を登録します(今年の報告をもとに下書きができます)。' : (pg.reportTotal ? '入力していない項目が ' + pg.unanswered + ' 件あります。数字を入れるか、「今回は対象外」にしてください。' : '事業報告の項目がありません。')) + '</div></div>';
+  return '<div class="rpnext">' + repNoneHtml(d, dep, true) + '<button class="rpyel" id="rpgoplan"' + (pg.reportOk ? '' : ' disabled') + '>次へ(事業報告完了) ▶</button><button class="rptmp" id="rpsave" type="button">一時保存</button>' +
+    '<div class="why">' + (pg.reportOk ? '次は、来年度の計画を登録します(今年の報告をもとに下書きができます)。' : (pg.reportTotal ? '「実施済」か「やらない」にしていない項目が ' + pg.unanswered + ' 件あります。' : '事業報告の項目がありません。「確認する項目なしのまま次へ」にチェックすると進めます。')) + '</div></div>';
+}
+function repNoneBind(d, sd) {
+  if (!$('#rpnone')) return;
+  $('#rpnone').onchange = function () { var c = this; c.disabled = true; api('o_report_none', { year: d.year, dept: sd, kind: RP.kind, on: c.checked }).then(function (r) { RP.data = r; reportDraw(); }).catch(function (e) { c.disabled = false; c.checked = !c.checked; toast(e.message); }); };
 }
 function repSubmitHtml(d, dep) {
   var pg = (d.prog || {})[dep] || {}, sb = (d.subs || {})[dep], ok = pg.reportOk && pg.planOk;
-  var why = !pg.reportOk ? '事業報告に、まだ入力していない項目があります。' : !pg.planOk ? '事業計画を登録すると、提出できます。' : '';
-  return '<div class="rpsubm' + (sb && !sb.dirty ? ' done' : '') + '"><b>提出</b>' + (sb ? '<div style="margin:4px 0">' + (sb.dirty ? '提出後に修正があります。再提出すると、管理システムに反映されます。' : '提出済みです(' + esc(sb.at) + ' ' + esc(sb.by) + ')。') + 'あとから直して、再提出もできます。</div>' : '<div style="margin:4px 0">報告と計画がそろうと提出できます。入力した内容は、そのつど自動で保存されています(途中でやめても、続きから再開できます)。</div>') +
+  var why = !pg.reportOk ? '事業報告に、まだ入力していない項目があります。' : !pg.planOk ? '事業計画を登録すると、提出できます(項目がなければ「確認する項目なしのまま完了」にチェック)。' : '';
+  return '<div class="rpsubm' + (sb && !sb.dirty ? ' done' : '') + '"><b>提出</b>' + repNoneHtml(d, dep, false) + (sb ? '<div style="margin:4px 0">' + (sb.dirty ? '提出後に修正があります。再提出すると、管理システムに反映されます。' : '提出済みです(' + esc(sb.at) + ' ' + esc(sb.by) + ')。') + 'あとから直して、再提出もできます。</div>' : '<div style="margin:4px 0">報告と計画がそろうと提出できます。入力した内容は、そのつど自動で保存されています(途中でやめても、続きから再開できます)。</div>') +
     '<button class="btn" id="rpsubmit"' + (ok && (!sb || sb.dirty) ? '' : ' disabled') + ' style="margin-top:6px">' + (sb ? (sb.dirty ? '修正を再提出する' : '提出済み') : '提出する') + '</button>' +
     '<button class="sbtn" id="rpsave" style="margin-top:6px;width:100%">一時保存</button>' + (why ? '<div class="why">' + esc(why) + '</div>' : '') + '</div>';
 }
 function repBindBottom(d, sd, rep) {
+  repNoneBind(d, sd);
   if ($('#rpgoplan')) $('#rpgoplan').onclick = function () { var b = this; b.disabled = true; api('o_report_plan_seed', { year: d.year, dept: sd }).then(function (r) { RP.data = r; RP.kind = '計画'; reportDraw(); window.scrollTo(0, 0); toast(r.seeded ? '今年の報告をもとに、計画の下書きを入れました。時期などを入れてください' : '事業計画の登録へ進みました'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
   if ($('#rpsubmit')) $('#rpsubmit').onclick = function () { var b = this; b.disabled = true; api('o_report_submit', { year: d.year, dept: sd }).then(function (r) { RP.data = r; reportDraw(); window.scrollTo(0, 0); toast('提出しました。管理システムに届きました'); }).catch(function (e) { b.disabled = false; toast(e.message); }); };
   if ($('#rpsave')) $('#rpsave').onclick = function () { toast('一時保存しました。続きは、いつでもここから再開できます'); setTimeout(function () { go('home'); }, 400); };
@@ -2328,7 +2340,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-g / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-h / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
