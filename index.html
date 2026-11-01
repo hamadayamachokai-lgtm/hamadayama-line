@@ -2340,7 +2340,7 @@ function reportDraw() {
   }).join('') : '<div class="card"><p class="muted" style="margin:0">まだ入力がありません。「＋ 追加する」から入れてください。</p></div>';
   var sd = repScopeDept(d);
   if (sd && d.canEdit) h += '<div id="rpbottom">' + (rep ? repNextHtml(d, sd) : repSubmitHtml(d, sd)) + '</div>';
-  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-j / カードは管理システムの最新の設定にそろえています</p>';
+  h += '<p class="muted" style="text-align:center;font-size:11px;margin:10px 0 0">画面の版 20261101-k / カードは管理システムの最新の設定にそろえています</p>';
   sub('事業報告・計画', h, 'officer');
   repBindBottom(d, sd, rep);
   repFillBind(d, rep);
@@ -2640,6 +2640,14 @@ function kbPdfB64(d, meta) {
 }
 /* ====== 捨て看板の依頼(役員) ====== */
 function kbvSync(r) { if (r && r.tpls) KB_TPLS = r.tpls; if (r && r.hist) KB_HIST.cast = r.hist; if (r && r.histBody) KB_HIST.body = r.histBody; }
+/** 捨て看板をPDFにして開く(PDFをDriveに保存して、そのリンクを開きます) */
+function kbvPdf(d, meta, btn) {
+  if (!String(d && d.title || '').trim()) { toast('タイトルを入れてください'); return; }
+  if (KBV.busy) return; KBV.busy = true; var t0 = btn ? btn.textContent : ''; if (btn) { btn.disabled = true; btn.textContent = 'PDFを作っています…'; }
+  var done = function () { KBV.busy = false; if (btn) { btn.disabled = false; btn.textContent = t0; } }, pdf = '';
+  try { pdf = kbPdfB64(d, meta || {}); } catch (e) { done(); toast('PDFを作れませんでした', true); return; }
+  api('o_kanban_pdf', { pdf: pdf, title: d.title }).then(function (r) { done(); if (r && r.url) openExternal(r.url); else toast('PDFを開けませんでした', true); }).catch(function (e) { done(); toast((e && e.message) || 'PDFを作れませんでした', true); });
+}
 var KBV = { mail: '', step: 'list', d: null, list: null, arrive: '', other: false, receipt: '', qty: '20', busy: false };
 function kbvYmd(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? Number(s.slice(0, 4)) + '年' + Number(s.slice(5, 7)) + '月' + Number(s.slice(8, 10)) + '日' : (s || ''); }
 function kanbanView() {
@@ -2650,10 +2658,11 @@ function kanbanDraw() {
   var st = KBV.step, h = '';
   if (st === 'list') {
     h = '<div class="card"><h2>捨て看板の依頼</h2><p class="muted" style="margin:0 0 10px">演芸会やヒーローショーなどの看板を、内容を入れるだけで作れます。仕上がりを確認して、よければ依頼になります。</p><button class="btn" id="kbnew">＋ 新しく依頼する</button></div>' +
-      '<div class="card"><h2>これまでの依頼</h2>' + ((KBV.list.items || []).length ? KBV.list.items.map(function (x, i) { return '<div class="kbit" data-i="' + i + '" style="border-top:1px solid var(--line);padding:10px 0"><b>' + esc(x.title) + '</b><div class="muted" style="font-size:13px">' + esc(kbvYmd(x.date) ? '開催日 ' + kbvYmd(x.date) : '') + ' ／ 到着希望 ' + esc(kbvYmd(x.arrive)) + ' ／ ' + esc(x.state) + (KBV.list.admin ? ' ／ ' + esc(x.by) : '') + '</div><button class="btn" data-i="' + i + '" style="margin-top:6px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">前回をコピーして作る</button></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。</p>') + '</div>';
+      '<div class="card"><h2>これまでの依頼</h2>' + ((KBV.list.items || []).length ? KBV.list.items.map(function (x, i) { return '<div class="kbit" data-i="' + i + '" style="border-top:1px solid var(--line);padding:10px 0"><b>' + esc(x.title) + '</b><div class="muted" style="font-size:13px">' + esc(kbvYmd(x.date) ? '開催日 ' + kbvYmd(x.date) : '') + ' ／ 到着希望 ' + esc(kbvYmd(x.arrive)) + ' ／ ' + esc(x.state) + (KBV.list.admin ? ' ／ ' + esc(x.by) : '') + '</div><button class="btn kbcp" data-i="' + i + '" style="margin-top:6px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">前回をコピーして作る</button> <button class="btn kbpdf" data-i="' + i + '" style="margin-top:6px;background:#fff;color:#555;border:1.5px solid #ccc">PDFにする</button></div>'; }).join('') : '<p class="muted" style="margin:0">まだありません。</p>') + '</div>';
     sub('捨て看板依頼', h, 'officer');
     $('#kbnew').onclick = function () { KBV.d = kbNew(); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); };
-    Array.prototype.forEach.call(document.querySelectorAll('.kbit button'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; KBV.d = kbCopy(x.data); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.kbit .kbcp'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; KBV.d = kbCopy(x.data); KBV.step = 'form'; kanbanDraw(); window.scrollTo(0, 0); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.kbit .kbpdf'), function (b) { b.onclick = function () { var x = KBV.list.items[Number(b.dataset.i)]; kbvPdf(kbCopy(x.data), { arrive: x.arrive, receipt: '浜田山町会' }, b); }; });
     return;
   }
   if (st === 'form') {
@@ -2667,10 +2676,11 @@ function kanbanDraw() {
     return;
   }
   if (st === 'confirm') {
-    h = '<div class="card"><h2>この仕上がりでよろしいですか?</h2><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbyes" style="margin-top:14px">OK(これで依頼する)</button><button class="btn" id="kbback" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">直す</button></div>';
+    h = '<div class="card"><h2>この仕上がりでよろしいですか?</h2><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbyes" style="margin-top:14px">OK(これで依頼する)</button><button class="btn" id="kbback" style="margin-top:8px;background:#fff;color:#555;border:1.5px solid #ccc">直す</button><button class="btn" id="kbpdf" style="margin-top:8px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">PDFにする(確認・保存用)</button></div>';
     sub('捨て看板依頼', h, 'officer');
     $('#kbyes').onclick = function () { KBV.step = 'order'; kanbanDraw(); window.scrollTo(0, 0); };
     $('#kbback').onclick = function () { KBV.step = 'form'; kanbanDraw(); };
+    $('#kbpdf').onclick = function () { kbvPdf(KBV.d, {}, this); };
     return;
   }
   if (st === 'order') {
@@ -2697,8 +2707,9 @@ function kanbanDraw() {
     };
     return;
   }
-  h = '<div class="card"><h2>依頼しました</h2><p style="margin:0 0 10px">' + (/^送信済/.test(KBV.mail || '') ? '発注先に、PDFつきのメールを送りました。' : (KBV.mail && !/未設定/.test(KBV.mail) ? '依頼は届きましたが、発注先へのメールは送れませんでした(管理者が管理システムから送ります)。' : '')) + '役員にお知らせが届きました。到着希望日は <b>' + esc(kbvYmd(KBV.arrive)) + '</b>、領収書の宛名は <b>' + esc(KBV.other ? KBV.receipt : '浜田山町会') + '</b> で承りました。</p><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbdone" style="margin-top:14px">閉じる</button></div>';
+  h = '<div class="card"><h2>依頼しました</h2><p style="margin:0 0 10px">' + (/^送信済/.test(KBV.mail || '') ? '発注先に、PDFつきのメールを送りました。' : (KBV.mail && !/未設定/.test(KBV.mail) ? '依頼は届きましたが、発注先へのメールは送れませんでした(管理者が管理システムから送ります)。' : '')) + '役員にお知らせが届きました。到着希望日は <b>' + esc(kbvYmd(KBV.arrive)) + '</b>、領収書の宛名は <b>' + esc(KBV.other ? KBV.receipt : '浜田山町会') + '</b> で承りました。</p><div style="overflow-x:auto">' + kbRender(KBV.d) + '</div><button class="btn" id="kbdpdf" style="margin-top:14px;background:#fff;color:var(--brand,#06c755);border:1.5px solid currentColor">PDFを開く</button><button class="btn" id="kbdone" style="margin-top:8px">閉じる</button></div>';
   sub('捨て看板依頼', h, 'officer');
+  $('#kbdpdf').onclick = function () { kbvPdf(KBV.d, { arrive: KBV.arrive, receipt: KBV.other ? KBV.receipt : '浜田山町会', qty: KBV.qty }, this); };
   $('#kbdone').onclick = function () { KBV.step = 'list'; KBV.other = false; KBV.arrive = ''; KBV.receipt = ''; KBV.qty = '20'; kanbanDraw(); };
 }
 
