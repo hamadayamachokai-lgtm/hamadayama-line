@@ -273,7 +273,7 @@ body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .opt2{font-weight:400;color:var(--sub);font-size:12px;margin-left:4px}.at.sn{background:#eef1f6;color:#5b6678}
 .rfold{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#eef3fb;color:var(--navy);font-size:14px;font-weight:700;cursor:pointer}
 .battr{max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.icg{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.icg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px;border-radius:12px;border:2px solid transparent;background:#f3efe6}.icg button.on{border-color:var(--navy);background:#e6ebf4}
+.icg{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}.icg button{all:unset;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;border-radius:12px;border:2px solid transparent;background:#f3efe6}.icg button.on{border-color:var(--navy);background:#e6ebf4}
 body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding-bottom:8px}.bemo[hidden]{display:none}.bemo{display:flex;flex-wrap:wrap;gap:2px;padding:4px 2px 6px}.bemo button{all:unset;font-size:24px;width:40px;height:38px;text-align:center;cursor:pointer;border-radius:8px}.bemo button:active{background:#eef1f6}.bcomp.inl{position:static;transform:none;width:auto;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;margin:0 0 12px;bottom:auto}
 .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .tw{display:flex;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.tw.gone{opacity:.6}.tw .thr{flex:1;min-width:0}.tw .bt{margin-top:4px}.tw .ats{margin-top:3px}.tw .rxbox{margin-top:6px}#blist .tw:first-child{padding-top:4px}
@@ -424,6 +424,7 @@ var IC = {
   o_report: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 12.5l1.5 1.5 3-3M8 18h8"/>',
   o_kanban: '<rect x="6" y="3" width="12" height="13" rx="1.5"/><path d="M9 16v5M15 16v5M9 7h6M9 10h6"/>',
   o_sokai: '<path d="M3 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0zM21 6c-3-1.5-6-1.5-9 0v13c3-1.5 6-1.5 9 0z"/>',
+  manual: '<path d="M6 3h11a2 2 0 012 2v16H8a2 2 0 01-2-2z"/><path d="M6 19a2 2 0 012-2h11"/><path d="M10 8h5M10 11h5"/>',
   a_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
@@ -519,6 +520,7 @@ function renderNav(h) {
   var items = [['home', 'ホーム', 'home', true]];
   S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
+  items.push(['manual', '説明書', 'manual', true]);
   var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^(bosai|profile)/.test(h) ? 'card' : /^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
   var keep = el ? el.scrollLeft : 0;
   if (!el) { el = document.createElement('nav'); el.id = 'bnav'; el.className = 'bnav'; el.setAttribute('aria-label', 'メインメニュー(横にスライドできます)'); document.body.appendChild(el); }
@@ -529,7 +531,7 @@ function renderNav(h) {
   Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {
     b.onclick = function () {
       var k = b.dataset.h;
-      if (k === 'home' || k === 'officer') return go(k);
+      if (k === 'home' || k === 'officer' || k === 'manual') return go(k);
       var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
       if (m && !m.ready) return toast(m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
       openTile(k);
@@ -2775,6 +2777,31 @@ function sokaiDocView(id) {
   if (SK.data) return run();
   api('o_sokai_list', {}).then(function (d) { SK.data = d; SK.year = d.year; run(); }).catch(function (e) { sub('総会資料', errCard(e), 'o_sokai'); });
 }
+/* ---------- 説明書(画面の最後尾の帯。管理システムの「LINE説明書」で入れた資料) ---------- */
+var MN = { docs: null };
+function manualShow(x, back) {
+  sub(x.title, '<div class="pgn" id="pgn">1 / ' + x.pages.length + '</div><div class="pgv" id="pgv">' + x.pages.map(function (p, i) { return '<div class="pgi"><img src="' + esc(p.thumb) + '" alt="' + (i + 1) + 'ページ" ' + (i < 2 ? '' : 'loading="lazy"') + '></div>'; }).join('') + '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="sbtn" id="pgz">拡大して見る</button></div>' +
+    '<p class="muted" style="margin-top:8px">左右にスライドするとページが変わります。</p>', back);
+  var v = $('#pgv'), n = x.pages.length;
+  v.onscroll = function () { var i = Math.round(v.scrollLeft / Math.max(1, v.clientWidth + 10)); $('#pgn').textContent = (Math.min(n - 1, i) + 1) + ' / ' + n; };
+  $('#pgz').onclick = function () { v.classList.toggle('zm'); this.textContent = v.classList.contains('zm') ? '元の大きさに戻す' : '拡大して見る'; };
+}
+function manualView(id) {
+  var run = function () {
+    var docs = MN.docs || [];
+    if (!docs.length) return sub('説明書', '<div class="card"><p class="muted" style="margin:0">説明書は、まだ登録されていません。</p></div>', 'home');
+    var one = id ? docs.filter(function (z) { return z.id === id; })[0] : (docs.length === 1 ? docs[0] : null);
+    if (one) return manualShow(one, docs.length === 1 ? 'home' : 'manual');
+    sub('説明書', '<div class="card"><h2>説明書</h2>' + docs.map(function (x) {
+      return '<div class="skdoc" data-id="' + esc(x.id) + '"><img src="' + esc(x.pages[0].thumb.replace('w1600', 'w200')) + '" alt="" loading="lazy"><div style="flex:1"><b>' + esc(x.title) + '</b>' + (x.officer ? ' <span class="tg">役員用</span>' : '') + '<div class="muted">' + x.pages.length + 'ページ</div></div></div>';
+    }).join('') + '</div>', 'home');
+    Array.prototype.forEach.call(document.querySelectorAll('.skdoc'), function (r) { r.onclick = function () { location.hash = '#manual/' + encodeURIComponent(r.dataset.id); }; });
+  };
+  if (MN.docs && id) return run();
+  sub('説明書', '<div class="skel" style="height:200px"></div>', 'home');
+  api('manual_list', {}).then(function (d) { MN.docs = d.docs; run(); }).catch(function (e) { sub('説明書', errCard(e), 'home'); });
+}
 function dowJs(ymd) { var p = ymd.split('-'); return '日月火水木金土'.charAt(new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()); }
 
 /* ---------- イベント ---------- */
@@ -3528,8 +3555,9 @@ function route() {
   if (h === 'evperson' && seg) return evPersonView(seg);
   if (h === 'evreg' && seg) return evRegView(decodeURIComponent(seg));
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
+  if (h === 'manual' && seg) return manualView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
