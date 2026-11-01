@@ -2430,25 +2430,40 @@ function kbNew() { var y = kbFy(); return { title: '', date: '', place: '浜田�
 function kbDow(s) { var d = new Date(s + 'T00:00:00'); return '日月火水木金土'.charAt(d.getDay()); }
 function kbShow(d, k) { var v = String(d[k] == null ? '' : d[k]); if (k === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return Number(v.slice(5, 7)) + '月' + Number(v.slice(8, 10)) + '日(' + kbDow(v) + ')'; return v; }
 function kbRedSet(d, k) { var o = {}; ((d.red || {})[k] || []).forEach(function (i) { o[i] = 1; }); return o; }
-function kbSpan(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var c = esc(text.charAt(i)); h += s[i + off] ? '<span class="kr">' + c + '</span>' : c; } return h; }
+function kbSpan(d, k, text, off) { if (!text) return '&nbsp;'; var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var c = esc(text.charAt(i)); h += s[i + off] ? '<span class="kr">' + c + '</span>' : c; } return h; }
 var KB_VMAP = { 'ー': '丨', '－': '丨', '―': '丨', '-': '丨', '(': '︵', ')': '︶', '(': '︵', ')': '︶', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄', '、': '︑', '。': '︒', '～': '︙', '〜': '︙', ':': '︰', ':': '︰', '（': '︵', '）': '︶', '［': '﹇', '］': '﹈', '【': '︻', '】': '︼', '〔': '︹', '〕': '︺', '：': '︰', '…': '︙', '・': '・' };
 /** 縦書き: 1文字ずつ積む(フォントによって縦書きの表示が崩れないように) */
-function kbVs(d, k, text, off) { var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var ch = text.charAt(i); if (ch === ' ' || ch === '　') { h += '<span class="c g"></span>'; continue; } var c = esc(KB_VMAP[ch] || ch); h += '<span class="c' + (s[i + off] ? ' kr' : '') + '">' + c + '</span>'; } return h; }
-function kbCols(d, k) { var off = 0, out = []; String(kbShow(d, k)).split('\n').forEach(function (l) { if (l.trim()) out.push({ t: l, off: off }); off += l.length + 1; }); return out; }
+function kbVs(d, k, text, off) { if (!text) return '<span class="c">　</span>'; var s = kbRedSet(d, k), h = ''; for (var i = 0; i < text.length; i++) { var ch = text.charAt(i); if (ch === ' ' || ch === '　') { h += '<span class="c g"></span>'; continue; } var c = esc(KB_VMAP[ch] || ch); h += '<span class="c' + (s[i + off] ? ' kr' : '') + '">' + c + '</span>'; } return h; }
+function kbCols(d, k) { var off = 0, out = []; String(kbShow(d, k)).split('\n').forEach(function (l) { if (l.trim()) out.push({ t: l, off: off }); else if (out.length) out.push({ t: '', off: off }); off += l.length + 1; }); while (out.length && !out[out.length - 1].t) out.pop(); return out; }
 /** 備考の向きと位置。横書き: 上部=日付・開場の下 / 中央=出演者の隣 / 下部=主催・協賛の下(いままでの位置)。縦書き: 出演者の隣に縦の列(上部・中央・下部は列の中の位置) */
 var KB_NH_W = 110, KB_NH_F = 14;
-var KB_SZ_M = { s: .85, m: 1, l: 1.15 }, KB_SZF = { title: ['title', ''], date: ['date', ''], place: ['place', ''], open: ['time', '(開演も同じ)'], body: ['body', ''], cast: ['cast', ''], note: ['note', ''], sponsor: ['sponsor', '(主催も同じ)'], note2: ['note2', ''] };
-function kbSzV(d, k) { var v = d && d.size && d.size[k]; return v === 's' || v === 'l' ? v : 'm'; }
+var KB_SZ_M = { s: .85, m: 1, l: 1.15, x: 1.3 }, KB_SZF = { title: ['title', ''], date: ['date', ''], place: ['place', ''], open: ['time', '(開演も同じ)'], body: ['body', ''], cast: ['cast', ''], note: ['note', ''], sponsor: ['sponsor', '(主催も同じ)'], note2: ['note2', ''] };
+function kbSzV(d, k) { var v = d && d.size && d.size[k]; return v === 's' || v === 'l' || v === 'x' ? v : 'm'; }
 function kbSz(d, k) { return KB_SZ_M[kbSzV(d, k)]; }
-function kbFs(d, k, base) { return Math.round(base * kbSz(d, k) * 10) / 10; }
-function kbSizeCtl(d, fk) { var m = KB_SZF[fk]; if (!m) return ''; return '<div class="kbal" data-szg="' + m[0] + '">文字の大きさ' + m[1] + ': ' + [['s', '小'], ['m', 'ふつう'], ['l', '大']].map(function (a) { return '<button type="button" data-sz="' + m[0] + '" data-v="' + a[0] + '" class="' + (kbSzV(d, m[0]) === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>'; }
+function kbFs(d, k, base, len, w) { var f = base * kbSz(d, k); if (len && kbSz(d, k) > 1) f = Math.max(base, Math.min(f, (w || 316) / len)); return Math.round(f * 10) / 10; }
+var KB_GAP = [0, 10, 22, 40];
+function kbGv(d, k) { var v = d && d.gap ? Number(d.gap[k]) : 0; return v >= 1 && v <= 3 ? v : 0; }
+function kbGp(d, k) { return KB_GAP[kbGv(d, k)]; }
+function kbMb(d, k) { return kbGv(d, k) ? ';margin-bottom:' + kbGp(d, k) + 'px' : ''; }
+function kbMl(d, k) { return kbGv(d, k) ? ';margin-left:' + kbGp(d, k) + 'px' : ''; }
+/** 横書きの項目の文字サイズ(選んだ大きさ。長い行は、幅に収まる範囲まで) */
+function kbHF(d) {
+  var mxl = function (k) { return kbCols(d, k).reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); };
+  return { date: kbFs(d, 'date', 30, kbShow(d, 'date').length), place: kbFs(d, 'place', 22, kbShow(d, 'place').length), time: kbFs(d, 'time', 19, Math.max(String(d.open || '').length, String(d.start || '').length) + 3), note: kbFs(d, 'note', 16, mxl('note')), sp: kbFs(d, 'sponsor', 15, Math.max(mxl('sponsor') + 3, d.host ? String(d.host).length + 3 : 0), 300), n2: kbFs(d, 'note2', 11.5, mxl('note2'), 300) };
+}
+function kbSizeCtl(d, fk) {
+  var m = KB_SZF[fk]; if (!m) return '';
+  var row = function (attr, label, opts, cur) { return '<div class="kbal" data-' + attr + 'g="' + m[0] + '">' + label + ': ' + opts.map(function (a) { return '<button type="button" data-' + attr + '="' + m[0] + '" data-v="' + a[0] + '" class="' + (String(cur) === String(a[0]) ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>'; };
+  var gl = { title: '左の列との間を空ける', body: '左の列との間を空ける', cast: '左の列との間を空ける', note: '下(縦書きなら左)に空きを入れる' };
+  return row('sz', '文字の大きさ' + m[1], [['s', '小'], ['m', 'ふつう'], ['l', '大'], ['x', '特大']], kbSzV(d, m[0])) + (m[0] === 'note2' ? '' : row('gp', gl[m[0]] || '下に空きを入れる', [[0, 'なし'], [1, '少し'], [2, 'ふつう'], [3, '広く']], kbGv(d, m[0])));
+}
 /** 縦書きの列の文字サイズと、真ん中の高さ。選んだ大きさで幅(340px)を超えるときは、全体を縮めて収める */
 function kbVF(d) {
   var tc = kbCols(d, 'title'), bc = kbCols(d, 'body'), cc = kbCols(d, 'cast'), nDir = kbNoteDir(d), nPos = kbNotePos(d), nv = nDir === 'v' ? kbCols(d, 'note') : [], nw = nDir === 'h' && nPos === 'middle' ? kbNoteWrap(d) : [];
   var mx = function (c) { return c.reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); }, nf = KB_NH_F * kbSz(d, 'note');
   var fT0 = Math.max(22, Math.min(44, Math.floor(400 / Math.max(1, mx(tc))))), fB0 = Math.max(16, Math.min(26, Math.floor(400 / Math.max(1, mx(bc.concat(cc, nv))))));
   var f = { t: fT0 * kbSz(d, 'title'), b: fB0 * kbSz(d, 'body'), c: fB0 * kbSz(d, 'cast'), n: fB0 * kbSz(d, 'note') };
-  var nCol = tc.length + bc.length + cc.length + nv.length, gaps = 8 * Math.max(0, nCol - 1) + (nw.length ? KB_NH_W + (nCol ? 8 : 0) : 0), sum = tc.length * f.t + bc.length * f.b + cc.length * f.c + nv.length * f.n;
+  var nCol = tc.length + bc.length + cc.length + nv.length, gaps = 8 * Math.max(0, nCol - 1) + (nw.length ? KB_NH_W + (nCol ? 8 : 0) : 0) + (tc.length ? kbGp(d, 'title') : 0) + (bc.length ? kbGp(d, 'body') : 0) + (cc.length ? kbGp(d, 'cast') : 0) + (nv.length ? kbGp(d, 'note') : 0), sum = tc.length * f.t + bc.length * f.b + cc.length * f.c + nv.length * f.n;
   if (['title', 'body', 'cast', 'note'].some(function (k) { return kbSz(d, k) !== 1; }) && sum > 0 && sum + gaps > 340) { var q = Math.max(.5, (340 - gaps) / sum); if (q < 1) { f.t *= q; f.b *= q; f.c *= q; f.n *= q; } }
   ['t', 'b', 'c', 'n'].forEach(function (k) { f[k] = Math.floor(f[k] * 10) / 10; });
   f.MH = Math.max(mx(tc) * f.t * 1.08, mx(bc) * f.b * 1.08, mx(cc) * f.c * 1.08, mx(nv) * f.n * 1.08, 40, nw.length * nf * 1.4 + 8) + 8; f.nf = nf;
@@ -2457,7 +2472,7 @@ function kbVF(d) {
 
 function kbNoteDir(d) { return d && d.noteDir === 'v' ? 'v' : 'h'; }
 function kbNotePos(d) { var p = d && d.notePos; return ['top', 'middle', 'bottom'].indexOf(p) >= 0 ? p : (kbNoteDir(d) === 'v' ? 'top' : 'bottom'); }
-function kbNoteWrap(d) { var out = [], per = Math.floor(KB_NH_W / (KB_NH_F * kbSz(d, 'note'))); kbCols(d, 'note').forEach(function (c) { for (var i = 0; i < c.t.length; i += per) out.push({ t: c.t.slice(i, i + per), off: c.off + i }); }); return out; }
+function kbNoteWrap(d) { var out = [], per = Math.floor(KB_NH_W / (KB_NH_F * kbSz(d, 'note'))); kbCols(d, 'note').forEach(function (c) { if (!c.t) out.push({ t: '', off: c.off }); for (var i = 0; i < c.t.length; i += per) out.push({ t: c.t.slice(i, i + per), off: c.off + i }); }); return out; }
 function kbNoteCtl(d) {
   var dir = kbNoteDir(d), pos = kbNotePos(d), bt = function (a, v, l, on) { return '<button type="button" data-' + a + '="' + v + '" class="' + (on ? 'on' : '') + '">' + l + '</button>'; };
   return '<div class="kbal" data-ndg>向き: ' + bt('nd', 'h', '横書き', dir === 'h') + bt('nd', 'v', '縦書き', dir === 'v') + '</div>' +
@@ -2467,23 +2482,23 @@ function kbNoteCtl(d) {
 function kbRender(d) {
   var tc = kbCols(d, 'title'), bc = kbCols(d, 'body'), cc = kbCols(d, 'cast'), mx = function (c) { return c.reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); };
   var nDir = kbNoteDir(d), nPos = kbNotePos(d), nv = nDir === 'v' ? kbCols(d, 'note') : [], nw = nDir === 'h' && nPos === 'middle' ? kbNoteWrap(d) : [], nf = KB_NH_F * kbSz(d, 'note');
-  var V = kbVF(d), H = V.MH, top = '';
+  var V = kbVF(d), HF = kbHF(d), H = V.MH, top = '', NC = kbCols(d, 'note');
   var AL = { top: 'flex-start', middle: 'center', bottom: 'flex-end' }, al = function (k) { return AL[(d.align || {})[k]] || 'flex-start'; };
-  var dt = kbShow(d, 'date'); if (dt) top += '<div class="kbd" style="font-size:' + kbFs(d, 'date', 30) + 'px">' + kbSpan(d, 'date', dt, 0) + '</div>';
-  var pl = kbShow(d, 'place'); if (pl) top += '<div class="kbp" style="font-size:' + kbFs(d, 'place', 22) + 'px">' + kbSpan(d, 'place', pl, 0) + '</div>';
-  if (d.open) top += '<div class="kbo" style="font-size:' + kbFs(d, 'time', 19) + 'px">開場　' + kbSpan(d, 'open', String(d.open), 0) + '</div>';
-  if (d.start) top += '<div class="kbo" style="font-size:' + kbFs(d, 'time', 19) + 'px">開演　' + kbSpan(d, 'start', String(d.start), 0) + '</div>';
-  if (nDir === 'h' && nPos === 'top') kbCols(d, 'note').forEach(function (c) { top += '<div class="kbn" style="font-size:' + kbFs(d, 'note', 16) + 'px">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
-  var mid = tc.map(function (c) { return '<div class="kbt" style="font-size:' + V.t + 'px">' + kbVs(d, 'title', c.t, c.off) + '</div>'; }).join('') + bc.map(function (c) { return '<div style="font-size:' + V.b + 'px;align-self:' + al('body') + '">' + kbVs(d, 'body', c.t, c.off) + '</div>'; }).join('') + cc.map(function (c) { return '<div style="font-size:' + V.c + 'px;align-self:' + al('cast') + '">' + kbVs(d, 'cast', c.t, c.off) + '</div>'; }).join('');
+  var dt = kbShow(d, 'date'); if (dt) top += '<div class="kbd" style="font-size:' + HF.date + 'px' + kbMb(d, 'date') + '">' + kbSpan(d, 'date', dt, 0) + '</div>';
+  var pl = kbShow(d, 'place'); if (pl) top += '<div class="kbp" style="font-size:' + HF.place + 'px' + kbMb(d, 'place') + '">' + kbSpan(d, 'place', pl, 0) + '</div>';
+  if (d.open) top += '<div class="kbo" style="font-size:' + HF.time + 'px' + (d.start ? '' : kbMb(d, 'time')) + '">開場　' + kbSpan(d, 'open', String(d.open), 0) + '</div>';
+  if (d.start) top += '<div class="kbo" style="font-size:' + HF.time + 'px' + kbMb(d, 'time') + '">開演　' + kbSpan(d, 'start', String(d.start), 0) + '</div>';
+  if (nDir === 'h' && nPos === 'top') NC.forEach(function (c, i) { top += '<div class="kbn" style="font-size:' + HF.note + 'px' + (i === NC.length - 1 ? kbMb(d, 'note') : '') + '">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
+  var mid = tc.map(function (c, i) { return '<div class="kbt" style="font-size:' + V.t + 'px' + (i === tc.length - 1 ? kbMl(d, 'title') : '') + '">' + kbVs(d, 'title', c.t, c.off) + '</div>'; }).join('') + bc.map(function (c, i) { return '<div style="font-size:' + V.b + 'px;align-self:' + al('body') + (i === bc.length - 1 ? kbMl(d, 'body') : '') + '">' + kbVs(d, 'body', c.t, c.off) + '</div>'; }).join('') + cc.map(function (c, i) { return '<div style="font-size:' + V.c + 'px;align-self:' + al('cast') + (i === cc.length - 1 ? kbMl(d, 'cast') : '') + '">' + kbVs(d, 'cast', c.t, c.off) + '</div>'; }).join('');
   var AL2 = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
-  mid += nv.map(function (c) { return '<div style="font-size:' + V.n + 'px;align-self:' + (AL2[nPos] || 'flex-start') + '">' + kbVs(d, 'note', c.t, c.off) + '</div>'; }).join('') +
+  mid += nv.map(function (c, i) { return '<div style="font-size:' + V.n + 'px;align-self:' + (AL2[nPos] || 'flex-start') + (i === nv.length - 1 ? kbMl(d, 'note') : '') + '">' + kbVs(d, 'note', c.t, c.off) + '</div>'; }).join('') +
     (nw.length ? '<div class="kbnh" style="width:' + KB_NH_W + 'px;font-size:' + nf + 'px">' + nw.map(function (l) { return '<div>' + kbSpan(d, 'note', l.t, l.off) + '</div>'; }).join('') + '</div>' : '');
   var bot = '';
-  if (d.host) bot += '<div class="kbf" style="font-size:' + kbFs(d, 'sponsor', 15) + 'px">主催　' + kbSpan(d, 'host', String(d.host), 0) + '</div>';
-  kbCols(d, 'sponsor').forEach(function (c, i) { bot += '<div class="kbf" style="font-size:' + kbFs(d, 'sponsor', 15) + 'px">' + (i ? '　　' : kbSL(d) + '　') + kbSpan(d, 'sponsor', c.t, c.off) + '</div>'; });
-  if (nDir === 'h' && nPos === 'bottom') kbCols(d, 'note').forEach(function (c) { bot += '<div class="kbn" style="font-size:' + kbFs(d, 'note', 16) + 'px">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
+  if (d.host) bot += '<div class="kbf" style="font-size:' + HF.sp + 'px' + (kbCols(d, 'sponsor').length ? '' : kbMb(d, 'sponsor')) + '">主催　' + kbSpan(d, 'host', String(d.host), 0) + '</div>';
+  kbCols(d, 'sponsor').forEach(function (c, i, arr) { bot += '<div class="kbf" style="font-size:' + HF.sp + 'px' + (i === arr.length - 1 ? kbMb(d, 'sponsor') : '') + '">' + (i ? '　　' : kbSL(d) + '　') + kbSpan(d, 'sponsor', c.t, c.off) + '</div>'; });
+  if (nDir === 'h' && nPos === 'bottom') NC.forEach(function (c, i) { bot += '<div class="kbn" style="font-size:' + HF.note + 'px' + (i === NC.length - 1 ? kbMb(d, 'note') : '') + '">' + kbSpan(d, 'note', c.t, c.off) + '</div>'; });
   var nb = kbCols(d, 'note2').map(function (c) { return kbSpan(d, 'note2', c.t, c.off); }).join('<br>');
-  return '<div class="kbw"><div class="kb">' + top + (mid ? '<div class="kbm" style="height:' + Math.round(H) + 'px">' + mid + '</div>' : '') + bot + (nb ? '<div class="kbx" style="font-size:' + kbFs(d, 'note2', 11.5) + 'px">' + nb + '</div>' : '') + '</div><div class="kbl"><i></i><i></i></div></div>';
+  return '<div class="kbw"><div class="kb">' + top + (mid ? '<div class="kbm" style="height:' + Math.round(H) + 'px">' + mid + '</div>' : '') + bot + (nb ? '<div class="kbx" style="font-size:' + HF.n2 + 'px">' + nb + '</div>' : '') + '</div><div class="kbl"><i></i><i></i></div></div>';
 }
 function kbChips(d, k) {
   var t = kbShow(d, k), s = kbRedSet(d, k), h = '';
@@ -2520,7 +2535,7 @@ function kbEditor(root, prev, d, onChange) {
   root.innerHTML = KB_F.map(function (f) {
     var k = f[0], inp = f[2] === 'area' ? '<textarea data-kb="' + k + '" rows="' + (f[3] || 2) + '">' + esc(d[k] || '') + '</textarea>' : '<input data-kb="' + k + '" type="' + f[2] + '" value="' + esc(d[k] || '') + '">';
     var pre = KB_PRESET[k] ? '<div class="kbpre">' + kbPreOpts(k).map(function (v) { return '<button type="button" data-pre="' + k + '" data-v="' + esc(v) + '">' + esc(v) + '</button>'; }).join('') + (k === 'place' ? '<button type="button" data-pre="place" data-v="">その他(自分で入力)</button>' : '') + (k === 'sponsor' || k === 'cast' || k === 'note2' || k === 'comment' || k === 'body' ? '<button type="button" data-pre="' + k + '" data-v="">クリア</button>' : '') + '</div>' + (k === 'cast' || k === 'body' ? kbHistHtml(k) : '') : '';
-    return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'notepos' ? kbNoteCtl(d) : '') + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + (kbSizeCtl(d, k)) + (k === 'comment' ? '' : '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details>') + '</div>';
+    return '<div class="kbfld"><label>' + (k === 'sponsor' ? '<span data-sltxt>' + kbSL(d) + '</span>' : f[1]) + (f[2] === 'area' && k !== 'comment' ? ' <small style="font-weight:400;color:#777">(空の行を入れると、空白の列・行になります)</small>' : '') + '</label>' + (k === 'sponsor' ? '<div class="kbal" data-slg>看板の表記: ' + ['協力', '協賛'].map(function (x) { return '<button type="button" data-sl="' + x + '" class="' + (kbSL(d) === x ? 'on' : '') + '">' + x + '</button>'; }).join('') + '</div>' : '') + inp + pre + '' + (f[4] === 'notepos' ? kbNoteCtl(d) : '') + (f[4] === 'align' ? '<div class="kbal" data-alg="' + k + '">配置: ' + [['top', '上部'], ['middle', '真ん中'], ['bottom', '下']].map(function (a) { return '<button type="button" data-al="' + k + '" data-v="' + a[0] + '" class="' + (((d.align || {})[k] || 'top') === a[0] ? 'on' : '') + '">' + a[1] + '</button>'; }).join('') + '</div>' : '') + (kbSizeCtl(d, k)) + (k === 'comment' ? '' : '<details class="kbred" data-red="' + k + '"><summary>赤くする文字を選ぶ</summary><div class="kbbt"><button type="button" data-all="' + k + '">全部赤</button><button type="button" data-none="' + k + '">赤をやめる</button></div><div class="kbch" data-ch="' + k + '">' + kbChips(d, k) + '</div></details>') + '</div>';
   }).join('');
   d.red = d.red || {};
   var chips = function (k) { var e = root.querySelector('[data-ch="' + k + '"]'); if (e) e.innerHTML = kbChips(d, k); };
@@ -2544,6 +2559,7 @@ function kbEditor(root, prev, d, onChange) {
       Array.prototype.forEach.call(root.querySelectorAll('[data-np]'), function (b) { b.classList.toggle('on', b.dataset.np === kbNotePos(d)); }); draw(); return;
     }
     if (t.dataset && t.dataset.sz) { d.size = d.size || {}; d.size[t.dataset.sz] = t.dataset.v; Array.prototype.forEach.call(root.querySelectorAll('[data-sz="' + t.dataset.sz + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
+    if (t.dataset && t.dataset.gp) { d.gap = d.gap || {}; d.gap[t.dataset.gp] = Number(t.dataset.v); Array.prototype.forEach.call(root.querySelectorAll('[data-gp="' + t.dataset.gp + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
     if (t.dataset && t.dataset.al) { k = t.dataset.al; d.align = d.align || {}; d.align[k] = t.dataset.v; Array.prototype.forEach.call(root.querySelectorAll('[data-al="' + k + '"]'), function (b) { b.classList.toggle('on', b === t); }); draw(); return; }
     if (t.dataset && t.dataset.pre) { k = t.dataset.pre; var inp = root.querySelector('[data-kb="' + k + '"]'); var nv = t.dataset.v; if ((k === 'sponsor' || k === 'cast' || k === 'comment' || k === 'body') && nv) { var cur = String(inp.value || '').split('\n').filter(function (x) { return x.trim(); }); if (cur.indexOf(nv) < 0) cur.push(nv); nv = cur.join('\n'); } inp.value = nv; setVal(k, nv); if (!t.dataset.v && k === 'place') inp.focus(); return; }
     if (t.dataset && t.dataset.all) { k = t.dataset.all; var n = kbShow(d, k).length, arr = []; for (var j = 0; j < n; j++) if (kbShow(d, k).charAt(j) !== '\n') arr.push(j); d.red[k] = arr; chips(k); draw(); return; }
@@ -2573,32 +2589,34 @@ function kbCanvas(d, meta) {
   };
   var tc = kbCols(d, 'title'), bc = kbCols(d, 'body'), cc = kbCols(d, 'cast'), mx = function (c) { return c.reduce(function (m, x) { return Math.max(m, x.t.length); }, 0); };
   var nDir = kbNoteDir(d), nPos = kbNotePos(d), nv = nDir === 'v' ? kbCols(d, 'note') : [], nw = nDir === 'h' && nPos === 'middle' ? kbNoteWrap(d) : [], nf = KB_NH_F * kbSz(d, 'note');
-  var V = kbVF(d), MH = V.MH;
+  var V = kbVF(d), HF = kbHF(d), MH = V.MH, gp = function (k) { return kbGp(d, k); };
   var colH = function (c, size) { var h = 0; for (var i = 0; i < c.t.length; i++) h += (c.t.charAt(i) === ' ' || c.t.charAt(i) === '　') ? size * .5 : size * 1.08; return h; };
   var dt = kbShow(d, 'date'), pl = kbShow(d, 'place'), spons = kbCols(d, 'sponsor'), notes = kbCols(d, 'note'), n2 = kbCols(d, 'note2');
-  var hCss = 14 + (dt ? 37.5 * kbSz(d, 'date') : 0) + (pl ? 28.6 * kbSz(d, 'place') : 0) + (d.open ? 25.7 * kbSz(d, 'time') : 0) + (d.start ? 25.7 * kbSz(d, 'time') : 0) + ((tc.length + bc.length + cc.length + nv.length + nw.length) ? 10 + MH + 8 : 0) + (d.host ? 24 * kbSz(d, 'sponsor') : 0) + spons.length * 24 * kbSz(d, 'sponsor') + (nDir === 'h' && nPos !== 'middle' ? notes.length * 22.4 * kbSz(d, 'note') + (notes.length ? 6 : 0) : 0) + (n2.length ? 8 + n2.length * 16 * kbSz(d, 'note2') + 8 : 0) + 12 + 4;
+  var hCss = 14 + (dt ? 37.5 * HF.date / 30 + gp('date') : 0) + (pl ? 28.6 * HF.place / 22 + gp('place') : 0) + (d.open ? 25.7 * HF.time / 19 : 0) + (d.start ? 25.7 * HF.time / 19 : 0) + ((d.open || d.start) ? gp('time') : 0) + ((tc.length + bc.length + cc.length + nv.length + nw.length) ? 10 + MH + 8 : 0) + (d.host ? 24 * HF.sp / 15 : 0) + spons.length * 24 * HF.sp / 15 + ((d.host || spons.length) ? gp('sponsor') : 0) + (nDir === 'h' && nPos !== 'middle' ? notes.length * 22.4 * HF.note / 16 + (notes.length ? 6 + gp('note') : 0) : 0) + (n2.length ? 8 + n2.length * 16 * HF.n2 / 11.5 + 8 : 0) + 12 + 4;
   var s = Math.min(2.4, 1100 / (hCss + 46)), pw = 360 * s, px = W / 2 - pw / 2, py = 190, y = py + 14 * s, cx = W / 2;
   var top = y;
-  if (dt) { runs(dt, 'date', 0, cx, y, 30 * s * kbSz(d, 'date'), 'center'); y += 37.5 * s * kbSz(d, 'date'); }
-  if (pl) { runs(pl, 'place', 0, cx, y, 22 * s * kbSz(d, 'place'), 'center'); y += 28.6 * s * kbSz(d, 'place'); }
-  if (d.open) { runs('開場　' + d.open, 'open', -3, cx, y, 19 * s * kbSz(d, 'time'), 'center'); y += 25.7 * s * kbSz(d, 'time'); }
-  if (d.start) { runs('開演　' + d.start, 'start', -3, cx, y, 19 * s * kbSz(d, 'time'), 'center'); y += 25.7 * s * kbSz(d, 'time'); }
-  if (nDir === 'h' && nPos === 'top') { if (notes.length) y += 6 * s; notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, 16 * s * kbSz(d, 'note'), 'center'); y += 22.4 * s * kbSz(d, 'note'); }); }
+  if (dt) { runs(dt, 'date', 0, cx, y, HF.date * s, 'center'); y += 37.5 * s * HF.date / 30 + gp('date') * s; }
+  if (pl) { runs(pl, 'place', 0, cx, y, HF.place * s, 'center'); y += 28.6 * s * HF.place / 22 + gp('place') * s; }
+  if (d.open) { runs('開場　' + d.open, 'open', -3, cx, y, HF.time * s, 'center'); y += 25.7 * s * HF.time / 19 + (d.start ? 0 : gp('time') * s); }
+  if (d.start) { runs('開演　' + d.start, 'start', -3, cx, y, HF.time * s, 'center'); y += 25.7 * s * HF.time / 19 + gp('time') * s; }
+  if (nDir === 'h' && nPos === 'top') { if (notes.length) y += 6 * s; notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, HF.note * s, 'center'); y += 22.4 * s * HF.note / 16; }); y += gp('note') * s; }
   if (tc.length + bc.length + cc.length + nv.length + nw.length) {
-    y += 10 * s; var cols = tc.map(function (c) { return { c: c, k: 'title', f: V.t }; }).concat(bc.map(function (c) { return { c: c, k: 'body', f: V.b }; })).concat(cc.map(function (c) { return { c: c, k: 'cast', f: V.c }; })).concat(nv.map(function (c) { return { c: c, k: 'note', f: V.n }; }));
-    var tw = cols.reduce(function (m, x) { return m + x.f * s; }, 0) + 8 * s * Math.max(0, cols.length - 1) + (nw.length ? KB_NH_W * s + (cols.length ? 8 * s : 0) : 0), right = cx + tw / 2;
+    y += 10 * s; var cols = tc.map(function (c) { return { c: c, k: 'title', f: V.t, g: 0 }; }).concat(bc.map(function (c) { return { c: c, k: 'body', f: V.b }; })).concat(cc.map(function (c) { return { c: c, k: 'cast', f: V.c }; })).concat(nv.map(function (c) { return { c: c, k: 'note', f: V.n }; }));
+    ['title', 'body', 'cast', 'note'].forEach(function (k) { var last = null; cols.forEach(function (x) { if (x.k === k) last = x; }); if (last) last.g = gp(k); });
+    var tw = cols.reduce(function (m, x) { return m + x.f * s + (x.g || 0) * s; }, 0) + 8 * s * Math.max(0, cols.length - 1) + (nw.length ? KB_NH_W * s + (cols.length ? 8 * s : 0) : 0), right = cx + tw / 2;
     cols.forEach(function (x) {
       var al = x.k === 'title' ? 'top' : x.k === 'note' ? nPos : ((d.align || {})[x.k] || 'top'), ch = colH(x.c, x.f * s), free = MH * s - ch, yy = al === 'middle' ? y + free / 2 : al === 'bottom' ? y + free : y;
-      vcol(x.c, x.k, right - x.f * s / 2, yy, x.f * s); right -= x.f * s + 8 * s;
+      vcol(x.c, x.k, right - x.f * s / 2, yy, x.f * s); right -= x.f * s + 8 * s + (x.g || 0) * s;
     });
     if (nw.length) { var ny0 = y + (MH * s - nw.length * nf * 1.4 * s) / 2; nw.forEach(function (l, i) { runs(l.t, 'note', l.off, right - KB_NH_W * s, ny0 + i * nf * 1.4 * s, nf * s, 'left'); }); }
     y += MH * s + 8 * s;
   }
   var lx = px + 14 * s;
-  if (d.host) { runs('主催　' + d.host, 'host', -3, lx, y, 15 * s * kbSz(d, 'sponsor'), 'left'); y += 24 * s * kbSz(d, 'sponsor'); }
-  spons.forEach(function (c, i) { runs((i ? '　　' : kbSL(d) + '　') + c.t, 'sponsor', c.off - (i ? 2 : 3), lx, y, 15 * s * kbSz(d, 'sponsor'), 'left'); y += 24 * s * kbSz(d, 'sponsor'); });
-  if (nDir === 'h' && nPos === 'bottom') { if (notes.length) y += 6 * s; notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, 16 * s * kbSz(d, 'note'), 'center'); y += 22.4 * s * kbSz(d, 'note'); }); }
-  if (n2.length) { y += 8 * s; n2.forEach(function (c) { runs(c.t, 'note2', c.off, cx, y, 11.5 * s * kbSz(d, 'note2'), 'center'); y += 16 * s * kbSz(d, 'note2'); }); y += 8 * s; }
+  if (d.host) { runs('主催　' + d.host, 'host', -3, lx, y, HF.sp * s, 'left'); y += 24 * s * HF.sp / 15; }
+  spons.forEach(function (c, i) { runs((i ? '　　' : kbSL(d) + '　') + c.t, 'sponsor', c.off - (i ? 2 : 3), lx, y, HF.sp * s, 'left'); y += 24 * s * HF.sp / 15; });
+  if (d.host || spons.length) y += gp('sponsor') * s;
+  if (nDir === 'h' && nPos === 'bottom') { if (notes.length) y += 6 * s; notes.forEach(function (c) { runs(c.t, 'note', c.off, cx, y, HF.note * s, 'center'); y += 22.4 * s * HF.note / 16; }); y += gp('note') * s; }
+  if (n2.length) { y += 8 * s; n2.forEach(function (c) { runs(c.t, 'note2', c.off, cx, y, HF.n2 * s, 'center'); y += 16 * s * HF.n2 / 11.5; }); y += 8 * s; }
   y += 12 * s; var ph = y - py;
   g.lineWidth = 2 * s; g.strokeStyle = '#222'; g.strokeRect(px, py, pw, ph);
   g.fillStyle = '#666'; g.fillRect(px + 119 * s, py + ph, 16 * s, 46 * s); g.fillRect(px + 225 * s, py + ph, 16 * s, 46 * s);
