@@ -595,9 +595,17 @@ function formView(prefill, isEdit) {
 function profileHtml(p) {
   return '<dl class="kv"><dt>LINE会員氏名</dt><dd>' + esc(p.lineName) + '</dd><dt>納入者</dt><dd>' + esc(p.payerName) + '</dd><dt>住所</dt><dd>' + esc(p.payerAddress) + '</dd><dt>関係</dt><dd>' + esc(p.relation) + (p.relationNote ? '<br><span class="muted">' + esc(p.relationNote) + '</span>' : '') + '</dd></dl>';
 }
+/** 登録のないIDで開いたとき。LINEの更新(チャネルの作り直し)のあいだは、「再認証を申請中」の画面を出す(管理者に自動で知らせ、管理者が以前の登録に結びつける)。はじめての方は、登録フォームへ */
+function noneView() {
+  var me = S.me;
+  if (!me.relinkWait) return formView(null, false);
+  setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>浜田山町会</h1><div class="sub">LINE会員</div></div><div class="pad sheet"><div class="card"><div class="center" style="padding:12px 0 4px"><div class="bigicon">' + svg('hourglass') + '</div><h2 style="justify-content:center;margin-bottom:6px">再認証を申請しています</h2><p class="muted" style="margin:0">アップデートにより、再認証を申請しています。<br>しばらくお待ちください。</p></div></div><div class="notice-box">すでに会員登録をされている方は、<b>登録し直す必要はありません</b>。町会の役員が確認すると、これまでどおり使えるようになります。(連絡は届きません。しばらくしてから、この画面を開き直してください)</div><div class="btns"><button class="btn" id="rlw">もう一度確認する</button><button class="btn ghost" id="rgw">はじめて登録する方はこちら</button></div></div>');
+  $('#rlw').onclick = function () { var b = $('#rlw'); b.disabled = true; loadMe().then(function () { if (S.me.state === 'approved') route(); else { noneView(); toast('まだ確認中です'); } }).catch(function (e) { b.disabled = false; toast(e.message); }); };
+  $('#rgw').onclick = function () { formView(null, false); };
+}
 function statusView() {
   var me = S.me;
-  if (me.state === 'none') return formView(null, false);
+  if (me.state === 'none') return noneView();
   if (me.state === 'approved') return route();
   var cfg = {
     pending: { icon: 'hourglass', cls: '', t: '申請を受け付けました', d: '役員が町会費の納入状況を確認しています。承認されると、メニューが使えるようになります。' },
@@ -3593,7 +3601,7 @@ function noticeEditView(n) {
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
   var me = S.me; if (!me) return;
-  if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
+  if (me.state !== 'approved') return me.state === 'none' ? noneView() : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
