@@ -3523,6 +3523,8 @@ function mamaAdminView() {
       return '<div class="card"><div class="sj">' + esc(u.name || '(名前未入力)') + ' <span class="small">' + esc(u.status) + '</span></div><div class="small" style="margin:4px 0 10px">役員名簿: ' + (u.officer ? '○' : 'なし(LINE会員の役員・管理者に、お名前が見つかりません)') + (u.used ? ' ・ 最終 ' + esc(String(u.used).slice(0, 16)) : '') + '</div>' + b + '</div>';
     }).join('');
     sub('ママ', '<div class="card"><p style="margin:0">使える人 <b>' + act + ' / ' + d.max + '</b>名<br>今月のプッシュ通知 <b>' + d.pushUsed + ' / ' + d.pushLimit + '</b>通</p><p class="small" style="margin:6px 0 0">LINE無料枠は月200通(1人に送ると1通)</p></div>' + (rows || '<div class="card"><p class="muted" style="margin:0">まだ誰も申し込んでいません。LINEで「ママ」に話しかけてもらってください。</p></div>') +
+      '<div class="card"><div class="sj">テキスト送信(本番)</div><p class="small" style="margin:4px 0 10px">ママから役員さんのLINEへ文章を送ります。<b>本当に届きます</b>(通数を使います)。</p><textarea class="inp" id="mmt" maxlength="1000" style="min-height:90px" placeholder="送る文章"></textarea><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="mms" checked> ママの口調の前置きをつける</label>' +
+      '<div class="chips" id="mmw"><button data-w="all" aria-pressed="true">使える人全員</button><button data-w="pick" aria-pressed="false">指定する</button></div><div id="mmp" style="display:none;margin:8px 0">' + d.users.filter(function (u) { return u.status === '有効'; }).map(function (u) { return '<label class="small" style="display:block;margin:4px 0"><input type="checkbox" class="mmpk" value="' + esc(u.id) + '"> ' + esc(u.name) + '</label>'; }).join('') + '</div><div style="height:10px"></div><button class="btn" id="mmsend">この内容で送る</button></div>' +
       '<div class="card"><div class="sj">デモ送信(プッシュ通知)</div><p class="small" style="margin:4px 0 10px">文頭に【デモです】が付きます。全員に送ると、人数ぶん通数を使います。</p><select class="inp" id="mmk">' + MM_DEMOS.map(function (k) { return '<option value="' + k[0] + '"' + (MM.kind === k[0] ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select><div style="height:10px"></div><button class="btn" id="mmall">全員にデモ送信</button></div>', 'officer');
     var done = function (p) { return p.then(function (r) { toast(r.message || (r.ok ? '完了しました' : '失敗しました')); mamaAdminView(); }).catch(function (e) { toast(e.message || '失敗しました'); mamaAdminView(); }); };
     Array.prototype.forEach.call(document.querySelectorAll('button[data-v]'), function (b) {
@@ -3533,6 +3535,13 @@ function mamaAdminView() {
         done(api('a_mama_decide', { uid: u.id, act: v }));
       };
     });
+    var mmWho = 'all';
+    Array.prototype.forEach.call(document.querySelectorAll('#mmw button'), function (b) { b.onclick = function () { mmWho = b.dataset.w; Array.prototype.forEach.call(document.querySelectorAll('#mmw button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); $('#mmp').style.display = mmWho === 'pick' ? 'block' : 'none'; }; });
+    $('#mmsend').onclick = function () {
+      var tx = $('#mmt').value.trim(), ids = mmWho === 'pick' ? [].slice.call(document.querySelectorAll('.mmpk:checked')).map(function (x) { return x.value; }) : [];
+      if (!tx) return toast('送る文章を入れてください'); if (mmWho === 'pick' && !ids.length) return toast('送る人を選んでください');
+      askChoice((mmWho === 'pick' ? '選んだ' + ids.length + '名' : '使える人全員') + 'に、本当に送ります', ['送る'], tx.slice(0, 120)).then(function (x) { if (x) done(api('a_mama_send', { text: tx, to: ids, style: $('#mms').checked })); });
+    };
     $('#mmall').onclick = function () { MM.kind = $('#mmk').value; askChoice('使える人全員に、デモの通知を送ります', ['送る'], '通数を使います。').then(function (x) { if (x) done(api('a_mama_demo', { kind: MM.kind, uid: '' })); }); };
   }).catch(function (e) { offErr('ママ', e, 'officer'); });
 }
