@@ -428,6 +428,7 @@ var IC = {
   a_sched: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
   o_unpaid: '<circle cx="12" cy="12" r="9"/><path d="M8.5 7l3.5 5 3.5-5M12 12v5M9 13h6M9 15.5h6"/>',
   o_circ: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M17 14c2.5 0 4.5 2 4.5 4.5"/>',
+  o_mama: '<path d="M5 4h14l-1.5 7a4.5 4.5 0 01-4.5 3.5h0A4.5 4.5 0 018.5 11L5 4zM12 14.5V20M8.5 20h7"/>',
   o_checkin: '<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M8 12h8"/>',
   o_desk: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9h8M8 12h5"/>',
   o_roster: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M8 9.5h5M8 12.5h3"/>',
@@ -449,7 +450,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
-  o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
+  o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -661,7 +662,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
   if (k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -3510,7 +3511,21 @@ function eventAdminView() {
   }).catch(function (e) { offErr('イベントの設定', e, 'officer'); });
 }
 var MM = { kind: 'kanban' };
-var MM_DEMOS = [['kanban', '捨て看板の発注'], ['pending', '承認待ちが溜まった'], ['circ', '回覧元の変更'], ['noticeAll', '役員全員宛の連絡'], ['noticeMe', '個人宛の連絡'], ['test', 'テスト']];
+var MM_AREAS = ['1丁目', '2丁目', '3丁目', '4丁目', '永福町'];
+/* 役員メニュー「スナックママ」: 入店ボタンを押すと、ママのLINEが開いて、会員コード入りの申請が自動で書き込まれる */
+function mamaEnterView() {
+  sub('スナックママ', '<div class="skel" style="height:200px"></div>', 'officer');
+  api('o_mama_info').then(function (d) {
+    sub('スナックママ', '<div class="card"><div class="sj">役員さん専用の、秘書LINE「ママ」</div>' +
+      '<p style="margin:8px 0">会員検索、祭礼・演芸会の申込数、予定、回覧元、承認の状況…聞けばなんでも答えてくれる、68歳くらいのスナックのママです。お悩み相談もできます。</p>' +
+      '<p class="small" style="margin:0 0 10px">「入店」を押すとママのLINEが開きます。あなたの情報が入った申請の文章が入力されているので、<b>そのまま送信</b>してください。事務局が承認すると、ママからお知らせが届きます。</p>' +
+      (d.preview ? '<p class="small" style="margin:0 0 10px;color:#b00020">※管理者だけ、公開日の前でも見えています。</p>' : '') +
+      '<button class="btn" id="mmenter">入店する</button></div>' +
+      '<div class="card"><p class="small" style="margin:0">すでに入店済みの方は、ママのLINEで「ママ」と話しかけてください。LINEの通知の月の上限があるため、ママの人数は20名までです。</p></div>', 'officer');
+    $('#mmenter').onclick = function () { openExternal(d.url); };
+  }).catch(function (e) { offErr('スナックママ', e, 'officer'); });
+}
+var MM_DEMOS = [['kanban', '捨て看板の発注'], ['pending', '承認待ちが溜まった'], ['circ', '回覧元の変更'], ['chat', '会員からのチャット'], ['pendold', '承認待ち2日以上(管理者宛)'], ['noticeAll', '役員全員宛の連絡'], ['noticeMe', '個人宛の連絡'], ['test', 'テスト']];
 function mamaAdminView() {
   sub('ママ', '<div class="skel" style="height:240px"></div>', 'officer');
   api('a_mama_list').then(function (d) {
@@ -3520,16 +3535,17 @@ function mamaAdminView() {
       var b = (u.status === '申請中' || u.status === '名前待ち') ? '<button class="btn" data-i="' + i + '" data-v="approve">承認する</button><div style="height:6px"></div><button class="btn ghost" data-i="' + i + '" data-v="reject">却下</button>'
         : u.status === '有効' ? '<button class="btn ghost" data-i="' + i + '" data-v="demo">この人にデモ送信</button><div style="height:6px"></div><button class="btn ghost" data-i="' + i + '" data-v="stop">停止</button>'
         : '<button class="btn ghost" data-i="' + i + '" data-v="resume">有効にする</button>';
-      return '<div class="card"><div class="sj">' + esc(u.name || '(名前未入力)') + ' <span class="small">' + esc(u.status) + '</span></div><div class="small" style="margin:4px 0 10px">役員名簿: ' + (u.officer ? '○' : 'なし(LINE会員の役員・管理者に、お名前が見つかりません)') + (u.used ? ' ・ 最終 ' + esc(String(u.used).slice(0, 16)) : '') + '</div>' + b + '</div>';
+      return '<div class="card"><div class="sj">' + esc(u.name || '(名前未入力)') + ' <span class="small">' + esc(u.status) + '</span></div><div class="small" style="margin:4px 0 10px">役員名簿: ' + (u.officer ? '○' : 'なし(LINE会員の役員・管理者に、お名前が見つかりません)') + (u.used ? ' ・ 最終 ' + esc(String(u.used).slice(0, 16)) : '') + '</div>' + (u.status === '有効' ? '<div class="small" style="margin:0 0 6px">担当丁(何も選ばない=全丁): ' + MM_AREAS.map(function (a) { return '<label style="white-space:nowrap;margin-right:8px"><input type="checkbox" class="mmar" data-i="' + i + '" value="' + a + '"' + ((u.areas || []).indexOf(a) >= 0 ? ' checked' : '') + '> ' + a + '</label>'; }).join('') + ' <button class="btn ghost" data-i="' + i + '" data-v="areas" style="margin-top:6px">担当丁を保存</button></div>' : '') + b + '</div>';
     }).join('');
     sub('ママ', '<div class="card"><p style="margin:0">使える人 <b>' + act + ' / ' + d.max + '</b>名<br>今月のプッシュ通知 <b>' + d.pushUsed + ' / ' + d.pushLimit + '</b>通</p><p class="small" style="margin:6px 0 0">LINE無料枠は月200通(1人に送ると1通)</p></div>' + (rows || '<div class="card"><p class="muted" style="margin:0">まだ誰も申し込んでいません。LINEで「ママ」に話しかけてもらってください。</p></div>') +
-      '<div class="card"><div class="sj">テキスト送信(本番)</div><p class="small" style="margin:4px 0 10px">ママから役員さんのLINEへ文章を送ります。<b>本当に届きます</b>(通数を使います)。</p><textarea class="inp" id="mmt" maxlength="1000" style="min-height:90px" placeholder="送る文章"></textarea><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="mms" checked> ママの口調の前置きをつける</label>' +
+      '<div class="card"><div class="sj">ママから送る(本番)</div><p class="small" style="margin:4px 0 10px">未クローズのタスクを選んで送る/メッセージを添える/文章だけ送る、のどれもできます。<b>本当に届きます</b>(通数を使います)。</p><select class="inp" id="mmtk"><option value="">(選ばない = 文章だけ送る)</option>' + (d.tasks || []).map(function (t) { return '<option value="' + esc(t.id) + '">【' + esc(t.label) + '】' + esc(String(t.title).slice(0, 36)) + '</option>'; }).join('') + '</select><div style="height:8px"></div><textarea class="inp" id="mmt" maxlength="1000" style="min-height:90px" placeholder="メッセージ(タスクを選んだときは、空でもそのまま送れます)"></textarea><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="mms" checked> ママの口調の前置きをつける</label>' +
       '<div class="chips" id="mmw"><button data-w="all" aria-pressed="true">使える人全員</button><button data-w="pick" aria-pressed="false">指定する</button></div><div id="mmp" style="display:none;margin:8px 0">' + d.users.filter(function (u) { return u.status === '有効'; }).map(function (u) { return '<label class="small" style="display:block;margin:4px 0"><input type="checkbox" class="mmpk" value="' + esc(u.id) + '"> ' + esc(u.name) + '</label>'; }).join('') + '</div><div style="height:10px"></div><button class="btn" id="mmsend">この内容で送る</button></div>' +
       '<div class="card"><div class="sj">デモ送信(プッシュ通知)</div><p class="small" style="margin:4px 0 10px">文頭に【デモです】が付きます。全員に送ると、人数ぶん通数を使います。</p><select class="inp" id="mmk">' + MM_DEMOS.map(function (k) { return '<option value="' + k[0] + '"' + (MM.kind === k[0] ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select><div style="height:10px"></div><button class="btn" id="mmall">全員にデモ送信</button></div>', 'officer');
     var done = function (p) { return p.then(function (r) { toast(r.message || (r.ok ? '完了しました' : '失敗しました')); mamaAdminView(); }).catch(function (e) { toast(e.message || '失敗しました'); mamaAdminView(); }); };
     Array.prototype.forEach.call(document.querySelectorAll('button[data-v]'), function (b) {
       b.onclick = function () {
         var u = d.users[+b.dataset.i], v = b.dataset.v; MM.kind = $('#mmk').value;
+        if (v === 'areas') return done(api('a_mama_areas', { uid: u.id, areas: [].slice.call(document.querySelectorAll('.mmar')).filter(function (x) { return +x.dataset.i === +b.dataset.i && x.checked; }).map(function (x) { return x.value; }) }));
         if (v === 'demo') return done(api('a_mama_demo', { kind: MM.kind, uid: u.id }));
         if (v === 'stop' || v === 'reject') return askChoice(v === 'stop' ? u.name + ' さんを停止します' : '申請を却下します', [v === 'stop' ? '停止する' : '却下する'], v === 'stop' ? 'ママのプッシュ通知も止まります。' : '').then(function (x) { if (x) done(api('a_mama_decide', { uid: u.id, act: v })); });
         done(api('a_mama_decide', { uid: u.id, act: v }));
@@ -3539,8 +3555,8 @@ function mamaAdminView() {
     Array.prototype.forEach.call(document.querySelectorAll('#mmw button'), function (b) { b.onclick = function () { mmWho = b.dataset.w; Array.prototype.forEach.call(document.querySelectorAll('#mmw button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); $('#mmp').style.display = mmWho === 'pick' ? 'block' : 'none'; }; });
     $('#mmsend').onclick = function () {
       var tx = $('#mmt').value.trim(), ids = mmWho === 'pick' ? [].slice.call(document.querySelectorAll('.mmpk:checked')).map(function (x) { return x.value; }) : [];
-      if (!tx) return toast('送る文章を入れてください'); if (mmWho === 'pick' && !ids.length) return toast('送る人を選んでください');
-      askChoice((mmWho === 'pick' ? '選んだ' + ids.length + '名' : '使える人全員') + 'に、本当に送ります', ['送る'], tx.slice(0, 120)).then(function (x) { if (x) done(api('a_mama_send', { text: tx, to: ids, style: $('#mms').checked })); });
+      var tk = $('#mmtk').value; if (!tx && !tk) return toast('タスクを選ぶか、送る文章を入れてください'); if (mmWho === 'pick' && !ids.length) return toast('送る人を選んでください');
+      askChoice((mmWho === 'pick' ? '選んだ' + ids.length + '名' : '使える人全員') + 'に、本当に送ります', ['送る'], tx.slice(0, 120)).then(function (x) { if (x) done(api('a_mama_send', { text: tx, taskId: tk, to: ids, style: $('#mms').checked })); });
     };
     $('#mmall').onclick = function () { MM.kind = $('#mmk').value; askChoice('使える人全員に、デモの通知を送ります', ['送る'], '通数を使います。').then(function (x) { if (x) done(api('a_mama_demo', { kind: MM.kind, uid: '' })); }); };
   }).catch(function (e) { offErr('ママ', e, 'officer'); });
@@ -3579,7 +3595,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? formView(null, false) : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -3595,7 +3611,7 @@ function route() {
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
   if (h === 'manual' && seg) return manualView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
