@@ -3525,13 +3525,13 @@ var MAMA_IMG = "data:image/webp;base64,UklGRkwsAQBXRUJQVlA4WAoAAAAQAAAA3wEA3wEAQ
 function mamaEnterView() {
   sub('スナックママ', '<div class="skel" style="height:200px"></div>', 'officer');
   api('o_mama_info').then(function (d) {
-    sub('スナックママ', '<div style="text-align:center;margin:4px 0 0"><img src="' + MAMA_IMG + '" alt="ママ" style="width:68%;max-width:260px;height:auto;display:block;margin:0 auto"></div>' +
+    sub('スナックママ', '<div style="text-align:center;margin:4px 0 0"><img src="' + (d.imgData || MAMA_IMG) + '" alt="ママ" style="width:68%;max-width:260px;height:auto;display:block;margin:0 auto"></div>' +
       '<div class="card" style="text-align:center"><div class="sj" style="font-size:20px">いらっしゃい❤️</div>' +
       '<p style="margin:10px 0">あなたの秘書のママよん🤭<br>ここでは、チャットであなたの知りたいことを教えるわよ〜</p>' +
       '<p style="margin:10px 0">「まま」って言うと相談にものるから、<br>ワタシになんでも聞いてちょうだい。<br>答えられないこと？ 年齢よ。</p>' +
-      (d.again ? '<p class="small" style="margin:12px 0 10px;text-align:left">「入店」を押すとママのLINEが開きます。<b>「ママ」</b>と入力されているので、そのまま送信してください。</p>' : '<p class="small" style="margin:12px 0 10px;text-align:left">「入店」を押すとママのLINEが開きます。あなたの情報が入った申請の文章が入力されているので、<b>そのまま送信</b>してください。事務局が承認すると、ママからお知らせが届きます。</p>') +
+      (d.again ? '<p class="small" style="margin:12px 0 10px;text-align:left">「入店」を押すと、ママのLINEが開きます。<b>文字を送らなくて大丈夫</b>です。開いたら、「ママ」と話しかけてください。</p>' : '<p class="small" style="margin:12px 0 10px;text-align:left">「入店」を押すとママのLINEが開きます。あなたの情報が入った申請の文章が入力されているので、<b>そのまま送信</b>してください。事務局が承認すると、ママからお知らせが届きます。</p>') +
       (d.preview ? '<p class="small" style="margin:0 0 10px;color:#b00020;text-align:left">※管理者だけ、公開日の前でも見えています。</p>' : '') +
-      '<button class="btn" id="mmenter">入店</button></div>' +
+      '<button class="btn" id="mmenter">入店</button>' + (d.dbg ? '<p class="small" style="margin:10px 0 0;color:#888;text-align:left">(管理者だけに見える確認: ' + esc(d.dbg) + ')</p>' : '') + '</div>' +
       '<div class="card"><p class="small" style="margin:0">2回目からは、ママのLINEで「ママ」と話しかけるだけで入れます。LINEの通知の月の上限があるため、ママの人数は20名までです。</p></div>', 'officer');
     $('#mmenter').onclick = function () { openExternal(d.url); };
   }).catch(function (e) { offErr('スナックママ', e, 'officer'); });
