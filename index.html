@@ -258,11 +258,11 @@ button.mi{cursor:pointer;min-height:32px}
 .rp .rxrow{margin-top:8px}.rp .rxp{height:26px;font-size:12.5px;padding:0 9px 0 7px}.rp .rxp .e{font-size:14px}.rp .rxadd{height:26px;width:32px}.rp .rxt{box-shadow:0 6px 16px rgba(31,58,95,.1)}
 /* チャット: 左バー(AIに聞く・役員から返信 / 役員は 未対応・返信済・クローズ の件数) */
 .chm{display:flex;gap:10px;align-items:flex-start}
-.cbar{flex:0 0 94px;position:sticky;top:8px;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px}
-.cbar button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:9px 6px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--sub);position:relative}
+.cbar{flex:0 0 108px;position:sticky;top:8px;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px}
+.cbar button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:3px;padding:9px 5px;border-radius:10px;cursor:pointer;font-size:12px;white-space:nowrap;font-weight:700;color:var(--sub);position:relative}
 .cbar button[hidden]{display:none}.cbar button[aria-pressed=true]{background:#e3f4e0;color:#14532d}.cbar .pinb{background:#f4f8f2}.cbar .pinb[aria-pressed=true]{background:#d4efce}
 .cbar .ci{font-size:16px;flex:0 0 auto}.cbar .cl{flex:1 1 auto;min-width:0;line-height:1.25}.cbar .cn{flex:0 0 auto;font-size:10px;font-weight:700;background:#e5e7eb;color:#4b5563;border-radius:999px;padding:0 5px;line-height:1.55}.cbar .cn[hidden]{display:none}.cbar [data-f=unread] .cn{background:#d92d20;color:#fff}
-.cbar .cbh{font-size:10.5px;color:var(--sub);padding:6px 6px 0}
+.cbar .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.cbar .cbh{font-size:10.5px;color:var(--sub);padding:6px 6px 0}
 .cmain{flex:1 1 auto;min-width:0}
 @media(min-width:700px){.cbar{flex-basis:190px}.cbar button{font-size:14px}}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
@@ -1683,11 +1683,11 @@ function mailView() {
     function render(dd) {
       d = dd; var keep = $('#aiq') ? $('#aiq').value : '';
       var pane = MB.pane || (staff ? 'inbox' : 'ai');
-      var fb = function (f, ic, lb, on) { return '<button type="button" data-f="' + f + '" data-p="inbox" aria-pressed="' + (on ? 'true' : 'false') + '"><span class="ci">' + ic + '</span><span class="cl">' + lb + '</span><span class="cn" hidden></span></button>'; };
-      var bar = '<nav class="cbar" id="cbar" aria-label="チャットの種類"><button type="button" class="pinb" data-p="ai" aria-pressed="' + (pane === 'ai') + '"><span class="ci">🤖</span><span class="cl">AIに聞く💬</span></button>' +
-        (staff ? '<div class="cbh">受信箱</div>' + fb('all', '📥', '全体', pane === 'inbox' && MB.filter === 'all') + fb('unread', '🔴', '未読', pane === 'inbox' && MB.filter === 'unread') + fb('未対応', '🟠', '未対応', pane === 'inbox' && MB.filter === '未対応') + fb('対応中', '🔵', '返信済', pane === 'inbox' && MB.filter === '対応中') + fb('クローズ', '🟢', 'クローズ', pane === 'inbox' && MB.filter === 'クローズ') + fb('watch', '👀', '見守り', pane === 'inbox' && MB.filter === 'watch')
-          : '<button type="button" class="pinb" data-p="inbox" data-f="all" aria-pressed="' + (pane === 'inbox' && MB.filter !== 'hidden') + '"><span class="ci">👤</span><span class="cl">役員から返信</span><span class="cn" hidden></span></button>') +
-        '<button type="button" data-f="hidden" data-p="inbox" aria-pressed="' + (pane === 'inbox' && MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="ci">🙈</span><span class="cl">非表示</span></button></nav>';
+      var fb = function (f, ic, lb, on) { return '<button type="button" data-f="' + f + '" data-p="inbox" aria-pressed="' + (on ? 'true' : 'false') + '" title="' + lb + '" aria-label="' + lb + '">' + (ic ? '<span class="ci">' + ic + '</span>' : '') + '<span class="cl' + (f === 'クローズ' ? ' sr' : '') + '">' + lb + '</span><span class="cn" hidden></span></button>'; };
+      var bar = '<nav class="cbar" id="cbar" aria-label="チャットの種類"><button type="button" class="pinb" data-p="ai" aria-pressed="' + (pane === 'ai') + '"><span class="ci">💬</span><span class="cl">操作質問</span></button>' +
+        (staff ? '<div class="cbh">受信箱</div>' + fb('all', '', '全体', pane === 'inbox' && MB.filter === 'all') + fb('unread', '🔴', '未読', pane === 'inbox' && MB.filter === 'unread') + fb('未対応', '🟠', '未対応', pane === 'inbox' && MB.filter === '未対応') + fb('対応中', '🔵', '返信済', pane === 'inbox' && MB.filter === '対応中') + fb('クローズ', '☑️', 'クローズ', pane === 'inbox' && MB.filter === 'クローズ') + fb('watch', '', '見守り', pane === 'inbox' && MB.filter === 'watch')
+          : '<button type="button" class="pinb" data-p="inbox" data-f="all" aria-pressed="' + (pane === 'inbox' && MB.filter !== 'hidden') + '"><span class="cl">役員から返信</span><span class="cn" hidden></span></button>') +
+        '<button type="button" data-f="hidden" data-p="inbox" aria-pressed="' + (pane === 'inbox' && MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="cl">非表示</span></button></nav>';
       var main = pane === 'ai' ? aiPaneHtml() : head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>';
       sub('チャット', '<div class="chm' + (pane === 'ai' ? ' aim' : '') + '">' + bar + '<div class="cmain" id="cmain">' + main + '</div></div>');
       Array.prototype.forEach.call(document.querySelectorAll('#cbar button'), function (b) { b.onclick = function () {
