@@ -256,6 +256,20 @@ button.mi{cursor:pointer;min-height:32px}
 .rxt button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0 4px;border:0;border-radius:12px;background:none;font:inherit;color:var(--sub);cursor:pointer}
 .rxt button .e{font-size:22px;line-height:1.2}.rxt button .t{font-size:10px;font-weight:700;line-height:1.2;text-align:center;word-break:break-all}.rxt button.on{background:#eef3fb;color:var(--navy)}
 .rp .rxrow{margin-top:8px}.rp .rxp{height:26px;font-size:12.5px;padding:0 9px 0 7px}.rp .rxp .e{font-size:14px}.rp .rxadd{height:26px;width:32px}.rp .rxt{box-shadow:0 6px 16px rgba(31,58,95,.1)}
+/* チャット: 左バー(AIに聞く・役員から返信 / 役員は 未対応・返信済・クローズ の件数) */
+.chm{display:flex;gap:10px;align-items:flex-start}
+.cbar{flex:0 0 94px;position:sticky;top:8px;display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px}
+.cbar button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:9px 6px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--sub);position:relative}
+.cbar button[hidden]{display:none}.cbar button[aria-pressed=true]{background:#e3f4e0;color:#14532d}.cbar .pinb{background:#f4f8f2}.cbar .pinb[aria-pressed=true]{background:#d4efce}
+.cbar .ci{font-size:16px;flex:0 0 auto}.cbar .cl{flex:1 1 auto;min-width:0;line-height:1.25}.cbar .cn{flex:0 0 auto;font-size:10px;font-weight:700;background:#e5e7eb;color:#4b5563;border-radius:999px;padding:0 5px;line-height:1.55}.cbar .cn[hidden]{display:none}.cbar [data-f=unread] .cn{background:#d92d20;color:#fff}
+.cbar .cbh{font-size:10.5px;color:var(--sub);padding:6px 6px 0}
+.cmain{flex:1 1 auto;min-width:0}
+@media(min-width:700px){.cbar{flex-basis:190px}.cbar button{font-size:14px}}
+.aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
+.aiact{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px 44px}.aiact button{all:unset;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--navy);color:var(--navy);background:#fff}.aiact button.go{background:var(--navy);color:#fff}
+.aifq{display:flex;flex-direction:column;gap:6px;margin:0 0 12px 44px}.aifq button{all:unset;cursor:pointer;padding:9px 12px;border-radius:12px;font-size:14.5px;background:#fff;border:1px solid var(--line);color:var(--ink,#222)}
+.rdel{all:unset;cursor:pointer;color:var(--bad);font-weight:700;margin-left:6px}.dact{display:flex;flex-wrap:wrap;gap:8px;margin:0 4px 10px}.dact button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink,#222)}.dact .cl{background:#16a34a;border-color:#16a34a;color:#fff}.dact .asg{border-color:var(--navy);color:var(--navy)}.dact button:disabled{opacity:.5}
+.asgp{margin:0 4px 10px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}.asgp button{all:unset;cursor:pointer;display:block;padding:9px 10px;border-radius:8px;font-size:14.5px}.asgp button:active{background:#eef3fb}
 /* Tweet(吹き出し) */
 body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .bnote{font-size:11.5px;color:var(--sub);text-align:center;margin:2px 8px 10px}
@@ -1557,6 +1571,7 @@ function fmtMd(t) { t = String(t || ''); return t.length >= 16 ? (+t.slice(5, 7)
 function setBadge(n) { if (!S.me) return; S.me.badges = Object.assign({}, S.me.badges, { mail: n }); var h = (location.hash || '').replace('#', '').split('/')[0]; renderNav(h); }
 var MB = { filter: 'all' };
 var STS_ = ['未対応', '対応中', 'クローズ'];
+function stl(x) { return x === '対応中' ? '返信済' : x; }   // 画面の表示だけ「返信済」(中身は「対応中」のまま)
 var STM_ = ['対応中', 'クローズ'];                 // 自分で変えるのは この2つ(未読→開くと自動で「未対応」)
 var WSTM_ = ['進行中', 'クローズ', 'キャンセル'];  // 見守り(役員だけのステータス)
 /** 対応状況のアイコン(未読 ● / 未対応 ○ / 対応中・進行中 ◐ / クローズ ✓ / キャンセル ✕)。役員以上だけに表示 */
@@ -1564,7 +1579,7 @@ var WSTM_ = ['進行中', 'クローズ', 'キャンセル'];  // 見守り(役�
 function stTag(st) {
   if (st === '対応済み') st = 'クローズ';
   var k = { '未読': 4, '未対応': 0, '対応中': 1, '進行中': 1, 'クローズ': 2, 'キャンセル': 3 }[st]; if (k == null) k = 0;
-  return '<span class="stt s' + k + '">' + esc(st) + '</span>';
+  return '<span class="stt s' + k + '">' + esc(stl(st)) + '</span>';
 }
 var TRASH_ = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4L18 7M9 7V4.5h6V7"/></svg>';
 /* ---------- チャット一覧: 左にスライド=対応ステータス(役員以上) / 右にスライド=ピン留め ---------- */
@@ -1617,7 +1632,7 @@ function swipeBind(w, d, redraw) {
     var x = m(); if (!x) return;
     if (b.dataset.sst === x.status) { set(0, true); return; }
     Array.prototype.forEach.call(w.querySelectorAll('[data-sst]'), function (y) { y.disabled = true; });
-    api(x.watch ? 'mail_wstatus' : 'mail_status', { id: id, status: b.dataset.sst }).then(function (r) { x.status = r.status; MEM.mail_list = d; toast(r.status + 'にしました'); redraw(); }).catch(function (e) { Array.prototype.forEach.call(w.querySelectorAll('[data-sst]'), function (y) { y.disabled = false; }); toast(e.message); });
+    api(x.watch ? 'mail_wstatus' : 'mail_status', { id: id, status: b.dataset.sst }).then(function (r) { x.status = r.status; MEM.mail_list = d; toast(stl(r.status) + 'にしました'); redraw(); }).catch(function (e) { Array.prototype.forEach.call(w.querySelectorAll('[data-sst]'), function (y) { y.disabled = false; }); toast(e.message); });
   }; });
 }
 function mailView() {
@@ -1625,12 +1640,10 @@ function mailView() {
   swrList('mail_list', function (d) {
     setBadge(d.unread);
     var staff = d.canBroadcast;
-    var head = '<button class="btn" id="mnew">' + (staff ? '💬 新しいチャットを始める' : '💬 役員にチャットで問い合わせる') + '</button>' +
-      '<div class="chips" style="margin:14px 0 4px" id="mf"><button data-f="all" aria-pressed="true">全体</button><button data-f="unread" aria-pressed="false">未読' + (d.unread ? ' ' + d.unread : '') + '</button>' +
-      (staff ? '<button data-f="未対応" aria-pressed="false">未対応</button><button data-f="対応中" aria-pressed="false">対応中</button><button data-f="watch" aria-pressed="false">👀見守り' + (d.mails.filter(function (m) { return m.watch; }).length ? ' ' + d.mails.filter(function (m) { return m.watch; }).length : '') + '</button><button data-f="クローズ" aria-pressed="false">クローズ</button>' : '') + '<button data-f="hidden" aria-pressed="false" id="mfh"' + (hidGet().length ? '' : ' hidden') + '>非表示</button></div>';
+    var head = '<button class="btn" id="mnew">' + (staff ? '💬 新しいチャットを始める' : '💬 役員にチャットで問い合わせる') + '</button>';
     function draw() {
       var pins = pinsGet();
-      var hid = hidGet(); var hb = $('#mfh'); if (hb) hb.hidden = !hid.length; if (MB.filter === 'hidden' && !hid.length) { MB.filter = 'all'; Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (x) { x.setAttribute('aria-pressed', x.dataset.f === 'all' ? 'true' : 'false'); }); }
+      var hid = hidGet(); var hb = $('#mfh'); if (hb) hb.hidden = !hid.length; cbarCnt(d); if (MB.filter === 'hidden' && !hid.length) { MB.filter = 'all'; Array.prototype.forEach.call(document.querySelectorAll('#cbar [data-f]'), function (x) { x.setAttribute('aria-pressed', x.dataset.f === 'all' ? 'true' : 'false'); }); }
       var rows = d.mails.filter(function (m) {
         var hd = hid.indexOf(m.id) >= 0;
         if (MB.filter === 'hidden') return hd;
@@ -1650,7 +1663,7 @@ function mailView() {
         return '<div class="mlw" data-id="' + esc(m.id) + '"><div class="swa l" style="--lc:#6b7280"><button type="button" data-pin="' + esc(m.id) + '" aria-label="' + (pinned ? 'ピン留めを外す' : 'ピン留め') + '" title="' + (pinned ? 'ピン留めを外す' : 'ピン留め') + '">📌</button>' +
           (m.watch && m.canStop ? '<button type="button" data-stop="' + esc(m.id) + '">解除</button>' : '') +
           '<button type="button" data-hide="' + esc(m.id) + '">' + (hiddenNow ? '表示に戻す' : '非表示') + '</button></div>' +
-          (m.status ? '<div class="swa r" style="--lc:' + (stOpts[stOpts.length - 1] === 'キャンセル' ? '#6b7280' : '#16a34a') + '">' + stOpts.map(function (x) { return '<button type="button" data-sst="' + x + '" aria-pressed="' + (m.status === x) + '">' + x + '</button>'; }).join('') + '</div>' : '') +
+          (m.status ? '<div class="swa r" style="--lc:' + (stOpts[stOpts.length - 1] === 'キャンセル' ? '#6b7280' : '#16a34a') + '">' + stOpts.map(function (x) { return '<button type="button" data-sst="' + x + '" aria-pressed="' + (m.status === x) + '">' + stl(x) + '</button>'; }).join('') + '</div>' : '') +
           '<div class="mlf"><button class="ml' + (m.unread ? ' un' : '') + (m.status === 'クローズ' || m.status === '対応済み' || m.status === 'キャンセル' ? ' done' : '') + '" data-id="' + esc(m.id) + '">' + (m.unread ? '<i class="dt" role="img" aria-label="未読"></i>' : '') +
           '<div class="sj">' + (pinned ? '<span class="pin" aria-label="ピン留め">📌</span>' : '') + (cat ? '<span class="at c">' + esc(cat) + '</span>' : '') + (m.important ? '<span class="at imp">重要</span>' : '') + '<span class="sx">' + esc(sj || '(写真)') + '</span>' + (m.replies ? '<span class="rc">💬' + m.replies + '</span>' : '') + '</div>' +
           '<div class="mt">' + esc(m.mine ? '送信 → ' + m.to : m.sender) + ' ・ ' + esc(fmtMd(m.date)) + (mark ? ' ' + mark : '') + (m.kind === '問い合わせ' ? ' ・ 問い合わせ' : '') + (m.watch ? ' ・ 見守り' : '') + (m.status ? ' ' + stTag(m.unread && !m.watch ? '未読' : m.status) : '') + '</div></button>' + (m.canDelete ? '<button type="button" class="mdx" data-del="' + esc(m.id) + '" aria-label="このチャットを削除">' + TRASH_ + '</button>' : '') + '</div></div>';
@@ -1663,11 +1676,63 @@ function mailView() {
         });
       }; });
     }
-    sub('チャット', head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>');
-    $('#mnew').onclick = function () { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); };
-    Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (b) { b.setAttribute('aria-pressed', b.dataset.f === MB.filter ? 'true' : 'false'); b.onclick = function () { MB.filter = b.dataset.f; Array.prototype.forEach.call(document.querySelectorAll('#mf button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); draw(); }; });
-    draw();
+    function cbarCnt(dd) {
+      var hid = hidGet(), live = dd.mails.filter(function (m) { return !m.watch && hid.indexOf(m.id) < 0; }), c = { unread: live.filter(function (m) { return m.unread; }).length, '未対応': live.filter(function (m) { return m.status === '未対応' && !m.unread; }).length, '対応中': live.filter(function (m) { return m.status === '対応中'; }).length, 'クローズ': live.filter(function (m) { return m.status === 'クローズ'; }).length, watch: dd.mails.filter(function (m) { return m.watch; }).length, all: live.length };
+      Array.prototype.forEach.call(document.querySelectorAll('#cbar [data-f]'), function (b) { var n = (!staff && b.dataset.f === 'all') ? c.unread : c[b.dataset.f], e = b.querySelector('.cn'); if (e) { e.textContent = n || ''; e.hidden = !n; } });
+    }
+    function render(dd) {
+      d = dd; var keep = $('#aiq') ? $('#aiq').value : '';
+      var pane = MB.pane || (staff ? 'inbox' : 'ai');
+      var fb = function (f, ic, lb, on) { return '<button type="button" data-f="' + f + '" data-p="inbox" aria-pressed="' + (on ? 'true' : 'false') + '"><span class="ci">' + ic + '</span><span class="cl">' + lb + '</span><span class="cn" hidden></span></button>'; };
+      var bar = '<nav class="cbar" id="cbar" aria-label="チャットの種類"><button type="button" class="pinb" data-p="ai" aria-pressed="' + (pane === 'ai') + '"><span class="ci">🤖</span><span class="cl">AIに聞く💬</span></button>' +
+        (staff ? '<div class="cbh">受信箱</div>' + fb('all', '📥', '全体', pane === 'inbox' && MB.filter === 'all') + fb('unread', '🔴', '未読', pane === 'inbox' && MB.filter === 'unread') + fb('未対応', '🟠', '未対応', pane === 'inbox' && MB.filter === '未対応') + fb('対応中', '🔵', '返信済', pane === 'inbox' && MB.filter === '対応中') + fb('クローズ', '🟢', 'クローズ', pane === 'inbox' && MB.filter === 'クローズ') + fb('watch', '👀', '見守り', pane === 'inbox' && MB.filter === 'watch')
+          : '<button type="button" class="pinb" data-p="inbox" data-f="all" aria-pressed="' + (pane === 'inbox' && MB.filter !== 'hidden') + '"><span class="ci">👤</span><span class="cl">役員から返信</span><span class="cn" hidden></span></button>') +
+        '<button type="button" data-f="hidden" data-p="inbox" aria-pressed="' + (pane === 'inbox' && MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="ci">🙈</span><span class="cl">非表示</span></button></nav>';
+      var main = pane === 'ai' ? aiPaneHtml() : head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>';
+      sub('チャット', '<div class="chm' + (pane === 'ai' ? ' aim' : '') + '">' + bar + '<div class="cmain" id="cmain">' + main + '</div></div>');
+      Array.prototype.forEach.call(document.querySelectorAll('#cbar button'), function (b) { b.onclick = function () {
+        MB.pane = b.dataset.p; if (b.dataset.f) MB.filter = b.dataset.f; if (MB.pane === 'inbox' && !b.dataset.f) MB.filter = 'all';
+        if (!staff && MB.pane === 'inbox') MB.filter = 'all'; render(d);
+      }; });
+      if (pane === 'ai') { document.body.classList.add('bchat'); aiBind(keep); return; }
+      $('#mnew').onclick = function () { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); };
+      draw();
+    }
+    render(d);
   }, function (e) { offErr('チャット', e, 'home'); });
+}
+/* ---------- AIに聞く(使い方案内) ---------- */
+var AI = { msgs: [], faq: null, busy: false, last: '' };
+var GOL_ = { card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並', weather: '天気' };
+function aiPaneHtml() {
+  return '<div id="aiL"></div><div class="bcomp aibar"><div class="aiin"><input class="inp" id="aiq" maxlength="200" placeholder="聞きたいことを書いてね" aria-label="聞きたいこと" autocomplete="off"><button type="button" class="bsend" id="aisend" aria-label="送る">↑</button></div></div>';
+}
+function aiDraw() {
+  var el = $('#aiL'); if (!el) return;
+  var h = mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: 'こんにちは。このアプリの使い方で、わからないことを聞いてください。\n「会員証を見たい」「写真を送りたい」のように、書くだけで大丈夫です。' });
+  if (AI.faq && !AI.msgs.length) h += '<div class="aifq">' + AI.faq.map(function (q, i) { return '<button type="button" data-fq="' + i + '">' + esc(q) + '</button>'; }).join('') + '</div>';
+  AI.msgs.forEach(function (m, i) {
+    if (m.r === 'u') { h += mBubble({ mine: true, date: '', body: m.t }); return; }
+    h += mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: m.t });
+    if (!m.wait) h += '<div class="aiact">' + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">▶「' + GOL_[m.go] + '」を開く</button>' : '') + (m.esc ? '<button type="button" data-aask="' + i + '">役員に聞く</button>' : '') + '</div>';
+  });
+  el.innerHTML = h;
+  Array.prototype.forEach.call(el.querySelectorAll('[data-fq]'), function (b) { b.onclick = function () { aiSend(AI.faq[+b.dataset.fq]); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-ago]'), function (b) { b.onclick = function () { var k = b.dataset.ago; go(HASH[k] || k); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-aask]'), function (b) { b.onclick = function () { var i = +b.dataset.aask, q = ''; for (var j = i - 1; j >= 0; j--) if (AI.msgs[j].r === 'u') { q = AI.msgs[j].t; break; } MT.type = '役員'; MT.cat = ''; MT.imp = ''; MT.prefill = q ? { subject: q, body: '' } : null; go('mailnew'); }; });
+}
+function aiSend(q) {
+  q = String(q || '').trim(); if (!q || AI.busy) return;
+  AI.busy = true; var hist = AI.msgs.filter(function (m) { return !m.wait; }).slice(-6).map(function (m) { return { r: m.r, t: m.t }; });
+  AI.msgs.push({ r: 'u', t: q }); var w = { r: 'a', t: '考えています…', wait: true }; AI.msgs.push(w); if ($('#aiq')) $('#aiq').value = ''; aiDraw(); window.scrollTo(0, document.body.scrollHeight);
+  api('ai_ask', { q: q, hist: hist }).then(function (r) { w.wait = false; w.t = r.answer; w.go = r.go; w.esc = r.escalate; })
+    .catch(function (e) { w.wait = false; w.t = (e && e.message) || 'うまくつながりませんでした。しばらくしてから、もう一度お試しください。'; w.esc = true; })
+    .then(function () { AI.busy = false; aiDraw(); window.scrollTo(0, document.body.scrollHeight); });
+}
+function aiBind(keep) {
+  aiDraw(); var q = $('#aiq'); if (q) { q.value = keep || ''; q.onkeydown = function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); aiSend(q.value); } }; }
+  $('#aisend').onclick = function () { aiSend($('#aiq').value); };
+  if (!AI.faq) api('ai_ask', { q: '' }).then(function (r) { AI.faq = r.faq || []; if ($('#aiL')) aiDraw(); }).catch(function () { AI.faq = []; });
 }
 function mailDetailView(id) {
   sub('チャット', '<div class="skel" style="height:300px"></div>', 'mail');
@@ -1679,7 +1744,7 @@ function mailSubj(subject) { return String(subject || '').replace(/^【[^】]{1,
 function rdMark(n) { return n == null ? '' : n > 0 ? '<span class="rdm">既読' + (n > 1 ? ' ' + n : '') + '</span>' : '<span class="rdm un">未読</span>'; }
 function mBubble(o) {   // o: {mine, name, date, body, rk, rid}
   return '<div class="brow' + (o.mine ? ' me' : '') + '">' + (o.mine ? '' : av(o.icon, '', o.ph)) + '<div class="bcol">' + (o.name ? '<div class="bname">' + esc(o.name) + '</div>' : '') + '<div class="bb"><div class="bt">' + bodyHtml(o.body) + '</div>' +
-    (o.rk ? '<div class="rxbox" data-rk="' + o.rk + '" data-rid="' + esc(o.rid) + '"></div>' : '') + '</div><div class="bmeta"><span>' + esc(fmtMd(o.date)) + '</span>' + rdMark(o.rd) + '</div></div></div>';
+    (o.rk ? '<div class="rxbox" data-rk="' + o.rk + '" data-rid="' + esc(o.rid) + '"></div>' : '') + '</div><div class="bmeta"><span>' + esc(fmtMd(o.date)) + '</span>' + rdMark(o.rd) + (o.del ? '<button type="button" class="rdel" data-rdel="' + esc(o.rid) + '">取り消す</button>' : '') + '</div></div></div>';
 }
 function drawMail(m) {
   var cat = mailCat(m.subject);
@@ -1690,20 +1755,25 @@ function drawMail(m) {
       (m.canStop ? '<button type="button" id="mstop">解除</button>' : '') + '</div></div>';
   }
   if (m.status) {   // 対応状況(役員以上だけ。見守りは、見守りの役員だけ)。アイコンをタップで変える。自分で変えるのは 対応中・クローズ(見守りは 進行中・クローズ・キャンセル)
-    h += '<div class="stbar' + (m.status === 'クローズ' || m.status === '対応済み' || m.status === 'キャンセル' ? ' done' : '') + '"><span>' + (m.watch ? '見守り' : '対応') + '</span>' + (m.watch ? WSTM_ : STM_).map(function (x) { return '<button type="button" data-st="' + x + '" aria-pressed="' + (m.status === x) + '"' + (m.canStatus ? '' : ' disabled') + '>' + x + '</button>'; }).join('') +
+    h += '<div class="stbar' + (m.status === 'クローズ' || m.status === '対応済み' || m.status === 'キャンセル' ? ' done' : '') + '"><span>' + (m.watch ? '見守り' : '対応') + '</span>' + (m.watch ? WSTM_ : STM_).map(function (x) { return '<button type="button" data-st="' + x + '" aria-pressed="' + (m.status === x) + '"' + (m.canStatus ? '' : ' disabled') + '>' + stl(x) + '</button>'; }).join('') +
       '<span>' + stTag(m.status) + (!m.watch && m.status !== '未対応' && m.handler ? ' ・ ' + esc(m.handler) + 'さん ' + esc(fmtMd(m.handledAt)) : '') + '</span></div>';
+  }
+  if (m.canStatus && !m.watch && m.status) {   // 役員: クローズする / 〇〇さんに返信依頼する
+    h += '<div class="dact"><button type="button" class="cl" id="mclose"' + (m.status === 'クローズ' ? ' disabled' : '') + '>' + (m.status === 'クローズ' ? '✓ クローズ済み' : '✓ クローズする') + '</button><button type="button" class="asg" id="masg">👤 役員に返信を依頼する</button></div><div id="asgp" class="asgp" hidden></div>' +
+      (m.assigned && m.assigned.length ? '<p class="small" style="margin:-4px 6px 8px">返信依頼: ' + m.assigned.map(function (x) { return esc(x.name) + 'さん(' + esc(x.by) + 'さんが依頼 ' + esc(fmtMd(x.at)) + ')'; }).join('、') + '</p>' : '');
   }
   h += '<div id="blist">' + mBubble({ mine: m.mine, icon: m.icon, ph: m.ph, name: m.mine ? '' : m.sender, date: m.date, body: m.body, rd: m.rd }).replace('</div></div><div class="bmeta">', '</div><div id="rx"></div></div><div class="bmeta">') +
     (m.replies.length ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
-    m.replies.map(function (r) { return r.sys ? '<div class="bsep sysn">' + esc(r.body) + '</div>' : mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rd: r.rd, rk: 'mail_reply', rid: r.id }); }).join('') + '</div>' +
+    m.replies.map(function (r) { return r.sys ? '<div class="bsep sysn">' + esc(r.body) + '</div>' : mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rd: r.rd, rk: 'mail_reply', rid: r.id, del: r.canDelete }); }).join('') + '</div>' +
     (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') ;
+  if (m.mine && m.canDelete) h += '<p style="margin:6px 6px 0;text-align:right"><button type="button" class="rdel" id="mrootdel">このチャットの送信を取り消す</button></p>';
   if (m.stopped) h += '<p class="small" style="text-align:center;margin:10px 0;color:var(--bad)">このマッチングは解除されました。これ以上、書き込めません。</p>';
   var QRS = ['よろしくお願いします', 'ありがとうございます', '承知しました', 'OKです！'];
   if (m.canReply !== false) h += bdComposer('返信を書く', { max: 2000, pre: '<div class="qrs" id="qrs" hidden>' + QRS.map(function (t) { return '<button type="button" class="qrq" data-q="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div>' });
   sub('チャット', h, 'mail'); document.body.classList.add('bchat');
   if (m.react) reactBind('mail', m.id, m.react);
   reactBindAll('mail_reply', m.replies, m.react, '.rxbox[data-rk=mail_reply]');
-  Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (st) { st.onclick = function () { if (st.dataset.st === m.status) return; Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = true; }); api(m.watch ? 'mail_wstatus' : 'mail_status', { id: m.id, status: st.dataset.st }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; delete MEM.mail_list; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(x.status + 'にしました'); }).catch(function (e) { Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (st) { st.onclick = function () { if (st.dataset.st === m.status) return; Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = true; }); api(m.watch ? 'mail_wstatus' : 'mail_status', { id: m.id, status: st.dataset.st }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; delete MEM.mail_list; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast(stl(x.status) + 'にしました'); }).catch(function (e) { Array.prototype.forEach.call(document.querySelectorAll('.stbar [data-st]'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
   if (m.canReply !== false) bdComposerBind(function (t, ph) { return api('mail_reply', { id: m.id, body: t, photos: ph }).then(function () { toast('返信しました'); mailDetailView(m.id); }); });
   var qs = $('#qrs'), qi = $('#bin');
   if (qs && qi) {
@@ -1712,6 +1782,23 @@ function drawMail(m) {
     qs.addEventListener('pointerdown', function (ev) { ev.preventDefault(); });   // 押してもキーボードを閉じない
     Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (q) { q.onclick = function () { Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (x) { x.disabled = true; }); api('mail_reply', { id: m.id, body: q.dataset.q, photos: [] }).then(function () { toast('送りました'); mailDetailView(m.id); }).catch(function (e) { Array.prototype.forEach.call(qs.querySelectorAll('.qrq'), function (x) { x.disabled = false; }); toast(e.message); }); }; });
   }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-rdel]'), function (b) { b.onclick = function () {
+    cf('この返信の送信を取り消します(相手の画面からも消えます)。よろしいですか?', function () { b.disabled = true; api('mail_reply_delete', { id: m.id, rid: b.dataset.rdel }).then(function () { toast('取り消しました'); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); });
+  }; });
+  var rd = $('#mrootdel'); if (rd) rd.onclick = function () { cf('このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?', function () { rd.disabled = true; api('mail_delete', { id: m.id }).then(function () { delete MEM.mail_list; toast('取り消しました'); go('mail'); }).catch(function (e) { rd.disabled = false; toast(e.message); }); }); };
+  var mc = $('#mclose'); if (mc) mc.onclick = function () { mc.disabled = true; api('mail_status', { id: m.id, status: 'クローズ' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; delete MEM.mail_list; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast('クローズにしました'); }).catch(function (e) { mc.disabled = false; toast(e.message); }); };
+  var ma = $('#masg'); if (ma) ma.onclick = function () {
+    var box = $('#asgp'); if (!box.hidden) { box.hidden = true; return; } box.hidden = false; box.innerHTML = '<p class="small" style="margin:2px 4px">読み込み中…</p>';
+    api('mail_officers').then(function (r) {
+      box.innerHTML = '<p class="small" style="margin:2px 4px 6px">だれに頼みますか?(ママから「問い合わせが来てるわよ」と知らせます)</p>' + r.officers.map(function (o) { return '<button type="button" data-ref="' + esc(o.ref) + '">' + av(o.icon, 'sm') + esc(o.name) + 'さん</button>'; }).join('');
+      Array.prototype.forEach.call(box.querySelectorAll('[data-ref]'), function (b) { b.onclick = function () {
+        var nm = b.textContent;
+        cf(nm + 'に、返信をお願いします。ママからお知らせが届きます。よろしいですか?', function () {
+          b.disabled = true; api('mail_assign', { id: m.id, ref: b.dataset.ref }).then(function (x) { toast(x.pushed ? x.name + 'さんに、ママからお知らせしました' : (x.why || '依頼を記録しました')); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        });
+      }; });
+    }).catch(function (e) { box.innerHTML = '<p class="small" style="color:var(--bad)">' + esc(e.message) + '</p>'; });
+  };
   var sp = $('#mstop'); if (sp) sp.onclick = function () { cf('この助け合いのマッチングを強制的に解除します。両方の方に「解除しました」と表示され、以後は書き込めなくなります。よろしいですか?', function () { sp.disabled = true; api('mail_stop', { id: m.id }).then(function () { toast('解除しました'); mailDetailView(m.id); }).catch(function (e) { sp.disabled = false; toast(e.message); }); }); };
 }
 /* ===== 反応(いいね・了解 など) ===== */
@@ -1754,7 +1841,7 @@ var MT = { type: '全員', cat: '', imp: '', picks: {}, refs: {}, val: '', ready
 /** 1. 宛先を選ぶ → 2. LINEのような画面で書く */
 function mailNewView() {
   var staff = isOfficer();
-  if (MT.prefill && staff) { MT.type = '役員'; MT.label = '役員'; MT.ready = true; return mailWriteView(); }
+  if (MT.prefill) { MT.type = '役員'; MT.label = '役員'; MT.ready = true; return mailWriteView(); }
   MT.ready = false; MT.picks = {}; MT.refs = {}; MT.val = '';
   sub(staff ? '宛先を選ぶ' : '役員に送る', '<div class="skel" style="height:300px"></div>', 'mail');
   (staff ? api('mail_targets') : api('mail_officers')).then(function (tg) { drawMailTo(tg, staff); }).catch(function (e) { offErr('宛先を選ぶ', e, 'mail'); });
@@ -1815,7 +1902,7 @@ function mailWriteView() {
       if (MT.type === '班' || MT.type === 'イベント') req.targetValue = MT.val;
       if (MT.type === '個人') req.targetIds = Object.keys(MT.picks);
     } else if (MT.type === '個人') { req.targetType = '個人'; req.targetRefs = Object.keys(MT.refs); }
-    var sendIt = function () { return api('mail_send', req).then(function () { toast('送信しました'); MT.cat = ''; MT.imp = ''; MT.ready = false; go('mail'); }); };
+    var sendIt = function () { return api('mail_send', req).then(function () { toast('送信しました'); MT.cat = ''; MT.imp = ''; MT.ready = false; MB.pane = 'inbox'; go('mail'); }); };
     if (staff && MT.type === '全員') return new Promise(function (res, rej) { cf('全員に送ります。よろしいですか?', function () { sendIt().then(res, rej); }); setTimeout(function () { var d = document.getElementById('dlgn'); if (d) { var o = d.onclick; d.onclick = function () { o(); rej(new Error('送信をやめました')); }; } }, 0); });
     return sendIt();
   });
