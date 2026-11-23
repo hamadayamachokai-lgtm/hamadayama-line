@@ -358,7 +358,13 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .hscroll{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
 .hscroll::-webkit-scrollbar{display:none}
 .wc{flex:0 0 84%;scroll-snap-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
-.wc img{display:block;width:100%;aspect-ratio:20/13;object-fit:contain;background:#fff}
+.wc .wf{position:relative;background:#1b1520;overflow:hidden}.wc .wf img{display:block;width:100%;aspect-ratio:1/1;max-height:300px;object-fit:cover;object-position:50% 25%;background:#1b1520;transform-origin:50% 80%}
+.wf{position:relative;overflow:hidden}.wx{position:absolute;left:10px;top:10px;max-width:70%;background:#fff;color:#1b2438;border-radius:14px;padding:6px 12px;font-weight:700;font-size:16px;box-shadow:0 2px 8px #0006}.wx:after{content:"";position:absolute;left:18px;bottom:-8px;border:8px solid transparent;border-top-color:#fff;border-bottom:0}
+@keyframes mythink{0%,100%{transform:rotate(-2deg) scale(1.03)}50%{transform:rotate(2.5deg) translateY(-4px) scale(1.05)}}@keyframes mysweat{0%,100%{transform:translateX(0) scale(1.04)}20%{transform:translateX(-6px) scale(1.04)}40%{transform:translateX(6px) scale(1.04)}60%{transform:translateX(-4px) scale(1.04)}80%{transform:translateX(4px) scale(1.04)}}@keyframes mysmirk{0%,100%{transform:scale(1.02)}50%{transform:scale(1.09) translateY(-5px)}}@keyframes myangry{0%,100%{transform:scale(1.03)}10%,30%{transform:scale(1.08) rotate(-1.5deg)}20%,40%{transform:scale(1.08) rotate(1.5deg)}}@keyframes mybob{0%,100%{transform:translateY(0) scale(1.03)}50%{transform:translateY(-6px) scale(1.03)}}
+.wf.think img{animation:mythink 3s ease-in-out infinite}.wf.sweat img{animation:mysweat .9s ease-in-out infinite}.wf.smirk img{animation:mysmirk 2.6s ease-in-out infinite}.wf.angry img{animation:myangry 1.2s ease-in-out infinite}.wf.calm img{animation:mybob 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.wf img{animation:none!important}}
+.myrole{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:700;margin-left:6px}.myrole.c{background:#fbe5e2;color:#b3261e}.myrole.a{background:#fcefd3;color:#9a5b00}.myrole.n{background:#e8edf5;color:#475467}
+.mycast{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mycast .pc{border:2px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;padding:0;cursor:pointer;text-align:center;font-family:inherit;font-size:16px;font-weight:700;color:var(--ink)}.mycast .pc img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;object-position:50% 25%;background:#1b1520}.mycast .pc span{display:block;padding:8px 4px}
 .wc .in{padding:14px 16px 16px}
 .wc .pn{font-size:20px;font-weight:700}
 .wc .q{font-size:14px;font-weight:700;color:#475467;margin-top:8px}
@@ -500,7 +506,7 @@ var IC = {
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
-  tips: '豆知識', mystery: '推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
+  tips: '豆知識', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
@@ -1969,7 +1975,7 @@ function mysteryView() {
     var nickCard = r.needNick || MY.editNick ? '<div class="card"><h2>ランキングの名前</h2><p style="margin:0 0 10px;line-height:1.7">ランキングに出る名前を決めてください(個人情報保護のため、ニックネームがおすすめです)。入れなければ、LINEの会員名「' + esc(r.lineName) + '」で参加します。</p>' +
       '<input id="mnick" maxlength="12" autocomplete="off" placeholder="ニックネーム(12文字まで)" value="' + esc(r.nick || '') + '" aria-label="ニックネーム" style="width:100%;font-size:18px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px"><div style="height:10px"></div>' +
       '<button class="btn" id="mnickok">この名前にする</button><div style="height:8px"></div><button class="btn ghost" id="mnickno">入れずに、LINEの会員名で参加する</button></div>' : '';
-    sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">戦国武将たちの証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目3点・2回目2点・3回目1点)。</p>' +
+    sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">幕末の志士(Aチーム)と戦国武将(Bチーム)の事件が、かわるがわる起こります。証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目の投票で犯人を見つけたら3点・2回目で2点・最後の3回目で1点)。</p>' +
       '<button class="btn" id="mgo">🔍 事件をはじめる</button><p class="muted" style="margin:10px 0 0">ランキングの名前: <b>' + esc(nm) + '</b> <a href="#" id="mnickchg" style="color:var(--brand,#06c755)">変える</a></p>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
       '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
     $('#mgo').onclick = startMystery;
@@ -1995,14 +2001,20 @@ function startMystery() {
 }
 function mysIntro() {
   var st = MY.story;
-  sub('事件', '<div class="card"><div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em">' + (st.rare ? 'レア編・幕末' : '戦国編') + '</div><div style="font-size:21px;font-weight:700;margin:4px 0 10px">' + esc(st.title) + '</div><p style="line-height:1.8;margin:0">' + linkify(st.intro) + '</p>' +
-    '<p class="muted" style="margin:12px 0 0">容疑者: ' + st.cast.map(esc).join('・') + '</p></div><button class="btn" id="mst">証言を聞く</button><p class="small" style="margin:10px 4px">残り ' + st.remaining + ' 件(全 ' + st.total + ' 件)</p>', 'mystery');
+  sub('事件', '<div class="card"><div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em">' + (st.rare ? 'Aチーム編・幕末' : 'Bチーム編・戦国') + '</div><div style="font-size:21px;font-weight:700;margin:4px 0 10px">' + esc(st.title) + '</div><p style="line-height:1.8;margin:0">' + linkify(st.intro) + '</p>' +
+    '<p class="muted" style="margin:12px 0 0">容疑者: ' + st.cast.map(esc).join('・') + '</p><div class="mycast" style="margin-top:12px">' + st.cast.map(function (p) { return '<div class="pc" style="cursor:default"><img src="' + esc(myImg(st, p)) + '" alt="' + esc(p) + '" referrerpolicy="no-referrer"><span>' + esc(p) + '</span></div>'; }).join('') + '</div><div class="small" style="margin-top:12px;line-height:1.7">🎭 この中に<b>犯人が1人</b>。<b>共犯</b>がいることもあり、犯人をかばって みんなを惑わします。ほかの人は<b>一般</b>です。表情や動きは雰囲気づくりで、犯人かどうかとは関係ありません。</div></div><button class="btn" id="mst">証言を聞く</button><p class="small" style="margin:10px 4px">残り ' + st.remaining + ' 件(全 ' + st.total + ' 件)</p>', 'mystery');
   $('#mst').onclick = mysRound;
 }
+var MY_EXP = [['think', '🤔', 'うーん…'], ['sweat', '💦', 'そ、それは…'], ['smirk', '😏', 'ふふ…'], ['angry', '💢', '無礼な!'], ['calm', '😌', '…………'], ['sweat', '😅', 'ばれたか…?']];
+function myHash(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+var MY_IMGID = {"坂本龍馬": "ryoma", "西郷隆盛": "saigo", "高杉晋作": "takasugi", "土方歳三": "hijikata", "勝海舟": "kaishu", "伊達政宗": "masamune", "織田信長": "nobunaga", "徳川家康": "ieyasu", "真田幸村": "yukimura", "上杉謙信": "kenshin"};
+function myImg(st, p) { return (st && st.images && st.images[p]) || ('mystery-img/' + (MY_IMGID[p] || 'ieyasu') + '.jpg'); }
+function myExp(p, round, ans) { return MY_EXP[myHash(p + round + ans) % MY_EXP.length]; }   // ふんいき用。犯人かどうかとは関係ありません
 function mysRound() {
   var st = MY.story, r = st.rounds[MY.round - 1];
   var cards = r.talks.map(function (t, i) {
-    return '<div class="wc">' + (st.images[t.person] ? '<img src="' + esc(st.images[t.person]) + '" alt="' + esc(t.person) + '" loading="lazy" referrerpolicy="no-referrer">' : '') + '<div class="in"><div class="muted">第' + MY.round + 'ラウンド ・ ' + (i + 1) + '/5</div><div class="pn">🗣️ ' + esc(t.person) + '</div><div class="q">Q. ' + esc(t.question) + '</div><div class="a">「' + esc(t.answer) + '」</div></div></div>';
+    var ex = myExp(t.person, MY.round, t.answer);
+    return '<div class="wc"><div class="wf ' + ex[0] + '"><img src="' + esc(myImg(st, t.person)) + '" alt="' + esc(t.person) + '" referrerpolicy="no-referrer"><div class="wx">' + ex[1] + ' ' + esc(ex[2]) + '</div></div><div class="in"><div class="muted">第' + MY.round + 'ラウンド ・ ' + (i + 1) + '/5</div><div class="pn">🗣️ ' + esc(t.person) + '</div><div class="q">Q. ' + esc(t.question) + '</div><div class="a">「' + esc(t.answer) + '」</div></div></div>';
   }).join('');
   sub('第' + MY.round + 'ラウンド', '<p style="margin:0 2px 12px;line-height:1.7"><b>' + esc(r.lead || '証言を集めよう。') + '</b></p><div class="hscroll" id="hs">' + cards + '</div><div class="dots" id="dts">' + r.talks.map(function (_, i) { return '<i' + (i === 0 ? ' class="on"' : '') + '></i>'; }).join('') + '</div><p class="small" style="text-align:center;margin:0 0 14px">← 横にスワイプして、5人の証言を聞きましょう →</p>' +
     '<button class="btn" id="mvote">🗳️ 犯人に投票する</button>' + (MY.round < 3 ? '<div style="height:10px"></div><button class="btn ghost" id="mnext">次のラウンドへ →</button>' : '<p class="small" style="margin:10px 4px;text-align:center;color:var(--red);font-weight:700">最終ラウンドです。犯人だと思う人に投票してください。</p>'), 'mystery');
@@ -2013,7 +2025,7 @@ function mysRound() {
 }
 function mysVote() {
   var st = MY.story;
-  sub('投票', '<div class="card"><h2>犯人はだれ?</h2><p class="muted" style="margin:0 0 10px">第' + MY.round + 'ラウンドで投票します(投票するとすぐ結果が出ます)。</p>' + st.cast.map(function (p) { return '<button class="sbtn" style="display:flex;width:100%;margin-bottom:8px;min-height:52px" data-p="' + esc(p) + '">' + esc(p) + '</button>'; }).join('') + '</div><button class="btn ghost" id="mbk">← 証言にもどる</button>', 'mystery');
+  sub('投票', '<div class="card"><h2>犯人はだれ?</h2><p class="muted" style="margin:0 0 10px">第' + MY.round + 'ラウンドで投票します(投票するとすぐ結果が出ます)。</p>' + '<div class="mycast">' + st.cast.map(function (p) { return '<button class="pc" data-p="' + esc(p) + '"><img src="' + esc(myImg(st, p)) + '" alt=""><span>' + esc(p) + '</span></button>'; }).join('') + '</div></div><button class="btn ghost" id="mbk">← 証言にもどる</button>', 'mystery');
   $('#mbk').onclick = mysRound;
   Array.prototype.forEach.call(document.querySelectorAll('[data-p]'), function (b) {
     b.onclick = function () {
@@ -2025,9 +2037,11 @@ function mysVote() {
   });
 }
 function mysResult(r) {
+  var st = MY.story, cast = st.cast || [];
+  var roles = cast.map(function (p) { var k = p === r.culprit ? 'c' : p === r.accomplice ? 'a' : 'n'; return '<div class="pc" style="cursor:default"><div class="wf ' + (k === 'c' ? 'sweat' : k === 'a' ? 'smirk' : 'calm') + '"><img src="' + esc(myImg(st, p)) + '" alt=""><div class="wx" style="font-size:14px">' + (k === 'c' ? '😅 ばれたか…' : k === 'a' ? '😏 ふふ…' : '😌') + '</div></div><span>' + esc(p) + '<br><i class="myrole ' + k + '" style="font-style:normal;margin:0">' + (k === 'c' ? '犯人' : k === 'a' ? '共犯' : '一般') + '</i></span></div>'; }).join('');
   var h = '<div class="card" style="text-align:center"><div style="font-size:26px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? '🎉 推理成功!' : '🕵️ 犯人側の勝利') + '</div>' +
     '<p style="margin:8px 0 0">あなたの投票: ' + esc(r.vote) + '</p>' + (r.scored ? '<p style="margin:4px 0 0;font-weight:700">+' + r.points + '点</p>' : '') + '</div>' +
-    '<div class="card">' + (r.image ? '<img src="' + esc(r.image) + '" alt="' + esc(r.culprit) + '" style="width:100%;aspect-ratio:20/13;object-fit:contain;background:#fff;border-radius:10px;margin-bottom:10px" referrerpolicy="no-referrer">' : '') + '<div style="font-size:19px;font-weight:700">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '') +
+    '<div class="card"><div class="mycast">' + roles + '</div><div style="font-size:19px;font-weight:700;margin-top:12px">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '<div class="muted" style="margin-top:2px">共犯者: いませんでした</div>') +
     '<div class="a" style="margin-top:12px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.8"><div class="muted" style="font-weight:700">真相</div>' + esc(r.truth) + '</div>' +
     (r.history && r.history.note ? '<div style="margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #d9b44a;line-height:1.7"><b>' + (r.history.based ? '📜 史実をもとにした話' : '📜 補足') + '</b><br>' + esc(r.history.note) + '</div>' : '') + '</div>' +
     '<button class="btn" id="mnx">次の事件へ</button><div style="height:10px"></div><button class="btn ghost" id="mrk">ランキングを見る</button>';
