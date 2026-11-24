@@ -20,7 +20,7 @@
   /* ===== 小さな道具 ===== */
   var LEVELS = ['幼児向け', '低学年', '中学年', '高学年', '中学生', '高校生', '大学生', '社会人', '主婦向け', '高齢者'];
   var LV_SEC = [0, 30, 30, 25, 20, 20, 20, 20, 30, 0];       // 制限時間(秒)。0 = なし
-  var RUBY_MAX = 2;                                          // 幼児〜中学年は ふりがな
+  var RUBY_MAX = 1;                                          // 幼児・低学年は ひらがな+ふりがな。中学年からは 漢字
   var BIGTEXT = { 0: 1, 9: 1 };                              // 幼児・高齢者は さらに大きく
   var RAR = ['N', 'R', 'SR', 'LR'], RAR_POW = { N: 1, R: 2, SR: 3, LR: 5 };
   var RAR_COL = { N: '#8a94a6', R: '#2f7fd0', SR: '#9b4fd1', LR: '#e0a300' };
@@ -28,19 +28,27 @@
     '火事': ['ボヤボヤン', '#e8693a'], '水害': ['ザブーン', '#3b8ed6'], '地震': ['ユラユラ', '#a77b4f'], '避難': ['ウロウロン', '#6aa86b'],
     '学問': ['ガリベンタ', '#6b6fd6'], '時事': ['ニュースピ', '#d6a23b'], '法律': ['ホーリー', '#7a8794'], '音楽': ['ガヤガヤ', '#d65fa0'],
     '生活': ['グダグダ', '#8fb04a'], '推理': ['モヤモヤン', '#6c5b9e'], '料理': ['コゲコゲ', '#c9743a'], 'マナー': ['ギスギス', '#b04a4a'],
-    '道徳': ['イジワルン', '#4aa6a0'], '電話対応': ['ジリジリ', '#d6803b'], '物の名前': ['ナナシー', '#7fa2c9'], '流行': ['バズリン', '#e05fb0'], 'ご当地': ['ゴトーチン', '#c98f3a']
+    '道徳': ['イジワルン', '#4aa6a0'], '電話対応': ['ジリジリ', '#d6803b'], '物の名前': ['ナナシー', '#7fa2c9'], '流行': ['バズリン', '#e05fb0'], 'まなぶ': ['カズカズン', '#4a90d9'], 'あそぶ': ['ナゾナゾン', '#e08a3a'], 'よむ': ['モジモジン', '#5aa56b'], 'ご当地': ['ゴトーチン', '#c98f3a']
   };
+  var KIDS_G = ['まなぶ', 'あそぶ', 'よむ'];
+  function genresFor(lv) { var all = DATA.genres; return lv === 0 ? KIDS_G.filter(function (g) { return all.indexOf(g) >= 0; }) : all.filter(function (g) { return KIDS_G.indexOf(g) < 0; }); }
   var DATA = null, root = null, timer = null, V = {};
 
   function $(s) { return root.querySelector(s); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function st() { return Store.load(); }
   function ruby() { return st().level != null && st().level <= RUBY_MAX; }
+  var KANJI_UP = [['いちばん', '一番'], ['ぜんぶ', '全部'], ['ほんとう', '本当'], ['おなじ', '同じ'], ['はんたい', '反対'], ['じぶん', '自分'], ['ばんごう', '番号'], ['ちょうせん', '挑戦'], ['つづきから', '続きから'], ['つぎの', '次の'], ['いっしょ', '一緒'], ['おしまい', '終わり'], ['あいぼう', '相棒']];
+  function plain(s) {   // 中学年から:ことばの間の すきまを なくし、かんたんな ことばは 漢字に
+    s = String(s == null ? '' : s).replace(/([ぁ-んァ-ヶー一-龠々、。!?)」』]) +(?=[ぁ-んァ-ヶー一-龠々「『(])/g, '$1');
+    KANJI_UP.forEach(function (p) { s = s.split(p[0]).join(p[1]); });
+    return s;
+  }
   function T(s) {   // {漢字:よみ} を、ふりがな対応に
-    var e = esc(s), on = ruby();
+    var on = ruby(), e = esc(on ? s : plain(s));
     return e.replace(/\{([^:{}]+):([^{}]+)\}/g, function (m, a, b) { return on ? '<ruby>' + a + '<rt>' + b + '</rt></ruby>' : a; });
   }
-  function K(kanji, kana) { return ruby() ? kana : kanji; }   // 幼児〜中学年は かな多め
+  function K(kanji, kana) { return ruby() ? kana : plain(kanji); }   // 幼児〜中学年は かな多め
   function dayKey(d) { d = d || new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
   function yesterdayKey() { var d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); }
   function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -51,7 +59,7 @@
 
   /* ===== 問題の選び方(同じ日は同じ3問) ===== */
   function poolFor(level, genres, minCount) {
-    var all = DATA.questions, g = (genres && genres.length) ? all.filter(function (q) { return genres.indexOf(q.g) >= 0; }) : all;
+    var all = DATA.questions, g = (genres && genres.length) ? all.filter(function (q) { return genres.indexOf(q.g) >= 0; }) : all.filter(function (q) { return level === 0 ? KIDS_G.indexOf(q.g) >= 0 : KIDS_G.indexOf(q.g) < 0; });
     if (!g.length) g = all;
     var out = [];
     for (var d = 0; d <= 9 && out.length < minCount; d++) out = g.filter(function (q) { return Math.abs(q.lv - level) <= d; });
@@ -125,9 +133,9 @@
     function page() {
       draw('<div class="qc"><h2>' + (first ? 'はじめまして!' : 'せってい') + '</h2><p style="margin:0">' + K('1日3問の町会クイズです。', 'まいにち 3もん の クイズです。') + '</p></div>' +
         '<div class="qc"><h2>① ' + K('レベルを選ぶ', 'レベルを えらぶ') + '</h2><div class="qgrid">' + LEVELS.map(function (n, i) { return '<button class="qb sm' + (V.lv === i ? ' sel' : '') + '" style="justify-content:center" data-lv="' + i + '">' + esc(n) + '</button>'; }).join('') + '</div><div class="qm">' + K('あとから変えられます', 'あとから かえられます') + '</div></div>' +
-        '<div class="qc"><h2>② ' + K('ジャンルを選ぶ(いくつでも)', 'ジャンルを えらぶ') + '</h2><button class="qb sm' + (!V.gs.length ? ' sel' : '') + '" style="justify-content:center" data-g="*">おまかせ(ぜんぶ)</button><div class="qgrid g3">' + DATA.genres.map(function (g) { return '<button class="qb sm' + (V.gs.indexOf(g) >= 0 ? ' sel' : '') + '" style="justify-content:center;padding:4px;font-size:.85em" data-g="' + esc(g) + '">' + esc(g) + '</button>'; }).join('') + '</div></div>' +
+        '<div class="qc"><h2>② ' + K('ジャンルを選ぶ(いくつでも)', 'ジャンルを えらぶ') + '</h2><button class="qb sm' + (!V.gs.length ? ' sel' : '') + '" style="justify-content:center" data-g="*">おまかせ(ぜんぶ)</button><div class="qgrid g3">' + genresFor(V.lv).map(function (g) { return '<button class="qb sm' + (V.gs.indexOf(g) >= 0 ? ' sel' : '') + '" style="justify-content:center;padding:4px;font-size:.85em" data-g="' + esc(g) + '">' + esc(g) + '</button>'; }).join('') + '</div></div>' +
         '<button class="qb pri" id="qgo"' + (V.lv == null ? ' disabled' : '') + '>' + (first ? 'はじめる' : 'きめる') + '</button>' + (first ? '' : '<button class="qb" id="qcancel">もどる</button>'));
-      bind('[data-lv]', function (b) { V.lv = +b.dataset.lv; page(); });
+      bind('[data-lv]', function (b) { var n = +b.dataset.lv; if ((V.lv === 0) !== (n === 0)) V.gs = []; V.lv = n; page(); });
       bind('[data-g]', function (b) { var g = b.dataset.g; if (g === '*') V.gs = []; else { var i = V.gs.indexOf(g); if (i >= 0) V.gs.splice(i, 1); else V.gs.push(g); } page(); });
       $('#qgo').onclick = function () {
         if (V.lv == null) return;
@@ -144,8 +152,10 @@
   function ensureToday() {
     var s = st(), k = dayKey();
     if (!s.today || s.today.date !== k) {
-      var r = rng(k + '|' + s.level + '|' + s.genres.join(','));
-      var qs = pick(s.level, s.genres, 3, r);
+      var gs = s.genres.filter(function (g) { return (KIDS_G.indexOf(g) >= 0) === (s.level === 0); });
+      if (s.level === 0 && !gs.length) gs = KIDS_G.slice();
+      var r = rng(k + '|' + s.level + '|' + gs.join(','));
+      var qs = pick(s.level, gs, 3, r);
       s.today = { date: k, ids: qs.map(function (q) { return q.id; }), ans: [], done: false };
       Store.save();
     }
@@ -153,17 +163,17 @@
   }
   function xpBar(s) {
     var i = stageOf(s.xp), nx = STAGES[i + 1], pct = nx ? Math.round((s.xp - STAGES[i].min) / (nx.min - STAGES[i].min) * 100) : 100;
-    return '<div class="qbar" aria-label="けいけんち"><i style="width:' + pct + '%"></i></div><div class="qm">' + (nx ? 'つぎの すがたまで あと ' + (nx.min - s.xp) : 'かんせい! これからも いっしょに') + '</div>';
+    return '<div class="qbar" aria-label="けいけんち"><i style="width:' + pct + '%"></i></div><div class="qm">' + (nx ? K('次の姿まで あと ', 'つぎの すがたまで あと ') + (nx.min - s.xp) : K('完成! これからも一緒に', 'かんせい! これからも いっしょに')) + '</div>';
   }
   function home() {
     var s = st(); if (s.level == null) return setup();
     var t = ensureToday(), stage = stageOf(s.xp), nm = s.name || (stage === 0 ? 'たまご' : 'あいぼう');
     var left = t.done ? 0 : 3 - t.ans.length;
     draw('<button class="qb sm" id="qhub" style="width:auto;display:inline-flex">← GAMEの メニュー</button><div class="qc qbud"><div class="qm">' + esc(LEVELS[s.level]) + ' ・ ' + (s.genres.length ? esc(s.genres.join('・')) : 'おまかせ') + '</div><button id="qbud" style="display:block;margin:0 auto;background:none;border:0;padding:0;cursor:pointer" aria-label="あいぼうを タップ">' + buddySVG(stage, 150, true) + '</button><div id="qsay" class="qbub">' + esc(SAYS[stage][0]) + '</div><div style="font-weight:700">' + esc(nm) + ' <span class="qm">(' + STAGES[stage].n + ')</span></div>' + xpBar(s) + '</div>' +
-      '<div class="qc"><div class="qhead"><b>🔥 ' + K('れんぞく', 'れんぞく') + ' ' + s.streak + ' ' + K('日', 'にち') + '</b><span class="qm">' + K('さいこう', 'さいこう') + ' ' + s.best + ' ' + K('日', 'にち') + '</span></div>' +
+      '<div class="qc"><div class="qhead"><b>🔥 ' + K('連続', 'れんぞく') + ' ' + s.streak + ' ' + K('日', 'にち') + '</b><span class="qm">' + K('最高', 'さいこう') + ' ' + s.best + ' ' + K('日', 'にち') + '</span></div>' +
       (t.done ? '<div class="qfb ok"><b>' + K('今日はもう おしまい。', 'きょうは もう おしまい。') + '</b><br>' + K('また明日 あいましょう!', 'また あした あおうね!') + '</div><button class="qb" id="qrev">' + K('今日の問題を ふりかえる', 'きょうの もんだいを みなおす') + '</button>'
         : '<button class="qb pri" id="qstart">' + (t.ans.length ? K('つづきから(あと' + left + '問)', 'つづきから(あと' + left + 'もん)') : K('今日の3問に ちょうせん', 'きょうの 3もんに ちょうせん')) + '</button>') + '</div>' +
-      '<div class="qm" style="text-align:center">' + K('カード ', 'カード ') + Object.keys(s.cards).length + '/' + DATA.questions.length + ' ' + K('まい', 'まい') + '</div>' + bottomNav('home'));
+      '<div class="qm" style="text-align:center">' + K('カード ', 'カード ') + Object.keys(s.cards).length + '/' + DATA.questions.length + ' ' + K('枚', 'まい') + '</div>' + bottomNav('home'));
     bindNav();
     var said = 0; $('#qbud').onclick = function () { said = (said + 1) % SAYS[stage].length; $('#qsay').textContent = SAYS[stage][said]; };
     $('#qhub').onclick = hub; var b1 = $('#qstart'); if (b1) b1.onclick = function () { daily(); };
@@ -181,7 +191,7 @@
       var ok = i >= 0 && ch[i].ok;
       Array.prototype.forEach.call(root.querySelectorAll('#qch .qb'), function (b, j) { b.disabled = true; b.classList.add(ch[j].ok ? 'ok' : (j === i ? 'ng' : 'x')); });
       var src = q.src && DATA.sources[q.src];
-      $('#qfb').innerHTML = '<div class="qfb ' + (ok ? 'ok' : 'ng') + '"><b>' + (ok ? K('せいかい! 🎉', 'せいかい! 🎉') : timeout ? K('時間ぎれ…', 'じかんぎれ…') : K('ざんねん…', 'ざんねん…')) + '</b>' + (ok ? '' : '<div>' + K('正解は', 'せいかいは') + '「' + T(q.a) + '」</div>') + '<div style="margin-top:6px">' + T(q.ex) + '</div><div class="qmn">💡 ' + K('覚え方', 'おぼえかた') + ':' + T(q.mn) + '</div>' +
+      $('#qfb').innerHTML = '<div class="qfb ' + (ok ? 'ok' : 'ng') + '"><b>' + (ok ? K('正解! 🎉', 'せいかい! 🎉') : timeout ? K('時間ぎれ…', 'じかんぎれ…') : K('残念…', 'ざんねん…')) + '</b>' + (ok ? '' : '<div>' + K('正解は', 'せいかいは') + '「' + T(q.a) + '」</div>') + '<div style="margin-top:6px">' + T(q.ex) + '</div><div class="qmn">💡 ' + K('覚え方', 'おぼえかた') + ':' + T(q.mn) + '</div>' +
         (src ? '<div class="qm" style="margin-top:6px">' + K('出典', 'でんてん') + ':<a href="' + esc(src.u) + '" target="_blank" rel="noopener">' + esc(src.t) + '</a>(' + esc(src.d) + ' 確認)</div>' : '') + (q.asof ? '<div class="qm">' + esc(q.asof.replace('-', '年') + '月') + 'ごろの 情報です</div>' : '') + '</div>' +
         '<button class="qb pri" id="qnext">' + esc(o.nextLabel || K('次へ', 'つぎへ')) + '</button>';
       $('#qnext').onclick = function () { o.next(ok); }; o.onAnswer(ok, timeout, q);
@@ -230,7 +240,7 @@
     draw('<div class="qc qbud"><h2>' + K('今日の けっか', 'きょうの けっか') + '</h2><div style="font-size:1.4em;font-weight:700">' + (V.gain ? V.gain.correct : t.ans.reduce(function (a, b) { return a + b; }, 0)) + ' / 3 ' + K('正解', 'せいかい') + '</div>' + buddySVG(stage, 140, true) +
       '<div class="qbub">' + (V.gain && V.gain.evo ? '🎊 ' + esc(nm) + 'が ' + STAGES[V.gain.evo].n + 'に しんかした!' : '+' + (V.gain ? V.gain.xp : 0) + ' けいけんち!') + '</div>' + xpBar(s) + '</div>' +
       (got.length ? '<div class="qc"><h2>' + K('もらったカード', 'もらった カード') + '</h2><div class="qgrid">' + got.map(function (c) { var q = qById(c.id); return '<div class="qcard" style="--rc:' + RAR_COL[c.rar] + '"><b>' + c.rar + '</b>' + (c.isNew ? '<span class="qtag">NEW</span><br>' : '') + T(q.q) + '</div>'; }).join('') + '</div></div>' : '') +
-      '<div class="qfb ok"><b>🔥 ' + K('れんぞく', 'れんぞく') + ' ' + s.streak + ' ' + K('日!', 'にち!') + '</b><br>' + K('今日はもう おしまい。また明日!', 'きょうは もう おしまい。また あした!') + '</div><button class="qb pri" id="qhome">' + K('ホームへ', 'ホームへ') + '</button><button class="qb" id="qbat">' + K('バトルで あそぶ(なんどでも)', 'バトルで あそぶ') + '</button>');
+      '<div class="qfb ok"><b>🔥 ' + K('連続', 'れんぞく') + ' ' + s.streak + ' ' + K('日!', 'にち!') + '</b><br>' + K('今日はもう おしまい。また明日!', 'きょうは もう おしまい。また あした!') + '</div><button class="qb pri" id="qhome">' + K('ホームへ', 'ホームへ') + '</button><button class="qb" id="qbat">' + K('バトルで遊ぶ(何度でも)', 'バトルで あそぶ') + '</button>');
     $('#qhome').onclick = home; $('#qbat').onclick = bsel;
   }
 
@@ -239,8 +249,8 @@
     var s = st(); V.dg = g === undefined ? V.dg : g;
     var all = DATA.questions, have = all.filter(function (q) { return s.cards[q.id]; }).length;
     var list = V.dg ? all.filter(function (q) { return q.g === V.dg; }) : all;
-    draw('<div class="qc"><h2>' + K('カードずかん', 'カードずかん') + '</h2><div style="font-size:1.2em;font-weight:700">' + have + ' / ' + all.length + ' ' + K('まい', 'まい') + '</div><div class="qbar"><i style="width:' + Math.round(have / all.length * 100) + '%"></i></div></div>' +
-      '<div class="qc"><h2>' + K('ジャンルごと', 'ジャンルごと') + '</h2><div class="qgrid g3"><button class="qb sm' + (!V.dg ? ' sel' : '') + '" style="justify-content:center;padding:4px" data-dg="">ぜんぶ</button>' + DATA.genres.map(function (x) {
+    draw('<div class="qc"><h2>' + K('カード図鑑', 'カードずかん') + '</h2><div style="font-size:1.2em;font-weight:700">' + have + ' / ' + all.length + ' ' + K('枚', 'まい') + '</div><div class="qbar"><i style="width:' + Math.round(have / all.length * 100) + '%"></i></div></div>' +
+      '<div class="qc"><h2>' + K('ジャンル別', 'ジャンルごと') + '</h2><div class="qgrid g3"><button class="qb sm' + (!V.dg ? ' sel' : '') + '" style="justify-content:center;padding:4px" data-dg="">ぜんぶ</button>' + DATA.genres.map(function (x) {
         var tt = all.filter(function (q) { return q.g === x; }), hv = tt.filter(function (q) { return s.cards[q.id]; }).length;
         return '<button class="qb sm' + (V.dg === x ? ' sel' : '') + '" style="justify-content:center;padding:4px;font-size:.8em;flex-direction:column;gap:0;line-height:1.3" data-dg="' + esc(x) + '">' + esc(x) + '<span class="qm">' + hv + '/' + tt.length + (hv === tt.length ? ' ★' : '') + '</span></button>';
       }).join('') + '</div></div><div class="qgrid">' + list.map(function (q) {
@@ -251,15 +261,15 @@
   }
   function dexCard(id) {
     var q = qById(id), c = st().cards[id], src = q.src && DATA.sources[q.src];
-    draw('<div class="qcard" style="--rc:' + RAR_COL[c.r] + ';min-height:0;font-size:1em;cursor:default;margin-bottom:14px"><b>' + c.r + '</b><span class="qtag">' + esc(q.g) + '</span><div style="font-weight:700;margin:6px 0">' + T(q.q) + '</div>' + (q.fig ? '<div style="text-align:center">' + q.fig + '</div>' : '') + '<div>' + K('こたえ', 'こたえ') + ':<b>' + T(q.a) + '</b></div><div style="margin-top:6px">' + T(q.ex) + '</div><div class="qmn">💡 ' + T(q.mn) + '</div>' +
-      (src ? '<div class="qm" style="margin-top:6px">' + K('出典', 'でんてん') + ':<a href="' + esc(src.u) + '" target="_blank" rel="noopener">' + esc(src.t) + '</a></div>' : '') + '<div class="qm">' + c.n + ' かい ゲット</div></div><button class="qb" id="qb">' + K('もどる', 'もどる') + '</button>');
+    draw('<div class="qcard" style="--rc:' + RAR_COL[c.r] + ';min-height:0;font-size:1em;cursor:default;margin-bottom:14px"><b>' + c.r + '</b><span class="qtag">' + esc(q.g) + '</span><div style="font-weight:700;margin:6px 0">' + T(q.q) + '</div>' + (q.fig ? '<div style="text-align:center">' + q.fig + '</div>' : '') + '<div>' + K('答え', 'こたえ') + ':<b>' + T(q.a) + '</b></div><div style="margin-top:6px">' + T(q.ex) + '</div><div class="qmn">💡 ' + T(q.mn) + '</div>' +
+      (src ? '<div class="qm" style="margin-top:6px">' + K('出典', 'でんてん') + ':<a href="' + esc(src.u) + '" target="_blank" rel="noopener">' + esc(src.t) + '</a></div>' : '') + '<div class="qm">' + c.n + ' かい ゲット</div></div><button class="qb" id="qb">' + K('戻る', 'もどる') + '</button>');
     $('#qb').onclick = function () { dex(); };
   }
 
   /* --- バトル --- */
   function bsel() {
     var s = st();
-    draw('<div class="qc"><h2>' + K('カードバトル', 'カードバトル') + '</h2><p style="margin:0">' + K('てきを えらぼう。正解で こうげき! カードが 多いほど つよい。', 'てきを えらぼう。せいかいで こうげき!') + '</p><div class="qm">' + K('勝ち ', 'かち ') + s.battles.win + ' / ' + K('負け ', 'まけ ') + s.battles.lose + '</div></div><div class="qgrid">' + DATA.genres.map(function (g) {
+    draw('<div class="qc"><h2>' + K('カードバトル', 'カードバトル') + '</h2><p style="margin:0">' + K('てきを えらぼう。正解で こうげき! カードが 多いほど つよい。', 'てきを えらぼう。せいかいで こうげき!') + '</p><div class="qm">' + K('勝ち ', 'かち ') + s.battles.win + ' / ' + K('負け ', 'まけ ') + s.battles.lose + '</div></div><div class="qgrid">' + genresFor(s.level).map(function (g) {
       return '<button class="qb" style="flex-direction:column;gap:2px;padding:8px" data-e="' + esc(g) + '">' + enemySVG(g, 70) + '<span style="font-size:.9em">' + esc(ENEMIES[g][0]) + '</span><span class="qm">' + esc(g) + '</span></button>';
     }).join('') + '</div>' + bottomNav('bsel'));
     bindNav(); bind('[data-e]', function (b) { battle(b.dataset.e); });
@@ -277,14 +287,14 @@
       var q = B.q.shift(); B.n++;
       ask(q, {
         r: B.r, sec: LV_SEC[s.level],
-        head: '<div class="qc" style="text-align:center;padding:10px"><div id="qen">' + enemySVG(genre, 90) + '</div><b>' + esc(ENEMIES[genre][0]) + '</b><div class="qbar"><i style="width:' + Math.max(0, B.ehp) + '%;background:#d64545"></i></div><div class="qhearts">' + '❤️'.repeat(B.hearts) + '🖤'.repeat(3 - B.hearts) + '</div><div class="qm">' + (B.combo > 1 ? '🔥 ' + B.combo + ' コンボ!' : K('こうげきりょく ', 'こうげき ') + atk) + '</div></div>',
+        head: '<div class="qc" style="text-align:center;padding:10px"><div id="qen">' + enemySVG(genre, 90) + '</div><b>' + esc(ENEMIES[genre][0]) + '</b><div class="qbar"><i style="width:' + Math.max(0, B.ehp) + '%;background:#d64545"></i></div><div class="qhearts">' + '❤️'.repeat(B.hearts) + '🖤'.repeat(3 - B.hearts) + '</div><div class="qm">' + (B.combo > 1 ? '🔥 ' + B.combo + ' コンボ!' : K('攻撃力 ', 'こうげき ') + atk) + '</div></div>',
         nextLabel: null,
         onAnswer: function (ok) {
           if (ok) { B.combo++; var dmg = Math.round(atk * Math.min(3, 1 + (B.combo - 1) * .5)); B.ehp -= dmg; var c = giveCard(q, rng(Date.now() + q.id)); addXp(2); }
           else { B.combo = 0; B.hearts--; B.miss.push(q.id); }
           Store.save();
           if (ok && B.ehp <= 0) { var ee = $('#qen'); if (ee) { ee.style.position = 'relative'; ee.classList.add('qz-uoo'); ee.insertAdjacentHTML('beforeend', '<div class="qz-uo">うお!!!</div>'); } }
-          var en = $('#qfb'); if (en) en.insertAdjacentHTML('afterbegin', '<div class="qfb ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '⚔️ ' + Math.round(atk * Math.min(3, 1 + (B.combo - 1) * .5)) + ' ' + K('ダメージ!', 'ダメージ!') + (B.ehp <= 0 ? ' ' + K('たおした!', 'たおした!') : '') : '💥 ' + K('こうげきを うけた…', 'こうげきを うけた…')) + '</div>');
+          var en = $('#qfb'); if (en) en.insertAdjacentHTML('afterbegin', '<div class="qfb ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '⚔️ ' + Math.round(atk * Math.min(3, 1 + (B.combo - 1) * .5)) + ' ' + K('ダメージ!', 'ダメージ!') + (B.ehp <= 0 ? ' ' + K('倒した!', 'たおした!') : '') : '💥 ' + K('攻撃を受けた…', 'こうげきを うけた…')) + '</div>');
         },
         next: next
       });
@@ -292,9 +302,9 @@
     function end(win) {
       var s = st(); if (win) { s.battles.win++; addXp(10); } else s.battles.lose++; Store.save();
       var miss = B.miss.map(qById).filter(Boolean);
-      draw('<div class="qc qbud"><h2>' + (win ? K('かった! 🎉', 'かった! 🎉') : K('まけちゃった…', 'まけちゃった…')) + '</h2>' + (win ? '<div class="qz-uoo" style="position:relative;display:inline-block">' + enemySVG(genre, 110) + '<div class="qz-uo">うお!!!</div></div>' : enemySVG(genre, 110)) + '<div class="qbub">' + (win ? '+10 けいけんち' : K('おぼえれば つぎは かてるよ!', 'おぼえれば つぎは かてるよ!')) + '</div></div>' +
+      draw('<div class="qc qbud"><h2>' + (win ? K('勝った! 🎉', 'かった! 🎉') : K('負けちゃった…', 'まけちゃった…')) + '</h2>' + (win ? '<div class="qz-uoo" style="position:relative;display:inline-block">' + enemySVG(genre, 110) + '<div class="qz-uo">うお!!!</div></div>' : enemySVG(genre, 110)) + '<div class="qbub">' + (win ? '+10 けいけんち' : K('覚えれば次は勝てるよ!', 'おぼえれば つぎは かてるよ!')) + '</div></div>' +
         (miss.length ? '<div class="qc"><h2>' + K('この問題を 覚えよう', 'この もんだいを おぼえよう') + '</h2>' + miss.map(function (q) { return '<div style="margin-bottom:10px"><b>' + T(q.q) + '</b><div>' + K('正解', 'せいかい') + ':' + T(q.a) + '</div><div class="qmn">💡 ' + T(q.mn) + '</div></div>'; }).join('') + '</div>' : '') +
-        '<button class="qb pri" id="qagain">' + K('もういちど', 'もういちど') + '</button><button class="qb" id="qsel">' + K('ほかの てきと たたかう', 'ほかの てき') + '</button><button class="qb" id="qhome">' + K('ホームへ', 'ホームへ') + '</button>');
+        '<button class="qb pri" id="qagain">' + K('もう一度', 'もういちど') + '</button><button class="qb" id="qsel">' + K('ほかの敵と戦う', 'ほかの てき') + '</button><button class="qb" id="qhome">' + K('ホームへ', 'ホームへ') + '</button>');
       $('#qagain').onclick = function () { battle(genre); }; $('#qsel').onclick = bsel; $('#qhome').onclick = home;
     }
     next();
@@ -303,9 +313,9 @@
   /* --- せってい --- */
   function settings() {
     var s = st();
-    draw('<div class="qc"><h2>' + K('あいぼうの なまえ', 'あいぼうの なまえ') + '</h2><input id="qname" maxlength="8" value="' + esc(s.name) + '" placeholder="なまえ(8文字まで)" style="width:100%;min-height:52px;font-size:1em;padding:8px 12px;border:2px solid #cfc7b4;border-radius:12px;margin-bottom:10px" aria-label="あいぼうの なまえ"><button class="qb pri" id="qsn">' + K('なまえを つける', 'なまえを つける') + '</button></div>' +
-      '<div class="qc"><h2>' + K('レベル・ジャンル', 'レベル・ジャンル') + '</h2><p style="margin:0 0 8px">' + esc(LEVELS[s.level]) + ' ・ ' + (s.genres.length ? esc(s.genres.join('・')) : 'おまかせ') + '</p><button class="qb" id="qchg">' + K('かえる', 'かえる') + '</button></div>' +
-      '<div class="qc"><h2>きろく</h2><div class="qm">' + K('この端末に 保存されています(機種変更では 引きつげません)', 'この スマホに ほぞんされています') + '</div><button class="qb sm" id="qreset" style="margin-top:8px">' + K('ぜんぶ けして はじめから', 'ぜんぶ けす') + '</button></div>' + bottomNav('set'));
+    draw('<div class="qc"><h2>' + K('相棒の名前', 'あいぼうの なまえ') + '</h2><input id="qname" maxlength="8" value="' + esc(s.name) + '" placeholder="なまえ(8文字まで)" style="width:100%;min-height:52px;font-size:1em;padding:8px 12px;border:2px solid #cfc7b4;border-radius:12px;margin-bottom:10px" aria-label="あいぼうの なまえ"><button class="qb pri" id="qsn">' + K('名前をつける', 'なまえを つける') + '</button></div>' +
+      '<div class="qc"><h2>' + K('レベル・ジャンル', 'レベル・ジャンル') + '</h2><p style="margin:0 0 8px">' + esc(LEVELS[s.level]) + ' ・ ' + (s.genres.length ? esc(s.genres.join('・')) : 'おまかせ') + '</p><button class="qb" id="qchg">' + K('変える', 'かえる') + '</button></div>' +
+      '<div class="qc"><h2>きろく</h2><div class="qm">' + K('この端末に 保存されています(機種変更では 引きつげません)', 'この スマホに ほぞんされています') + '</div><button class="qb sm" id="qreset" style="margin-top:8px">' + K('全部消して最初から', 'ぜんぶ けす') + '</button></div>' + bottomNav('set'));
     bindNav();
     $('#qsn').onclick = function () { st().name = $('#qname').value.trim().slice(0, 8); Store.save(); home(); };
     $('#qchg').onclick = setup;
@@ -314,69 +324,99 @@
 
   /* --- GAME メニュー(助け合いの最初の画面と同じ作り) --- */
   function hub() {
-    draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">⭕❌ ○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">🎯 今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">🗾 日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。止まったマスで1問。まちがえたら戻ります。</p></div>');
+    draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。止まったマスで1問。まちがえたら戻ります。</p></div>');
     $('#gox').onclick = ox; $('#gdaily').onclick = home; $('#gtrip').onclick = openTrip;
   }
 
-  /* --- ○×ゲーム(2人 または コンピューター) --- */
-  var OXL = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-  function oxWin(b) { for (var i = 0; i < OXL.length; i++) { var l = OXL[i]; if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return { m: b[l[0]], l: l }; } return null; }
+  /* --- ○×ゲーム(2人 または コンピューター。マス目は 3×3 / 5×5 / 7×7) --- */
+  var OXS = [{ n: 3, k: 3, t: '3 × 3', d: '3つそろえる(すぐ終わります)' }, { n: 5, k: 4, t: '5 × 5', d: '4つそろえる' }, { n: 7, k: 5, t: '7 × 7', d: '5つそろえる(じっくり)' }];
+  var OXLC = {};
+  function oxLines(n, k) {
+    var key = n + 'x' + k; if (OXLC[key]) return OXLC[key];
+    var L = [], dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) dirs.forEach(function (d) {
+      var er = r + d[0] * (k - 1), ec = c + d[1] * (k - 1); if (er < 0 || er >= n || ec < 0 || ec >= n) return;
+      var l = []; for (var i = 0; i < k; i++) l.push((r + d[0] * i) * n + c + d[1] * i); L.push(l);
+    });
+    return (OXLC[key] = L);
+  }
+  function oxWin(b, n, k) { n = n || 3; k = k || 3; var L = oxLines(n, k); for (var i = 0; i < L.length; i++) { var l = L[i], m = b[l[0]]; if (m) { var ok = true; for (var j = 1; j < l.length; j++) if (b[l[j]] !== m) { ok = false; break; } if (ok) return { m: m, l: l }; } } return null; }
   function oxFull(b) { return b.every(function (x) { return x; }); }
-  function oxMinimax(b, me, turn) {
-    var w = oxWin(b); if (w) return w.m === me ? 10 : -10; if (oxFull(b)) return 0;
+  function oxMinimax(b, me, turn) {   // 3×3 だけで使う
+    var w = oxWin(b, 3, 3); if (w) return w.m === me ? 10 : -10; if (oxFull(b)) return 0;
     var best = turn === me ? -99 : 99;
     for (var i = 0; i < 9; i++) if (!b[i]) { b[i] = turn; var v = oxMinimax(b, me, turn === 'O' ? 'X' : 'O'); b[i] = ''; best = turn === me ? Math.max(best, v) : Math.min(best, v); }
     return best;
   }
-  function oxCpu(b, me, lv) {
-    var em = []; for (var i = 0; i < 9; i++) if (!b[i]) em.push(i);
+  var OXW = [0, 1, 6, 40, 400, 100000];
+  function oxScore(b, n, k, i, me, you) {   // その マスに 置く ねうち(自分の線をのばす + 相手の線をふさぐ)
+    var L = oxLines(n, k), s = 0;
+    for (var a = 0; a < L.length; a++) { var l = L[a]; if (l.indexOf(i) < 0) continue; var m = 0, y = 0; l.forEach(function (x) { if (b[x] === me) m++; else if (b[x] === you) y++; });
+      if (!y) s += OXW[Math.min(5, m + 1)] * 1.0; if (!m) s += OXW[Math.min(5, y + 1)] * 0.9; }
+    var c = (n - 1) / 2, r = Math.floor(i / n), q = i % n; return s - (Math.abs(r - c) + Math.abs(q - c)) * 0.01;
+  }
+  function oxCpu(b, me, lv, n, k) {
+    n = n || 3; k = k || 3;
+    var em = []; for (var i = 0; i < n * n; i++) if (!b[i]) em.push(i);
     var rnd = function (a) { return a[Math.floor(Math.random() * a.length)]; }, you = me === 'O' ? 'X' : 'O';
     if (lv === 0) return rnd(em);
-    var tryWin = function (m) { for (var k = 0; k < em.length; k++) { b[em[k]] = m; var w = oxWin(b); b[em[k]] = ''; if (w) return em[k]; } return -1; };
-    if (lv === 1) { var a = tryWin(me); if (a >= 0) return a; a = tryWin(you); if (a >= 0) return a; if (!b[4]) return 4; var c = em.filter(function (x) { return [0, 2, 6, 8].indexOf(x) >= 0; }); return c.length ? rnd(c) : rnd(em); }
-    var best = -99, mv = [];
-    em.forEach(function (i) { b[i] = me; var v = oxMinimax(b, me, you); b[i] = ''; if (v > best) { best = v; mv = [i]; } else if (v === best) mv.push(i); });
-    return rnd(mv);
+    var tryWin = function (m) { for (var q = 0; q < em.length; q++) { b[em[q]] = m; var w = oxWin(b, n, k); b[em[q]] = ''; if (w) return em[q]; } return -1; };
+    if (n === 3 && lv === 2) {
+      var best = -99, mv = [];
+      em.forEach(function (i) { b[i] = me; var v = oxMinimax(b, me, you); b[i] = ''; if (v > best) { best = v; mv = [i]; } else if (v === best) mv.push(i); });
+      return rnd(mv);
+    }
+    var a = tryWin(me); if (a >= 0) return a; a = tryWin(you); if (a >= 0 && (lv === 2 || Math.random() < .7)) return a;
+    if (lv === 1 && Math.random() < .3) return rnd(em);
+    var sc = em.map(function (i) { return [oxScore(b, n, k, i, me, you), i]; }).sort(function (x, y) { return y[0] - x[0]; });
+    var top = sc.filter(function (x) { return x[0] >= sc[0][0] - (lv === 2 ? .001 : sc[0][0] * .25); }).map(function (x) { return x[1]; });
+    return rnd(top);
   }
   function ox() {
-    draw('<h2 class="hph">○×ゲーム</h2><div class="card hpq"><div class="hpl" style="margin-top:0">だれと あそぶ?</div><button type="button" class="hmg wide" id="oxp" style="margin:0 0 10px">👥 2人で(スマホを貸し借り)</button><button type="button" class="hmg wide alt" id="oxc" style="margin:0">🤖 コンピューターと</button></div><button class="qb" id="oxb">← GAMEの メニュー</button>');
-    $('#oxp').onclick = function () { oxStart({ mode: 'pvp', first: 'O' }); }; $('#oxc').onclick = oxLevel; $('#oxb').onclick = hub;
+    draw('<h2 class="hph">○×ゲーム</h2><div class="card hpq"><div class="hpl" style="margin-top:0">だれと あそぶ?</div><button type="button" class="hmg wide" id="oxp" style="margin:0 0 10px">2人で(スマホを貸し借り)</button><button type="button" class="hmg wide alt" id="oxc" style="margin:0">コンピューターと</button></div><button class="qb" id="oxb">← GAMEの メニュー</button>');
+    $('#oxp').onclick = function () { oxSize('pvp'); }; $('#oxc').onclick = function () { oxSize('cpu'); }; $('#oxb').onclick = hub;
   }
-  function oxLevel() {
-    draw('<h2 class="hph">コンピューターの つよさ</h2><div class="card hpq"><button type="button" class="hmg wide" data-lv="0" style="margin:0 0 10px">😊 やさしい</button><button type="button" class="hmg wide" data-lv="1" style="margin:0 0 10px">🙂 ふつう</button><button type="button" class="hmg wide alt" data-lv="2" style="margin:0">😎 つよい(なかなか 勝てません)</button></div><button class="qb" id="oxb">← もどる</button>');
-    bind('[data-lv]', function (b) { oxStart({ mode: 'cpu', lv: +b.dataset.lv, first: 'O' }); }); $('#oxb').onclick = ox;
+  function oxSize(mode) {
+    draw('<h2 class="hph">マス目を えらぶ</h2><div class="card hpq">' + OXS.map(function (z, i) { return '<button type="button" class="hmg wide" data-sz="' + i + '" style="margin:0 0 10px">' + z.t + ' ・ ' + z.d + '</button>'; }).join('') + '</div><button class="qb" id="oxb">← もどる</button>');
+    bind('[data-sz]', function (b) { var z = OXS[+b.dataset.sz]; if (mode === 'cpu') oxLevel(z); else oxStart({ mode: 'pvp', first: 'O', n: z.n, k: z.k }); }); $('#oxb').onclick = ox;
+  }
+  function oxLevel(z) {
+    draw('<h2 class="hph">コンピューターの つよさ</h2><div class="card hpq"><button type="button" class="hmg wide" data-lv="0" style="margin:0 0 10px">やさしい</button><button type="button" class="hmg wide" data-lv="1" style="margin:0 0 10px">ふつう</button><button type="button" class="hmg wide alt" data-lv="2" style="margin:0">つよい(なかなか 勝てません)</button></div><button class="qb" id="oxb">← もどる</button>');
+    bind('[data-lv]', function (b) { oxStart({ mode: 'cpu', lv: +b.dataset.lv, first: 'O', n: z.n, k: z.k }); }); $('#oxb').onclick = function () { oxSize('cpu'); };
   }
   function oxStart(o) {
-    var g = { mode: o.mode, lv: o.lv, board: ['', '', '', '', '', '', '', '', ''], turn: o.first, first: o.first, me: 'O', done: false, win: null, score: o.score || { O: 0, X: 0, d: 0 } };
+    var N = o.n || 3, KK = o.k || 3, g = { mode: o.mode, lv: o.lv, n: N, k: KK, board: [], turn: o.first, first: o.first, me: 'O', done: false, win: null, score: o.score || { O: 0, X: 0, d: 0 } };
+    for (var q = 0; q < N * N; q++) g.board.push('');
     function nm(m) { return g.mode === 'cpu' ? (m === g.me ? 'あなた(' + (m === 'O' ? '○' : '×') + ')' : 'コンピューター(' + (m === 'O' ? '○' : '×') + ')') : (m === 'O' ? '○ の人' : '× の人'); }
     function paint(last) {
-      var w = g.win, st;
-      if (g.done) st = w ? '🎉 ' + nm(w.m) + ' の勝ち!' : '🤝 引き分け'; else st = (g.mode === 'pvp' ? nm(g.turn) + ' の番です' : (g.turn === g.me ? 'あなたの 番です' : 'コンピューターが 考え中…'));
-      draw('<h2 class="hph">○×ゲーム</h2><div class="card" style="text-align:center"><div style="font-size:1.15em;font-weight:700;min-height:1.7em" id="oxst">' + st + '</div>' + (g.mode === 'pvp' && !g.done ? '<div class="qm">打ったら、つぎの人に スマホを わたしてね</div>' : '') +
-        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px auto;max-width:340px">' + g.board.map(function (v, i) {
-          var on = w && w.l.indexOf(i) >= 0; return '<button type="button" class="oxc" data-i="' + i + '" aria-label="' + (v || 'あき') + '" style="aspect-ratio:1/1;min-height:90px;border:3px solid ' + (on ? '#e0a300' : '#cfc7b4') + ';border-radius:16px;background:' + (on ? '#fff4d6' : '#fff') + ';font-size:3.2em;font-weight:800;line-height:1;color:' + (v === 'O' ? '#d64545' : '#2f7fd0') + ';cursor:pointer;font-family:inherit' + (i === last ? ';animation:oxpop .25s' : '') + '">' + (v === 'O' ? '○' : v === 'X' ? '×' : '') + '</button>'; }).join('') + '</div>' +
+      var w = g.win, st, fs = N === 3 ? '3.2em' : N === 5 ? '2.1em' : '1.5em', gap = N === 3 ? 8 : N === 5 ? 5 : 3, rad = N === 3 ? 16 : N === 5 ? 10 : 6;
+      if (g.done) st = w ? nm(w.m) + ' の勝ち!' : '引き分け'; else st = (g.mode === 'pvp' ? nm(g.turn) + ' の番です' : (g.turn === g.me ? 'あなたの 番です' : 'コンピューターが 考え中…'));
+      draw('<h2 class="hph">○×ゲーム(' + N + ' × ' + N + ' ・ ' + KK + 'つそろえる)</h2><div class="card" style="text-align:center"><div style="font-size:1.15em;font-weight:700;min-height:1.7em" id="oxst">' + st + '</div>' + (g.mode === 'pvp' && !g.done ? '<div class="qm">打ったら、つぎの人に スマホを わたしてね</div>' : '') +
+        '<div style="display:grid;grid-template-columns:repeat(' + N + ',1fr);gap:' + gap + 'px;margin:12px auto;max-width:340px">' + g.board.map(function (v, i) {
+          var on = w && w.l.indexOf(i) >= 0; return '<button type="button" class="oxc" data-i="' + i + '" aria-label="' + (v || 'あき') + '" style="aspect-ratio:1/1;min-width:0;padding:0;border:' + (N === 3 ? 3 : 2) + 'px solid ' + (on ? '#e0a300' : '#cfc7b4') + ';border-radius:' + rad + 'px;background:' + (on ? '#fff4d6' : '#fff') + ';font-size:' + fs + ';font-weight:800;line-height:1;color:' + (v === 'O' ? '#d64545' : '#2f7fd0') + ';cursor:pointer;font-family:inherit' + (i === last ? ';animation:oxpop .25s' : '') + '">' + (v === 'O' ? '○' : v === 'X' ? '×' : '') + '</button>'; }).join('') + '</div>' +
         '<div class="qm">' + (g.mode === 'cpu' ? 'あなたの成績 ' + g.score.O + '勝' + g.score.X + '敗' + g.score.d + '引分け' : '○の人 ' + g.score.O + '勝 ・ ×の人 ' + g.score.X + '勝 ・ 引分け ' + g.score.d) + '</div></div>' +
         (g.done ? '<button class="qb pri" id="oxagain">もう一回(先に打つ人を かえる)</button>' : '') + '<button class="qb" id="oxb">← おわる</button><style>@keyframes oxpop{0%{transform:scale(.4)}100%{transform:scale(1)}}</style>');
       bind('.oxc', function (b) { move(+b.dataset.i); });
-      $('#oxb').onclick = ox; var ag = $('#oxagain'); if (ag) ag.onclick = function () { oxStart({ mode: g.mode, lv: g.lv, first: g.first === 'O' ? 'X' : 'O', score: g.score }); };
+      $('#oxb').onclick = ox; var ag = $('#oxagain'); if (ag) ag.onclick = function () { oxStart({ mode: g.mode, lv: g.lv, n: N, k: KK, first: g.first === 'O' ? 'X' : 'O', score: g.score }); };
     }
+    function cpuMove() { if (g.done) return; var c = oxCpu(g.board, g.turn, g.lv, N, KK); g.board[c] = g.turn; after(c); }
     function after(i) {
-      var w = oxWin(g.board); if (w) { g.done = true; g.win = w; g.score[w.m]++; } else if (oxFull(g.board)) { g.done = true; g.score.d++; } else g.turn = g.turn === 'O' ? 'X' : 'O';
+      var w = oxWin(g.board, N, KK); if (w) { g.done = true; g.win = w; g.score[w.m]++; } else if (oxFull(g.board)) { g.done = true; g.score.d++; } else g.turn = g.turn === 'O' ? 'X' : 'O';
       paint(i);
-      if (!g.done && g.mode === 'cpu' && g.turn !== g.me) setTimeout(function () { if (g.done) return; var c = oxCpu(g.board, g.turn, g.lv); g.board[c] = g.turn; after(c); }, 600);
+      if (!g.done && g.mode === 'cpu' && g.turn !== g.me) setTimeout(cpuMove, 600);
     }
     function move(i) { if (g.done || g.board[i] || (g.mode === 'cpu' && g.turn !== g.me)) return; g.board[i] = g.turn; after(i); }
     paint(-1);
-    if (g.mode === 'cpu' && g.turn !== g.me) setTimeout(function () { var c = oxCpu(g.board, g.turn, g.lv); g.board[c] = g.turn; after(c); }, 600);
+    if (g.mode === 'cpu' && g.turn !== g.me) setTimeout(cpuMove, 600);
   }
 
   /* --- 日本旅すごろく(quiz-trip.js を読みこむ) --- */
   function openTrip() {
     var run = function () { window.HmtQuizTrip.start(api()); };
     if (window.HmtQuizTrip) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=3'; sc.onload = run;
+    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=4'; sc.onload = run;
     sc.onerror = function () { toastMsg('すごろくを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
@@ -390,7 +430,7 @@
     root = el; root.id = 'qz';
     if (!document.getElementById('qzcss')) { var sty = document.createElement('style'); sty.id = 'qzcss'; sty.textContent = CSS; document.head.appendChild(sty); }
     root.innerHTML = '<div class="qc">よみこみ中…</div>';
-    var url = (opts && opts.dataUrl) || 'quiz-data.json';
+    var url = (opts && opts.dataUrl) || 'quiz-data.json?v=4';
     function load() {
       fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (d) {
         DATA = d; V = {}; hub();
