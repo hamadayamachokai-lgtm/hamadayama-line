@@ -1,19 +1,19 @@
 /* 日本旅すごろく(quiz.js から呼ばれます)
-   都道府県を相棒と渡り歩き、マスで クイズ・人生イベント。バトルは最下位に「1本ハゲのおじさん」が乗ります。
+   都道府県を相棒と渡り歩き、マスで クイズ・人生イベント。コンピューター対戦は最下位に「1本ハゲのおじさん」が乗ります。
    ※ 遊び方のアイデアは「すごろく型ボードゲーム」から。キャラクターや絵は すべてオリジナルです。 */
 (function () {
   'use strict';
-  var A, D, G, TRIPCSS = '#qz .tbd{height:340px;overflow:auto;border:2px solid #e4ddcf;border-radius:16px;background:#fbf8ef;margin:0 0 12px}#qz .tbd svg{display:block;width:560px;max-width:none;height:auto}' +
+  var A, D, G, TRIPCSS = '#qz .tbd{height:380px;overflow:auto;border:2px solid #e4ddcf;border-radius:16px;background:#fbf8ef;margin:0 0 12px}#qz .tbd svg{display:block;width:820px;max-width:none;height:auto}' +
     '#qz .tdice{font-size:2.4em;display:inline-block;min-width:1.3em;text-align:center}@keyframes tdr{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#qz .tdice.roll{animation:tdr .35s linear infinite}' +
     '#qz .tlog{font-size:.88em;color:#4a5160;min-height:2.6em}#qz .trk{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .trk span{padding:2px 10px;border-radius:99px;background:#fff;border:2px solid var(--pc);font-weight:700;font-size:.85em}' +
     '#qz .tev{text-align:center}#qz .tev .big{font-size:4em;line-height:1.2}@keyframes tbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}#qz .tbob{animation:tbob 1s ease-in-out infinite}' +
-    '#qz .ttok{transition:transform .22s ease-out}@media (prefers-reduced-motion:reduce){#qz .tdice.roll,#qz .tbob{animation:none}#qz .ttok{transition:none}}';
+    '#qz .pcard{background:#d8392f;border-radius:18px;padding:10px 10px 12px;margin:0 0 12px;box-shadow:0 2px 6px rgba(0,0,0,.18)}#qz .pcard h2{color:#fff;text-align:center;margin:2px 0 8px;font-size:1.7em;letter-spacing:.08em}#qz .pcard .pin{background:#fff;border-radius:12px;padding:12px}#qz .pcard .pill{display:inline-block;background:#d8392f;color:#fff;border-radius:6px;padding:1px 8px;font-size:.8em;font-weight:700;margin-right:8px}#qz .pcard .pill.g{background:#3f9a3a}#qz .pcard .pill.b{background:#2f86d0}#qz .pcard .prow{margin:0 0 9px;line-height:1.6}#qz .pcard .pil{text-align:center;font-size:2.6em;line-height:1.3;letter-spacing:.15em;background:#fff8e1;border-radius:10px;margin:0 0 10px}#qz .ttok{transition:transform .22s ease-out}@media (prefers-reduced-motion:reduce){#qz .tdice.roll,#qz .tbob{animation:none}#qz .ttok{transition:none}}';
   var N = 47, GOAL = 47, TOTAL = 25;
   var KINDS = ['goto', 'quiz', 'event', 'goto', 'quiz', 'goto', 'event', 'quiz', 'goto', 'event', 'quiz', 'goto'];
   var KCOL = { goto: '#f6c85f', quiz: '#7fb8e8', event: '#ee8fb0' };
   var KICON = { goto: '🍴', quiz: '❓', event: '🎁' };
   var CPU = [{ name: 'モコ', c: '#f2a65a', p: .55 }, { name: 'ピポ', c: '#7aa7e8', p: .65 }, { name: 'ガブ', c: '#c98ad8', p: .45 }];
-  var ME_COL = '#4fb7a1', VW = 360, VH = 470;
+  var ME_COL = '#4fb7a1', VW = 576, VH = 752;
   // 県庁所在地のだいたいの経度・緯度(地図の上の位置)
   var LL = [[141.35, 43.06], [140.74, 40.82], [141.15, 39.7], [140.87, 38.27], [140.1, 39.72], [140.36, 38.24], [140.47, 37.75], [140.45, 36.34], [139.88, 36.57], [139.06, 36.39], [139.65, 35.86], [140.12, 35.61], [139.69, 35.69], [139.64, 35.45], [139.02, 37.9], [137.21, 36.7], [136.63, 36.59], [136.22, 36.07], [138.57, 35.66], [138.18, 36.65], [136.72, 35.39], [138.38, 34.98], [136.91, 35.18], [136.51, 34.73], [135.87, 35.0], [135.76, 35.02], [135.52, 34.69], [135.18, 34.69], [135.83, 34.69], [135.17, 34.23], [134.24, 35.5], [133.05, 35.47], [133.93, 34.66], [132.46, 34.4], [131.47, 34.19], [134.56, 34.07], [134.04, 34.34], [132.77, 33.84], [133.53, 33.56], [130.42, 33.61], [130.3, 33.25], [129.87, 32.74], [130.74, 32.79], [131.61, 33.24], [131.42, 31.91], [130.56, 31.56]];
   var ISL = [ // 日本列島のおおまかな形(経度,緯度)
@@ -39,6 +39,23 @@
     return '<g class="ttok" id="tk' + id + '"><g class="tbob" style="transform-box:fill-box">' + body + extra + '</g><g id="oj' + id + '" style="display:none" transform="translate(-13,-30) scale(.34)">' + ojiInner() + '</g><text y="21" font-size="9" text-anchor="middle" fill="#3b2a1d" font-weight="700" style="paint-order:stroke;stroke:#f6ecd2;stroke-width:3px">' + A.esc(p.name) + '</text></g>';
   }
   function ojiInner() { return ojiSVG(80).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''); }
+  function prefLabels() {   // 47都道府県の名前。ほかの名前や点と かさならない位置をさがす
+    var FS = 8, placed = [], dots = [], out = [], i, p;
+    for (i = 0; i <= GOAL; i++) { p = pxy(i); dots.push([p[0] - 7, p[1] - 7, p[0] + 7, p[1] + 7]); }
+    function hit(a, b) { return a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]; }
+    function cost(b, self) { var c = 0; placed.forEach(function (q) { if (hit(b, q)) c += 3; }); dots.forEach(function (q, k) { if (k !== self && hit(b, q)) c += 2; }); if (b[0] < 1 || b[2] > VW - 1) c += 5; return c; }
+    for (i = 0; i < 47; i++) {
+      p = pxy(i); var n = D.prefs[i].n, w = n.length * FS + 3, h = FS + 2, best = null;
+      [[8, 0, 'start'], [-8, 0, 'end'], [0, -9, 'middle'], [0, 14, 'middle'], [8, -8, 'start'], [-8, -8, 'end'], [8, 11, 'start'], [-8, 11, 'end'], [14, 0, 'start'], [-14, 0, 'end'], [0, -17, 'middle'], [0, 22, 'middle']].some(function (c) {
+        var x = p[0] + c[0], y = p[1] + c[1] + 3, bx = c[2] === 'start' ? x : c[2] === 'end' ? x - w : x - w / 2, b = [bx, y - h + 1, bx + w, y + 2], k = cost(b, i);
+        if (!best || k < best.k) best = { k: k, x: x, y: y, a: c[2], b: b };
+        return k === 0;
+      });
+      placed.push(best.b);
+      out.push('<text x="' + best.x.toFixed(1) + '" y="' + best.y.toFixed(1) + '" font-size="' + FS + '" text-anchor="' + best.a + '" font-weight="700" fill="#3b2a1d" stroke="#fffbea" stroke-width="2.4" paint-order="stroke" stroke-linejoin="round">' + A.esc(n) + '</text>');
+    }
+    return out.join('');
+  }
   function boardSVG() {
     var o = [], pts = [];
     o.push('<rect width="' + VW + '" height="' + VH + '" fill="#9cc7d9"/><rect width="' + VW + '" height="' + VH + '" fill="url(#qgrid)" opacity=".25"/>');
@@ -47,16 +64,13 @@
     o.push('<rect x="22" y="' + (VH - 72) + '" width="120" height="58" rx="10" fill="#efe2b8" stroke="#a88a4e" stroke-width="2" stroke-dasharray="5 3"/><text x="82" y="' + (VH - 60) + '" font-size="9" text-anchor="middle" fill="#7a5a2a">沖縄(べつの枠)</text>');
     for (var i = 0; i <= GOAL; i++) pts.push(pxy(i).join(','));
     o.push('<polyline points="' + pts.join(' ') + '" fill="none" stroke="#b5533c" stroke-width="2.4" stroke-dasharray="1 5" stroke-linecap="round"/>');
+    o.push(prefLabels());
     for (i = 0; i <= GOAL; i++) { var p = pxy(i), k = i >= GOAL ? 'goal' : kindOf(i); o.push('<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === GOAL ? 9 : 5.5) + '" fill="' + (k === 'goal' ? '#e8453c' : KCOL[k]) + '" stroke="#5b3b1e" stroke-width="1.4"/>' + (i === GOAL ? '<text x="' + p[0] + '" y="' + (p[1] + 4) + '" font-size="11" text-anchor="middle">🏁</text>' : '')); }
     o.push('<g id="tlab"></g>');
     G.players.forEach(function (pl, j) { o.push(tokenG(pl, j)); });
     return '<svg viewBox="0 0 ' + VW + ' ' + VH + '" role="img" aria-label="日本地図の すごろく">' + o.join('') + '</svg>';
   }
-  function labels() {
-    var g = A.root().querySelector('#tlab'); if (!g) return; var m = me().pos, h = '';
-    for (var i = Math.max(0, m - 1); i <= Math.min(GOAL, m + 3); i++) { var p = pxy(i), nm = i >= GOAL ? 'ゴール' : D.prefs[i].n; h += '<text x="' + p[0] + '" y="' + (p[1] - 8) + '" font-size="10" text-anchor="middle" font-weight="700" fill="#3b2a1d" style="paint-order:stroke;stroke:#fff8e0;stroke-width:3px">' + A.esc(nm) + '</text>'; }
-    g.innerHTML = h;
-  }
+  function labels() {}
 
   /* ===== 状態 ===== */
   function me() { return G.players[0]; }
@@ -90,8 +104,8 @@
     A = api; D = A.data;
     if (!document.getElementById('qztripcss')) { var s = document.createElement('style'); s.id = 'qztripcss'; s.textContent = TRIPCSS; document.head.appendChild(s); }
     A.draw('<div class="qc tev"><div class="big">🗾</div><h2>' + K('日本一周すごろく', 'にほん いっしゅう すごろく') + '</h2><p style="margin:0">' + K('北海道から沖縄まで、日本地図の上を旅しよう。止まったマスで 1問 解きます。まちがえたら、もとの マスに もどります。', 'ほっかいどうから おきなわまで たびを しよう。とまった マスで 1もん とくよ。まちがえたら もとの マスに もどるよ。') + '</p></div>' +
-      '<button class="qb pri" data-m="battle">⚔️ ' + K('バトルモード(コンピューター3人と)', 'バトル(3にんと たたかう)') + '</button><div class="qm" style="margin:-4px 0 12px">' + K('先に ゴールを めざそう。最下位には 1本ハゲの おじさんが 乗っかります…!', 'いちばん したの ひとに はげの おじさんが のっかるよ…!') + '</div>' +
-      '<button class="qb" data-m="solo">🚶 ' + K('ひとり旅(' + TOTAL + 'ターンいないに ゴール)', 'ひとりたび(' + TOTAL + 'ターンで ゴール)') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
+      '<button class="qb pri" data-m="battle">' + K('コンピュータと対戦', 'コンピュータと たいせん') + '</button>' +
+      '<button class="qb" data-m="solo">' + K('一人旅', 'ひとりたび') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
     A.bind('[data-m]', function (b) { init(b.dataset.m); });
     A.root().querySelector('#tback').onclick = function () { if (A.hub) A.hub(); else A.home(); };
   }
@@ -161,7 +175,20 @@
         var fb = A.root().querySelector('#qfb'); if (fb) fb.insertAdjacentHTML('afterbegin', '<div class="qfb ' + (good ? 'ok' : 'ng') + '"><b>' + (good ? ok.msg : ng.msg) + '</b> ' + (gain >= 0 ? '+' : '') + gain + K('万円', 'まんえん') + (good ? '' : '<br>↩️ ' + K('まちがえたので、もとの マスに もどります', 'まちがえたので もどるよ')) + '</div>');
       }, next: function () { if (wrong) backMe(after); else after(); } });
   }
+  function fullName(n) { return n === '北海道' ? n : n === '東京' ? '東京都' : n === '大阪' || n === '京都' ? n + '府' : n + '県'; }
+  function prefCard(pr) {
+    var li = function (a) { return (a || []).map(A.esc).join('・'); };
+    return '<div class="pcard"><h2>' + A.esc(fullName(pr.n)) + '</h2><div class="pin"><div class="pil" aria-hidden="true">' + (pr.i || pr.e) + '</div>' +
+      '<div class="prow"><span class="pill">' + K('県庁所在地', 'けんちょうしょざいち') + '</span>' + A.esc(pr.c || '') + '</div>' +
+      '<div class="prow"><span class="pill g">' + K('めいぶつ', 'めいぶつ') + '</span>' + li(pr.t) + '</div>' +
+      '<div class="prow" style="margin:0"><span class="pill b">' + K('川・湖・山など', 'かわ・みずうみ・やま') + '</span>' + li(pr.w) + '</div></div></div>';
+  }
   function landMe() {
+    var i = me().pos; if (i >= GOAL) { me().goalRound = G.round; return cpuTurns(); }
+    A.draw(statusHtml() + prefCard(D.prefs[i]) + '<button class="qb pri" id="pnext">' + K('つぎへ', 'つぎへ') + '</button>');
+    A.root().querySelector('#pnext').onclick = landMe2;
+  }
+  function landMe2() {
     var i = me().pos; if (i >= GOAL) { me().goalRound = G.round; return cpuTurns(); }
     var k = kindOf(i), pr = D.prefs[i], head = '<div class="qc" style="padding:10px 14px"><b>' + pr.e + ' ' + A.esc(pr.n) + '</b> <span class="qm">' + K('名物:', 'めいぶつ:') + A.esc(pr.s) + '</span></div>';
     var done = function () { if (me().pos >= GOAL && me().goalRound == null) me().goalRound = G.round; cpuTurns(); };
