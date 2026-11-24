@@ -153,21 +153,26 @@
     A.bind('[data-n]', function (b) { level('local', +b.dataset.n); }); $('#aback').onclick = where;
   }
   function alvLabel(i) { var L = ALV[i]; return 'レベル' + (i + 1) + ' ・ ' + L.sec + '秒 ・ おだい' + L.themes.length + 'しゅるい' + (L.min > 2 ? ' ・ ' + L.min + '文字いじょう' : ''); }
+  function intro(lv, mode, n) {
+    var L = ALV[lv];
+    A.draw('<h2 class="hph">レベル' + (lv + 1) + '</h2><div class="card"><p style="margin:0;line-height:1.9">このレベルは、1回 <b>' + L.sec + '秒</b>です。<br>おだいは <b>' + L.themes.length + 'しゅるい</b>' + (L.min > 2 ? '。<b>' + L.min + '文字いじょう</b>の ことば' : '') + 'です。</p></div><button class="qb pri" id="ago2">' + (mode === 'net' ? 'つぎへ' : 'はじめる') + '</button><button class="qb" id="aback">← もどる</button>');
+    $('#aback').onclick = function () { level(mode, n); };
+    $('#ago2').onclick = function () {
+      if (mode === 'net') return lobby(A, netSpec(lv));
+      if (mode === 'cpu') return run({ mode: 'cpu', S: newState(['あなた', 'コンピューター'], ['h', 'c'], lv, 0) });
+      var names = []; for (var k = 0; k < n; k++) names.push((k + 1) + '人目');
+      run({ mode: 'local', S: newState(names, names.map(function () { return 'h'; }), lv, 0) });
+    };
+  }
   function netSpec(lv) {
     return { game: 'atama', title: 'あたまおしり', cfg: { lv: lv }, min: 2, max: 6, cfgText: alvLabel(lv), cfgTextFor: function (c) { return alvLabel(c.lv || 0); }, back: function () { level('net'); },
       init: function (R) { var lv2 = R.cfg.lv || 0; return newState(R.players.slice(), R.players.map(function () { return 'h'; }), lv2, 0); },
       onStart: function (R) { run({ mode: 'net', R: R }); } };
   }
   function level(mode, n) {
-    A.draw('<h2 class="hph">レベルを えらぶ</h2><div class="card hpq">' + ALV.map(function (L, i) { return '<button type="button" class="hmg wide' + (i >= 3 ? ' alt' : '') + '" data-lv="' + i + '" style="margin:0 0 10px">' + alvLabel(i) + '</button>'; }).join('') + '</div>' + (mode === 'net' ? '<button class="qb" id="ajoin">ともだちの へやに はいる(番号を いれる)</button>' : '') + '<button class="qb" id="aback">← もどる</button>');
+    A.draw('<h2 class="hph">レベルを えらぶ</h2><div class="card hpq">' + ALV.map(function (L, i) { return '<button type="button" class="hmg wide' + (i >= 3 ? ' alt' : '') + '" data-lv="' + i + '" style="margin:0 0 10px">レベル' + (i + 1) + '</button>'; }).join('') + '</div>' + (mode === 'net' ? '<button class="qb" id="ajoin">ともだちの へやに はいる(番号を いれる)</button>' : '') + '<button class="qb" id="aback">← もどる</button>');
     var aj = $('#ajoin'); if (aj) aj.onclick = function () { lobby(A, netSpec(0)); };
-    A.bind('[data-lv]', function (b) {
-      var lv = +b.dataset.lv;
-      if (mode === 'net') return lobby(A, netSpec(lv));
-      if (mode === 'cpu') return run({ mode: 'cpu', S: newState(['あなた', 'コンピューター'], ['h', 'c'], lv, 0) });
-      var names = []; for (var i = 0; i < n; i++) names.push((i + 1) + '人目');
-      run({ mode: 'local', S: newState(names, names.map(function () { return 'h'; }), lv, 0) });
-    });
+    A.bind('[data-lv]', function (b) { intro(+b.dataset.lv, mode, n); });
     $('#aback').onclick = mode === 'cpu' ? function () { atamaMenu(A); } : (mode === 'net' ? where : people);
   }
 
