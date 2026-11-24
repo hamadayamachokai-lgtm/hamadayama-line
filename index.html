@@ -3556,6 +3556,7 @@ function bdBubble(x, o) {   // x: 投稿またはコメント / o: {kind, staff,
     return '<article class="tw' + (x.mine ? ' me' : '') + (hid ? ' gone' : '') + '"><div class="thl">' + av(x.icon, '', x.ph) + (o.line ? '<i class="thline"></i>' : '') + '</div><div class="thr">' +
       '<div class="thh"><b>' + (x.mine ? 'あなた' : '町会の方') + '</b><span class="muted" style="font-size:12px">' + esc(fmtMd(x.date)) + '</span>' + (hid ? '<span class="tg warn" style="margin:0">' + esc(x.status) + '</span>' : '') + '</div>' +
       bdAttrHtml(x.attr) + '<div class="bt' + (o.clamp ? ' clamp' : '') + '">' + bodyHtml(x.body) + '</div>' +
+      (x.helpId && !x.mine && !hid ? '<button type="button" class="hmg wide" data-hraise="' + esc(x.helpId) + '" style="margin:8px 0 0">🙋 行けるよ</button>' : '') +
       (hid ? '' : '<div class="rxbox" data-rk="' + o.kind + '" data-rid="' + tid + '"></div>') +
       '<div class="bmeta" style="margin-left:0">' + cmt +
       (x.mine || o.staff ? '<button type="button" class="bq" data-op="delete|' + tid + '">削除</button>' : '') +
@@ -3577,6 +3578,15 @@ function bdBind(items, par, kind, list, redraw, opt) {
     b.onclick = function () {
       cf('削除依頼を出します。数人から依頼があると、いったん非表示になり、役員が確認します。よろしいですか?', function () {
       b.disabled = true; api('board_report', { id: b.dataset.rp }).then(function () { toast('削除依頼を出しました'); redraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      });
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hraise]'), function (b) {
+    b.onclick = function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      cf('この依頼に「行けるよ」を出します。つながると、助け合いの「マッチング済」に移ります。よろしいですか?', function () {
+        b.disabled = true;
+        api('help_raise', { id: b.dataset.hraise }).then(function () { toast('マッチングしました!助け合いに移ります'); window.HP_OPEN = 'done'; go('help'); }).catch(function (e) { b.disabled = false; toast(e.message); redraw(); });
       });
     };
   });
@@ -3793,7 +3803,7 @@ var HP = { scr: 'home', mode: 'need', d: null, av: null, pick: null, ask: null, 
 var HPBACK = { recruit: 'start', avail: 'home' };
 function hpRf0() { return { sex: '性別問わず', ages: [], tags: [], text: '', scale: '1人', area: '' }; }
 function helpView() {
-  HP.scr = window.HP_OPEN === 'task' ? 'task' : 'start'; window.HP_OPEN = ''; HP.ask = null; HP.rf = hpRf0(); HP.af = { sex: '', age: '', tags: [] }; HP.flt = { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } };
+  HP.scr = window.HP_OPEN === 'task' || window.HP_OPEN === 'done' ? window.HP_OPEN : 'start'; window.HP_OPEN = ''; HP.ask = null; HP.rf = hpRf0(); HP.af = { sex: '', age: '', tags: [] }; HP.flt = { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } };
   if (!MEM.help_list) sub('助け合い', '<div class="skel" style="height:300px"></div>');
   swrList('help_list', function (d) { HP.d = d; drawHelp(); refreshBadges(); }, function (e) { offErr('助け合い', e, 'home'); });
   api('help_avail_get').then(function (a) { HP.av = a; if (HP.d && (HP.scr === 'avail' || HP.mode === 'go')) drawHelp(); }).catch(function () {});
