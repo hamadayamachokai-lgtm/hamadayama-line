@@ -103,7 +103,7 @@
   function start(api) {
     A = api; D = A.data;
     if (!document.getElementById('qztripcss')) { var s = document.createElement('style'); s.id = 'qztripcss'; s.textContent = TRIPCSS; document.head.appendChild(s); }
-    A.draw('<div class="qc tev"><div class="big">🗾</div><h2>' + K('日本一周すごろく', 'にほん いっしゅう すごろく') + '</h2><p style="margin:0">' + K('北海道から沖縄まで、日本地図の上を旅しよう。止まったマスで 1問 解きます。まちがえたら、もとの マスに もどります。', 'ほっかいどうから おきなわまで たびを しよう。とまった マスで 1もん とくよ。まちがえたら もとの マスに もどるよ。') + '</p></div>' +
+    A.draw('<div class="qc tev"><h2>' + K('日本一周すごろく', 'にほん いっしゅう すごろく') + '</h2><p style="margin:0">' + K('北海道から沖縄まで、日本地図の上を旅しよう。止まったマスで 1問 解きます。まちがえたら、もとの マスに もどります。', 'ほっかいどうから おきなわまで たびを しよう。とまった マスで 1もん とくよ。まちがえたら もとの マスに もどるよ。') + '</p></div>' +
       '<button class="qb pri" data-m="battle">' + K('コンピュータと対戦', 'コンピュータと たいせん') + '</button>' +
       '<button class="qb" data-m="solo">' + K('一人旅', 'ひとりたび') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
     A.bind('[data-m]', function (b) { init(b.dataset.m); });
