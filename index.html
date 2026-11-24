@@ -317,8 +317,8 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .hhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:13px;color:#4a2c7a;font-weight:700}.hhead .hd{background:var(--hp);color:#fff;border-radius:999px;padding:3px 10px;font-size:12px}
 .hdet{margin:0 0 12px;border:1px solid #d9cdee;border-radius:12px;background:#fff}.hdet summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--hp);list-style:none}.hdet[open] summary{border-bottom:1px solid #eadff7}.hdet .hdf{padding:10px 14px 14px}
 .hc .brow.me .bb{background:#dccbf5;border-color:#cdb7ee}.hc .brow:not(.me) .bb{background:#f1f2f4;border-color:#e3e5e9}
-.hptabs{display:grid;grid-template-columns:repeat(3,1fr);margin:0 0 12px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.hptabs button{all:unset;box-sizing:border-box;text-align:center;padding:12px 4px;font-weight:700;font-size:14px;color:var(--sub);cursor:pointer}.hptabs button[aria-pressed=true]{color:var(--hp);box-shadow:inset 0 -3px 0 var(--hp);background:#f6f1fc}
+.hptabs{display:grid;grid-template-columns:repeat(4,auto);margin:0 0 12px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hptabs button{all:unset;box-sizing:border-box;text-align:center;padding:12px 2px;font-weight:700;font-size:12.5px;color:var(--sub);cursor:pointer}.hptabs button[aria-pressed=true]{color:var(--hp);box-shadow:inset 0 -3px 0 var(--hp);background:#f6f1fc}
 .hptabs i{font-style:normal;margin-left:4px;background:#c0322b;color:#fff;border-radius:999px;font-size:11px;padding:1px 6px}
 .hcnote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#f1ebfa;color:#3b1f63;font-size:14px;line-height:1.5}.hcnote button{margin-left:auto}
 .hpseg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.hpseg button{all:unset;box-sizing:border-box;text-align:center;padding:14px 6px;border-radius:14px;font-weight:800;font-size:17px;cursor:pointer;border:2px solid #d9cdee;color:var(--hp);background:#fff}.hpseg button[aria-pressed=true]{background:var(--hp);border-color:var(--hp);color:#fff}
@@ -327,6 +327,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .cork{background:#c99a62 radial-gradient(rgba(90,55,20,.28) 1.2px,transparent 1.6px) 0 0/9px 9px;border:10px solid #8a5a2b;border-radius:14px;padding:22px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:22px 14px;box-shadow:inset 0 2px 10px rgba(0,0,0,.35);margin:0 0 6px}.cork.empty{grid-template-columns:1fr}
 .note{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:4px;min-height:150px;padding:20px 10px 10px;background:var(--nc,#fff4a8);color:#2b2b2b;border-radius:3px;box-shadow:2px 5px 7px rgba(0,0,0,.32);transform:rotate(var(--r,0deg));cursor:pointer;transition:transform .15s}.note:active{transform:rotate(0) scale(1.03)}.note b{font-size:14px;line-height:1.3}.note .nb{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}.note .nm{font-size:12px;font-weight:800;color:#8a3a10}.note .nd{font-size:11px;color:#6b6b6b;margin-top:auto}.note .tgs{margin:0}.note .at{font-size:10px}
 .n0{--nc:#fff4a8}.n1{--nc:#ffd6e0}.n2{--nc:#cfeaff}.n3{--nc:#d9f2c6}
+.mk{position:absolute;top:-2px;left:-6px;padding:1px 8px;background:#d42b2b;color:#fff;font-size:10px;font-weight:800;border-radius:3px;transform:rotate(-6deg);box-shadow:1px 2px 3px rgba(0,0,0,.3);z-index:3}.mk.b{background:#2f7fd0}.mk.g{background:#7a8294}.note.off{filter:grayscale(.55);opacity:.88}.hdc .mk{top:-8px;left:10px}
 .pin{position:absolute;top:-9px;left:50%;margin-left:-10px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d42b2b 60%,#8e1414);box-shadow:2px 4px 4px rgba(0,0,0,.4);z-index:2}
 .nu{position:absolute;top:8px;right:6px;padding:1px 7px;border:2px solid #d42b2b;border-radius:6px;color:#d42b2b;font-size:11px;font-weight:900;transform:rotate(8deg)}
 .hdov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}.hdc{position:relative;width:100%;max-width:420px;background:var(--nc,#fff4a8);color:#2b2b2b;border-radius:6px;padding:26px 18px 16px;box-shadow:0 8px 24px rgba(0,0,0,.4)}.hdc .hms{color:#555}.hdc .hmw{color:#2b2b2b}.hdc .small{color:#555}.hdx{all:unset;position:absolute;top:6px;right:10px;font-size:26px;line-height:1;cursor:pointer;padding:4px 8px}
@@ -1804,6 +1805,7 @@ function drawMail(m) {
       (m.canStop ? '<button type="button" id="mstop">強制終了</button>' : '') + '</div></div>';
   }
   if (hc && !m.watch) h += '<div class="hhead"><span class="hd">助け合いチャット</span><span>参加 ' + m.members + '人 ・ ' + esc(String(m.expires || '').slice(5).replace('-', '/')) + 'まで(3日間)</span></div>';
+  if (hc && !m.watch && !m.canDetail && !m.stopped) h += '<div style="margin:0 0 10px;text-align:right"><button type="button" class="sbtn xs" id="hd-quit">やっぱり対応できません</button></div>';
   if (hc && m.canDetail) h += '<details class="hdet" id="hdet"><summary>場所・呼び名を送る(依頼する方)</summary><div class="hdf"><label class="small" for="hd-place">対象の場所</label><div class="inrow"><input class="inp" id="hd-place" maxlength="100" placeholder="例: 3丁目のパン屋の前" style="flex:1;min-width:0"><button type="button" class="sbtn" id="hd-loc" style="min-height:44px">📍 現在地</button></div><div class="small" id="hd-lt" style="margin:2px 0 0">現在地を使うか、場所を文字で入れてください</div><label class="small" for="hd-nick" style="display:block;margin-top:8px">呼び名(苗字でもニックネームでもOK)</label><input class="inp" id="hd-nick" maxlength="30" placeholder="例: 田中" style="width:100%;box-sizing:border-box"><label class="small" for="hd-note" style="display:block;margin-top:8px">具体的な内容(任意)</label><textarea class="inp" id="hd-note" maxlength="300" rows="2" placeholder="例: 米10kgを2階まで" style="width:100%;box-sizing:border-box"></textarea><p class="small" style="margin:6px 0 8px">電話番号は書かないでください。</p><button type="button" class="btn" id="hd-send">チャットに送る</button></div></details>';
   if (m.status) {   // 対応状況(役員以上だけ。見守りは、見守りの役員だけ)。アイコンをタップで変える。自分で変えるのは 対応中・クローズ(見守りは 進行中・クローズ・キャンセル)
     h += '<div class="stbar' + (m.status === 'クローズ' || m.status === '対応済み' || m.status === 'キャンセル' ? ' done' : '') + '"><span>' + (m.watch ? '見守り' : '対応') + '</span>' + (m.watch ? WSTM_ : STM_).map(function (x) { return '<button type="button" data-st="' + x + '" aria-pressed="' + (m.status === x) + '"' + (m.canStatus ? '' : ' disabled') + '>' + stl(x) + '</button>'; }).join('') +
@@ -1822,6 +1824,12 @@ function drawMail(m) {
   var QRS = ['よろしくお願いします', 'ありがとうございます', '承知しました', 'OKです！'];
   if (m.canReply !== false) h += bdComposer('返信を書く', { max: 2000, pre: '<div class="qrs" id="qrs" hidden>' + QRS.map(function (t) { return '<button type="button" class="qrq" data-q="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div>' });
   sub('チャット', hc ? '<div class="hc">' + h + '</div>' : h, 'mail'); document.body.classList.add('bchat');
+  var hq = $('#hd-quit'); if (hq) hq.onclick = function () {
+    cf('この助け合いから外れます(チャットからも抜けます)。よろしいですか?', function () {
+      api('help_list').then(function (d) { var it = d.items.filter(function (i) { return i.chatId === m.id && i.raised; })[0]; if (!it) throw new Error('この助け合いが見つかりません。画面を更新してください'); return api('help_unraise', { id: it.id }); })
+        .then(function () { toast('やめました'); MEM.help_list = null; go('help'); }).catch(function (e) { toast(e.message); });
+    });
+  };
   var hd = $('#hdet'); if (hd) {   // 場所・呼び名をチャットに送る(依頼する方)
     var HL = { lat: null, lng: null };
     $('#hd-loc').onclick = function () {
@@ -3803,7 +3811,7 @@ function hpMatched(r) {
 function hpKindLabel(x) { return x.kind === 'お願い' ? 'この案件いけます' : 'お願いしたい'; }
 function hpChips(attr, list, on, multi) { return '<div class="hpchs">' + list.map(function (v) { var o = multi ? on.indexOf(v) >= 0 : on === v; return '<button type="button" class="hpch' + (o ? ' on' : '') + '" ' + attr + '="' + esc(v) + '" aria-pressed="' + o + '">' + esc(v) + '</button>'; }).join('') + '</div>'; }
 function hpTabs(cur, act) {
-  return '<div class="hptabs" role="group" aria-label="助け合いのメニュー"><button type="button" data-htab="home" aria-pressed="' + (cur === 'start' || cur === 'home') + '">🏠 ホーム</button><button type="button" data-htab="chat" aria-pressed="false">💬 チャット</button><button type="button" data-htab="mine" aria-pressed="' + (cur === 'mine') + '">📋 募集内容' + (act ? '<i>' + act + '</i>' : '') + '</button></div>';
+  return '<div class="hptabs" role="group" aria-label="助け合いのメニュー"><button type="button" data-htab="home" aria-pressed="' + (cur === 'start' || cur === 'home') + '">🏠 ホーム</button><button type="button" data-htab="chat" aria-pressed="false">💬 チャット</button><button type="button" data-htab="mine" aria-pressed="' + (cur === 'mine') + '">📋 募集内容</button><button type="button" data-htab="done" aria-pressed="' + (cur === 'done') + '">🤝 マッチング済' + (act ? '<i>' + act + '</i>' : '') + '</button></div>';
 }
 function hpFltBox(d) {
   var f = HP.flt[HP.mode], areas = (HP.av && HP.av.areas) || [];
@@ -3826,21 +3834,47 @@ function hpHidKey() { return 'hmd_help_hide_' + ((S.me && (S.me.id || S.me.name)
 function hpHid() { try { var a = JSON.parse(localStorage.getItem(hpHidKey()) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return HP.hidMem || []; } }
 function hpHidSet(a) { a = a.slice(-300); HP.hidMem = a; try { localStorage.setItem(hpHidKey(), JSON.stringify(a)); } catch (e) {} }
 function hpHash(s) { var h = 0; s = String(s); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+function hpDays(x) {
+  if (!x.listUntil) return ''; var e = new Date(String(x.listUntil).replace(' ', 'T') + '+09:00').getTime(), d = Math.ceil((e - Date.now()) / 86400000);
+  return d > 0 ? '掲載 あと' + d + '日' : '掲載おわり';
+}
+function hpIsOwn(x) { return x.mine && x.kind === 'お願い'; }
+function hpMark(x) {
+  if (hpIsOwn(x)) return x.status === '公開' ? '<span class="mk">あなたの募集</span>' : '<span class="mk g">' + (x.status === 'キャンセル' ? 'キャンセル' : x.status === '完了' ? '完了' : (x.raisers && x.raisers.length ? 'マッチング済' : '掲載おわり')) + '</span>';
+  if (x.raised) return '<span class="mk b">あなたが対応</span>';
+  return '';
+}
 function hpBoard(list) {
   if (!list.length) return '<div class="cork empty"><div class="note n0" style="--r:-1.5deg;cursor:default"><i class="pin"></i><b>いま、募集は ありません</b><span class="nb">新しい募集が出ると、ここに ピンで貼られます。</span></div></div>';
   return '<div class="cork">' + list.map(function (x) {
-    var hs = hpHash(x.id), r = ((hs % 50) - 25) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
-    return '<button type="button" class="note n' + (hs % 4) + '" data-hcase="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + (x.urgent ? '<span class="nu">急募</span>' : '') + '<b>' + esc(x.by) + '</b><span class="nb">' + esc(String(x.body || '').replace(/\s+/g, ' ')) + '</span><span class="nm">募集 ' + esc(x.scale || '1人') + ' ・ あと' + x.left + '人</span><span class="tgs">' + tags + '</span><span class="nd">' + esc(fmtMd(x.date)) + '</span></button>';
+    var hs = hpHash(x.id), r = ((hs % 50) - 25) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join(''), off = hpIsOwn(x) && x.status !== '公開';
+    return '<button type="button" class="note n' + (hs % 4) + (off ? ' off' : '') + '" data-hcase="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + hpMark(x) + (x.urgent && x.status === '公開' ? '<span class="nu">急募</span>' : '') + '<b>' + esc(x.by) + '</b><span class="nb">' + esc(String(x.body || '').replace(/\s+/g, ' ')) + '</span><span class="nm">募集 ' + esc(x.scale || '1人') + (x.status === '公開' ? ' ・ あと' + x.left + '人' : '') + '</span><span class="tgs">' + tags + '</span><span class="nd">' + esc(fmtMd(x.date)) + (hpDays(x) ? ' ・ ' + hpDays(x) : '') + '</span></button>';
   }).join('') + '</div>';
 }
 function hpDetail(items) {
   var x = items.filter(function (i) { return i.id === HP.det; })[0]; if (!x) { HP.det = null; return ''; }
-  var tags = (x.tags || []).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
-  return '<div class="hdov" data-hclose><div class="hdc n' + (hpHash(x.id) % 4) + '"><i class="pin"></i><button type="button" class="hdx" data-hclose aria-label="とじる">×</button>' +
-    '<div style="display:flex;gap:10px;align-items:center;margin:6px 0 8px">' + av(x.icon, '', x.ph) + '<div><b style="font-size:17px">' + esc(x.by) + '</b>' + (x.urgent ? ' <span class="tk urg">急募</span>' : '') + '<div class="hms">' + esc(fmtMd(x.date)) + (x.no ? ' ・ No.' + esc(x.no) : '') + '</div></div></div>' +
-    '<div class="hmb" style="font-size:16px;line-height:1.7">' + bodyHtml(x.body) + '</div><div class="hmw"><span>募集 ' + esc(x.scale || '1人') + '</span><i>あと' + x.left + '人</i></div><div class="tgs">' + tags + '</div>' +
-    '<div class="inrow" style="margin-top:14px"><button type="button" class="hmg" data-hyes="' + esc(x.id) + '" style="flex:1;margin:0">行く</button><button type="button" class="hmg alt" data-hpass="' + esc(x.id) + '" style="flex:1;margin:0;background:#8a94a6;border-color:#8a94a6;color:#fff">行かない</button></div>' +
-    '<p class="small" style="margin:8px 0 0">「行かない」を押すと、この募集は、あなたの画面から消えます。</p></div></div>';
+  var tags = (x.tags || []).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join(''), own = hpIsOwn(x), rs = x.raisers || [], open = x.status === '公開', done = x.status === '成立';
+  var b = function (op, label, cls) { return '<button type="button" class="sbtn ' + (cls || '') + '" data-hp="' + op + '|' + esc(x.id) + '" style="min-height:44px;flex:1 1 40%">' + label + '</button>'; };
+  var acts = '';
+  if (own) {
+    var l = [];
+    if (x.chatId && rs.length) l.push(b('mail', 'チャットを開く', 'fill'));
+    if (open) { l.push(b('close', '募集を終了')); l.push(b('urgent', x.urgent ? '急募をはずす' : '急募にする')); }
+    if ((done || x.status === 'キャンセル') && x.left > 0) l.push(b('repost', '再掲載(5日間)', 'fill'));
+    if (done && rs.length) l.push(b('done', '完了しました', 'fill'));
+    if (rs.length && x.status !== 'キャンセル' && x.status !== '完了') l.push(b('cancel', 'キャンセル', 'dg'));
+    l.push(b('remove', '削除', 'dg'));
+    acts = '<div class="inrow" style="margin-top:14px;flex-wrap:wrap">' + l.join('') + '</div>' +
+      (rs.length ? '<div style="margin-top:12px"><b style="font-size:13px">手伝ってくれる人(' + rs.length + '人)</b>' + rs.map(function (r) { return '<div class="hpm" style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:space-between"><span><b style="font-size:13px">' + esc(r.name) + '</b> <span class="muted" style="font-size:11px">' + esc(fmtMd(r.date)) + '</span></span><button type="button" class="sbtn xs" data-hp="release|' + esc(x.id) + '|' + esc(r.id) + '|' + esc(r.name) + '">この人をやめてもらう</button></div>'; }).join('') + '</div>' : '') +
+      '<p class="small" style="margin:10px 0 0">掲載は5日間です(再掲載で、また5日間)。' + (hpDays(x) && open ? ' いまは ' + hpDays(x) + '。' : '') + '</p>';
+  } else if (x.raised) {
+    acts = '<div class="inrow" style="margin-top:14px;flex-wrap:wrap">' + (x.chatId ? b('mail', 'チャットを開く', 'fill') : '') + b('unraise', 'やっぱり対応できません', 'dg') + '</div><p class="small" style="margin:10px 0 0">押すと、この助け合いから外れます(チャットからも抜けます)。</p>';
+  } else {
+    acts = '<div class="inrow" style="margin-top:14px"><button type="button" class="hmg" data-hyes="' + esc(x.id) + '" style="flex:1;margin:0">行く</button><button type="button" class="hmg alt" data-hpass="' + esc(x.id) + '" style="flex:1;margin:0;background:#8a94a6;border-color:#8a94a6;color:#fff">行かない</button></div><p class="small" style="margin:8px 0 0">「行かない」を押すと、この募集は、あなたの画面から消えます。</p>';
+  }
+  return '<div class="hdov" data-hclose><div class="hdc n' + (hpHash(x.id) % 4) + '"><i class="pin"></i><button type="button" class="hdx" data-hclose aria-label="とじる">×</button>' + hpMark(x) +
+    '<div style="display:flex;gap:10px;align-items:center;margin:6px 0 8px">' + av(x.icon, '', x.ph) + '<div><b style="font-size:17px">' + esc(x.by) + '</b>' + (x.urgent && open ? ' <span class="tk urg">急募</span>' : '') + '<div class="hms">' + esc(fmtMd(x.date)) + (x.no ? ' ・ No.' + esc(x.no) : '') + (hpDays(x) ? ' ・ ' + hpDays(x) : '') + '</div></div></div>' +
+    '<div class="hmb" style="font-size:16px;line-height:1.7">' + bodyHtml(x.body) + '</div><div class="hmw"><span>募集 ' + esc(x.scale || '1人') + '</span><i>' + (open ? 'あと' + x.left + '人' : '') + '</i></div><div class="tgs">' + tags + '</div>' + acts + '</div></div>';
 }
 function hpHidNote() { var n = hpHid().length; return n ? '<p class="small" style="text-align:center;margin:10px 0 0">「行かない」にした募集 ' + n + '件 <button type="button" class="sbtn xs" data-hunhide>すべて もどす</button></p>' : ''; }
 /** 募集中の案件のカード(以前の形。いまは使っていません) */
@@ -3853,7 +3887,11 @@ function drawHelp() {
   var d = HP.d; if (!d) return; var items = d.items, sc = HP.scr, h = '';
   var cases = items.filter(function (x) { return x.kind === 'お願い' && x.status === '公開' && !x.mine && !x.raised && !x.directed && hpHid().indexOf(x.id) < 0; });
   var toMe = items.filter(function (x) { return x.directed && x.toMe && x.status === '公開' && !x.raised; });
-  var mineL = items.filter(function (x) { return x.mine || x.raised; }), act = mineL.filter(function (x) { return ['公開', '成立'].indexOf(x.status) >= 0; }).length;
+  var mineL = items.filter(function (x) { return x.mine || x.raised; });
+  var ownOpen = items.filter(function (x) { return hpIsOwn(x) && x.status === '公開'; }), wall = ownOpen.concat(cases);
+  var matched = items.filter(function (x) { return ['公開', '成立'].indexOf(x.status) >= 0 && ((hpIsOwn(x) && x.raisers && x.raisers.length) || (x.raised && !x.mine)); });
+  var ended = items.filter(function (x) { return hpIsOwn(x) && !(x.raisers && x.raisers.length) && ['成立', 'キャンセル', '完了'].indexOf(x.status) >= 0; });
+  var act = matched.length;
   var back = HPBACK[sc] ? '<div style="margin:0 0 12px"><button type="button" class="sbtn" data-hback>← もどる</button></div>' : '';
   var demo = S.me && S.me.drill ? '<div class="banner advisory" style="margin-bottom:12px"><div><b>防災訓練中(デモモード)</b><div>マッチングまで試せます。そのあとのチャットは、機械の自動応答です。</div></div></div>' : '';
   var alertH = toMe.map(function (x) { return '<div class="card hpal"><b style="font-size:17px">お願いが届いています</b><p style="margin:6px 0 2px;font-size:15px"><b>' + esc(x.by) + '</b> から</p><div class="thb" style="margin:0 0 10px">' + bodyHtml(x.body) + '</div><div class="inrow"><button type="button" class="btn" data-hyes="' + esc(x.id) + '" style="flex:1">できます</button><button type="button" class="btn ghost" data-hno="' + esc(x.id) + '" style="flex:1">できません</button></div></div>'; }).join('');
@@ -3869,7 +3907,7 @@ function drawHelp() {
         (ppl === null ? '<div class="skel" style="height:160px"></div>' : ppl.length ? ppl.map(hpPerson).join('') : '<div class="card"><p style="margin:0">' + (fl ? '条件に合う人は、いません。' : 'いま「お手伝いできます」の人は、いません。') + '</p></div>') +
         '<button type="button" class="hmg wide" data-hgo="recruit">＋ みんなに募集する</button><p class="small" style="text-align:center;margin:6px 0 0">人数を決めて募集します。Tweetにも載ります。</p>';
     } else {
-      var cs = cases.filter(function (x) { return hpOkTags(x.tags || [], fl) && hpOkArea(x.tags || [], fl); }), a2 = HP.av;
+      var cs = ownOpen.concat(cases.filter(function (x) { return hpOkTags(x.tags || [], fl) && hpOkArea(x.tags || [], fl); })), a2 = HP.av;
       body = '<button type="button" class="hmg wide alt" data-hgo="avail" style="margin:0 0 12px">' + (a2 && a2.on ? '今お手伝い可能(' + esc(a2.me.until) + 'まで)・変更する' : '今お手伝い可能です(押すと、お願いが届きます)') + '</button>' + hpFltBox(d) +
         '<div class="hpl" style="margin-top:0">募集内容(タップで くわしく)</div>' + (cs.length ? hpBoard(cs) : '<div class="card"><p class="muted" style="margin:0">' + (fl ? '条件に合う募集は、ありません。' : 'いま、募集中のお願いは、ありません。') + '</p></div>') + hpHidNote();
     }
@@ -3893,9 +3931,13 @@ function drawHelp() {
       '<div class="hpl">できること(いくつでも。選ばないと「なんでも」)</div>' + hpChips('data-ac', a.cats, af.tags, true) +
       '<p class="small" style="margin:10px 0">' + a.hours + '時間たつと、自動で終わります。</p><button type="button" class="hmg wide" id="av-on">今お手伝い可能です</button></div>');
   } else if (sc === 'mine') {
-    h = hpTabs('mine', act) + '<h2 class="hph">募集内容</h2><p class="muted" style="margin:0 0 10px;font-size:14px">いま募集中のお願いです。タップすると くわしく見られて、「行く」「行かない」を選べます。</p>' + hpBoard(cases) + hpHidNote();
+    h = hpTabs('mine', act) + '<h2 class="hph">募集内容</h2><p class="muted" style="margin:0 0 10px;font-size:14px">いま募集中のお願いです。タップすると くわしく見られて、「行く」「行かない」を選べます。</p>' + hpBoard(wall) + hpHidNote();
   }
-  if (HP.det && (sc === 'mine' || (sc === 'home' && HP.mode === 'go'))) h += hpDetail(items); else HP.det = null;
+  if (sc === 'done') {
+    h = hpTabs('done', act) + '<h2 class="hph">マッチング済</h2><p class="muted" style="margin:0 0 10px;font-size:14px">つながった助け合いです。タップすると、チャットを開いたり、キャンセルなどができます。</p>' + (matched.length ? hpBoard(matched) : '<div class="card"><p class="muted" style="margin:0">まだ、マッチングした助け合いは、ありません。</p></div>') +
+      (ended.length ? '<h2 class="hph" style="margin-top:22px">掲載がおわった、じぶんの募集</h2><p class="muted" style="margin:0 0 10px;font-size:14px">「再掲載」で、また5日間 出せます。</p>' + hpBoard(ended) : '');
+  }
+  if (HP.det && (sc === 'mine' || sc === 'done' || (sc === 'home' && HP.mode === 'go'))) h += hpDetail(items); else HP.det = null;
   sub('助け合い', h);
   var q = function (sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }, go2 = function (to) { HP.scr = to; HP.ask = null; HP.det = null; window.scrollTo(0, 0); drawHelp(); };
   var keepText = function () { var a1 = $('#hr-text'); if (a1 && HP.rf) HP.rf.text = a1.value; var a2 = $('#hk-text'); if (a2 && HP.ask) HP.ask.text = a2.value; };
@@ -3993,15 +4035,16 @@ function bindHelpButtons() {
       var x = b.dataset.hp.split('|'), id = x[1], op = x[0];
       var run = function (action, extra, ok) { b.disabled = true; return api(action, Object.assign({ id: id }, extra)).then(function (r) { if (ok) toast(ok); after(); return r; }).catch(function (e) { b.disabled = false; toast(e.message); if (e.code === 'full' || e.code === 'not_found') after(); }); };
       if (op === 'raise') { b.disabled = true; api('help_raise', { id: id }).then(function (r) { hpMatched(r); }).catch(function (e) { b.disabled = false; nt(e.message, after); }); }
-      else if (op === 'unraise') { cf('やめます。チャットからも抜けます。よろしいですか?', function () { run('help_unraise', {}, 'やめました'); }); }
+      else if (op === 'unraise') { cf('やめます。チャットからも抜けます。よろしいですか?', function () { HP.det = null; run('help_unraise', {}, 'やめました'); }); }
       else if (op === 'release') { cf(x[3] + 'さんとの助け合いを、やめます。チャットからも外れます。よろしいですか?', function () { run('help_release', { helperId: x[2] }, 'やめました'); }); }
       else if (op === 'mail') { var it0 = HP.d && HP.d.items.filter(function (i) { return i.id === id; })[0]; MB.pane = 'inbox'; MB.filter = 'helpchat'; go(it0 && it0.chatId ? 'mail/' + it0.chatId : 'mail'); }
       else if (op === 'done') { cf('完了にします。よろしいですか?', function () { run('help_status', { op: 'done' }, '完了しました。ありがとうございました'); }); }
       else if (op === 'urgent') run('help_status', { op: 'urgent' }, '');
       else if (op === 'close') { cf('募集を終了します。よろしいですか?', function () { run('help_status', { op: 'close' }, '募集を終了しました'); }); }
       else if (op === 'reopen') run('help_status', { op: 'reopen' }, '追加で募集します');
+      else if (op === 'repost') { cf('もう一度、募集します(また5日間)。よろしいですか?', function () { run('help_status', { op: 'repost' }, '再掲載しました'); }); }
       else if (op === 'cancel') { cf('この投稿をキャンセルします。よろしいですか?', function () { run('help_status', { op: 'cancel' }, 'キャンセルしました'); }); }
-      else if (op === 'remove') { cf('この投稿を削除します。よろしいですか?', function () { run('help_status', { op: 'remove' }, '削除しました'); }); }
+      else if (op === 'remove') { cf('この投稿を削除します。よろしいですか?', function () { HP.det = null; run('help_status', { op: 'remove' }, '削除しました'); }); }
     };
   });
 }
