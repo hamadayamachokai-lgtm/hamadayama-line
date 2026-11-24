@@ -158,14 +158,14 @@
     var s = st(); if (s.level == null) return setup();
     var t = ensureToday(), stage = stageOf(s.xp), nm = s.name || (stage === 0 ? 'たまご' : 'あいぼう');
     var left = t.done ? 0 : 3 - t.ans.length;
-    draw('<div class="qc qbud"><div class="qm">' + esc(LEVELS[s.level]) + ' ・ ' + (s.genres.length ? esc(s.genres.join('・')) : 'おまかせ') + '</div><button id="qbud" style="display:block;margin:0 auto;background:none;border:0;padding:0;cursor:pointer" aria-label="あいぼうを タップ">' + buddySVG(stage, 150, true) + '</button><div id="qsay" class="qbub">' + esc(SAYS[stage][0]) + '</div><div style="font-weight:700">' + esc(nm) + ' <span class="qm">(' + STAGES[stage].n + ')</span></div>' + xpBar(s) + '</div>' +
+    draw('<button class="qb sm" id="qhub" style="width:auto;display:inline-flex">← GAMEの メニュー</button><div class="qc qbud"><div class="qm">' + esc(LEVELS[s.level]) + ' ・ ' + (s.genres.length ? esc(s.genres.join('・')) : 'おまかせ') + '</div><button id="qbud" style="display:block;margin:0 auto;background:none;border:0;padding:0;cursor:pointer" aria-label="あいぼうを タップ">' + buddySVG(stage, 150, true) + '</button><div id="qsay" class="qbub">' + esc(SAYS[stage][0]) + '</div><div style="font-weight:700">' + esc(nm) + ' <span class="qm">(' + STAGES[stage].n + ')</span></div>' + xpBar(s) + '</div>' +
       '<div class="qc"><div class="qhead"><b>🔥 ' + K('れんぞく', 'れんぞく') + ' ' + s.streak + ' ' + K('日', 'にち') + '</b><span class="qm">' + K('さいこう', 'さいこう') + ' ' + s.best + ' ' + K('日', 'にち') + '</span></div>' +
       (t.done ? '<div class="qfb ok"><b>' + K('今日はもう おしまい。', 'きょうは もう おしまい。') + '</b><br>' + K('また明日 あいましょう!', 'また あした あおうね!') + '</div><button class="qb" id="qrev">' + K('今日の問題を ふりかえる', 'きょうの もんだいを みなおす') + '</button>'
         : '<button class="qb pri" id="qstart">' + (t.ans.length ? K('つづきから(あと' + left + '問)', 'つづきから(あと' + left + 'もん)') : K('今日の3問に ちょうせん', 'きょうの 3もんに ちょうせん')) + '</button>') + '</div>' +
       '<button class="qb" id="qtrip" style="background:#fff4d6;border-color:#e0a300">🗾 ' + K('日本旅すごろく', 'にほん たび すごろく') + '</button><div class="qm" style="text-align:center">' + K('カード ', 'カード ') + Object.keys(s.cards).length + '/' + DATA.questions.length + ' ' + K('まい', 'まい') + '</div>' + bottomNav('home'));
     bindNav();
     var said = 0; $('#qbud').onclick = function () { said = (said + 1) % SAYS[stage].length; $('#qsay').textContent = SAYS[stage][said]; };
-    $('#qtrip').onclick = openTrip; var b1 = $('#qstart'); if (b1) b1.onclick = function () { daily(); };
+    $('#qhub').onclick = hub; $('#qtrip').onclick = openTrip; var b1 = $('#qstart'); if (b1) b1.onclick = function () { daily(); };
     var b2 = $('#qrev'); if (b2) b2.onclick = function () { V.rev = true; daily(); };
   }
 
@@ -310,17 +310,77 @@
     $('#qreset').onclick = function () { if (confirm('きろくを ぜんぶ けします。よろしいですか?')) { Store.mem = Store.blank(); Store.save(); setup(); } };
   }
 
+  /* --- GAME メニュー(助け合いの最初の画面と同じ作り) --- */
+  function hub() {
+    draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">⭕❌ ○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">🎯 今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">🗾 日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。止まったマスで1問。まちがえたら戻ります。</p></div>');
+    $('#gox').onclick = ox; $('#gdaily').onclick = home; $('#gtrip').onclick = openTrip;
+  }
+
+  /* --- ○×ゲーム(2人 または コンピューター) --- */
+  var OXL = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  function oxWin(b) { for (var i = 0; i < OXL.length; i++) { var l = OXL[i]; if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return { m: b[l[0]], l: l }; } return null; }
+  function oxFull(b) { return b.every(function (x) { return x; }); }
+  function oxMinimax(b, me, turn) {
+    var w = oxWin(b); if (w) return w.m === me ? 10 : -10; if (oxFull(b)) return 0;
+    var best = turn === me ? -99 : 99;
+    for (var i = 0; i < 9; i++) if (!b[i]) { b[i] = turn; var v = oxMinimax(b, me, turn === 'O' ? 'X' : 'O'); b[i] = ''; best = turn === me ? Math.max(best, v) : Math.min(best, v); }
+    return best;
+  }
+  function oxCpu(b, me, lv) {
+    var em = []; for (var i = 0; i < 9; i++) if (!b[i]) em.push(i);
+    var rnd = function (a) { return a[Math.floor(Math.random() * a.length)]; }, you = me === 'O' ? 'X' : 'O';
+    if (lv === 0) return rnd(em);
+    var tryWin = function (m) { for (var k = 0; k < em.length; k++) { b[em[k]] = m; var w = oxWin(b); b[em[k]] = ''; if (w) return em[k]; } return -1; };
+    if (lv === 1) { var a = tryWin(me); if (a >= 0) return a; a = tryWin(you); if (a >= 0) return a; if (!b[4]) return 4; var c = em.filter(function (x) { return [0, 2, 6, 8].indexOf(x) >= 0; }); return c.length ? rnd(c) : rnd(em); }
+    var best = -99, mv = [];
+    em.forEach(function (i) { b[i] = me; var v = oxMinimax(b, me, you); b[i] = ''; if (v > best) { best = v; mv = [i]; } else if (v === best) mv.push(i); });
+    return rnd(mv);
+  }
+  function ox() {
+    draw('<h2 class="hph">○×ゲーム</h2><div class="card hpq"><div class="hpl" style="margin-top:0">だれと あそぶ?</div><button type="button" class="hmg wide" id="oxp" style="margin:0 0 10px">👥 2人で(スマホを貸し借り)</button><button type="button" class="hmg wide alt" id="oxc" style="margin:0">🤖 コンピューターと</button></div><button class="qb" id="oxb">← GAMEの メニュー</button>');
+    $('#oxp').onclick = function () { oxStart({ mode: 'pvp', first: 'O' }); }; $('#oxc').onclick = oxLevel; $('#oxb').onclick = hub;
+  }
+  function oxLevel() {
+    draw('<h2 class="hph">コンピューターの つよさ</h2><div class="card hpq"><button type="button" class="hmg wide" data-lv="0" style="margin:0 0 10px">😊 やさしい</button><button type="button" class="hmg wide" data-lv="1" style="margin:0 0 10px">🙂 ふつう</button><button type="button" class="hmg wide alt" data-lv="2" style="margin:0">😎 つよい(なかなか 勝てません)</button></div><button class="qb" id="oxb">← もどる</button>');
+    bind('[data-lv]', function (b) { oxStart({ mode: 'cpu', lv: +b.dataset.lv, first: 'O' }); }); $('#oxb').onclick = ox;
+  }
+  function oxStart(o) {
+    var g = { mode: o.mode, lv: o.lv, board: ['', '', '', '', '', '', '', '', ''], turn: o.first, first: o.first, me: 'O', done: false, win: null, score: o.score || { O: 0, X: 0, d: 0 } };
+    function nm(m) { return g.mode === 'cpu' ? (m === g.me ? 'あなた(' + (m === 'O' ? '○' : '×') + ')' : 'コンピューター(' + (m === 'O' ? '○' : '×') + ')') : (m === 'O' ? '○ の人' : '× の人'); }
+    function paint(last) {
+      var w = g.win, st;
+      if (g.done) st = w ? '🎉 ' + nm(w.m) + ' の勝ち!' : '🤝 引き分け'; else st = (g.mode === 'pvp' ? nm(g.turn) + ' の番です' : (g.turn === g.me ? 'あなたの 番です' : 'コンピューターが 考え中…'));
+      draw('<h2 class="hph">○×ゲーム</h2><div class="card" style="text-align:center"><div style="font-size:1.15em;font-weight:700;min-height:1.7em" id="oxst">' + st + '</div>' + (g.mode === 'pvp' && !g.done ? '<div class="qm">打ったら、つぎの人に スマホを わたしてね</div>' : '') +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px auto;max-width:340px">' + g.board.map(function (v, i) {
+          var on = w && w.l.indexOf(i) >= 0; return '<button type="button" class="oxc" data-i="' + i + '" aria-label="' + (v || 'あき') + '" style="aspect-ratio:1/1;min-height:90px;border:3px solid ' + (on ? '#e0a300' : '#cfc7b4') + ';border-radius:16px;background:' + (on ? '#fff4d6' : '#fff') + ';font-size:3.2em;font-weight:800;line-height:1;color:' + (v === 'O' ? '#d64545' : '#2f7fd0') + ';cursor:pointer;font-family:inherit' + (i === last ? ';animation:oxpop .25s' : '') + '">' + (v === 'O' ? '○' : v === 'X' ? '×' : '') + '</button>'; }).join('') + '</div>' +
+        '<div class="qm">せんせき ○ ' + g.score.O + ' ・ × ' + g.score.X + ' ・ 引き分け ' + g.score.d + '</div></div>' +
+        (g.done ? '<button class="qb pri" id="oxagain">もう一回(先に打つ人を かえる)</button>' : '') + '<button class="qb" id="oxb">← おわる</button><style>@keyframes oxpop{0%{transform:scale(.4)}100%{transform:scale(1)}}</style>');
+      bind('.oxc', function (b) { move(+b.dataset.i); });
+      $('#oxb').onclick = ox; var ag = $('#oxagain'); if (ag) ag.onclick = function () { oxStart({ mode: g.mode, lv: g.lv, first: g.first === 'O' ? 'X' : 'O', score: g.score }); };
+    }
+    function after(i) {
+      var w = oxWin(g.board); if (w) { g.done = true; g.win = w; g.score[w.m]++; } else if (oxFull(g.board)) { g.done = true; g.score.d++; } else g.turn = g.turn === 'O' ? 'X' : 'O';
+      paint(i);
+      if (!g.done && g.mode === 'cpu' && g.turn !== g.me) setTimeout(function () { if (g.done) return; var c = oxCpu(g.board, g.turn, g.lv); g.board[c] = g.turn; after(c); }, 600);
+    }
+    function move(i) { if (g.done || g.board[i] || (g.mode === 'cpu' && g.turn !== g.me)) return; g.board[i] = g.turn; after(i); }
+    paint(-1);
+    if (g.mode === 'cpu' && g.turn !== g.me) setTimeout(function () { var c = oxCpu(g.board, g.turn, g.lv); g.board[c] = g.turn; after(c); }, 600);
+  }
+
   /* --- 日本旅すごろく(quiz-trip.js を読みこむ) --- */
   function openTrip() {
     var run = function () { window.HmtQuizTrip.start(api()); };
     if (window.HmtQuizTrip) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=1'; sc.onload = run;
+    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=2'; sc.onload = run;
     sc.onerror = function () { toastMsg('すごろくを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
-    return { ask: ask, addXp: addXp, giveCard: giveCard, draw: draw, bind: bind, st: st, Store: Store, K: K, T: T, esc: esc, rng: rng, shuffle: shuffle, poolFor: poolFor, qById: qById, buddySVG: buddySVG, home: home, bsel: bsel, data: DATA, root: function () { return root; }, LV_SEC: LV_SEC, stageOf: stageOf, stopTimer: stopTimer };
+    return { ask: ask, addXp: addXp, giveCard: giveCard, draw: draw, bind: bind, st: st, Store: Store, K: K, T: T, esc: esc, rng: rng, shuffle: shuffle, poolFor: poolFor, qById: qById, buddySVG: buddySVG, home: home, hub: hub, bsel: bsel, data: DATA, root: function () { return root; }, LV_SEC: LV_SEC, stageOf: stageOf, stopTimer: stopTimer };
   }
 
   /* ===== 起動 ===== */
@@ -331,7 +391,7 @@
     var url = (opts && opts.dataUrl) || 'quiz-data.json';
     function load() {
       fetch(url, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (d) {
-        DATA = d; V = {}; home();
+        DATA = d; V = {}; hub();
       }).catch(function () {
         root.innerHTML = '<div class="qc"><h2>よみこめませんでした</h2><p>通信を 確かめて、もう一度 おためしください。</p><button class="qb pri" id="qretry">もう一度</button></div>';
         document.getElementById('qretry').onclick = load;
