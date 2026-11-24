@@ -105,7 +105,6 @@
     if (!document.getElementById('qztripcss')) { var s = document.createElement('style'); s.id = 'qztripcss'; s.textContent = TRIPCSS; document.head.appendChild(s); }
     A.draw('<div class="qc tev"><h2>' + K('日本一周すごろく', 'にほん いっしゅう すごろく') + '</h2><p style="margin:0">' + K('北海道から沖縄まで、日本地図の上を旅しよう。止まったマスで 1問 解きます。まちがえたら、もとの マスに もどります。', 'ほっかいどうから おきなわまで たびを しよう。とまった マスで 1もん とくよ。まちがえたら もとの マスに もどるよ。') + '</p></div>' +
       '<button class="qb pri" data-m="battle">' + K('コンピュータと対戦', 'コンピュータと たいせん') + '</button>' +
-      '<button class="qb" data-m="solo">' + K('一人旅', 'ひとりたび') + '</button>' +
       '<button class="qb" data-m="net">' + K('べつのスマホと(4けたの番号)', 'べつの スマホと(4けたの ばんごう)') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
     A.bind('[data-m]', function (b) { if (b.dataset.m === 'net') return netStart(); init(b.dataset.m); });
     A.root().querySelector('#tback').onclick = function () { if (A.hub) A.hub(); else A.home(); };
