@@ -3893,8 +3893,7 @@ function drawHelp() {
       '<div class="hpl">できること(いくつでも。選ばないと「なんでも」)</div>' + hpChips('data-ac', a.cats, af.tags, true) +
       '<p class="small" style="margin:10px 0">' + a.hours + '時間たつと、自動で終わります。</p><button type="button" class="hmg wide" id="av-on">今お手伝い可能です</button></div>');
   } else if (sc === 'mine') {
-    h = hpTabs('mine', act) + '<h2 class="hph">募集内容</h2><p class="muted" style="margin:0 0 10px;font-size:14px">いま募集中のお願いです。タップすると くわしく見られて、「行く」「行かない」を選べます。</p>' + hpBoard(cases) + hpHidNote() +
-      '<h2 class="hph" style="margin-top:22px">じぶんの募集・つながり</h2>' + (mineL.length ? '<div class="thf">' + mineL.map(function (x) { return hpCell(x, d); }).join('') + '</div>' : '<div class="card"><p class="muted" style="margin:0">まだ、ありません。</p></div>');
+    h = hpTabs('mine', act) + '<h2 class="hph">募集内容</h2><p class="muted" style="margin:0 0 10px;font-size:14px">いま募集中のお願いです。タップすると くわしく見られて、「行く」「行かない」を選べます。</p>' + hpBoard(cases) + hpHidNote();
   }
   if (HP.det && (sc === 'mine' || (sc === 'home' && HP.mode === 'go'))) h += hpDetail(items); else HP.det = null;
   sub('助け合い', h);
