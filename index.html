@@ -359,6 +359,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .hscroll::-webkit-scrollbar{display:none}
 .wc{flex:0 0 84%;scroll-snap-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .wc .wf{position:relative;background:#1b1520;overflow:hidden}.wc .wf img{display:block;width:100%;aspect-ratio:1/1;max-height:300px;object-fit:cover;object-position:50% 25%;background:#1b1520;transform-origin:50% 80%}
+.mpk{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mpkb{border:2px solid var(--line);border-radius:12px;background:#fff;padding:8px 6px;text-align:center;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px}.mpkb:active{background:#fff4e0}.mpkb small{color:var(--sub,#667)}.mhc{display:flex;gap:12px;align-items:center;margin:8px 0 12px;background:#fff8e8;border:1px solid #d9b44a;border-radius:12px;padding:10px}.mhcf{flex:0 0 42%;text-align:center}.mhct{flex:1;min-width:0;line-height:1.7}.mhcn{font-size:20px;font-weight:800;color:#8e1f14;font-family:serif}.mhcr{font-size:12px;color:#7a5a2a;margin-bottom:4px}.mhct p{margin:0;font-size:14px}
 .mflame{transform-box:fill-box;transform-origin:50% 100%;animation:mfl .7s ease-in-out infinite alternate}@keyframes mfl{0%{transform:scale(1,.9) rotate(-3deg)}100%{transform:scale(.92,1.12) rotate(3deg)}}@media (prefers-reduced-motion:reduce){.mflame{animation:none}}
 .wf{position:relative;overflow:hidden}.wx{position:absolute;left:10px;top:10px;max-width:70%;background:#fff;color:#1b2438;border-radius:14px;padding:6px 12px;font-weight:700;font-size:16px;box-shadow:0 2px 8px #0006}.wx:after{content:"";position:absolute;left:18px;bottom:-8px;border:8px solid transparent;border-top-color:#fff;border-bottom:0}
 @keyframes mythink{0%,100%{transform:rotate(-2deg) scale(1.03)}50%{transform:rotate(2.5deg) translateY(-4px) scale(1.05)}}@keyframes mysweat{0%,100%{transform:translateX(0) scale(1.04)}20%{transform:translateX(-6px) scale(1.04)}40%{transform:translateX(6px) scale(1.04)}60%{transform:translateX(-4px) scale(1.04)}80%{transform:translateX(4px) scale(1.04)}}@keyframes mysmirk{0%,100%{transform:scale(1.02)}50%{transform:scale(1.09) translateY(-5px)}}@keyframes myangry{0%,100%{transform:scale(1.03)}10%,30%{transform:scale(1.08) rotate(-1.5deg)}20%,40%{transform:scale(1.08) rotate(1.5deg)}}@keyframes mybob{0%,100%{transform:translateY(0) scale(1.03)}50%{transform:translateY(-6px) scale(1.03)}}
@@ -1981,23 +1982,141 @@ function mymProj(lon, lat) { return [(lon - 129.2) / 17.2 * 330 + 10, (45.8 - la
 function mymPoly(poly) { return poly.map(function (q) { var p = mymProj(q[0], q[1]); return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
 function mymBox(b) { var a = mymProj(b[0], b[3]), c = mymProj(b[2], b[1]); return '<rect x="' + a[0].toFixed(1) + '" y="' + a[1].toFixed(1) + '" width="' + (c[0] - a[0]).toFixed(1) + '" height="' + (c[1] - a[1]).toFixed(1) + '"'; }
 function mymFlame(x, y, sc, d) { return '<g transform="translate(' + x + ',' + y + ') scale(' + sc + ')"><g class="mflame" style="animation-delay:' + d + 's"><path d="M0 -26C8 -16 12 -8 9 0C7 6 2 8 0 8C-6 8 -10 3 -9 -4C-8 -10 -3 -12 -4 -20C-2 -22 -1 -24 0 -26Z" fill="#e8452c"/><path d="M0 -15C5 -9 7 -4 5 1C3 5 -3 5 -4 0C-4 -5 -1 -8 0 -15Z" fill="#ffb02e"/><path d="M0 -6C2 -3 3 0 1 2C-1 3 -2 1 -1 -2Z" fill="#fff3b0"/></g></g>'; }
+/* ---------- 日本を全部とったら、次は中国の陣地取り(昔の中国の地図)。武将が立っていて、陣地をとると武将が消えて炎が上がる ---------- */
+var MYM_CN_LAND = [
+  [[135, 48.5], [131, 47.7], [130.5, 42.5], [128, 42], [124.3, 40], [121.5, 39], [122, 37.5], [119, 37.2], [120.5, 36], [119.2, 34.5], [121.8, 31.8], [122, 30], [120, 26.5], [117, 23.5], [113.5, 22], [110.5, 21.2], [108, 21.5], [106.5, 22.8], [104, 22.8], [102, 22.4], [101, 21.2], [99, 22], [98.2, 24], [97.5, 28], [95, 29], [92, 27.8], [88.5, 27.8], [85, 28.3], [81, 30], [79, 32.5], [78, 35], [75.5, 37], [74, 39.5], [77, 41], [80.5, 42.5], [80, 45], [83, 47.2], [87, 49], [90.5, 47.8], [91.5, 45.2], [96.3, 42.8], [101.5, 42.2], [106, 41.5], [111, 43.5], [114, 44.5], [117, 46.5], [119.5, 47], [119.8, 49.8], [122, 53.3], [126, 53.2], [127.5, 50], [131, 48.5]],
+  [[108.6, 19.9], [110.2, 20.1], [111, 19.6], [110.2, 18.3], [109, 18.2]]];
+// [陣地名, [西,南,東,北], 武将, 旗の字, 旗の色, 立つ場所[経度,緯度]]
+var MYM_CN = [
+  ['中原', [110.5, 32.5, 115.5, 36.5], '曹操', '魏', '#2f5fb0', [114.0, 34.3]],
+  ['関中', [105.5, 33, 110.5, 37], '董卓', '董', '#7a3b8c', [108.0, 34.6]],
+  ['河北', [113, 36.5, 119, 41], '袁紹', '袁', '#b8862b', [116.5, 38.6]],
+  ['徐州', [115.5, 31.5, 121.5, 36.5], '項羽', '楚', '#c0392b', [119.3, 33.2]],
+  ['江東', [114, 26.5, 122.5, 31.5], '孫権', '呉', '#1f8a5b', [118.8, 29.2]],
+  ['荊州', [108, 25.5, 114, 32.5], '関羽', '関', '#2a7f62', [112.4, 30.2]],
+  ['巴蜀', [100.5, 26.5, 108, 32.5], '劉備', '蜀', '#3a9a3a', [104.5, 30.4]],
+  ['西涼', [96, 34, 105.5, 40], '馬超', '馬', '#4b5d6b', [100.0, 37.4]],
+  ['北方草原', [100, 40, 114, 46], '冒頓', '匈', '#8a5a2b', [108.0, 42.5]],
+  ['南蛮', [100, 21, 112, 26.5], '孟獲', '蛮', '#6b6b1f', [106.0, 23.8]]];
+function mymCnProj(lon, lat) { return [(lon - 74) / 58 * 336 + 12, (53.5 - lat) / 34.5 * 335 + 54]; }
+function mymCnPoly(poly) { return poly.map(function (q) { var p = mymCnProj(q[0], q[1]); return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+/* 武将のイラスト(旗・かぶと・よろい・ほこ)。x,y は足もと */
+function mymWarlord(x, y, col, ch, sc) {
+  return '<g transform="translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ') scale(' + sc + ')">' +
+    '<ellipse cx="0" cy="1" rx="11" ry="3" fill="#000" opacity=".18"/>' +
+    '<line x1="12" y1="2" x2="12" y2="-42" stroke="#5b3b1e" stroke-width="1.6"/><path d="M12 -42l14 3l-3 5l3 5l-14 -2z" fill="' + col + '" stroke="#3b2a14" stroke-width=".8"/><text x="18.5" y="-32" font-size="7" font-weight="800" text-anchor="middle" fill="#fff" font-family="serif">' + ch + '</text>' +
+    '<path d="M-7 0L-6 -14L6 -14L7 0Z" fill="' + col + '" stroke="#3b2a14" stroke-width="1"/><rect x="-6" y="-14" width="12" height="3" fill="#3b2a14"/>' +
+    '<path d="M-6 -13L-12 -8" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/><path d="M6 -13L11 -17" stroke="#3b2a14" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<circle cx="0" cy="-21" r="6" fill="#f2cfa0" stroke="#3b2a14" stroke-width="1"/><path d="M-7 -22Q0 -33 7 -22L5 -23Q0 -28 -5 -23Z" fill="' + col + '" stroke="#3b2a14" stroke-width="1"/><path d="M0 -33L0 -37" stroke="#b5533c" stroke-width="2"/>' +
+    '<circle cx="-2" cy="-21" r=".8" fill="#3b2a14"/><circle cx="2" cy="-21" r=".8" fill="#3b2a14"/></g>';
+}
+function mymCnSvg(n, nick, newIdx) {
+  var cp = mymCaps(10 + (n || 0)), nm = (nick || 'あなた'), o = []; n = Math.max(0, Math.min(10, n || 0));
+  o.push('<defs><filter id="mpap"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .2 0 0 0 .16 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>' +
+    '<clipPath id="mland">' + MYM_CN_LAND.map(function (p) { return '<polygon points="' + mymCnPoly(p) + '"/>'; }).join('') + '</clipPath></defs>');
+  o.push('<rect width="360" height="440" rx="8" fill="#ead9aa"/><rect width="360" height="440" rx="8" fill="#000" filter="url(#mpap)"/><rect x="5" y="5" width="350" height="430" rx="6" fill="none" stroke="#8a6a35" stroke-width="2.5"/><rect x="10" y="10" width="340" height="420" rx="4" fill="none" stroke="#8a6a35" stroke-width=".8"/>');
+  for (var w = 0; w < 5; w++) o.push('<path d="M' + (250 + w * 18) + ' ' + (300 + (w % 2) * 14) + 'q9 -6 18 0t18 0" stroke="#9a7c46" fill="none" stroke-width=".9" opacity=".55"/>');
+  MYM_CN_LAND.forEach(function (p) { o.push('<polygon points="' + mymCnPoly(p) + '" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="2" stroke-linejoin="round"/>'); });
+  // 大きな川(黄河・長江)
+  o.push('<g clip-path="url(#mland)" fill="none" stroke="#7fa6c9" stroke-width="2" opacity=".8" stroke-linecap="round"><path d="M' + [[96, 35], [101, 36.2], [104, 38.5], [108, 40.8], [111, 39], [110.5, 35.5], [114.5, 35], [118, 37.6]].map(function (q) { var c = mymCnProj(q[0], q[1]); return c[0].toFixed(1) + ',' + c[1].toFixed(1); }).join(' L') + '"/><path d="M' + [[98, 31.5], [103, 29.5], [108, 30.8], [111.5, 30.2], [114, 30.5], [117, 31.6], [121.6, 31.4]].map(function (q) { var c = mymCnProj(q[0], q[1]); return c[0].toFixed(1) + ',' + c[1].toFixed(1); }).join(' L') + '"/></g>');
+  o.push('<g clip-path="url(#mland)">');
+  MYM_CN.forEach(function (r, i) {
+    var a = mymCnProj(r[1][0], r[1][3]), c = mymCnProj(r[1][2], r[1][1]);
+    o.push('<rect x="' + a[0].toFixed(1) + '" y="' + a[1].toFixed(1) + '" width="' + (c[0] - a[0]).toFixed(1) + '" height="' + (c[1] - a[1]).toFixed(1) + '" fill="' + (cp.list.indexOf(i) >= 0 ? '#d9534a' : 'none') + '" fill-opacity="' + (cp.list.indexOf(i) >= 0 ? .42 : 0) + '" stroke="#6b4a1e" stroke-width="1.2" stroke-dasharray="4 3"/>');
+  });
+  o.push('</g>');
+  // 陣地の名前・武将・炎
+  MYM_CN.forEach(function (r, i) {
+    var c = mymCnProj(r[5][0], r[5][1]), on = cp.list.indexOf(i) >= 0;
+    o.push('<text x="' + c[0].toFixed(1) + '" y="' + (c[1] + (on ? 14 : 11)).toFixed(1) + '" font-size="' + (on ? 10 : 9) + '" text-anchor="middle" font-weight="700" fill="#5b3b1e" style="paint-order:stroke;stroke:#f4e9c4;stroke-width:3px">' + (on ? r[0] : r[2]) + '</text>');
+    if (on) o.push(mymFlame(c[0], c[1], i === newIdx ? 1.2 : 0.8, (i % 5) * 0.17) + (i === newIdx ? mymFlame(c[0] + 14, c[1] + 6, 0.8, .3) : ''));
+    else if (MYM_HAVE[MYM_CN_CARD[i][0]]) o.push('<image href="mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png" x="' + (c[0] - 17).toFixed(1) + '" y="' + (c[1] - 32).toFixed(1) + '" width="34" height="33"/>'); else o.push(mymWarlord(c[0] - 4, c[1], r[4], r[3], 0.72));
+  });
+  o.push('<g><rect x="14" y="16" width="190" height="46" rx="6" fill="#f6ecd2" stroke="#6b4a1e" stroke-width="2"/><text x="109" y="38" font-size="' + (nm.length > 6 ? 13 : 17) + '" font-weight="800" text-anchor="middle" fill="#8e1f14" font-family="serif">' + esc(nm) + '陣地(中国)</text><text x="109" y="55" font-size="11" text-anchor="middle" fill="#5b3b1e">' + n + ' / 10 か所' + (n >= 10 ? ' 中華統一!' : '') + '</text></g>');
+  o.push('<g transform="translate(318 392)" fill="none" stroke="#6b4a1e" stroke-width="1.5"><circle r="20"/><path d="M0 -26V26M-26 0H26" /><path d="M0 -20L5 0L0 20L-5 0Z" fill="#b5533c"/><text y="-30" font-size="11" text-anchor="middle" fill="#6b4a1e" stroke="none">北</text></g>');
+  return '<svg viewBox="0 0 360 440" role="img" aria-label="' + esc(nm) + '陣地 中国 ' + n + 'か所" style="width:100%;height:auto;display:block;border-radius:10px">' + o.join('') + '</svg>';
+}
+/* ---------- 陣地取り: 「どの国を落としますか?」と、その国の歴史カード ---------- */
+// 武将の絵は mystery-img/bushou/<id>.png を置くと、地図とカードに出ます(無いときは、かんたんな絵が出ます)
+var MYM_HAVE = {};
+var MYM_CN_CARD = [
+  ['cao', '曹操', '洛陽のまわり、中国の中心です。曹操は戦に強く、詩も上手な英雄で、魏の国のもとをつくりました。'],
+  ['dong', '董卓', '長安のある地方です。董卓は強い兵をひきいて都を支配しましたが、のちに部下にたおされました。'],
+  ['yuan', '袁紹', '黄河の北の地方です。名門の袁紹は大軍をもっていましたが、官渡の戦いで曹操にやぶれました。'],
+  ['xiang', '項羽', '「力は山をぬき、気は世をおおう」といわれた楚の王です。劉邦と天下をあらそい、四面楚歌でやぶれました。'],
+  ['sun', '孫権', '長江の下流の地方です。孫権は若くして呉の王となり、赤壁の戦いで曹操の大軍をしりぞけました。'],
+  ['guan', '関羽', '長江の中ほどの地方です。関羽は劉備の義兄弟で、りっぱなひげの武将。のちに「関帝」として神様になりました。'],
+  ['liu', '劉備', '山にかこまれた四川の地方です。劉備は諸葛亮たちと力をあわせて蜀の国をたてた、やさしい人がらの英雄です。'],
+  ['ma', '馬超', '西の草原と砂漠の地方です。馬超は馬を乗りこなす名将で、「錦馬超」とよばれました。'],
+  ['modun', '冒頓単于', '北の草原にすむ遊牧民、匈奴の王です。馬に乗った強い軍をつくり、漢の国をおびやかしました。'],
+  ['meng', '孟獲', '南の山とジャングルの地方です。孟獲は諸葛亮に七回つかまり、七回ゆるされて、ついに心から従ったといいます。']];
+var MYM_JP_CARD = [
+  ['畿内', '織田信長', 'nobunaga.jpg', '京都・大阪・奈良がある、むかしの日本の中心です。信長は京都にのぼって、天下統一に大きく近づきました。'],
+  ['東海道', '徳川家康', 'ieyasu.jpg', '海ぞいの道の国々です。家康は江戸に幕府をひらき、260年つづく平和な時代をつくりました。'],
+  ['東山道', '真田幸村', 'yukimura.jpg', '信濃(長野)などの山の国々です。幸村は大坂の陣で家康の本陣にせまり、「日本一の兵」とたたえられました。'],
+  ['北陸道', '上杉謙信', 'kenshin.jpg', '日本海がわの国々です。「越後の龍」謙信は、武田信玄と川中島で何度もたたかいました。'],
+  ['山陰山陽', '高杉晋作', 'takasugi.jpg', '長州(山口)のある地方です。晋作は奇兵隊をつくり、身分に関係なく仲間を集めて幕府とたたかいました。'],
+  ['南海道', '坂本龍馬', 'ryoma.jpg', '四国などの地方です。土佐の龍馬は、薩摩と長州を結びつけて、新しい日本への道をひらきました。'],
+  ['西海道', '西郷隆盛', 'saigo.jpg', '九州の地方です。薩摩の西郷は、話し合いで江戸城をあけ渡させ、江戸を戦火から守りました。'],
+  ['陸奥出羽', '伊達政宗', 'masamune.jpg', '東北地方です。「独眼竜」政宗は、仙台のまちをつくり、ヨーロッパへ使節も送りました。'],
+  ['蝦夷地', '土方歳三', 'hijikata.jpg', 'いまの北海道です。歳三は新選組の「鬼の副長」。最後は箱館で、新政府軍とたたかいました。'],
+  ['琉球', '尚巴志', '', 'いまの沖縄です。尚巴志は三つの国をまとめて琉球王国をつくり、海をわたる貿易で栄えました。']];
+function mymProbe() { MYM_CN_CARD.forEach(function (c) { if (MYM_HAVE[c[0]] !== undefined) return; MYM_HAVE[c[0]] = false; var im = new Image(); im.onload = function () { MYM_HAVE[c[0]] = true; }; im.src = 'mystery-img/bushou/' + c[0] + '.png'; }); }
+/* 落とした国の記録(この端末)。連続正解の数と合わなくなったら、順番どおりに補う */
+function mymStore() { try { return JSON.parse(localStorage.getItem('mymCap') || '{}') || {}; } catch (e) { return {}; } }
+function mymSave(o) { try { localStorage.setItem('mymCap', JSON.stringify(o)); } catch (e) { /* 保存できなくても続ける */ } }
+function mymFix(list, n) { var out = []; (list || []).forEach(function (x) { if (typeof x === 'number' && x >= 0 && x < 10 && out.indexOf(x) < 0) out.push(x); }); out = out.slice(0, n); for (var i = 0; out.length < n && i < 10; i++) if (out.indexOf(i) < 0) out.push(i); return out; }
+function mymCaps(streak) {
+  var st = mymStage(streak), o = mymStore();
+  if (!streak) { o = {}; mymSave(o); return { cn: false, n: 0, list: [] }; }
+  o.jp = mymFix(o.jp, st.cn ? 10 : st.n);
+  if (st.cn) o.cn = mymFix(o.cn, st.n); else delete o.cn;
+  mymSave(o); return { cn: st.cn, n: st.n, list: st.cn ? o.cn : o.jp };
+}
+function mymTake(streakNew, idx) {   // 新しい連続正解数の分の1つを、idx にする
+  var st = mymStage(streakNew), o = mymStore(), k = st.cn ? 'cn' : 'jp';
+  o[k] = mymFix(o[k], st.n - 1); if (o[k].indexOf(idx) < 0) o[k].push(idx);
+  if (st.cn) o.jp = mymFix(o.jp, 10); mymSave(o);
+}
+function mymRemain(streakNew) { var st = mymStage(streakNew), o = mymStore(), k = st.cn ? 'cn' : 'jp', got = mymFix(o[k], st.n - 1), r = []; for (var i = 0; i < 10; i++) if (got.indexOf(i) < 0) r.push(i); return r; }
+function mymCardOf(cn, i) { return cn ? { id: MYM_CN_CARD[i][0], name: MYM_CN_CARD[i][1], text: MYM_CN_CARD[i][2], reg: MYM_CN[i][0], src: 'mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png', col: MYM_CN[i][4], ch: MYM_CN[i][3] } : { id: '', name: MYM_JP_CARD[i][1], text: MYM_JP_CARD[i][3], reg: MYM_JP_CARD[i][0], src: MYM_JP_CARD[i][2] ? 'mystery-img/' + MYM_JP_CARD[i][2] : '', col: '#8e1f14', ch: String(MYM_JP_CARD[i][1]).charAt(0) }; }
+function mymFig(c, h) {   // 武将の絵(画像がなければ、かんたんな絵)
+  var fb = '<svg viewBox="-24 -46 58 52" style="height:' + h + 'px;width:auto;display:none;margin:0 auto">' + mymWarlord(0, 0, c.col, c.ch, 1) + '</svg>';
+  if (!c.src) return fb.replace('display:none', 'display:block');
+  return '<img src="' + esc(c.src) + '" alt="' + esc(c.name) + '" style="height:' + h + 'px;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 auto" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'">' + fb;
+}
+function mymPickHtml(sNew) {
+  var st = mymStage(sNew), rem = mymRemain(sNew);
+  return '<div class="card"><h2>🔥 どの国を落としますか?</h2><p style="margin:0 0 10px;line-height:1.7"><b>' + (st.cn ? '中国' : '日本') + '</b>の、まだ落としていない国です。落とす国を、えらんでください。</p><div class="mpk">' + rem.map(function (i) {
+    var c = mymCardOf(st.cn, i); return '<button class="mpkb" data-i="' + i + '"><div style="height:84px;display:flex;align-items:center;justify-content:center">' + mymFig(c, 80) + '</div><b>' + esc(c.reg) + '</b><small>' + esc(c.name) + '</small></button>';
+  }).join('') + '</div></div>';
+}
+function mymTakenHtml(sNew, i) {
+  var st = mymStage(sNew), c = mymCardOf(st.cn, i);
+  return '<div class="card"><h2>🔥 ' + esc(c.reg) + 'を、落としました!</h2><div class="mhc"><div class="mhcf">' + mymFig(c, 200) + '</div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' + mymMapSvg(sNew, MY.nm, i) +
+    (sNew === 10 ? '<p style="margin:10px 0 0;font-weight:700;color:var(--ok)">天下統一! 次は中国です。</p>' : sNew === 20 ? '<p style="margin:10px 0 0;font-weight:700;color:var(--ok)">中華統一!</p>' : '') + '</div>';
+}
+function mymStage(s) { s = Math.max(0, s || 0); return s <= 10 ? { cn: false, n: s } : { cn: true, n: Math.min(10, s - 10) }; }
+function mymNewIdx(s) { return s <= 10 ? s - 1 : (s - 10 <= 10 ? s - 11 : -1); }
+function mymRegName(s) { var i = mymNewIdx(s); var R = s <= 10 ? MYM_REG : MYM_CN; return i >= 0 && R[i] ? R[i][0] : ''; }
 function mymMapSvg(streak, nick, newIdx) {
-  var n = Math.max(0, Math.min(10, streak || 0)), nm = (nick || 'あなた'), o = [];
+  var st = mymStage(streak); if (st.cn) return mymCnSvg(st.n, nick, newIdx);
+  var cp = mymCaps(streak), n = Math.max(0, Math.min(10, st.n)), nm = (nick || 'あなた'), o = [];
   o.push('<defs><filter id="mpap"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .2 0 0 0 .16 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>' +
     '<clipPath id="mland">' + MYM_ISL.map(function (p) { return '<polygon points="' + mymPoly(p) + '"/>'; }).join('') + '</clipPath></defs>');
   o.push('<rect width="360" height="440" rx="8" fill="#ead9aa"/><rect width="360" height="440" rx="8" fill="#000" filter="url(#mpap)"/><rect x="5" y="5" width="350" height="430" rx="6" fill="none" stroke="#8a6a35" stroke-width="2.5"/><rect x="10" y="10" width="340" height="420" rx="4" fill="none" stroke="#8a6a35" stroke-width=".8"/>');
   for (var w = 0; w < 6; w++) o.push('<path d="M' + (225 + w * 18) + ' ' + (300 + (w % 2) * 14) + 'q9 -6 18 0t18 0" stroke="#9a7c46" fill="none" stroke-width=".9" opacity=".55"/>');
   MYM_ISL.forEach(function (p) { o.push('<polygon points="' + mymPoly(p) + '" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="2" stroke-linejoin="round"/>'); });
   o.push('<g clip-path="url(#mland)">');
-  MYM_REG.forEach(function (r, i) { if (r[1]) o.push(mymBox(r[1]) + ' fill="' + (i < n ? '#d9534a' : 'none') + '" fill-opacity="' + (i < n ? .42 : 0) + '" stroke="#6b4a1e" stroke-width="1.2" stroke-dasharray="4 3"/>'); });
+  MYM_REG.forEach(function (r, i) { if (r[1]) o.push(mymBox(r[1]) + ' fill="' + (cp.list.indexOf(i) >= 0 ? '#d9534a' : 'none') + '" fill-opacity="' + (cp.list.indexOf(i) >= 0 ? .42 : 0) + '" stroke="#6b4a1e" stroke-width="1.2" stroke-dasharray="4 3"/>'); });
   o.push('</g>');
   // 沖縄の枠
-  o.push('<rect x="20" y="360" width="110" height="60" rx="8" fill="' + (n >= 10 ? '#e9a79f' : '#f4e9c4') + '" stroke="#6b4a1e" stroke-width="1.6" stroke-dasharray="5 3"/><ellipse cx="75" cy="392" rx="30" ry="6" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="1.5" transform="rotate(-18 75 392)"/><text x="75" y="372" font-size="10" text-anchor="middle" fill="#6b4a1e">琉球</text>');
+  o.push('<rect x="20" y="360" width="110" height="60" rx="8" fill="' + (cp.list.indexOf(9) >= 0 ? '#e9a79f' : '#f4e9c4') + '" stroke="#6b4a1e" stroke-width="1.6" stroke-dasharray="5 3"/><ellipse cx="75" cy="392" rx="30" ry="6" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="1.5" transform="rotate(-18 75 392)"/><text x="75" y="372" font-size="10" text-anchor="middle" fill="#6b4a1e">琉球</text>');
   // 国名・炎・旗
   MYM_REG.forEach(function (r, i) {
     var c = r[1] ? mymProj((r[1][0] + r[1][2]) / 2, (r[1][1] + r[1][3]) / 2) : [75, 392];
     if (r[0] === '畿内') c = mymProj(135.5, 34.7); if (r[0] === '南海道') c = mymProj(133.3, 33.7); if (r[0] === '西海道') c = mymProj(130.8, 32.7); if (r[0] === '東海道') c = mymProj(138.6, 35.2); if (r[0] === '東山道') c = mymProj(139.0, 36.7); if (r[0] === '北陸道') c = mymProj(137.0, 37.0); if (r[0] === '山陰山陽') c = mymProj(132.5, 35.1); if (r[0] === '陸奥出羽') c = mymProj(140.5, 39.4); if (r[0] === '蝦夷地') c = mymProj(142.2, 43.3);
-    var on = i < n;
+    var on = cp.list.indexOf(i) >= 0;
     if (r[1]) o.push('<text x="' + c[0] + '" y="' + (c[1] + 14) + '" font-size="10" text-anchor="middle" font-weight="700" fill="#5b3b1e" style="paint-order:stroke;stroke:#f4e9c4;stroke-width:3px">' + r[0] + '</text>');
     if (on) o.push(mymFlame(c[0], c[1] + 4, i === newIdx ? 1.35 : 0.85, (i % 5) * 0.17) + (i === newIdx ? mymFlame(c[0] + 14, c[1] + 6, 0.8, .3) : ''));
   });
@@ -2008,6 +2127,7 @@ function mymMapSvg(streak, nick, newIdx) {
   return '<svg viewBox="0 0 360 440" role="img" aria-label="' + esc(nm) + '陣地 ' + n + 'か所" style="width:100%;height:auto;display:block;border-radius:10px">' + o.join('') + '</svg>';
 }
 function mysteryView() {
+  mymProbe();
   sub('歴史推理', '<div class="skel" style="height:240px"></div>');
   api('mystery_rank').then(function (r) {
     var me = r.total.me, nm = r.nick || r.lineName; MY.streak = r.streak || 0; MY.nm = nm;
@@ -2016,7 +2136,7 @@ function mysteryView() {
       '<button class="btn" id="mnickok">この名前にする</button><div style="height:8px"></div><button class="btn ghost" id="mnickno">入れずに、LINEの会員名で参加する</button></div>' : '';
     sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">幕末の志士(Aチーム)と戦国武将(Bチーム)の事件が、かわるがわる起こります。証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目の投票で犯人を見つけたら3点・2回目で2点・最後の3回目で1点)。</p>' +
       '<button class="btn" id="mgo">🔍 事件をはじめる</button><p class="muted" style="margin:10px 0 0">ランキングの名前: <b>' + esc(nm) + '</b> <a href="#" id="mnickchg" style="color:var(--brand,#06c755)">変える</a></p>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
-      '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;line-height:1.7">正解が続くと、陣地が1つずつ増えます。まちがえると、うばわれます。</p>' + mymMapSvg(MY.streak, MY.nm) + '<p class="muted" style="margin:8px 0 0">連続正解 <b>' + MY.streak + '</b> ・ 最高 <b>' + (r.bestStreak || 0) + '</b></p></div>' +
+      '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;line-height:1.7">正解が続くと、陣地を1つずつ落とせます(落とす国は、推理のあとに自分でえらびます)。日本を10か所とったら、次は中国(武将がいます)です。まちがえると、うばわれます。</p>' + mymMapSvg(MY.streak, MY.nm) + '<p class="muted" style="margin:8px 0 0">連続正解 <b>' + MY.streak + '</b> ・ 最高 <b>' + (r.bestStreak || 0) + '</b></p></div>' +
       '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
     $('#mgo').onclick = startMystery;
     function saveNick(v) { api('mystery_nick', { nick: v }).then(function () { MY.editNick = false; toast(v ? 'ニックネームを決めました' : 'LINEの会員名で参加します'); mysteryView(); }).catch(function (e) { toast(e.message); }); }
@@ -2084,10 +2204,13 @@ function mysResult(r) {
     '<div class="card"><div class="mycast">' + roles + '</div><div style="font-size:19px;font-weight:700;margin-top:12px">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '<div class="muted" style="margin-top:2px">共犯者: いませんでした</div>') +
     '<div class="a" style="margin-top:12px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.8"><div class="muted" style="font-weight:700">真相</div>' + esc(r.truth) + '</div>' +
     (r.history && r.history.note ? '<div style="margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #d9b44a;line-height:1.7"><b>' + (r.history.based ? '📜 史実をもとにした話' : '📜 補足') + '</b><br>' + esc(r.history.note) + '</div>' : '') + '</div>' +
-    (r.scored ? '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? MYM_REG[Math.min(9, MY.streak)] ? '正解! ' + MYM_REG[Math.min(9, MY.streak)][0] + 'を、取りました!' : '正解!' : '陣地を、うばわれました…') + '</p>' + mymMapSvg(r.win ? Math.min(10, (MY.streak || 0) + 1) : 0, MY.nm, r.win ? Math.min(9, MY.streak || 0) : -1) + '</div>' : '') +
+    (r.scored ? (r.win && (MY.streak || 0) + 1 <= 20 ? '<div id="mpkbox">' + mymPickHtml((MY.streak || 0) + 1) + '</div>' : '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? '正解! すでに中華統一ずみです!' : '陣地を、うばわれました…') + '</p>' + mymMapSvg(r.win ? (MY.streak || 0) + 1 : 0, MY.nm, -1) + '</div>') : '') +
     '<button class="btn" id="mnx">次の事件へ</button><div style="height:10px"></div><button class="btn ghost" id="mrk">ランキングを見る</button>';
-  if (r.scored) MY.streak = r.win ? (MY.streak || 0) + 1 : 0;
+  var sPrev = MY.streak || 0;
+  if (r.scored) MY.streak = r.win ? sPrev + 1 : 0;
+  if (r.scored && !r.win) mymCaps(0);
   sub('結果', h, 'mystery');
+  Array.prototype.forEach.call(document.querySelectorAll('#mpkbox .mpkb'), function (b) { b.onclick = function () { var i = Number(b.dataset.i); mymTake(sPrev + 1, i); $('#mpkbox').innerHTML = mymTakenHtml(sPrev + 1, i); try { $('#mpkbox').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { /* 無視 */ } }; });
   $('#mnx').onclick = startMystery; $('#mrk').onclick = function () { go('mystery'); };
 }
 
