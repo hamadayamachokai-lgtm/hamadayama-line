@@ -360,7 +360,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .wc{flex:0 0 84%;scroll-snap-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .wc .wf{position:relative;background:#1b1520;overflow:hidden}.wc .wf img{display:block;width:100%;aspect-ratio:1/1;max-height:300px;object-fit:cover;object-position:50% 25%;background:#1b1520;transform-origin:50% 80%}
 .mpk{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mpkb{border:2px solid var(--line);border-radius:12px;background:#fff;padding:8px 6px;text-align:center;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px}.mpkb:active{background:#fff4e0}.mpkb small{color:var(--sub,#667)}.mhc{display:flex;gap:12px;align-items:center;margin:8px 0 12px;background:#fff8e8;border:1px solid #d9b44a;border-radius:12px;padding:10px}.mhcf{flex:0 0 42%;text-align:center}.mhct{flex:1;min-width:0;line-height:1.7}.mhcn{font-size:20px;font-weight:800;color:#8e1f14;font-family:serif}.mhcr{font-size:12px;color:#7a5a2a;margin-bottom:4px}.mhct p{margin:0;font-size:14px}
-.mflame{transform-box:fill-box;transform-origin:50% 100%;animation:mfl .7s ease-in-out infinite alternate}@keyframes mfl{0%{transform:scale(1,.9) rotate(-3deg)}100%{transform:scale(.92,1.12) rotate(3deg)}}@media (prefers-reduced-motion:reduce){.mflame{animation:none}}
+.mflame{transform-box:fill-box;transform-origin:50% 100%;animation:mfl .7s ease-in-out infinite alternate}@keyframes mfl{0%{transform:translateX(-2.5px) skewX(-7deg) scale(1,.9)}50%{transform:translateX(1px) skewX(2deg) scale(.95,1.05)}100%{transform:translateX(2.5px) skewX(7deg) scale(.92,1.12)}}.mshake{display:inline-block;animation:msh .45s linear infinite}@keyframes msh{0%{transform:translate(0,0) rotate(0)}15%{transform:translate(-4px,2px) rotate(-2deg)}30%{transform:translate(3px,-3px) rotate(1.5deg)}45%{transform:translate(-3px,-2px) rotate(-1deg)}60%{transform:translate(4px,3px) rotate(2deg)}80%{transform:translate(-2px,-3px) rotate(-1.5deg)}100%{transform:translate(0,0) rotate(0)}}.mfire{position:relative}.mflms{position:absolute;left:0;right:0;bottom:-4px;width:100%;height:auto;pointer-events:none}@media (prefers-reduced-motion:reduce){.mflame,.mshake{animation:none}}
 .wf{position:relative;overflow:hidden}.wx{position:absolute;left:10px;top:10px;max-width:70%;background:#fff;color:#1b2438;border-radius:14px;padding:6px 12px;font-weight:700;font-size:16px;box-shadow:0 2px 8px #0006}.wx:after{content:"";position:absolute;left:18px;bottom:-8px;border:8px solid transparent;border-top-color:#fff;border-bottom:0}
 @keyframes mythink{0%,100%{transform:rotate(-2deg) scale(1.03)}50%{transform:rotate(2.5deg) translateY(-4px) scale(1.05)}}@keyframes mysweat{0%,100%{transform:translateX(0) scale(1.04)}20%{transform:translateX(-6px) scale(1.04)}40%{transform:translateX(6px) scale(1.04)}60%{transform:translateX(-4px) scale(1.04)}80%{transform:translateX(4px) scale(1.04)}}@keyframes mysmirk{0%,100%{transform:scale(1.02)}50%{transform:scale(1.09) translateY(-5px)}}@keyframes myangry{0%,100%{transform:scale(1.03)}10%,30%{transform:scale(1.08) rotate(-1.5deg)}20%,40%{transform:scale(1.08) rotate(1.5deg)}}@keyframes mybob{0%,100%{transform:translateY(0) scale(1.03)}50%{transform:translateY(-6px) scale(1.03)}}
 .wf.think img{animation:mythink 3s ease-in-out infinite}.wf.sweat img{animation:mysweat .9s ease-in-out infinite}.wf.smirk img{animation:mysmirk 2.6s ease-in-out infinite}.wf.angry img{animation:myangry 1.2s ease-in-out infinite}.wf.calm img{animation:mybob 3.2s ease-in-out infinite}
@@ -2030,7 +2030,7 @@ function mymCnSvg(n, nick, newIdx) {
     var c = mymCnProj(r[5][0], r[5][1]), on = cp.list.indexOf(i) >= 0;
     o.push('<text x="' + c[0].toFixed(1) + '" y="' + (c[1] + (on ? 14 : 11)).toFixed(1) + '" font-size="' + (on ? 10 : 9) + '" text-anchor="middle" font-weight="700" fill="#5b3b1e" style="paint-order:stroke;stroke:#f4e9c4;stroke-width:3px">' + (on ? r[0] : r[2]) + '</text>');
     if (on) o.push(mymFlame(c[0], c[1], i === newIdx ? 1.2 : 0.8, (i % 5) * 0.17) + (i === newIdx ? mymFlame(c[0] + 14, c[1] + 6, 0.8, .3) : ''));
-    else if (MYM_HAVE[MYM_CN_CARD[i][0]]) o.push('<image href="mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png" x="' + (c[0] - 17).toFixed(1) + '" y="' + (c[1] - 32).toFixed(1) + '" width="34" height="33"/>'); else o.push(mymWarlord(c[0] - 4, c[1], r[4], r[3], 0.72));
+    else if (MYM_HAVE[MYM_CN_CARD[i][0]] || MYM_IMG[MYM_CN_CARD[i][1]]) o.push('<image href="' + esc(MYM_IMG[MYM_CN_CARD[i][1]] || ('mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png')) + '" x="' + (c[0] - 17).toFixed(1) + '" y="' + (c[1] - 32).toFixed(1) + '" width="34" height="33"/>'); else o.push(mymWarlord(c[0] - 4, c[1], r[4], r[3], 0.72));
   });
   o.push('<g><rect x="14" y="16" width="190" height="46" rx="6" fill="#f6ecd2" stroke="#6b4a1e" stroke-width="2"/><text x="109" y="38" font-size="' + (nm.length > 6 ? 13 : 17) + '" font-weight="800" text-anchor="middle" fill="#8e1f14" font-family="serif">' + esc(nm) + '陣地(中国)</text><text x="109" y="55" font-size="11" text-anchor="middle" fill="#5b3b1e">' + n + ' / 10 か所' + (n >= 10 ? ' 中華統一!' : '') + '</text></g>');
   o.push('<g transform="translate(318 392)" fill="none" stroke="#6b4a1e" stroke-width="1.5"><circle r="20"/><path d="M0 -26V26M-26 0H26" /><path d="M0 -20L5 0L0 20L-5 0Z" fill="#b5533c"/><text y="-30" font-size="11" text-anchor="middle" fill="#6b4a1e" stroke="none">北</text></g>');
@@ -2038,7 +2038,8 @@ function mymCnSvg(n, nick, newIdx) {
 }
 /* ---------- 陣地取り: 「どの国を落としますか?」と、その国の歴史カード ---------- */
 // 武将の絵は mystery-img/bushou/<id>.png を置くと、地図とカードに出ます(無いときは、かんたんな絵が出ます)
-var MYM_HAVE = {};
+var MYM_HAVE = {}, MYM_IMG = {};
+function mymLoadImg() { return api('mys_bushou').then(function (r) { MYM_IMG = (r && r.images) || {}; }).catch(function () { /* 古いAPIでも、標準の絵で続ける */ }); }
 var MYM_CN_CARD = [
   ['cao', '曹操', '洛陽のまわり、中国の中心です。曹操は戦に強く、詩も上手な英雄で、魏の国のもとをつくりました。'],
   ['dong', '董卓', '長安のある地方です。董卓は強い兵をひきいて都を支配しましたが、のちに部下にたおされました。'],
@@ -2079,7 +2080,7 @@ function mymTake(streakNew, idx) {   // 新しい連続正解数の分の1つを
   if (st.cn) o.jp = mymFix(o.jp, 10); mymSave(o);
 }
 function mymRemain(streakNew) { var st = mymStage(streakNew), o = mymStore(), k = st.cn ? 'cn' : 'jp', got = mymFix(o[k], st.n - 1), r = []; for (var i = 0; i < 10; i++) if (got.indexOf(i) < 0) r.push(i); return r; }
-function mymCardOf(cn, i) { return cn ? { id: MYM_CN_CARD[i][0], name: MYM_CN_CARD[i][1], text: MYM_CN_CARD[i][2], reg: MYM_CN[i][0], src: 'mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png', col: MYM_CN[i][4], ch: MYM_CN[i][3] } : { id: '', name: MYM_JP_CARD[i][1], text: MYM_JP_CARD[i][3], reg: MYM_JP_CARD[i][0], src: MYM_JP_CARD[i][2] ? 'mystery-img/' + MYM_JP_CARD[i][2] : '', col: '#8e1f14', ch: String(MYM_JP_CARD[i][1]).charAt(0) }; }
+function mymCardOf(cn, i) { return cn ? { id: MYM_CN_CARD[i][0], name: MYM_CN_CARD[i][1], text: MYM_CN_CARD[i][2], reg: MYM_CN[i][0], src: MYM_IMG[MYM_CN_CARD[i][1]] || ('mystery-img/bushou/' + MYM_CN_CARD[i][0] + '.png'), col: MYM_CN[i][4], ch: MYM_CN[i][3] } : { id: '', name: MYM_JP_CARD[i][1], text: MYM_JP_CARD[i][3], reg: MYM_JP_CARD[i][0], src: MYM_JP_CARD[i][2] ? 'mystery-img/' + MYM_JP_CARD[i][2] : '', col: '#8e1f14', ch: String(MYM_JP_CARD[i][1]).charAt(0) }; }
 function mymFig(c, h) {   // 武将の絵(画像がなければ、かんたんな絵)
   var fb = '<svg viewBox="-24 -46 58 52" style="height:' + h + 'px;width:auto;display:none;margin:0 auto">' + mymWarlord(0, 0, c.col, c.ch, 1) + '</svg>';
   if (!c.src) return fb.replace('display:none', 'display:block');
@@ -2093,7 +2094,7 @@ function mymPickHtml(sNew) {
 }
 function mymPreviewHtml(sNew, i) {
   var st = mymStage(sNew), c = mymCardOf(st.cn, i);
-  return '<div class="card"><h2>' + esc(c.reg) + '</h2><div class="mhc"><div class="mhcf">' + mymFig(c, 200) + '</div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' +
+  return '<div class="card"><h2>' + esc(c.reg) + '</h2><div class="mhc"><div class="mhcf"><div class="mshake">' + mymFig(c, 200) + '</div></div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' +
     '<button class="btn" id="mtake" data-i="' + i + '">🔥 ここを落とす</button><div style="height:10px"></div><button class="btn ghost" id="mback">ほかの国をえらぶ</button></div>';
 }
 function mymBindPick(sNew) {
@@ -2108,7 +2109,7 @@ function mymBindPick(sNew) {
 }
 function mymTakenHtml(sNew, i) {
   var st = mymStage(sNew), c = mymCardOf(st.cn, i);
-  return '<div class="card"><h2>🔥 ' + esc(c.reg) + 'を、落としました!</h2><div class="mhc"><div class="mhcf">' + mymFig(c, 200) + '</div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' + mymMapSvg(sNew, MY.nm, i) +
+  return '<div class="card"><h2>🔥 ' + esc(c.reg) + 'を、落としました!</h2><div class="mhc"><div class="mhcf mfire"><div class="mshake">' + mymFig(c, 200) + '</div><svg class="mflms" viewBox="0 0 120 60" aria-hidden="true">' + mymFlame(24, 58, 1.7, 0) + mymFlame(60, 60, 2.2, .2) + mymFlame(96, 58, 1.7, .4) + '</svg></div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' + mymMapSvg(sNew, MY.nm, i) +
     (sNew === 10 ? '<p style="margin:10px 0 0;font-weight:700;color:var(--ok)">天下統一! 次は中国です。</p>' : sNew === 20 ? '<p style="margin:10px 0 0;font-weight:700;color:var(--ok)">中華統一!</p>' : '') + '</div>';
 }
 function mymStage(s) { s = Math.max(0, s || 0); return s <= 10 ? { cn: false, n: s } : { cn: true, n: Math.min(10, s - 10) }; }
@@ -2142,7 +2143,7 @@ function mymMapSvg(streak, nick, newIdx) {
   return '<svg viewBox="0 0 360 440" role="img" aria-label="' + esc(nm) + '陣地 ' + n + 'か所" style="width:100%;height:auto;display:block;border-radius:10px">' + o.join('') + '</svg>';
 }
 function mysteryView() {
-  mymProbe();
+  mymProbe(); mymLoadImg();
   sub('歴史推理', '<div class="skel" style="height:240px"></div>');
   api('mystery_rank').then(function (r) {
     var me = r.total.me, nm = r.nick || r.lineName; MY.streak = r.streak || 0; MY.nm = nm;
@@ -2168,6 +2169,7 @@ function mysteryView() {
   }).catch(function (e) { offErr('歴史推理', e, 'home'); });
 }
 function startMystery() {
+  mymLoadImg();
   sub('歴史推理', '<div class="skel" style="height:300px"></div>', 'mystery');
   api('mystery_start').then(function (st) {
     if (st.empty) return sub('歴史推理', '<div class="card"><p>' + esc(st.message) + '</p></div>', 'mystery');
