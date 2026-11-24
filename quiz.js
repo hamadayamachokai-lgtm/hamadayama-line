@@ -422,14 +422,19 @@
     $('#oxsame').onclick = function () { oxLevel('pvp'); }; $('#oxnet').onclick = function () { oxLevel('net'); }; $('#oxb').onclick = ox;
   }
   function oxLevel(mode) {
-    draw('<h2 class="hph">レベルを えらぶ</h2><div class="card hpq">' + OXS.map(function (z, i) { return '<button type="button" class="hmg wide' + (i === 2 ? ' alt' : '') + '" data-lv="' + i + '" style="margin:0 0 10px">' + oxLvLabel(i) + '</button>'; }).join('') + '</div>' + (mode === 'net' ? '<button class="qb" id="oxjoin">ともだちの へやに はいる(番号を いれる)</button>' : '') + '<button class="qb" id="oxb">← もどる</button>');
-    bind('[data-lv]', function (b) {
-      var i = +b.dataset.lv, z = OXS[i];
-      if (mode === 'net') return withRoom(function (RM) { RM.lobby(api(), oxNetSpec(i)); });
-      oxStart({ mode: mode, lv: z.cpu, first: 'O', n: z.n, k: z.k, sec: z.sec, level: i });
-    });
+    draw('<h2 class="hph">レベルを えらぶ</h2><div class="card hpq">' + OXS.map(function (z, i) { return '<button type="button" class="hmg wide' + (i === 2 ? ' alt' : '') + '" data-lv="' + i + '" style="margin:0 0 10px">レベル' + (i + 1) + '</button>'; }).join('') + '</div>' + (mode === 'net' ? '<button class="qb" id="oxjoin">ともだちの へやに はいる(番号を いれる)</button>' : '') + '<button class="qb" id="oxb">← もどる</button>');
+    bind('[data-lv]', function (b) { oxIntro(+b.dataset.lv, mode); });
     $('#oxb').onclick = mode === 'net' || mode === 'pvp' ? oxWhere : ox;
     var jb = $('#oxjoin'); if (jb) jb.onclick = function () { withRoom(function (RM) { RM.lobby(api(), oxNetSpec(0)); }); };
+  }
+  function oxIntro(i, mode) {
+    var z = OXS[i];
+    draw('<h2 class="hph">レベル' + (i + 1) + '</h2><div class="card"><p style="margin:0;line-height:1.9">このレベルは、<b>' + z.n + '×' + z.n + '</b>のマスで、<b>' + z.k + 'つ</b>そろえると勝ちです。<br>1手は <b>' + z.sec + '秒</b>。時間がすぎると、じどうで置かれます。</p></div><button class="qb pri" id="oxgo">' + (mode === 'net' ? 'つぎへ' : 'はじめる') + '</button><button class="qb" id="oxb">← もどる</button>');
+    $('#oxb').onclick = function () { oxLevel(mode); };
+    $('#oxgo').onclick = function () {
+      if (mode === 'net') return withRoom(function (RM) { RM.lobby(api(), oxNetSpec(i)); });
+      oxStart({ mode: mode, lv: z.cpu, first: 'O', n: z.n, k: z.k, sec: z.sec, level: i });
+    };
   }
   function oxNetSpec(i) {
     var z = OXS[i];
