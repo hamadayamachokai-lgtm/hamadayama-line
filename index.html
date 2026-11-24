@@ -2087,9 +2087,24 @@ function mymFig(c, h) {   // 武将の絵(画像がなければ、かんたん�
 }
 function mymPickHtml(sNew) {
   var st = mymStage(sNew), rem = mymRemain(sNew);
-  return '<div class="card"><h2>🔥 どの国を落としますか?</h2><p style="margin:0 0 10px;line-height:1.7"><b>' + (st.cn ? '中国' : '日本') + '</b>の、まだ落としていない国です。落とす国を、えらんでください。</p><div class="mpk">' + rem.map(function (i) {
+  return '<div class="card"><h2>🔥 どの国を落としますか?</h2><p style="margin:0 0 10px;line-height:1.7"><b>' + (st.cn ? '中国' : '日本') + '</b>の、まだ落としていない国です。国をおすと、その国のカードが出ます。</p><div class="mpk">' + rem.map(function (i) {
     var c = mymCardOf(st.cn, i); return '<button class="mpkb" data-i="' + i + '"><div style="height:84px;display:flex;align-items:center;justify-content:center">' + mymFig(c, 80) + '</div><b>' + esc(c.reg) + '</b><small>' + esc(c.name) + '</small></button>';
   }).join('') + '</div></div>';
+}
+function mymPreviewHtml(sNew, i) {
+  var st = mymStage(sNew), c = mymCardOf(st.cn, i);
+  return '<div class="card"><h2>' + esc(c.reg) + '</h2><div class="mhc"><div class="mhcf">' + mymFig(c, 200) + '</div><div class="mhct"><div class="mhcn">' + esc(c.name) + '</div><div class="mhcr">' + esc(c.reg) + ' ・ ' + (st.cn ? '中国' : '日本') + '</div><p>' + esc(c.text) + '</p></div></div>' +
+    '<button class="btn" id="mtake" data-i="' + i + '">🔥 ここを落とす</button><div style="height:10px"></div><button class="btn ghost" id="mback">ほかの国をえらぶ</button></div>';
+}
+function mymBindPick(sNew) {
+  var box = $('#mpkbox'); if (!box) return;
+  Array.prototype.forEach.call(box.querySelectorAll('.mpkb'), function (b) {
+    b.onclick = function () {
+      var i = Number(b.dataset.i); box.innerHTML = mymPreviewHtml(sNew, i); try { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { /* 無視 */ }
+      $('#mback').onclick = function () { box.innerHTML = mymPickHtml(sNew); mymBindPick(sNew); };
+      $('#mtake').onclick = function () { mymTake(sNew, i); box.innerHTML = mymTakenHtml(sNew, i); };
+    };
+  });
 }
 function mymTakenHtml(sNew, i) {
   var st = mymStage(sNew), c = mymCardOf(st.cn, i);
@@ -2210,7 +2225,7 @@ function mysResult(r) {
   if (r.scored) MY.streak = r.win ? sPrev + 1 : 0;
   if (r.scored && !r.win) mymCaps(0);
   sub('結果', h, 'mystery');
-  Array.prototype.forEach.call(document.querySelectorAll('#mpkbox .mpkb'), function (b) { b.onclick = function () { var i = Number(b.dataset.i); mymTake(sPrev + 1, i); $('#mpkbox').innerHTML = mymTakenHtml(sPrev + 1, i); try { $('#mpkbox').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { /* 無視 */ } }; });
+  mymBindPick(sPrev + 1);
   $('#mnx').onclick = startMystery; $('#mrk').onclick = function () { go('mystery'); };
 }
 
