@@ -364,9 +364,8 @@
     draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">ことばつなぎ</div><button type="button" class="hmg wide" id="gatama" style="margin:0">ことばつなぎで あそぶ</button><p class="small" style="margin:8px 0 0">おだいの ことばを、まえの ことばの おしりの字から つなぎます。レベル1〜5。みんなで あそべます。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。止まったマスで1問。まちがえたら戻ります。</p></div>');
-    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gatama').onclick = function () { withRoom(function (RM) { RM.atama(api()); }); }; $('#gdaily').onclick = home; $('#gtrip').onclick = openTrip;
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>');
+    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gatama').onclick = function () { withRoom(function (RM) { RM.atama(api()); }); }; $('#gdaily').onclick = home;
   }
 
   /* --- ○×ゲーム(ひとりプレイ / 2人以上プレイ。レベル1〜3 = 3×3・5×5・7×7、1手の時間つき) --- */
@@ -513,7 +512,6 @@
     if (g.mode === 'cpu' && g.turn !== g.me) setTimeout(cpuMove, 600);
   }
 
-  /* --- 日本旅すごろく(quiz-trip.js を読みこむ) --- */
   function withRoom(cb) {
     var run = function () { cb(window.HmtQuizRoom); };
     if (window.HmtQuizRoom) return run();
@@ -526,13 +524,6 @@
     if (window.HmtAtama) return run();
     var sc = document.createElement('script'); sc.src = 'quiz-atama.js?v=1'; sc.onload = run;
     sc.onerror = function () { toastMsg('あたまおしりを よみこめませんでした'); };
-    document.head.appendChild(sc);
-  }
-  function openTrip() {
-    var run = function () { window.HmtQuizTrip.start(api()); };
-    if (window.HmtQuizTrip) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=5'; sc.onload = run;
-    sc.onerror = function () { toastMsg('すごろくを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
