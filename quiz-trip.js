@@ -73,7 +73,7 @@
   function labels() {}
 
   /* ===== 状態 ===== */
-  function me() { return G.players[0]; }
+  function me() { return G.players[G.my || 0]; }
   function rankKey(p) { return (p.goalRound != null ? 1000 - p.goalRound : 0) * 100000 + p.pos * 1000 + p.money; }
   function ranks() { return G.players.map(function (p, i) { return i; }).sort(function (a, b) { return rankKey(G.players[b]) - rankKey(G.players[a]); }); }
   function lastIdx() { var r = ranks(); return r[r.length - 1]; }
@@ -81,14 +81,14 @@
     var p = G.players[j], el = A.root().querySelector('#tk' + j); if (!el) return;
     var xy = pxy(p.pos), same = G.players.filter(function (q, k) { return k < j && q.pos === p.pos; }).length;
     el.style.transform = 'translate(' + (xy[0] + (same ? (same % 2 ? 11 : -11) : 0)) + 'px,' + (xy[1] - 6 + (same > 1 ? 9 : 0)) + 'px)';
-    if (j === 0) {
+    if (j === (G.focus != null ? G.focus : (G.my || 0))) {
       var bd = A.root().querySelector('.tbd'), sv = bd && bd.querySelector('svg'); if (bd && sv) { var k2 = sv.clientWidth / VW; bd.scrollTo({ left: Math.max(0, xy[0] * k2 - bd.clientWidth / 2), top: Math.max(0, xy[1] * k2 - bd.clientHeight / 2) }); }
       labels();
     }
   }
   function showOji() {
     var li = (G.round >= 3 || G.over) ? lastIdx() : -1;
-    G.players.forEach(function (p, j) { var o = A.root().querySelector('#oj' + j); if (o) o.style.display = (G.mode === 'battle' && j === li) ? '' : 'none'; });
+    G.players.forEach(function (p, j) { var o = A.root().querySelector('#oj' + j); if (o) o.style.display = (G.mode !== 'solo' && j === li) ? '' : 'none'; });
   }
   function statusHtml() {
     var m = me();
@@ -105,8 +105,9 @@
     if (!document.getElementById('qztripcss')) { var s = document.createElement('style'); s.id = 'qztripcss'; s.textContent = TRIPCSS; document.head.appendChild(s); }
     A.draw('<div class="qc tev"><h2>' + K('日本一周すごろく', 'にほん いっしゅう すごろく') + '</h2><p style="margin:0">' + K('北海道から沖縄まで、日本地図の上を旅しよう。止まったマスで 1問 解きます。まちがえたら、もとの マスに もどります。', 'ほっかいどうから おきなわまで たびを しよう。とまった マスで 1もん とくよ。まちがえたら もとの マスに もどるよ。') + '</p></div>' +
       '<button class="qb pri" data-m="battle">' + K('コンピュータと対戦', 'コンピュータと たいせん') + '</button>' +
-      '<button class="qb" data-m="solo">' + K('一人旅', 'ひとりたび') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
-    A.bind('[data-m]', function (b) { init(b.dataset.m); });
+      '<button class="qb" data-m="solo">' + K('一人旅', 'ひとりたび') + '</button>' +
+      '<button class="qb" data-m="net">' + K('べつのスマホと(4けたの番号)', 'べつの スマホと(4けたの ばんごう)') + '</button><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
+    A.bind('[data-m]', function (b) { if (b.dataset.m === 'net') return netStart(); init(b.dataset.m); });
     A.root().querySelector('#tback').onclick = function () { if (A.hub) A.hub(); else A.home(); };
   }
   function init(mode) {
@@ -115,6 +116,52 @@
       players: [{ name: st.name || 'あなた', c: ME_COL, money: 100, pos: 0, me: true, goalRound: null }] };
     if (mode === 'battle') CPU.forEach(function (c) { G.players.push({ name: c.name, c: c.c, money: 100, pos: 0, p: c.p, goalRound: null }); });
     birth();
+  }
+  /* ===== べつのスマホと(へや) ===== */
+  var PAL = ['#4fb7a1', '#f2a65a', '#7aa7e8', '#c98ad8', '#e8c040', '#e8453c'];
+  function netStart() {
+    A.withRoom(function (RM) {
+      RM.lobby(A, { game: 'trip', title: '日本一周すごろく', cfg: {}, min: 2, max: 4, cfgText: '2〜4人で あそびます', back: function () { start(A); },
+        init: function (R) { return { phase: 'play', turn: 0, round: 0, over: false, msg: '', p: R.players.map(function () { return { pos: 0, money: 120, gr: null }; }) }; },
+        onStart: function (R) { netInit(R); } });
+    });
+  }
+  function netInit(R) {
+    var S = R.state;
+    G = { mode: 'net', R: R, my: R.my, token: 'tr' + Date.now(), round: S.round || 0, over: false, log: [], used: {}, usedEv: {}, r: A.rng(Date.now() + R.my), qUsed: [], start0: 0, seen: R.ver, turnNow: S.turn || 0, focus: S.turn || 0,
+      players: R.players.map(function (nm, i) { return { name: nm, c: PAL[i % PAL.length], money: S.p[i].money, pos: S.p[i].pos, me: i === R.my, goalRound: S.p[i].gr }; }) };
+    var g = G; G.log.push('みんなで すごろく スタート!');
+    function alive() { return G === g && document.body.contains(A.root()); }
+    function skipDead() {
+      var S2 = JSON.parse(JSON.stringify(R.state)); if (S2.over) return; S2.turn = (S2.turn + 1) % S2.p.length; if (S2.turn === 0) { S2.round++; if (S2.p.some(function (q) { return q.gr != null; }) || S2.round >= TOTAL) S2.over = true; }
+      S2.msg = R.players[R.state.turn] + ' は おやすみ(じかんぎれ)'; R.set(S2);
+    }
+    R.watch(function (r, err) {
+      if (!alive()) { r.stop(); return; }
+      if (err) { r.stop(); A.toast('へやが きえました'); G = null; return start(A); }
+      var S2 = r.state; if (r.ver === g.seen) return; g.seen = r.ver;
+      S2.p.forEach(function (q, i) { if (i === g.my && g.turnNow === g.my && !S2.over && S2.turn === g.my) return; var pl = g.players[i]; pl.pos = q.pos; pl.money = q.money; pl.goalRound = q.gr; });
+      if (S2.over) { r.stop(); g.round = S2.round; return finish(); }
+      if (S2.turn === g.my && g.turnNow === g.my) return;   // いま じぶんの番の さいちゅう
+      g.round = S2.round; g.turnNow = S2.turn; g.focus = S2.turn; board(S2.msg);
+    });
+    g.iv = setInterval(function () { if (!alive() || G.over) { clearInterval(g.iv); return; } if (g.turnNow !== g.my && Date.now() - R._lastChange > 150000) { R._lastChange = Date.now(); skipDead(); } }, 5000);
+    board();
+  }
+  function netEnd() {
+    var R = G.R, m = me(), S = JSON.parse(JSON.stringify(R.state)), delta = m.money - (G.m0 || m.money), g = G;
+    S.p[G.my] = { pos: m.pos, money: m.money, gr: m.goalRound };
+    S.msg = m.name + ': ' + (m.pos >= GOAL ? 'ゴール!' : D.prefs[Math.min(m.pos, 46)].n) + ' ' + (delta >= 0 ? '+' : '') + delta + '万円';
+    S.turn = (S.turn + 1) % S.p.length;
+    if (S.turn === 0) { S.round++; if (S.p.some(function (q) { return q.gr != null; }) || S.round >= TOTAL) S.over = true; }
+    R.set(S).then(function (ok) {
+      if (G !== g) return;
+      var T = ok ? S : R.state;
+      T.p.forEach(function (q, i) { var pl = g.players[i]; pl.pos = q.pos; pl.money = q.money; pl.goalRound = q.gr; });
+      g.seen = R.ver; g.round = T.round; g.turnNow = T.turn; g.focus = T.turn;
+      if (T.over) { R.stop(); return finish(); }
+      board(T.msg);
+    }, function (e) { A.toast(e.message || 'つうしんできませんでした'); });
   }
   function birth() {
     var ev = D.events.filter(function (e) { return e.n === '誕生'; })[0];
@@ -130,6 +177,11 @@
     G.players.forEach(function (p, j) { setTok(j); });
     showOji();
     A.root().querySelector('#troll').onclick = function () { rollMe(); };
+    if (G.mode === 'net') {
+      A.root().setAttribute('data-rm', G.token);
+      var bt = A.root().querySelector('#troll');
+      if (G.turnNow !== G.my) { bt.disabled = true; bt.textContent = G.R.players[G.turnNow] + K(' の番を まっています…', ' の ばんを まっています…'); }
+    }
   }
   function setLog(t) { G.log.push(t); var el = A.root().querySelector('#tlog'); if (el) el.innerHTML = logHtml(); }
   function rollDice(cb) {
@@ -147,14 +199,14 @@
   function rollMe() {
     var b = A.root().querySelector('#troll'); if (b) b.disabled = true;
     G.start0 = me().pos;
-    rollDice(function (v) { hop(0, v, function () { landMe(); }); });
+    G.m0 = me().money; rollDice(function (v) { hop(G.my || 0, v, function () { landMe(); }); });
   }
   /** まちがえたとき: サイコロを ふる前の マスに もどる */
   function backMe(after) {
     var n = me().pos - G.start0; if (n <= 0) return after();
     A.draw(statusHtml() + '<div class="qc tev"><div class="big">↩️</div><h2>' + K('もとの マスに もどる…', 'もとの マスに もどる…') + '</h2></div><div class="tbd">' + boardSVG() + '</div>');
     G.players.forEach(function (p, j) { setTok(j); }); showOji();
-    setTimeout(function () { hop(0, n, function () { after(); }, true); }, 500);
+    setTimeout(function () { hop(G.my || 0, n, function () { after(); }, true); }, 500);
   }
 
   /* ===== マスの結果(毎回1問) ===== */
@@ -211,6 +263,7 @@
 
   /* ===== コンピューターの番 ===== */
   function cpuTurns() {
+    if (G.mode === 'net') return netEnd();
     if (G.mode !== 'battle') return endRound();
     board(); var bt = A.root().querySelector('#troll'); if (bt) { bt.disabled = true; bt.textContent = K('みんなの 番…', 'みんなの ばん…'); } var j = 1;
     (function nextCpu() {
@@ -240,18 +293,19 @@
   function finish() {
     if (G.over) return;
     G.over = true;
-    var st = A.st(), m = me(), r = ranks(), myRank = r.indexOf(0) + 1, li = r[r.length - 1];
+    var st = A.st(), m = me(), r = ranks(), myRank = r.indexOf(G.my || 0) + 1, li = r[r.length - 1], vs = G.mode !== 'solo';
     var reached = m.goalRound != null;
-    var oji = G.mode === 'battle' ? li : (reached ? -1 : 0);
-    var xp = 15 + (G.mode === 'battle' && myRank === 1 ? 10 : 0) + (G.mode === 'solo' && reached ? 10 : 0);
+    var oji = vs ? li : (reached ? -1 : 0);
+    var xp = 15 + (vs && myRank === 1 ? 10 : 0) + (G.mode === 'solo' && reached ? 10 : 0);
     var evo = A.addXp(xp); st.trip = st.trip || { played: 0, best: 0 }; st.trip.played++; st.trip.best = Math.max(st.trip.best, m.money); A.Store.save();
     var rows = r.map(function (i, k) { var p = G.players[i]; return '<div class="qhead" style="margin:0 0 6px"><b>' + (k + 1) + '位 ' + A.esc(p.name) + (i === oji ? ' 👴' : '') + '</b><span>' + (p.pos >= GOAL ? '🏁ゴール ' : A.esc(D.prefs[Math.min(p.pos, 46)].n) + ' ') + '💰' + p.money + '</span></div>'; }).join('');
-    var tail = G.mode === 'battle' ? (oji === 0 ? K('あなたが 最下位…。1本ハゲの おじさんが 乗っかりました!', 'さいかい…。はげの おじさんが のっかった!') : A.esc(G.players[oji].name) + K(' が 最下位。おじさんが 乗っかりました!', ' に おじさんが のっかった!'))
+    var tail = vs ? (oji === (G.my || 0) ? K('あなたが 最下位…。1本ハゲの おじさんが 乗っかりました!', 'さいかい…。はげの おじさんが のっかった!') : A.esc(G.players[oji].name) + K(' が 最下位。おじさんが 乗っかりました!', ' に おじさんが のっかった!'))
       : (reached ? K('日本一周 達成! おじさんは 来ませんでした', 'ゴール! おじさんは こなかったよ') : K('ゴールに とどかず、おじさんが 乗っかりました…', 'ゴールに とどかず おじさんが のっかった…'));
-    A.draw('<div class="qc tev"><h2>' + K('旅の けっか', 'たびの けっか') + '</h2><div style="font-size:1.4em;font-weight:700">' + (G.mode === 'battle' ? myRank + K('位', 'い') : (reached ? K('日本一周!', 'ゴール!') : A.esc(D.prefs[Math.min(m.pos, 46)].n) + 'まで')) + '</div>' +
+    A.draw('<div class="qc tev"><h2>' + K('旅の けっか', 'たびの けっか') + '</h2><div style="font-size:1.4em;font-weight:700">' + (vs ? myRank + K('位', 'い') : (reached ? K('日本一周!', 'ゴール!') : A.esc(D.prefs[Math.min(m.pos, 46)].n) + 'まで')) + '</div>' +
       (oji >= 0 ? '<div class="tbob" style="display:inline-block;margin:8px">' + ojiSVG(110) + '</div>' : '<div style="font-size:3em">🎉</div>') + '<div class="qbub">' + tail + '</div></div><div class="qc">' + rows + '</div>' +
       '<div class="qfb ok"><b>+' + xp + ' ' + K('経験値', 'けいけんち') + '</b>' + (evo ? '<br>🎊 あいぼうが しんかした!' : '') + '</div><button class="qb pri" id="tagain">' + K('もういちど あそぶ', 'もういちど') + '</button><button class="qb" id="thome">' + K('GAMEへ もどる', 'GAMEへ もどる') + '</button>');
-    A.root().querySelector('#tagain').onclick = function () { start(A); }; A.root().querySelector('#thome').onclick = function () { if (A.hub) A.hub(); else A.home(); };
+    var leaveNet = function () { if (G && G.R) { G.R.leave(); } G = null; };
+    A.root().querySelector('#tagain').onclick = function () { leaveNet(); start(A); }; A.root().querySelector('#thome').onclick = function () { leaveNet(); if (A.hub) A.hub(); else A.home(); };
   }
 
   window.HmtQuizTrip = { start: start };
