@@ -3814,12 +3814,14 @@ function hpTabs(cur, act) {
   return '<div class="hptabs" role="group" aria-label="助け合いのメニュー"><button type="button" data-htab="home" aria-pressed="' + (cur === 'start' || cur === 'home') + '">🏠 ホーム</button><button type="button" data-htab="chat" aria-pressed="false">💬 チャット</button><button type="button" data-htab="mine" aria-pressed="' + (cur === 'mine') + '">📋 募集内容</button><button type="button" data-htab="done" aria-pressed="' + (cur === 'done') + '">🤝 マッチング済' + (act ? '<i>' + act + '</i>' : '') + '</button></div>';
 }
 function hpFltBox(d) {
-  var f = HP.flt[HP.mode], areas = (HP.av && HP.av.areas) || [];
+  var f = HP.flt[HP.mode], areas = HP.mode === 'go' ? hpAreasOf(d) : ((HP.av && HP.av.areas) || []);
   return '<div class="hpflt"><div class="small" style="margin:0 0 6px"><b>できること</b>(いくつでも)</div>' + hpChips('data-ft', d.cats || [], f.tags, true) + (areas.length ? '<div class="small" style="margin:10px 0 6px"><b>地域</b></div>' + hpChips('data-fa', areas, f.area, false) : '') +
     '<button type="button" class="hpsrch" id="hflt-go">検索</button>' + (f.on ? '<p class="small" style="margin:8px 0 0;text-align:center">絞り込み中 <button type="button" class="sbtn xs" id="hflt-clr">やめる</button></p>' : '') + '</div>';
 }
 function hpOkTags(tags, f) { return !f || !f.tags.length || tags.some(function (t) { return f.tags.indexOf(t) >= 0; }); }
-function hpOkArea(areaTags, f) { return !f || !f.area || areaTags.some(function (t) { return String(t).replace(/^浜田山/, '') === String(f.area).replace(/^浜田山/, ''); }); }
+var HP_AREAS_DEF = ['浜田山1丁目', '浜田山2丁目', '浜田山3丁目', '浜田山4丁目', 'その他地域', '浜田山全域'];
+function hpAreasOf(d) { return HP_AREAS_DEF; }
+function hpOkArea(areaTags, f) { return !f || !f.area || areaTags.indexOf('浜田山全域') >= 0 || areaTags.some(function (t) { return String(t).replace(/^浜田山/, '') === String(f.area).replace(/^浜田山/, ''); }); }
 /** 画像のような、人のカード。まるいアイコン・名前・できること(右にひとこと) */
 function hpPerson(v) {
   var meta = [v.area ? '浜田山' + v.area : '', v.sex, v.age].filter(Boolean).map(esc).join(' ・ ');
@@ -3920,7 +3922,7 @@ function drawHelp() {
       '<div class="hpl">② 年代(いくつでも)</div>' + hpChips('data-ra', d.ages, f.ages, true) +
       '<div class="hpl">③ どんなお手伝いですか?</div>' + hpChips('data-rc', d.cats, f.tags, true) + '<textarea class="inp" id="hr-text" rows="3" maxlength="1000" placeholder="くわしく書くとき(例: 町会の倉庫の片付け)" style="width:100%;box-sizing:border-box;margin-top:8px">' + esc(f.text) + '</textarea>' +
       '<div class="hpl">④ 何人ほしいですか?</div>' + hpChips('data-rn', d.scales, f.scale, false) +
-      '<div class="hpl">⑤ 場所(地域)</div>' + hpChips('data-rg', d.areas || [], f.area, false) +
+      '<div class="hpl">⑤ 場所(地域)</div>' + hpChips('data-rg', hpAreasOf(d), f.area, false) +
       '<p class="small" style="margin:10px 0">電話番号・番地は書かないでください。名前は出ません(「3丁目会員様」と出ます)。Tweetにも載ります。手を挙げた人が入ると、自動でチャットができます(2人以上なら、グループチャット・3日間)。</p><button type="button" class="hmg wide" id="hr-send">この内容で募集する</button></div>';
   } else if (sc === 'avail') {
     var a = HP.av, af = HP.af;
