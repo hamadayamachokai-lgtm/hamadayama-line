@@ -359,6 +359,7 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .hscroll::-webkit-scrollbar{display:none}
 .wc{flex:0 0 84%;scroll-snap-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .wc .wf{position:relative;background:#1b1520;overflow:hidden}.wc .wf img{display:block;width:100%;aspect-ratio:1/1;max-height:300px;object-fit:cover;object-position:50% 25%;background:#1b1520;transform-origin:50% 80%}
+.mflame{transform-box:fill-box;transform-origin:50% 100%;animation:mfl .7s ease-in-out infinite alternate}@keyframes mfl{0%{transform:scale(1,.9) rotate(-3deg)}100%{transform:scale(.92,1.12) rotate(3deg)}}@media (prefers-reduced-motion:reduce){.mflame{animation:none}}
 .wf{position:relative;overflow:hidden}.wx{position:absolute;left:10px;top:10px;max-width:70%;background:#fff;color:#1b2438;border-radius:14px;padding:6px 12px;font-weight:700;font-size:16px;box-shadow:0 2px 8px #0006}.wx:after{content:"";position:absolute;left:18px;bottom:-8px;border:8px solid transparent;border-top-color:#fff;border-bottom:0}
 @keyframes mythink{0%,100%{transform:rotate(-2deg) scale(1.03)}50%{transform:rotate(2.5deg) translateY(-4px) scale(1.05)}}@keyframes mysweat{0%,100%{transform:translateX(0) scale(1.04)}20%{transform:translateX(-6px) scale(1.04)}40%{transform:translateX(6px) scale(1.04)}60%{transform:translateX(-4px) scale(1.04)}80%{transform:translateX(4px) scale(1.04)}}@keyframes mysmirk{0%,100%{transform:scale(1.02)}50%{transform:scale(1.09) translateY(-5px)}}@keyframes myangry{0%,100%{transform:scale(1.03)}10%,30%{transform:scale(1.08) rotate(-1.5deg)}20%,40%{transform:scale(1.08) rotate(1.5deg)}}@keyframes mybob{0%,100%{transform:translateY(0) scale(1.03)}50%{transform:translateY(-6px) scale(1.03)}}
 .wf.think img{animation:mythink 3s ease-in-out infinite}.wf.sweat img{animation:mysweat .9s ease-in-out infinite}.wf.smirk img{animation:mysmirk 2.6s ease-in-out infinite}.wf.angry img{animation:myangry 1.2s ease-in-out infinite}.wf.calm img{animation:mybob 3.2s ease-in-out infinite}
@@ -471,7 +472,7 @@ var IC = {
   help: '<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/>',
   suginami: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M12 8v5M12 16v.5"/>',
   weather: '<circle cx="8" cy="8" r="3"/><path d="M8 2v1M2 8h1M3.8 3.8l.7.7M12.2 3.8l-.7.7"/><path d="M8 19h9a4 4 0 000-8 5 5 0 00-9.6 1.5A3.3 3.3 0 008 19z"/>',
-  tips: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>',
+  tips: '<rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.5" r=".9"/><circle cx="18" cy="13.5" r=".9"/>',
   mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
   headchg: '<path d="M17 3l4 4-4 4M21 7H8a4 4 0 00-4 4M7 21l-4-4 4-4M3 17h13a4 4 0 004-4"/>',
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
@@ -506,7 +507,7 @@ var IC = {
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
-  tips: '豆知識', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
+  tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
@@ -1967,16 +1968,55 @@ function mailWriteView() {
 function mailNewViewKeep() { var p = MT.prefill; MT.prefill = null; mailNewView(); MT.prefill = p; }
 
 /* ---------- 推理 ---------- */
-var MY = { story: null, round: 1, tab: 'monthly' };
+var MY = { story: null, round: 1, tab: 'monthly', streak: 0, nm: '' };
+/* ---------- 歴史推理: 陣地取りマップ(昔の地図風)。連続正解で陣地が増え、炎が上がる ---------- */
+var MYM_ISL = [
+  [[140.0, 41.5], [140.1, 42.5], [140.4, 43.2], [141.4, 43.3], [141.7, 45.4], [142.2, 45.4], [143.8, 44.2], [145.3, 43.5], [145.8, 43.3], [144.0, 42.9], [143.2, 42.0], [141.6, 42.5], [141.0, 41.7]],
+  [[140.9, 41.4], [141.5, 40.5], [141.9, 39.5], [141.9, 38.3], [141.0, 37.0], [140.9, 36.0], [140.9, 35.7], [139.9, 35.1], [139.8, 35.0], [139.3, 35.2], [138.8, 34.65], [138.2, 34.6], [137.0, 34.6], [136.9, 34.3], [136.3, 33.6], [135.8, 33.45], [135.2, 33.6], [135.0, 34.2], [135.3, 34.7], [134.0, 34.7], [132.6, 34.2], [131.0, 33.95], [130.9, 34.4], [131.7, 34.7], [132.9, 35.4], [133.5, 35.5], [134.6, 35.65], [135.3, 35.7], [136.1, 36.0], [136.7, 37.4], [137.0, 37.5], [137.5, 36.9], [138.5, 37.4], [139.3, 38.2], [140.0, 39.6], [140.0, 40.6], [140.4, 41.2]],
+  [[132.0, 33.4], [132.5, 34.0], [133.5, 34.3], [134.5, 34.3], [134.7, 34.0], [134.2, 33.8], [133.6, 33.3], [133.0, 32.9]],
+  [[130.0, 33.6], [130.9, 33.95], [131.8, 33.7], [131.9, 32.8], [131.4, 31.4], [130.6, 31.0], [130.2, 31.4], [130.1, 32.5], [129.7, 32.8], [129.6, 33.3]]];
+// 陣地(とる順)。box=[西,南,東,北](経度・緯度)。沖縄は左下の枠
+var MYM_REG = [['関東', [138.6, 34.7, 141.3, 37.4]], ['東海甲信', [136.3, 34.2, 138.7, 35.95]], ['近畿', [134.4, 33.3, 136.35, 35.95]], ['北陸', [135.9, 35.95, 138.9, 38.3]], ['中国', [130.7, 33.8, 134.45, 35.95]], ['四国', [131.9, 32.8, 134.9, 34.4]], ['九州', [129.4, 30.5, 132.1, 34.0]], ['奥羽', [138.95, 37.45, 142.3, 41.7]], ['蝦夷', [139.5, 41.3, 146, 46]], ['沖縄', null]];
+function mymProj(lon, lat) { return [(lon - 129.2) / 17.2 * 330 + 10, (45.8 - lat) / 15.2 * 380 + 14]; }
+function mymPoly(poly) { return poly.map(function (q) { var p = mymProj(q[0], q[1]); return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+function mymBox(b) { var a = mymProj(b[0], b[3]), c = mymProj(b[2], b[1]); return '<rect x="' + a[0].toFixed(1) + '" y="' + a[1].toFixed(1) + '" width="' + (c[0] - a[0]).toFixed(1) + '" height="' + (c[1] - a[1]).toFixed(1) + '"'; }
+function mymFlame(x, y, sc, d) { return '<g transform="translate(' + x + ',' + y + ') scale(' + sc + ')"><g class="mflame" style="animation-delay:' + d + 's"><path d="M0 -26C8 -16 12 -8 9 0C7 6 2 8 0 8C-6 8 -10 3 -9 -4C-8 -10 -3 -12 -4 -20C-2 -22 -1 -24 0 -26Z" fill="#e8452c"/><path d="M0 -15C5 -9 7 -4 5 1C3 5 -3 5 -4 0C-4 -5 -1 -8 0 -15Z" fill="#ffb02e"/><path d="M0 -6C2 -3 3 0 1 2C-1 3 -2 1 -1 -2Z" fill="#fff3b0"/></g></g>'; }
+function mymMapSvg(streak, nick, newIdx) {
+  var n = Math.max(0, Math.min(10, streak || 0)), nm = (nick || 'あなた'), o = [];
+  o.push('<defs><filter id="mpap"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" result="t"/><feColorMatrix in="t" values="0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .2 0 0 0 .16 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>' +
+    '<clipPath id="mland">' + MYM_ISL.map(function (p) { return '<polygon points="' + mymPoly(p) + '"/>'; }).join('') + '</clipPath></defs>');
+  o.push('<rect width="360" height="440" rx="8" fill="#ead9aa"/><rect width="360" height="440" rx="8" fill="#000" filter="url(#mpap)"/><rect x="5" y="5" width="350" height="430" rx="6" fill="none" stroke="#8a6a35" stroke-width="2.5"/><rect x="10" y="10" width="340" height="420" rx="4" fill="none" stroke="#8a6a35" stroke-width=".8"/>');
+  for (var w = 0; w < 6; w++) o.push('<path d="M' + (225 + w * 18) + ' ' + (300 + (w % 2) * 14) + 'q9 -6 18 0t18 0" stroke="#9a7c46" fill="none" stroke-width=".9" opacity=".55"/>');
+  MYM_ISL.forEach(function (p) { o.push('<polygon points="' + mymPoly(p) + '" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="2" stroke-linejoin="round"/>'); });
+  o.push('<g clip-path="url(#mland)">');
+  MYM_REG.forEach(function (r, i) { if (r[1]) o.push(mymBox(r[1]) + ' fill="' + (i < n ? '#d9534a' : 'none') + '" fill-opacity="' + (i < n ? .42 : 0) + '" stroke="#6b4a1e" stroke-width="1.2" stroke-dasharray="4 3"/>'); });
+  o.push('</g>');
+  // 沖縄の枠
+  o.push('<rect x="20" y="360" width="110" height="60" rx="8" fill="' + (n >= 10 ? '#e9a79f' : '#f4e9c4') + '" stroke="#6b4a1e" stroke-width="1.6" stroke-dasharray="5 3"/><ellipse cx="75" cy="392" rx="30" ry="6" fill="#f4e9c4" stroke="#6b4a1e" stroke-width="1.5" transform="rotate(-18 75 392)"/><text x="75" y="372" font-size="10" text-anchor="middle" fill="#6b4a1e">沖縄</text>');
+  // 国名・炎・旗
+  MYM_REG.forEach(function (r, i) {
+    var c = r[1] ? mymProj((r[1][0] + r[1][2]) / 2, (r[1][1] + r[1][3]) / 2) : [75, 392];
+    if (r[0] === '近畿') c = mymProj(135.5, 34.9); if (r[0] === '四国') c = mymProj(133.3, 33.7); if (r[0] === '九州') c = mymProj(130.8, 32.7); if (r[0] === '東海甲信') c = mymProj(137.7, 35.3); if (r[0] === '関東') c = mymProj(139.8, 36.1); if (r[0] === '北陸') c = mymProj(137.2, 36.9); if (r[0] === '中国') c = mymProj(132.5, 35.1); if (r[0] === '奥羽') c = mymProj(140.5, 39.4); if (r[0] === '蝦夷') c = mymProj(142.2, 43.3);
+    var on = i < n;
+    o.push('<text x="' + c[0] + '" y="' + (c[1] + 14) + '" font-size="10" text-anchor="middle" font-weight="700" fill="#5b3b1e" style="paint-order:stroke;stroke:#f4e9c4;stroke-width:3px">' + r[0] + '</text>');
+    if (on) o.push(mymFlame(c[0], c[1] + 4, i === newIdx ? 1.35 : 0.85, (i % 5) * 0.17) + (i === newIdx ? mymFlame(c[0] + 14, c[1] + 6, 0.8, .3) : ''));
+  });
+  // 見出し(○○陣地)
+  o.push('<g><rect x="165" y="18" width="180" height="46" rx="6" fill="#f6ecd2" stroke="#6b4a1e" stroke-width="2"/><text x="255" y="40" font-size="' + (nm.length > 6 ? 13 : 17) + '" font-weight="800" text-anchor="middle" fill="#8e1f14" font-family="serif">' + esc(nm) + '陣地</text><text x="255" y="57" font-size="11" text-anchor="middle" fill="#5b3b1e">' + n + ' / 10 国' + (n >= 10 ? ' 天下統一!' : '') + '</text></g>');
+  // 方位
+  o.push('<g transform="translate(318 380)" fill="none" stroke="#6b4a1e" stroke-width="1.5"><circle r="20"/><path d="M0 -26V26M-26 0H26" /><path d="M0 -20L5 0L0 20L-5 0Z" fill="#b5533c"/><text y="-30" font-size="11" text-anchor="middle" fill="#6b4a1e" stroke="none">北</text></g>');
+  return '<svg viewBox="0 0 360 440" role="img" aria-label="' + esc(nm) + '陣地 ' + n + '国" style="width:100%;height:auto;display:block;border-radius:10px">' + o.join('') + '</svg>';
+}
 function mysteryView() {
   sub('歴史推理', '<div class="skel" style="height:240px"></div>');
   api('mystery_rank').then(function (r) {
-    var me = r.total.me, nm = r.nick || r.lineName;
+    var me = r.total.me, nm = r.nick || r.lineName; MY.streak = r.streak || 0; MY.nm = nm;
     var nickCard = r.needNick || MY.editNick ? '<div class="card"><h2>ランキングの名前</h2><p style="margin:0 0 10px;line-height:1.7">ランキングに出る名前を決めてください(個人情報保護のため、ニックネームがおすすめです)。入れなければ、LINEの会員名「' + esc(r.lineName) + '」で参加します。</p>' +
       '<input id="mnick" maxlength="12" autocomplete="off" placeholder="ニックネーム(12文字まで)" value="' + esc(r.nick || '') + '" aria-label="ニックネーム" style="width:100%;font-size:18px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px"><div style="height:10px"></div>' +
       '<button class="btn" id="mnickok">この名前にする</button><div style="height:8px"></div><button class="btn ghost" id="mnickno">入れずに、LINEの会員名で参加する</button></div>' : '';
     sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">幕末の志士(Aチーム)と戦国武将(Bチーム)の事件が、かわるがわる起こります。証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目の投票で犯人を見つけたら3点・2回目で2点・最後の3回目で1点)。</p>' +
       '<button class="btn" id="mgo">🔍 事件をはじめる</button><p class="muted" style="margin:10px 0 0">ランキングの名前: <b>' + esc(nm) + '</b> <a href="#" id="mnickchg" style="color:var(--brand,#06c755)">変える</a></p>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
+      '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;line-height:1.7">正解が続くと、陣地が1つずつ増えます。まちがえると、うばわれます。</p>' + mymMapSvg(MY.streak, MY.nm) + '<p class="muted" style="margin:8px 0 0">連続正解 <b>' + MY.streak + '</b> ・ 最高 <b>' + (r.bestStreak || 0) + '</b></p></div>' +
       '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
     $('#mgo').onclick = startMystery;
     function saveNick(v) { api('mystery_nick', { nick: v }).then(function () { MY.editNick = false; toast(v ? 'ニックネームを決めました' : 'LINEの会員名で参加します'); mysteryView(); }).catch(function (e) { toast(e.message); }); }
@@ -2014,7 +2054,7 @@ function mysRound() {
   var st = MY.story, r = st.rounds[MY.round - 1];
   var cards = r.talks.map(function (t, i) {
     var ex = myExp(t.person, MY.round, t.answer);
-    return '<div class="wc"><div class="wf ' + ex[0] + '"><img src="' + esc(myImg(st, t.person)) + '" alt="' + esc(t.person) + '" referrerpolicy="no-referrer"><div class="wx">' + ex[1] + ' ' + esc(ex[2]) + '</div></div><div class="in"><div class="muted">第' + MY.round + 'ラウンド ・ ' + (i + 1) + '/5</div><div class="pn">🗣️ ' + esc(t.person) + '</div><div class="q">Q. ' + esc(t.question) + '</div><div class="a">「' + esc(t.answer) + '」</div></div></div>';
+    return '<div class="wc"><div class="wf ' + ex[0] + '"><img src="' + esc(myImg(st, t.person)) + '" alt="' + esc(t.person) + '" referrerpolicy="no-referrer"></div><div class="in"><div class="muted">第' + MY.round + 'ラウンド ・ ' + (i + 1) + '/5</div><div class="pn">🗣️ ' + esc(t.person) + '</div><div class="q">Q. ' + esc(t.question) + '</div><div class="a">「' + esc(t.answer) + '」</div></div></div>';
   }).join('');
   sub('第' + MY.round + 'ラウンド', '<p style="margin:0 2px 12px;line-height:1.7"><b>' + esc(r.lead || '証言を集めよう。') + '</b></p><div class="hscroll" id="hs">' + cards + '</div><div class="dots" id="dts">' + r.talks.map(function (_, i) { return '<i' + (i === 0 ? ' class="on"' : '') + '></i>'; }).join('') + '</div><p class="small" style="text-align:center;margin:0 0 14px">← 横にスワイプして、5人の証言を聞きましょう →</p>' +
     '<button class="btn" id="mvote">🗳️ 犯人に投票する</button>' + (MY.round < 3 ? '<div style="height:10px"></div><button class="btn ghost" id="mnext">次のラウンドへ →</button>' : '<p class="small" style="margin:10px 4px;text-align:center;color:var(--red);font-weight:700">最終ラウンドです。犯人だと思う人に投票してください。</p>'), 'mystery');
@@ -2038,13 +2078,15 @@ function mysVote() {
 }
 function mysResult(r) {
   var st = MY.story, cast = st.cast || [];
-  var roles = cast.map(function (p) { var k = p === r.culprit ? 'c' : p === r.accomplice ? 'a' : 'n'; return '<div class="pc" style="cursor:default"><div class="wf ' + (k === 'c' ? 'sweat' : k === 'a' ? 'smirk' : 'calm') + '"><img src="' + esc(myImg(st, p)) + '" alt=""><div class="wx" style="font-size:14px">' + (k === 'c' ? '😅 ばれたか…' : k === 'a' ? '😏 ふふ…' : '😌') + '</div></div><span>' + esc(p) + '<br><i class="myrole ' + k + '" style="font-style:normal;margin:0">' + (k === 'c' ? '犯人' : k === 'a' ? '共犯' : '一般') + '</i></span></div>'; }).join('');
+  var roles = cast.map(function (p) { var k = p === r.culprit ? 'c' : p === r.accomplice ? 'a' : 'n'; return '<div class="pc" style="cursor:default"><div class="wf ' + (k === 'c' ? 'sweat' : k === 'a' ? 'smirk' : 'calm') + '"><img src="' + esc(myImg(st, p)) + '" alt=""></div><span>' + esc(p) + '<br><i class="myrole ' + k + '" style="font-style:normal;margin:0">' + (k === 'c' ? '犯人' : k === 'a' ? '共犯' : '一般') + '</i></span></div>'; }).join('');
   var h = '<div class="card" style="text-align:center"><div style="font-size:26px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? '🎉 推理成功!' : '🕵️ 犯人側の勝利') + '</div>' +
     '<p style="margin:8px 0 0">あなたの投票: ' + esc(r.vote) + '</p>' + (r.scored ? '<p style="margin:4px 0 0;font-weight:700">+' + r.points + '点</p>' : '') + '</div>' +
     '<div class="card"><div class="mycast">' + roles + '</div><div style="font-size:19px;font-weight:700;margin-top:12px">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '<div class="muted" style="margin-top:2px">共犯者: いませんでした</div>') +
     '<div class="a" style="margin-top:12px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.8"><div class="muted" style="font-weight:700">真相</div>' + esc(r.truth) + '</div>' +
     (r.history && r.history.note ? '<div style="margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #d9b44a;line-height:1.7"><b>' + (r.history.based ? '📜 史実をもとにした話' : '📜 補足') + '</b><br>' + esc(r.history.note) + '</div>' : '') + '</div>' +
+    (r.scored ? '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? MYM_REG[Math.min(9, MY.streak)] ? '正解! ' + MYM_REG[Math.min(9, MY.streak)][0] + 'を、取りました!' : '正解!' : '陣地を、うばわれました…') + '</p>' + mymMapSvg(r.win ? Math.min(10, (MY.streak || 0) + 1) : 0, MY.nm, r.win ? Math.min(9, MY.streak || 0) : -1) + '</div>' : '') +
     '<button class="btn" id="mnx">次の事件へ</button><div style="height:10px"></div><button class="btn ghost" id="mrk">ランキングを見る</button>';
+  if (r.scored) MY.streak = r.win ? (MY.streak || 0) + 1 : 0;
   sub('結果', h, 'mystery');
   $('#mnx').onclick = startMystery; $('#mrk').onclick = function () { go('mystery'); };
 }
@@ -3299,10 +3341,10 @@ function evApplyView(name) {
 var QLABEL = { '投票': '今日の質問', '自由記入': '今日の質問', 'クイズ': '今日のクイズ', 'なぞなぞ': '今日のなぞなぞ' };
 /* 豆知識 = 毎日3問クイズ(quiz.js / quiz-data.json)。前の豆知識の画面は tipsViewOld に残してあります */
 function tipsView() {
-  sub('豆知識', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
+  sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=1'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=2'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
@@ -3593,10 +3635,10 @@ function boardDetailView(id) {
 /* ---------- 助け合い(災害時)。Threadsのような、1本のながれ ---------- */
 function refreshBadges() { return api('badges').then(function (b) { if (!S.me) return; S.me.badges = b; saveMe(S.me); renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
 var HP = { scr: 'home', mode: 'need', d: null, av: null, pick: null, ask: null, rf: null, af: null, flt: { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } } };
-var HPBACK = { recruit: 'home', avail: 'home' };
+var HPBACK = { recruit: 'start', avail: 'home' };
 function hpRf0() { return { sex: '性別問わず', ages: [], tags: [], text: '', scale: '1人', area: '' }; }
 function helpView() {
-  HP.scr = 'home'; HP.ask = null; HP.rf = hpRf0(); HP.af = { sex: '', age: '', tags: [] }; HP.flt = { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } };
+  HP.scr = 'start'; HP.ask = null; HP.rf = hpRf0(); HP.af = { sex: '', age: '', tags: [] }; HP.flt = { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } };
   if (!MEM.help_list) sub('助け合い', '<div class="skel" style="height:300px"></div>');
   swrList('help_list', function (d) { HP.d = d; drawHelp(); refreshBadges(); }, function (e) { offErr('助け合い', e, 'home'); });
   api('help_avail_get').then(function (a) { HP.av = a; if (HP.d && (HP.scr === 'avail' || HP.mode === 'go')) drawHelp(); }).catch(function () {});
@@ -3615,7 +3657,7 @@ function hpMatched(r) {
 function hpKindLabel(x) { return x.kind === 'お願い' ? 'この案件いけます' : 'お願いしたい'; }
 function hpChips(attr, list, on, multi) { return '<div class="hpchs">' + list.map(function (v) { var o = multi ? on.indexOf(v) >= 0 : on === v; return '<button type="button" class="hpch' + (o ? ' on' : '') + '" ' + attr + '="' + esc(v) + '" aria-pressed="' + o + '">' + esc(v) + '</button>'; }).join('') + '</div>'; }
 function hpTabs(cur, act) {
-  return '<div class="hptabs" role="group" aria-label="助け合いのメニュー"><button type="button" data-htab="home" aria-pressed="' + (cur === 'home') + '">🏠 ホーム</button><button type="button" data-htab="chat" aria-pressed="false">💬 チャット</button><button type="button" data-htab="mine" aria-pressed="' + (cur === 'mine') + '">📋 つながり' + (act ? '<i>' + act + '</i>' : '') + '</button></div>';
+  return '<div class="hptabs" role="group" aria-label="助け合いのメニュー"><button type="button" data-htab="home" aria-pressed="' + (cur === 'start' || cur === 'home') + '">🏠 ホーム</button><button type="button" data-htab="chat" aria-pressed="false">💬 チャット</button><button type="button" data-htab="mine" aria-pressed="' + (cur === 'mine') + '">📋 つながり' + (act ? '<i>' + act + '</i>' : '') + '</button></div>';
 }
 function hpFltBox(d) {
   var f = HP.flt[HP.mode], areas = (HP.av && HP.av.areas) || [];
@@ -3646,7 +3688,12 @@ function drawHelp() {
   var mineL = items.filter(function (x) { return x.mine || x.raised; }), act = mineL.filter(function (x) { return ['公開', '成立'].indexOf(x.status) >= 0; }).length;
   var back = HPBACK[sc] ? '<div style="margin:0 0 12px"><button type="button" class="sbtn" data-hback>← もどる</button></div>' : '';
   var demo = S.me && S.me.drill ? '<div class="banner advisory" style="margin-bottom:12px"><div><b>防災訓練中(デモモード)</b><div>マッチングまで試せます。そのあとのチャットは、機械の自動応答です。</div></div></div>' : '';
-  if (sc === 'home') {
+  var alertH = toMe.map(function (x) { return '<div class="card hpal"><b style="font-size:17px">お願いが届いています</b><p style="margin:6px 0 2px;font-size:15px"><b>' + esc(x.by) + '</b> から</p><div class="thb" style="margin:0 0 10px">' + bodyHtml(x.body) + '</div><div class="inrow"><button type="button" class="btn" data-hyes="' + esc(x.id) + '" style="flex:1">できます</button><button type="button" class="btn ghost" data-hno="' + esc(x.id) + '" style="flex:1">できません</button></div></div>'; }).join('');
+  if (sc === 'start') {
+    h = demo + alertH + hpTabs('start', act) + '<div class="hcnote"><span>連絡は、<b>チャットの「助け合い」</b>からできます(つながってから3日間)。</span><button type="button" class="sbtn" data-htab="chat">チャットを開く</button></div>' +
+      '<h2 class="hph">どちらですか?</h2><div class="card hpq"><div class="hpl" style="margin-top:0">🙏 助けてほしい場合</div><button type="button" class="hmg wide" data-hstart="need" style="margin:0 0 10px">🔍 検索からマッチング</button><button type="button" class="hmg wide alt" data-hgo="recruit" style="margin:0">📢 自分で募集をかける</button><p class="small" style="margin:8px 0 0">検索は、いま手伝える人から選んでお願いします。募集は、人数を決めてみんなに呼びかけます(Tweetにも載ります)。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">🤝 助けに行ける場合</div><button type="button" class="hmg wide" data-hstart="go" style="margin:0">募集中の案件を見る' + (cases.length ? '(' + cases.length + ')' : '') + '</button><p class="small" style="margin:8px 0 0">そこから「今お手伝い可能です」も出せます。</p></div>';
+  } else if (sc === 'home') {
     var fl = HP.flt[HP.mode].on, body = '';
     if (HP.mode === 'need') {
       var ppl = HP.pick ? HP.pick.items.filter(function (p) { return (!p.tags.length || hpOkTags(p.tags, fl)) && hpOkArea(p.area ? [p.area] : [], fl); }) : null;
@@ -3658,9 +3705,8 @@ function drawHelp() {
       body = '<button type="button" class="hmg wide alt" data-hgo="avail" style="margin:0 0 12px">' + (a2 && a2.on ? '今お手伝い可能(' + esc(a2.me.until) + 'まで)・変更する' : '今お手伝い可能です(押すと、お願いが届きます)') + '</button>' + hpFltBox(d) +
         '<div class="hpl" style="margin-top:0">募集中の案件</div>' + (cs.length ? cs.map(hpCase).join('') : '<div class="card"><p class="muted" style="margin:0">' + (fl ? '条件に合う案件は、ありません。' : 'いま、募集中のお願いは、ありません。') + '</p></div>');
     }
-    h = demo + toMe.map(function (x) { return '<div class="card hpal"><b style="font-size:17px">お願いが届いています</b><p style="margin:6px 0 2px;font-size:15px"><b>' + esc(x.by) + '</b> から</p><div class="thb" style="margin:0 0 10px">' + bodyHtml(x.body) + '</div><div class="inrow"><button type="button" class="btn" data-hyes="' + esc(x.id) + '" style="flex:1">できます</button><button type="button" class="btn ghost" data-hno="' + esc(x.id) + '" style="flex:1">できません</button></div></div>'; }).join('') +
-      hpTabs('home', act) + '<div class="hcnote"><span>連絡は、<b>チャットの「助け合い」</b>からできます(つながってから3日間)。</span><button type="button" class="sbtn" data-htab="chat">チャットを開く</button></div>' +
-      '<div class="hpseg" role="group" aria-label="どちらですか"><button type="button" data-hmode="need" aria-pressed="' + (HP.mode === 'need') + '">助けてほしい</button><button type="button" data-hmode="go" aria-pressed="' + (HP.mode === 'go') + '">助けに行ける' + (cases.length ? '(' + cases.length + ')' : '') + '</button></div>' + body;
+    h = demo + alertH + hpTabs('home', act) + '<div class="hcnote"><span>連絡は、<b>チャットの「助け合い」</b>からできます(つながってから3日間)。</span><button type="button" class="sbtn" data-htab="chat">チャットを開く</button></div>' +
+      '<div style="margin:0 0 12px"><button type="button" class="sbtn" data-hgo="start">← 最初にもどる</button> <b style="margin-left:8px">' + (HP.mode === 'need' ? '助けてほしい(検索)' : '助けに行ける') + '</b></div>' + body;
   } else if (sc === 'recruit') {
     var f = HP.rf;
     h = back + '<h2 class="hph">みんなに募集する</h2><div class="card hpq">' +
@@ -3686,7 +3732,8 @@ function drawHelp() {
   var keepText = function () { var a1 = $('#hr-text'); if (a1 && HP.rf) HP.rf.text = a1.value; var a2 = $('#hk-text'); if (a2 && HP.ask) HP.ask.text = a2.value; };
   q('[data-hgo]', function (b) { b.onclick = function () { var t = b.dataset.hgo; if (t === 'pickx') { HP.ask = null; drawHelp(); } else go2(t); }; });
   q('[data-hback]', function (b) { b.onclick = function () { go2(HPBACK[HP.scr] || 'home'); }; });
-  q('[data-htab]', function (b) { b.onclick = function () { var t = b.dataset.htab; if (t === 'chat') { MB.pane = 'inbox'; MB.filter = 'helpchat'; go('mail'); } else go2(t); }; });
+  q('[data-htab]', function (b) { b.onclick = function () { var t = b.dataset.htab; if (t === 'chat') { MB.pane = 'inbox'; MB.filter = 'helpchat'; go('mail'); } else go2(t === 'home' ? 'start' : t); }; });
+  q('[data-hstart]', function (b) { b.onclick = function () { HP.mode = b.dataset.hstart; HP.ask = null; if (HP.mode === 'need') hpLoadPick(); go2('home'); }; });
   q('[data-hmode]', function (b) { b.onclick = function () { HP.mode = b.dataset.hmode; HP.ask = null; if (HP.mode === 'need') hpLoadPick(); drawHelp(); }; });
   q('[data-ft]', function (b) { b.onclick = function () { var f = HP.flt[HP.mode], i = f.tags.indexOf(b.dataset.ft); if (i >= 0) f.tags.splice(i, 1); else f.tags.push(b.dataset.ft); drawHelp(); }; });
   q('[data-fa]', function (b) { b.onclick = function () { var f = HP.flt[HP.mode]; f.area = f.area === b.dataset.fa ? '' : b.dataset.fa; drawHelp(); }; });
