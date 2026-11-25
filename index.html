@@ -46,7 +46,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .chip.bad{background:var(--bad-bg);color:var(--bad)} .chip.mute{background:var(--mute-bg);color:var(--sub)}
 .sheet{margin:-36px 12px 0;position:relative}
 .sheet.flat{margin-top:0}
-.hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
+.hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hq{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);color:#fff}.hqt{font-size:15px;line-height:1.5;font-weight:700}.hqb{display:flex;gap:10px;margin-top:8px}.hqy{all:unset;box-sizing:border-box;flex:1;text-align:center;cursor:pointer;padding:11px 8px;border-radius:12px;background:#fde4e4;border:2px solid #f0aaaa;color:#8a1c1c;font-weight:800;font-size:17px}.hqy:active{background:#f8cccc}.hqy[disabled]{opacity:.55}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
 
 /* カード・ボタン */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px}
@@ -733,7 +733,11 @@ function heroNotes(me) {
   if (+b.help - (+b.helpTask || 0) > 0 && me.drill) n.push({ k: 'help', t: '助け合い(訓練)に通知がきてます。<br>確認してください。', l: '助け合い' });
   if (+b.board > 0) n.push({ k: 'board', t: 'あなたのTweetに返信がきてます。<br>確認してください。', l: 'Tweet' });
   if (sa && sa.n) n.push({ k: 'o_sched', t: '役員予定が' + (sa.days <= 0 ? '今日' : sa.days === 1 ? '明日' : sa.days + '日後') + 'にあります。<br>参加の表明ご協力お願いします。', l: '役員予定表' });
-  return n.length ? '<div class="hnotes">' + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
+  var tq = (b.sched_tag || []).map(function (e) {
+    var md = parseInt(e.date.slice(5, 7), 10) + '/' + parseInt(e.date.slice(8, 10), 10) + '(' + e.dow + ')';
+    return '<div class="hq" data-sid="' + esc(e.id) + '"><div class="hqt">' + md + ' ' + esc(e.title) + 'は、出席可能ですか?</div><div class="hqb"><button type="button" class="hqy" data-sans="参加">はい</button><button type="button" class="hqy" data-sans="不参加">いいえ</button></div></div>';
+  }).join('');
+  return n.length || tq ? '<div class="hnotes">' + tq + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
 }
 function homeView() {
   var me = S.me, sections = {}, order = [];
@@ -748,6 +752,16 @@ function homeView() {
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
+  Array.prototype.forEach.call(document.querySelectorAll('.hqy'), function (bt) {
+    bt.onclick = function () {
+      var box = bt.closest('.hq'), id = box.dataset.sid, ans = bt.dataset.sans;
+      Array.prototype.forEach.call(box.querySelectorAll('.hqy'), function (x) { x.disabled = true; });
+      api('o_sched_answer', { id: id, answer: ans }).then(function () {
+        var st = (S.me.badges && S.me.badges.sched_tag) || []; S.me.badges.sched_tag = st.filter(function (e) { return e.id !== id; });
+        toast(ans === '参加' ? '「出席」で登録しました' : '「欠席」で登録しました'); homeView();
+      }).catch(function (e) { Array.prototype.forEach.call(box.querySelectorAll('.hqy'), function (x) { x.disabled = false; }); toast(e.message); });
+    };
+  });
   Array.prototype.forEach.call(document.querySelectorAll('.hn'), function (b) { b.onclick = function () { window.HP_OPEN = b.dataset.ht || ''; openTile(b.dataset.hk); }; });
   prefetchLists();
 }
