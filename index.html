@@ -336,6 +336,13 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .note{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:4px;min-height:150px;padding:20px 10px 10px;background:var(--nc,#fff4a8);color:#2b2b2b;border-radius:3px;box-shadow:2px 5px 7px rgba(0,0,0,.32);transform:rotate(var(--r,0deg));cursor:pointer;transition:transform .15s}.note:active{transform:rotate(0) scale(1.03)}.note b{font-size:14px;line-height:1.3}.note .nb{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}.note .nm{font-size:12px;font-weight:800;color:#8a3a10}.note .nd{font-size:11px;color:#6b6b6b;margin-top:auto}.note .tgs{margin:0}.note .at{font-size:10px}
 .n0{--nc:#fff4a8}.n1{--nc:#ffd6e0}.n2{--nc:#cfeaff}.n3{--nc:#d9f2c6}
 .mk{position:absolute;top:-2px;left:-6px;padding:1px 8px;background:#d42b2b;color:#fff;font-size:10px;font-weight:800;border-radius:3px;transform:rotate(-6deg);box-shadow:1px 2px 3px rgba(0,0,0,.3);z-index:3}.mk.b{background:#2f7fd0}.mk.g{background:#7a8294}.note.off{filter:grayscale(.55);opacity:.88}.hdc .mk{top:-8px;left:10px}
+/* サポーター募集: 黒板風の壁(助け合いはコルク。ここは黒板+チョーク+マグネット) */
+.bb{background:linear-gradient(135deg,rgba(255,255,255,.05),transparent 40%),#2f4a3f;border:11px solid #9a6b3a;border-bottom-width:16px;border-radius:8px;padding:18px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;box-shadow:inset 0 0 22px rgba(0,0,0,.55),0 3px 8px rgba(0,0,0,.3);margin:0 0 6px;color:#f3f1e6}.bb.empty{grid-template-columns:1fr}
+.ch{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:5px;min-height:150px;padding:16px 10px 10px;border:2px dashed rgba(243,241,230,.75);border-radius:6px;color:#f7f5ea;cursor:pointer;text-shadow:0 0 1px rgba(255,255,255,.5);transform:rotate(var(--r,0deg))}.ch:active{background:rgba(255,255,255,.08)}.ch b{font-size:15px;line-height:1.35;color:#fff7c2}.ch .nb{font-size:13px;line-height:1.5;color:#e8efe4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}.ch .nm{font-size:12.5px;font-weight:800;color:#ffc9d4}.ch .tgs{margin:0}.ch .at{font-size:10px;background:transparent;color:#cfe6ff;border:1px solid rgba(207,230,255,.6)}
+.ch .cm{position:absolute;top:-10px;left:50%;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e0a43a 55%,#8b5a10);box-shadow:1px 3px 4px rgba(0,0,0,.5)}.ch .ur{position:absolute;top:-13px;right:4px;padding:1px 8px;border:2px solid #ff8f8f;border-radius:50%;color:#ff8f8f;font-size:11px;font-weight:900;transform:rotate(10deg);background:rgba(0,0,0,.18)}
+.bbtray{height:6px;margin:-2px 14px 8px;background:#b9895a;border-radius:0 0 4px 4px;box-shadow:0 2px 3px rgba(0,0,0,.3)}
+.bbd{position:relative;width:100%;max-width:420px;background:#2f4a3f;color:#f3f1e6;border:9px solid #9a6b3a;border-radius:8px;padding:22px 16px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5),inset 0 0 18px rgba(0,0,0,.5)}.bbd .hdx{color:#fff}.bbd .small{color:#cfd8cf}.bbd .tgs{margin:6px 0 0}.bbd .at{background:transparent;color:#cfe6ff;border:1px solid rgba(207,230,255,.6)}.bbd .sr{margin:7px 0}.bbd .sk{display:block;font-size:12px;font-weight:700;color:#ffd98a}.bbd .sv{font-size:15.5px;line-height:1.6;color:#f7f5ea}.bbd .ttl{font-size:12px;color:#ffd98a;font-weight:800;margin:2px 0 6px;letter-spacing:.06em}.bbd .ur{display:inline-block;padding:1px 9px;border:2px solid #ff8f8f;border-radius:50%;color:#ff8f8f;font-size:12px;font-weight:900;transform:rotate(-6deg);margin-left:6px}
+.bbd .hmg{background:#f3f1e6;color:#2f4a3f}.so{padding:12px;margin:0 0 10px}.so b{font-size:15px}.so .sm{color:var(--sub);font-size:13px;margin:3px 0}.so .urg{display:inline-block;background:#d42b2b;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:4px;margin-left:6px}.so .ap{font-size:13px;font-weight:700;color:#8a3a10}
 i.pin{position:absolute;top:-9px;left:50%;margin-left:-10px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d42b2b 60%,#8e1414);box-shadow:2px 4px 4px rgba(0,0,0,.4);z-index:2}
 .nu{position:absolute;top:8px;right:6px;padding:1px 7px;border:2px solid #d42b2b;border-radius:6px;color:#d42b2b;font-size:11px;font-weight:900;transform:rotate(8deg)}
 .hdov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}.hdc{position:relative;width:100%;max-width:420px;background:var(--nc,#fff4a8);color:#2b2b2b;border-radius:6px;padding:26px 18px 16px;box-shadow:0 8px 24px rgba(0,0,0,.4)}.hdc .hms{color:#555}.hdc .hmw{color:#2b2b2b}.hdc .small{color:#555}.hdx{all:unset;position:absolute;top:6px;right:10px;font-size:26px;line-height:1;cursor:pointer;padding:4px 8px}
@@ -3853,48 +3860,62 @@ function boardDetailView(id) {
 /* ---------- 助け合い(災害時)。Threadsのような、1本のながれ ---------- */
 function refreshBadges() { return api('badges').then(function (b) { if (!S.me) return; S.me.badges = b; saveMe(S.me); renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
 /* ---------- サポーター募集(役員のお手伝いを、会員から募る。壁にピン留め) ---------- */
-var SUP = { d: null, adm: false, det: null, form: null };
+var SUP = { d: null, adm: false, det: null, form: null, bc: null };
 function supHash() { return (location.hash || '').replace('#', '').split('/')[0]; }
 function supBack() { return SUP.adm ? 'officer' : 'home'; }
 function supTitle(x) { return Array.from(String(x.content || '').split('\n')[0]).slice(0, 24).join(''); }
 function supView() {
-  SUP.adm = supHash() === 'o_supporter' && isOfficer(); SUP.det = null; SUP.form = null;
+  SUP.adm = supHash() === 'o_supporter' && isOfficer(); SUP.det = null; SUP.form = null; SUP.bc = null;
   if (!MEM.sup_list) sub('サポーター募集', '<div class="skel" style="height:300px"></div>', supBack());
   swrList('sup_list', function (d) { SUP.d = d; supDraw(); }, function (e) { offErr('サポーター募集', e, supBack()); });
 }
-function supReload() { MEM.sup_list = null; return api('sup_list').then(function (d) { MEM.sup_list = d; SUP.d = d; SUP.det = null; SUP.form = null; supDraw(); }); }
+function supReload() { MEM.sup_list = null; return api('sup_list').then(function (d) { MEM.sup_list = d; SUP.d = d; SUP.det = null; SUP.form = null; SUP.bc = null; supDraw(); }); }
 function supWall(items) {
-  if (!items.length) return '<div class="cork empty"><div class="note n0" style="--r:-1.5deg;cursor:default"><i class="pin"></i><b>いま、募集は ありません</b><span class="nb">' + (SUP.adm ? '上の「サポーターを募集する」から、お手伝いを募れます。' : '募集が出ると、ここに ピンで貼られます。') + '</span></div></div>';
-  return '<div class="cork">' + items.map(function (x) {
-    var hs = hpHash(x.id), r = ((hs % 50) - 25) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
-    return '<button type="button" class="note n' + (hs % 4) + '" data-sid="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + (x.urgent ? '<span class="mk">急募</span>' : '') + '<b>' + esc(supTitle(x)) + '</b>' +
+  if (!items.length) return '<div class="bb empty"><div class="ch" style="--r:-1deg;cursor:default;min-height:90px"><i class="cm"></i><b>いま、募集は ありません</b><span class="nb">募集が出ると、ここに貼られます。</span></div></div><div class="bbtray"></div>';
+  return '<div class="bb">' + items.map(function (x) {
+    var r = ((hpHash(x.id) % 40) - 20) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
+    return '<button type="button" class="ch" data-sid="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="cm"></i>' + (x.urgent ? '<span class="ur">急募</span>' : '') + '<b>' + esc(supTitle(x)) + '</b>' +
       '<span class="nb">' + esc([x.when, x.place].filter(Boolean).join(' / ')) + '</span>' + (x.count ? '<span class="nm">募集 ' + esc(x.count) + '</span>' : '') + '<div class="tgs">' + tags + '</div></button>';
-  }).join('') + '</div>';
+  }).join('') + '</div><div class="bbtray"></div>';
 }
-function supRow(k, v) { return v ? '<div style="margin:6px 0"><span class="small" style="display:block;color:#7a5a00;font-weight:700">' + k + '</span><span style="font-size:15.5px;line-height:1.6">' + esc(v).replace(/\n/g, '<br>') + '</span></div>' : ''; }
+function supRow(k, v) { return v ? '<div class="sr"><span class="sk">' + k + '</span><span class="sv">' + esc(v).replace(/\n/g, '<br>') + '</span></div>' : ''; }
 function supDetail(items) {
   var x = items.filter(function (i) { return i.id === SUP.det; })[0]; if (!x) { SUP.det = null; return ''; }
   var tags = (x.tags || []).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
-  var btn = function (op, label, cls) { return '<button type="button" class="sbtn ' + (cls || '') + '" data-sop="' + op + '" style="min-height:44px;flex:1 1 40%">' + label + '</button>'; };
-  var acts = SUP.adm ? '<div class="inrow" style="margin-top:14px;flex-wrap:wrap">' + btn('edit', '編集', 'fill') + btn('urgent', x.urgent ? '急募をはずす' : '急募にする') + btn('del', '削除', 'dg') + '</div>'
-    : '<button type="button" class="hmg" data-sop="chat" style="margin-top:14px">チャットで連絡する(サポーター連絡)</button><p class="small" style="margin:8px 0 0">役員に、チャットの「サポーター連絡」で届きます。</p>';
-  return '<div class="hdov" data-sclose><div class="hdc n' + (hpHash(x.id) % 4) + '"><i class="pin"></i><button type="button" class="hdx" data-sclose aria-label="とじる">×</button>' + (x.urgent ? '<span class="mk">急募</span>' : '') +
-    '<div style="font-size:12px;color:#7a5a00;font-weight:800;margin:4px 0">サポーター募集(役員のお手伝い)</div>' + supRow('募集内容', x.content) + supRow('開催日時', x.when) + supRow('集合場所', x.place) + supRow('募集人数', x.count) + supRow('募集年代', x.ages) + supRow('本イベント責任者', x.lead) +
-    (tags ? '<div class="tgs" style="margin-top:8px">' + tags + '</div>' : '') + acts + '</div></div>';
+  return '<div class="hdov" data-sclose><div class="bbd"><button type="button" class="hdx" data-sclose aria-label="とじる">×</button>' +
+    '<div class="ttl">サポーター募集(役員のお手伝い)' + (x.urgent ? '<span class="ur">急募</span>' : '') + '</div>' + supRow('募集内容', x.content) + supRow('開催日時', x.when) + supRow('集合場所', x.place) + supRow('募集人数', x.count) + supRow('募集年代', x.ages) + supRow('本イベント責任者', x.lead) +
+    (tags ? '<div class="tgs">' + tags + '</div>' : '') + '<button type="button" class="hmg" data-sop="chat" style="margin-top:14px">チャットで連絡する(サポーター連絡)</button><p class="small" style="margin:8px 0 0">役員に、チャットの「サポーター連絡」で届きます。</p></div></div>';
+}
+function supBcForm(items) {
+  var x = items.filter(function (i) { return i.id === SUP.bc; })[0]; if (!x) { SUP.bc = null; return ''; }
+  return '<div class="hdov"><div class="hdc n2"><button type="button" class="hdx" id="bc-x" aria-label="とじる">×</button><b>応募者に一斉連絡</b><p class="small" style="margin:6px 0">「' + esc(supTitle(x)) + '」に応募の連絡をくれた <b>' + (x.apps || []).length + '人</b> へ、会員のチャット(サポーター連絡)で届きます。</p><p class="small" style="margin:0 0 6px">' + esc((x.apps || []).join('、')) + '</p><textarea class="inp" id="bc-t" rows="5" maxlength="1000" placeholder="例: 当日はよろしくお願いします。集合は9:30に会館前です。"></textarea><button type="button" class="btn" id="bc-ok" style="margin-top:10px">送る</button></div></div>';
+}
+function supAdmDraw(d) {
+  var y = window.scrollY, list = d.items.length ? d.items.map(function (x) {
+    var n = (x.apps || []).length, b = function (op, l, c) { return '<button type="button" class="sbtn ' + (c || '') + '" data-sop="' + op + '" data-id="' + esc(x.id) + '" style="min-height:40px;flex:1 1 30%">' + l + '</button>'; };
+    return '<div class="card so"><b>' + esc(supTitle(x)) + '</b>' + (x.urgent ? '<span class="urg">急募</span>' : '') + '<div class="sm">' + esc([x.when, x.place].filter(Boolean).join(' / ') || '日時・場所は未記入') + '</div><div class="ap">応募の連絡: ' + n + '人' + (n ? '(' + esc(x.apps.join('、')) + ')' : '') + '</div>' +
+      '<div class="inrow" style="margin-top:8px;flex-wrap:wrap;gap:6px">' + b('bc', '応募者に一斉連絡', 'fill') + b('edit', '編集') + b('urgent', x.urgent ? '急募をはずす' : '急募にする') + b('del', '削除', 'dg') + '</div></div>';
+  }).join('') : '<p class="small" style="margin:8px 4px">いま出している募集は、ありません。</p>';
+  sub('サポーター募集', '<button type="button" class="hmg" id="sup-new" style="margin:0 0 12px">＋ サポーターを募集する</button><p class="small" style="margin:0 4px 12px">募集を出すと、みんなのメニューに「サポーター募集」が出ます(黒板に貼られます)。会員の応募は、チャットの「サポーター連絡」に届きます。</p><h3 style="margin:6px 4px">募集中(' + d.items.length + ')</h3>' + list + supBcForm(d.items), 'officer');
+  var nb = $('#sup-new'); if (nb) nb.onclick = function () { SUP.form = { id: '', content: '', when: '', place: '', count: '', ages: d.ageDef, tags: [], lead: '', urgent: false }; supFormDraw(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sop]'), function (b) { b.onclick = function () { SUP.det = b.dataset.id; supOp(b.dataset.sop); }; });
+  var bx = $('#bc-x'); if (bx) bx.onclick = function () { SUP.bc = null; supDraw(); };
+  var bo = $('#bc-ok'); if (bo) bo.onclick = function () { var t = $('#bc-t').value.trim(); if (!t) return toast('連絡の内容を入力してください'); bo.disabled = true; api('sup_broadcast', { id: SUP.bc, body: t }).then(function (r) { toast(r.sent + '人に送りました'); SUP.bc = null; return supReload(); }).catch(function (e) { bo.disabled = false; toast(e.message); }); };
+  window.scrollTo(0, y);
 }
 function supDraw() {
-  var d = SUP.d; if (!d) return; if (SUP.form) return supFormDraw();
+  var d = SUP.d; if (!d) return; if (SUP.form) return supFormDraw(); if (SUP.adm) return supAdmDraw(d);
   var y = window.scrollY;
-  sub('サポーター募集', '<p class="small" style="margin:0 4px 10px">役員のお手伝いをしてくださる方を募集しています。気になる募集を押すと、くわしく見られます。</p>' + (SUP.adm ? '<button type="button" class="hmg" id="sup-new" style="margin:0 0 12px">＋ サポーターを募集する</button>' : '') + supWall(d.items) + (SUP.adm ? '<p class="small" style="margin:8px 4px">募集をなくしたいときは、募集を押して「削除」してください。募集が1件もなくなると、みんなのメニューの「サポーター募集」は消えます。</p>' : '') + supDetail(d.items), supBack());
+  sub('サポーター募集', '<p class="small" style="margin:0 4px 10px">役員のお手伝いをしてくださる方を募集しています。気になる募集を押すと、くわしく見られます。</p>' + supWall(d.items) + supDetail(d.items), 'home');
   Array.prototype.forEach.call(document.querySelectorAll('[data-sid]'), function (b) { b.onclick = function () { SUP.det = b.dataset.sid; supDraw(); }; });
   Array.prototype.forEach.call(document.querySelectorAll('[data-sclose]'), function (b) { b.onclick = function (e) { if (e.target !== b) return; SUP.det = null; supDraw(); }; });
-  var nb = $('#sup-new'); if (nb) nb.onclick = function () { SUP.form = { id: '', content: '', when: '', place: '', count: '', ages: d.ageDef, tags: [], lead: '', urgent: false }; supFormDraw(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-sop]'), function (b) { b.onclick = function () { supOp(b.dataset.sop); }; });
   window.scrollTo(0, y);
 }
 function supOp(op) {
   var x = SUP.d.items.filter(function (i) { return i.id === SUP.det; })[0]; if (!x) return;
-  if (op === 'chat') { MT.cat = 'サポーター連絡'; MT.imp = ''; MT.type = '役員'; MT.prefill = { subject: '「' + supTitle(x) + '」のサポーターに参加できます', body: '(お名前・参加できる日時・ひとこと などを書いてください)' }; go('mailnew'); return; }
+  if (op === 'chat') { MT.cat = 'サポーター連絡'; MT.imp = ''; MT.type = '役員'; MT.prefill = { subject: '「' + supTitle(x) + '」のサポーターに参加できます', body: '(お名前・参加できる日時・ひとこと などを書いてください)\n(募集' + x.id + ')' }; go('mailnew'); return; }
+  if (op === 'bc') { SUP.bc = x.id; supDraw(); return; }
   if (op === 'edit') { SUP.form = { id: x.id, content: x.content, when: x.when, place: x.place, count: x.count, ages: x.ages, tags: (x.tags || []).slice(), lead: x.lead, urgent: x.urgent }; SUP.det = null; supFormDraw(); return; }
   if (op === 'urgent') { api('sup_urgent', { id: x.id }).then(function (r) { toast(r.urgent ? '急募にしました' : '急募をはずしました'); return supReload(); }).catch(function (e) { toast(e.message); }); return; }
   if (op === 'del') cf('この募集を削除します。よろしいですか?', function () { api('sup_delete', { id: x.id }).then(function () { toast('削除しました'); return supReload(); }).catch(function (e) { toast(e.message); }); });
