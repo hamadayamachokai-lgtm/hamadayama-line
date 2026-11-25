@@ -365,8 +365,9 @@
       '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">ことばつなぎ</div><button type="button" class="hmg wide" id="gatama" style="margin:0">ことばつなぎで あそぶ</button><p class="small" style="margin:8px 0 0">おだいの ことばを、まえの ことばの おしりの字から つなぎます。レベル1〜5。みんなで あそべます。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">今日の3問</div><button type="button" class="hmg wide" id="gdaily" style="margin:0">今日の3問に挑戦</button><p class="small" style="margin:8px 0 0">答えると相棒が育ち、正解した問題がカードになります。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">ルービックキューブ</div><button type="button" class="hmg wide" id="gcube" style="margin:0">キューブで あそぶ</button><p class="small" style="margin:8px 0 0">レベル別(2×2・3×3)。特訓・ロボットと対戦・町会みんなの大会(ランキング)。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。コンピュータと対戦、またはみんなで。止まったマスで1問。まちがえたら戻ります。</p></div>');
-    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gatama').onclick = function () { withRoom(function (RM) { RM.atama(api()); }); }; $('#gdaily').onclick = home; $('#gtrip').onclick = openTrip;
+    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gatama').onclick = function () { withRoom(function (RM) { RM.atama(api()); }); }; $('#gdaily').onclick = home; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube;
   }
 
   /* --- ○×ゲーム(ひとりプレイ / 2人以上プレイ。レベル1〜3 = 3×3・5×5・7×7、1手の時間つき) --- */
@@ -525,6 +526,13 @@
     if (window.HmtAtama) return run();
     var sc = document.createElement('script'); sc.src = 'quiz-atama.js?v=1'; sc.onload = run;
     sc.onerror = function () { toastMsg('あたまおしりを よみこめませんでした'); };
+    document.head.appendChild(sc);
+  }
+  function openCube() {
+    var run = function () { window.HmtCube.start(api()); };
+    if (window.HmtCube) return run();
+    var sc = document.createElement('script'); sc.src = 'quiz-cube.js?v=2'; sc.onload = run;
+    sc.onerror = function () { toastMsg('キューブを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
   function openTrip() {
