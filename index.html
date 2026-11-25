@@ -276,9 +276,10 @@ button.mi{cursor:pointer;min-height:32px}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
 .aiact{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px 44px}.aiact button{all:unset;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--navy);color:var(--navy);background:#fff}.aiact button.go{background:var(--navy);color:#fff}
 .aifq{display:flex;flex-direction:column;gap:6px;margin:0 0 12px 44px}.aifq button{all:unset;cursor:pointer;padding:9px 12px;border-radius:12px;font-size:14.5px;background:#fff;border:1px solid var(--line);color:var(--ink,#222)}
-.rdel{all:unset;cursor:pointer;color:var(--bad);font-weight:700;margin-left:6px}.sbb.aibd{display:block;margin:12px 0;padding:14px 12px}.aibt{color:#f3f1e6;font-weight:800;font-size:16px;margin:0 2px 12px;text-align:center}.afg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.aft,.afq,.afb{all:unset;box-sizing:border-box;cursor:pointer;color:#f3f1e6;border:2px dashed rgba(243,241,230,.6);border-radius:12px;font-weight:800;font-size:17px;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;padding:8px 10px}
-.aft span{font-size:24px}.afq{margin:0 0 10px;width:100%}.afb{border-style:solid;border-color:transparent;font-size:14px;min-height:40px;text-decoration:underline}.aft:active,.afq:active{background:rgba(255,255,255,.14)}
+.rdel{all:unset;cursor:pointer;color:var(--bad);font-weight:700;margin-left:6px}.aibd{margin:10px 0}.aibt{color:var(--sub);font-weight:800;font-size:15px;margin:0 2px 10px}.afg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.aft,.afq,.afb{all:unset;box-sizing:border-box;cursor:pointer;color:var(--navy);background:#fff;border:1.5px solid var(--line);border-radius:14px;font-weight:800;font-size:17px;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;padding:8px 10px}
+.aft span{font-size:24px}.afq{margin:0 0 10px;width:100%}.afb{border-color:transparent;background:transparent;font-size:14px;min-height:40px;text-decoration:underline;color:var(--sub)}.aft:active,.afq:active{background:#eef3ee}
+#aiL .brow:not(.me) .bb{background:linear-gradient(135deg,rgba(255,255,255,.05),transparent 40%),#2f4a3f;color:#f3f1e6;border:5px solid #9a6b3a;border-radius:10px;box-shadow:inset 0 0 12px rgba(0,0,0,.35);font-weight:700}
 .dact .cdl{color:var(--bad)!important;border-color:#e8c4c4!important}.dact{display:flex;flex-wrap:wrap;gap:8px;margin:0 4px 10px}.dact button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink,#222)}.dact .cl{background:#16a34a;border-color:#16a34a;color:#fff}.dact .asg{border-color:var(--navy);color:var(--navy)}.dact button:disabled{opacity:.5}
 .asgp{margin:0 4px 10px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}.asgp button{all:unset;cursor:pointer;display:block;padding:9px 10px;border-radius:8px;font-size:14.5px}.asgp button:active{background:#eef3fb}
 /* Tweet(吹き出し) */
@@ -1833,7 +1834,7 @@ function aiDraw() {
   var h = mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: 'こんにちは。このアプリの使い方で、わからないことを聞いてください。\n「会員証を見たい」「写真を送りたい」のように、書くだけで大丈夫です。' });
   if (!AI.msgs.length) {   // 黒板: 機能を選ぶ → 質問のボタンを押すだけで聞ける
     var F = AI.feat != null ? AIF_[AI.feat] : null;
-    h += '<div class="sbb aibd">' + (F ? '<div class="aibt">' + F.i + ' ' + esc(F.t) + 'のこと。聞きたいものを押してね</div>' + F.q.map(function (q, i) { return '<button type="button" class="afq" data-afq="' + i + '">' + esc(q) + '</button>'; }).join('') + '<button type="button" class="afb" data-afb="1">← 機能をえらびなおす</button>'
+    h += '<div class="aibd">' + (F ? '<div class="aibt">' + F.i + ' ' + esc(F.t) + 'のこと。聞きたいものを押してね</div>' + F.q.map(function (q, i) { return '<button type="button" class="afq" data-afq="' + i + '">' + esc(q) + '</button>'; }).join('') + '<button type="button" class="afb" data-afb="1">← 機能をえらびなおす</button>'
       : '<div class="aibt">どの機能のことですか?(押してね)</div><div class="afg">' + AIF_.map(function (f, i) { return '<button type="button" class="aft" data-aft="' + i + '"><span>' + f.i + '</span>' + esc(f.t) + '</button>'; }).join('') + '</div>') + '</div>';
   }
   AI.msgs.forEach(function (m, i) {
