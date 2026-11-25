@@ -72,6 +72,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .tile.soon svg{stroke:#a3a9b5} .tile.soon{color:#7d8696}
 .tile .tag{position:absolute;top:6px;right:6px;font-size:10px;font-weight:700;color:var(--sub);background:var(--mute-bg);padding:0 6px;border-radius:999px;line-height:1.7}
 .tile.officer svg{stroke:var(--red)}
+.tile.hot{background:#fde6e6;border-color:#f0a3a3;box-shadow:0 2px 8px rgba(214,70,70,.22)}.tile.hot svg{stroke:#c62828}.tile.hot span:last-child{color:#a31515;font-weight:800}.tile .tag.urg{background:#d42b2b;color:#fff}
 
 /* フォーム */
 .field{margin-bottom:18px}
@@ -490,6 +491,7 @@ var IC = {
   tips: '<rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.5" r=".9"/><circle cx="18" cy="13.5" r=".9"/>',
   mystery: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l6 6"/>',
   headchg: '<path d="M17 3l4 4-4 4M21 7H8a4 4 0 00-4 4M7 21l-4-4 4-4M3 17h13a4 4 0 004-4"/>',
+  supporter: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M18 4v6M15 7h6"/>', o_supporter: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M18 4v6M15 7h6"/>',
   blog: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5M8 8h7M8 12h7"/>',
   board: '<circle cx="6" cy="6" r="2.6"/><path d="M6 9v6"/><circle cx="6" cy="18" r="2"/><path d="M12 5.5h9M12 9.5h6M12 17h9"/>',
   o_summary: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9M12 12l-6.4 6.4"/>',
@@ -522,7 +524,7 @@ var IC = {
 function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + IC[k] + '</svg>'; }
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
-  tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更',
+  tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更', supporter: 'サポーター募集', o_supporter: 'サポーター募集',
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
@@ -728,7 +730,7 @@ function homeView() {
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
-      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
+      return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
   html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261031-1 / API ' + esc(me.apiVer || '(古い)') + '</p><div style="height:28px"></div>';
@@ -744,7 +746,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
   if (k === 'a_admin') return openLink(k);
-  go({ card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ supporter: 'supporter', o_supporter: 'o_supporter', card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -1711,7 +1713,8 @@ function mailView() {
       }
       function order(a) { return a.filter(function (m) { return pins.indexOf(m.id) >= 0; }).concat(a.filter(function (m) { return pins.indexOf(m.id) < 0; })); }
       var secs = [
-        { t: '送受信', rows: order(d.mails.filter(function (m) { return !m.watch && m.kind !== '助け合い' && pass(m); })), em: 'チャットはまだありません。' },
+        { t: '送受信', rows: order(d.mails.filter(function (m) { return !m.watch && m.kind !== '助け合い' && mailCat(m.subject) !== 'サポーター連絡' && pass(m); })), em: 'チャットはまだありません。' },
+        { t: 'サポーター連絡', rows: order(d.mails.filter(function (m) { return !m.watch && m.kind !== '助け合い' && mailCat(m.subject) === 'サポーター連絡' && pass(m); })), em: 'サポーターの連絡は、まだありません。', hide0: true },
         { t: '助け合い', rows: order(d.mails.filter(function (m) { return !m.watch && m.kind === '助け合い' && pass(m); })), em: 'つながっている助け合いは、まだありません。', hide0: true }
       ];
       if (staff) secs.push({ t: '見守り対応', rows: order(d.mails.filter(function (m) { return m.watch && pass(m); })), em: '見守り対応は、ありません。', hide0: true });
@@ -3704,7 +3707,7 @@ var BD_CHOICES = {
   sex: ['男', '女', '性別なし'], age: ['赤ちゃん', '未就学児', '〜10代', '20代', '30代', '40代', '50代', '60代', '70代', '80代〜'],
   cat: ['トラブル相談', 'YouTube', '音楽', '浜小', '高中', '受験', '塾', '特売', 'レシピ', '公共交通機関', '雑談', 'テレビ', '質問', '相談', 'お知らせ', 'イベント', '町内', '選挙', '探してます']
 };
-var MAIL_CATS = ['回覧', '祭礼', '演芸会', 'ピラティス', 'コンサート', 'イベント全般', '相談'];
+var MAIL_CATS = ['回覧', '祭礼', '演芸会', 'ピラティス', 'コンサート', 'イベント全般', '相談', 'サポーター連絡'];
 function bdGroups() { return [{ o: BD, k: 'sex', list: BD_CHOICES.sex, save: bdSave }, { o: BD, k: 'age', list: BD_CHOICES.age, save: bdSave }, { o: BD, k: 'cat', list: BD_CHOICES.cat, save: bdSave }]; }
 function mailGroups() { return [{ o: MT, k: 'imp', list: ['重要'] }, { o: MT, k: 'cat', list: MAIL_CATS }]; }
 /** 画面の下に固定する入力欄。「＋」を押すと、写真と(あれば)カテゴリなどが出る */
@@ -3849,6 +3852,70 @@ function boardDetailView(id) {
 
 /* ---------- 助け合い(災害時)。Threadsのような、1本のながれ ---------- */
 function refreshBadges() { return api('badges').then(function (b) { if (!S.me) return; S.me.badges = b; saveMe(S.me); renderNav((location.hash || '').replace('#', '').split('/')[0]); }).catch(function () {}); }
+/* ---------- サポーター募集(役員のお手伝いを、会員から募る。壁にピン留め) ---------- */
+var SUP = { d: null, adm: false, det: null, form: null };
+function supHash() { return (location.hash || '').replace('#', '').split('/')[0]; }
+function supBack() { return SUP.adm ? 'officer' : 'home'; }
+function supTitle(x) { return Array.from(String(x.content || '').split('\n')[0]).slice(0, 24).join(''); }
+function supView() {
+  SUP.adm = supHash() === 'o_supporter' && isOfficer(); SUP.det = null; SUP.form = null;
+  if (!MEM.sup_list) sub('サポーター募集', '<div class="skel" style="height:300px"></div>', supBack());
+  swrList('sup_list', function (d) { SUP.d = d; supDraw(); }, function (e) { offErr('サポーター募集', e, supBack()); });
+}
+function supReload() { MEM.sup_list = null; return api('sup_list').then(function (d) { MEM.sup_list = d; SUP.d = d; SUP.det = null; SUP.form = null; supDraw(); }); }
+function supWall(items) {
+  if (!items.length) return '<div class="cork empty"><div class="note n0" style="--r:-1.5deg;cursor:default"><i class="pin"></i><b>いま、募集は ありません</b><span class="nb">' + (SUP.adm ? '上の「サポーターを募集する」から、お手伝いを募れます。' : '募集が出ると、ここに ピンで貼られます。') + '</span></div></div>';
+  return '<div class="cork">' + items.map(function (x) {
+    var hs = hpHash(x.id), r = ((hs % 50) - 25) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
+    return '<button type="button" class="note n' + (hs % 4) + '" data-sid="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + (x.urgent ? '<span class="mk">急募</span>' : '') + '<b>' + esc(supTitle(x)) + '</b>' +
+      '<span class="nb">' + esc([x.when, x.place].filter(Boolean).join(' / ')) + '</span>' + (x.count ? '<span class="nm">募集 ' + esc(x.count) + '</span>' : '') + '<div class="tgs">' + tags + '</div></button>';
+  }).join('') + '</div>';
+}
+function supRow(k, v) { return v ? '<div style="margin:6px 0"><span class="small" style="display:block;color:#7a5a00;font-weight:700">' + k + '</span><span style="font-size:15.5px;line-height:1.6">' + esc(v).replace(/\n/g, '<br>') + '</span></div>' : ''; }
+function supDetail(items) {
+  var x = items.filter(function (i) { return i.id === SUP.det; })[0]; if (!x) { SUP.det = null; return ''; }
+  var tags = (x.tags || []).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
+  var btn = function (op, label, cls) { return '<button type="button" class="sbtn ' + (cls || '') + '" data-sop="' + op + '" style="min-height:44px;flex:1 1 40%">' + label + '</button>'; };
+  var acts = SUP.adm ? '<div class="inrow" style="margin-top:14px;flex-wrap:wrap">' + btn('edit', '編集', 'fill') + btn('urgent', x.urgent ? '急募をはずす' : '急募にする') + btn('del', '削除', 'dg') + '</div>'
+    : '<button type="button" class="hmg" data-sop="chat" style="margin-top:14px">チャットで連絡する(サポーター連絡)</button><p class="small" style="margin:8px 0 0">役員に、チャットの「サポーター連絡」で届きます。</p>';
+  return '<div class="hdov" data-sclose><div class="hdc n' + (hpHash(x.id) % 4) + '"><i class="pin"></i><button type="button" class="hdx" data-sclose aria-label="とじる">×</button>' + (x.urgent ? '<span class="mk">急募</span>' : '') +
+    '<div style="font-size:12px;color:#7a5a00;font-weight:800;margin:4px 0">サポーター募集(役員のお手伝い)</div>' + supRow('募集内容', x.content) + supRow('開催日時', x.when) + supRow('集合場所', x.place) + supRow('募集人数', x.count) + supRow('募集年代', x.ages) + supRow('本イベント責任者', x.lead) +
+    (tags ? '<div class="tgs" style="margin-top:8px">' + tags + '</div>' : '') + acts + '</div></div>';
+}
+function supDraw() {
+  var d = SUP.d; if (!d) return; if (SUP.form) return supFormDraw();
+  var y = window.scrollY;
+  sub('サポーター募集', '<p class="small" style="margin:0 4px 10px">役員のお手伝いをしてくださる方を募集しています。気になる募集を押すと、くわしく見られます。</p>' + (SUP.adm ? '<button type="button" class="hmg" id="sup-new" style="margin:0 0 12px">＋ サポーターを募集する</button>' : '') + supWall(d.items) + (SUP.adm ? '<p class="small" style="margin:8px 4px">募集をなくしたいときは、募集を押して「削除」してください。募集が1件もなくなると、みんなのメニューの「サポーター募集」は消えます。</p>' : '') + supDetail(d.items), supBack());
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sid]'), function (b) { b.onclick = function () { SUP.det = b.dataset.sid; supDraw(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sclose]'), function (b) { b.onclick = function (e) { if (e.target !== b) return; SUP.det = null; supDraw(); }; });
+  var nb = $('#sup-new'); if (nb) nb.onclick = function () { SUP.form = { id: '', content: '', when: '', place: '', count: '', ages: d.ageDef, tags: [], lead: '', urgent: false }; supFormDraw(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sop]'), function (b) { b.onclick = function () { supOp(b.dataset.sop); }; });
+  window.scrollTo(0, y);
+}
+function supOp(op) {
+  var x = SUP.d.items.filter(function (i) { return i.id === SUP.det; })[0]; if (!x) return;
+  if (op === 'chat') { MT.cat = 'サポーター連絡'; MT.imp = ''; MT.type = '役員'; MT.prefill = { subject: '「' + supTitle(x) + '」のサポーターに参加できます', body: '(お名前・参加できる日時・ひとこと などを書いてください)' }; go('mailnew'); return; }
+  if (op === 'edit') { SUP.form = { id: x.id, content: x.content, when: x.when, place: x.place, count: x.count, ages: x.ages, tags: (x.tags || []).slice(), lead: x.lead, urgent: x.urgent }; SUP.det = null; supFormDraw(); return; }
+  if (op === 'urgent') { api('sup_urgent', { id: x.id }).then(function (r) { toast(r.urgent ? '急募にしました' : '急募をはずしました'); return supReload(); }).catch(function (e) { toast(e.message); }); return; }
+  if (op === 'del') cf('この募集を削除します。よろしいですか?', function () { api('sup_delete', { id: x.id }).then(function () { toast('削除しました'); return supReload(); }).catch(function (e) { toast(e.message); }); });
+}
+function supFormDraw() {
+  var f = SUP.form, d = SUP.d || {}, inp = function (id, lab, v, ph, hint) { return '<div class="field"><label class="l" for="' + id + '">' + lab + '</label>' + (hint ? '<p class="hint">' + hint + '</p>' : '') + '<input class="inp" id="' + id + '" maxlength="80" value="' + esc(v || '') + '" placeholder="' + esc(ph || '') + '"></div>'; };
+  sub(f.id ? '募集を編集' : 'サポーターを募集', '<div class="card"><div class="field"><label class="l" for="sf-c">募集内容<span class="req">必須</span></label><textarea class="inp" id="sf-c" maxlength="800" rows="4" placeholder="例: 防災訓練の受付・案内のお手伝い">' + esc(f.content) + '</textarea></div>' +
+    inp('sf-w', '開催日時', f.when, '例: 12月20日(土) 10:00〜12:00') + inp('sf-p', '集合場所', f.place, '例: 浜田山会館 1階') + inp('sf-n', '募集人数', f.count, '例: 5名') + inp('sf-a', '募集年代', f.ages, d.ageDef || '') +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">タグ(いくつでも)</span>' + hpChips('data-sft', d.tags || [], f.tags, true) + '</div>' + inp('sf-l', '本イベント責任者', f.lead, '例: 山田 太郎') +
+    (f.id ? '' : '<label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px"><input type="checkbox" id="sf-u"' + (f.urgent ? ' checked' : '') + '> 急募にする</label>') +
+    '<p class="small" style="margin:0 0 10px">連絡は、チャットの「サポーター連絡」で届きます。電話番号などは書かないでください。</p><button type="button" class="btn" id="sf-ok">' + (f.id ? '保存する' : '掲載する') + '</button><button type="button" class="btn alt" id="sf-no" style="margin-top:8px">やめる</button></div>', 'o_supporter');
+  document.getElementById('bk').onclick = function () { SUP.form = null; supDraw(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sft]'), function (b) { b.onclick = function () { var v = b.dataset.sft, i = f.tags.indexOf(v); if (i >= 0) f.tags.splice(i, 1); else f.tags.push(v); b.classList.toggle('on', i < 0); b.setAttribute('aria-pressed', i < 0 ? 'true' : 'false'); }; });
+  $('#sf-no').onclick = function () { SUP.form = null; supDraw(); };
+  $('#sf-ok').onclick = function () {
+    var req = { id: f.id, content: $('#sf-c').value.trim(), when: $('#sf-w').value.trim(), place: $('#sf-p').value.trim(), count: $('#sf-n').value.trim(), ages: $('#sf-a').value.trim(), tags: f.tags, lead: $('#sf-l').value.trim(), urgent: $('#sf-u') ? $('#sf-u').checked : false };
+    if (!req.content) return toast('募集内容を入力してください');
+    this.disabled = true; var b = this;
+    api('sup_save', req).then(function () { toast(f.id ? '保存しました' : '掲載しました'); return supReload(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+  };
+}
 var HP = { scr: 'home', mode: 'need', d: null, av: null, pick: null, ask: null, rf: null, af: null, flt: { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } } };
 var HPBACK = { recruit: 'start', avail: 'home' };
 function hpRf0() { return { sex: '性別問わず', ages: [], tags: [], text: '', scale: '1人', area: '' }; }
@@ -4287,7 +4354,7 @@ function route() {
   var me = S.me; if (!me) return;
   if (me.state !== 'approved') return me.state === 'none' ? noneView() : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
-  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama)$/.test(h);
+  var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   var seg = full.split('/')[1];
@@ -4303,7 +4370,7 @@ function route() {
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
   if (h === 'manual' && seg) return manualView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ supporter: supView, o_supporter: supView, manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
