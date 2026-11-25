@@ -1976,6 +1976,7 @@ var MT = { type: '全員', cat: '', imp: '', picks: {}, refs: {}, val: '', ready
 function mailNewView() {
   var staff = isOfficer();
   if (MT.prefill) { MT.type = '役員'; MT.label = '役員'; MT.ready = true; return mailWriteView(); }
+  if (!staff) { MT.type = '役員'; MT.label = '役員全体'; MT.picks = {}; MT.refs = {}; MT.val = ''; MT.ready = true; return mailWriteView(); }   // 一般会員の宛先は「役員全体」だけ
   MT.ready = false; MT.picks = {}; MT.refs = {}; MT.val = '';
   sub(staff ? '宛先を選ぶ' : '役員に送る', '<div class="skel" style="height:300px"></div>', 'mail');
   (staff ? api('mail_targets') : api('mail_officers')).then(function (tg) { drawMailTo(tg, staff); }).catch(function (e) { offErr('宛先を選ぶ', e, 'mail'); });
@@ -2023,12 +2024,12 @@ function drawMailTo(tg, staff) {
 function mailWriteView() {
   var staff = isOfficer();
   if (!MT.ready) return go('mailnew');
-  var h = '<div class="card" style="padding:6px 10px;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><span class="muted" style="font-size:11px">宛先 </span><b id="mto" style="font-size:15px">' + esc(MT.label) + '</b></div><button class="sbtn" id="mchg" style="min-height:28px;padding:0 10px;font-size:12.5px;border-radius:9px">変更</button></div>' +
+  var h = '<div class="card" style="padding:6px 10px;margin:0 0 4px;display:flex;justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><span class="muted" style="font-size:11px">宛先 </span><b id="mto" style="font-size:15px">' + esc(MT.label) + '</b></div>' + (staff ? '<button class="sbtn" id="mchg" style="min-height:28px;padding:0 10px;font-size:12.5px;border-radius:9px">変更</button>' : '') + '</div>' +
     '<div class="bnote" style="margin:0 4px 4px;font-size:11.5px;line-height:1.45">下の欄に書いて送ります。「＋」で写真・重要・タグをつけられます。30日で自動で消えます。</div><div id="blist"></div>' +
     bdComposer('メッセージを書く', { groups: mailGroups(), max: 3000, note: 'タグは、相手にわかりやすいように件名の頭に【 】で付きます。' });
   sub('新しいチャット', h, 'mail'); document.body.classList.add('bchat'); BD.open = false;
   if (MT.prefill) { $('#bin').value = MT.prefill.subject + '\n' + MT.prefill.body; MT.prefill = null; }
-  $('#mchg').onclick = function () { MT.ready = false; mailNewViewKeep(); };
+  if ($('#mchg')) $('#mchg').onclick = function () { MT.ready = false; mailNewViewKeep(); };
   bdComposerBind(function (body, ph) {
     var req = { body: body.trim(), photos: ph, cat: MT.cat || '', important: !!MT.imp };
     if (staff) {
