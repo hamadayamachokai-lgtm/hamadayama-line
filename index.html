@@ -2012,8 +2012,8 @@ function drawMailTo(tg, staff) {
   sub(staff ? '宛先を選ぶ' : '役員に送る', h, 'mail');
   function drawSub() {
     var t = MT.type, el = $('#msub'); if (!el) return;
-    if (t === '班') el.innerHTML = '<select class="inp" id="mval" aria-label="班">' + tg.groups.map(function (g) { return '<option>' + esc(g) + '</option>'; }).join('') + '</select><p class="hint" style="margin-top:6px">その班の、LINE登録済みの会員に届きます。</p>';
-    else if (t === 'イベント') el.innerHTML = '<select class="inp" id="mval" aria-label="イベント">' + tg.events.map(function (e) { return '<option value="' + esc(e.name) + '">' + esc(e.name) + '(' + tg.year + '年・申込 ' + e.members + '会員)</option>'; }).join('') + '</select><p class="hint" style="margin-top:6px">今年の申込がある会員(LINE登録済み)に届きます。</p>';
+    if (t === '班') el.innerHTML = '<select class="inp" id="mval" aria-label="班">' + tg.groups.map(function (g) { var gg = typeof g === 'string' ? { group: g, head: '' } : g; return '<option value="' + esc(gg.group) + '">' + esc(gg.head ? gg.head + ' さんの班' : gg.group + '班') + '</option>'; }).join('') + '</select><p class="hint" style="margin-top:6px">その班(回覧元さんの班)の、LINE登録済みの会員に届きます。</p>';
+    else if (t === 'イベント') el.innerHTML = '<select class="inp" id="mval" aria-label="イベント">' + tg.events.map(function (e) { return '<option value="' + esc(e.name) + '">' + esc(e.name) + '(' + (e.unit ? '手を挙げた方 ' + e.members + e.unit : tg.year + '年・申込 ' + e.members + '会員') + ')</option>'; }).join('') + '</select><p class="hint" style="margin-top:6px">申込(手上げ)のある会員(LINE登録済み)に届きます。祭礼・演芸会は今年の分です。</p>';
     else if (t === '個人' && staff) {
       el.innerHTML = '<input class="inp" id="mq" placeholder="名前で絞り込み" aria-label="名前で絞り込み" style="margin-bottom:8px"><div class="plist" id="plist"></div><p class="hint" id="pcnt" style="margin-top:6px"></p>';
       var draw = function () {
@@ -2038,7 +2038,7 @@ function drawMailTo(tg, staff) {
     if (t === '個人' && !staff && !Object.keys(MT.refs).length) return toast('宛先の役員を選んでください');
     if (t === '個人' && !staff && Object.keys(MT.refs).length > 5) return toast('選べるのは5人までです');
     MT.val = v;
-    MT.label = t === '全員' ? '全員' : t === '役員' ? (staff ? '役員のみ' : '役員全員') : t === '班' ? v + '班' : t === 'イベント' ? v + 'の申込者' :
+    MT.label = t === '全員' ? '全員' : t === '役員' ? (staff ? '役員のみ' : '役員全員') : t === '班' ? (function () { var o = $('#mval') && $('#mval').selectedOptions[0]; return o ? o.textContent.replace(' さんの班', '') + (/班$/.test(o.textContent) ? '' : '班') : v + '班'; })() : t === 'イベント' ? v + 'の申込者' :
       staff ? Object.keys(MT.picks).length + '人' : tg.officers.filter(function (o) { return MT.refs[o.ref]; }).map(function (o) { return o.name + 'さん'; }).join('・');
     MT.ready = true; mailWriteView();
   };
