@@ -276,7 +276,10 @@ button.mi{cursor:pointer;min-height:32px}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
 .aiact{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px 44px}.aiact button{all:unset;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--navy);color:var(--navy);background:#fff}.aiact button.go{background:var(--navy);color:#fff}
 .aifq{display:flex;flex-direction:column;gap:6px;margin:0 0 12px 44px}.aifq button{all:unset;cursor:pointer;padding:9px 12px;border-radius:12px;font-size:14.5px;background:#fff;border:1px solid var(--line);color:var(--ink,#222)}
-.rdel{all:unset;cursor:pointer;color:var(--bad);font-weight:700;margin-left:6px}.dact{display:flex;flex-wrap:wrap;gap:8px;margin:0 4px 10px}.dact button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink,#222)}.dact .cl{background:#16a34a;border-color:#16a34a;color:#fff}.dact .asg{border-color:var(--navy);color:var(--navy)}.dact button:disabled{opacity:.5}
+.rdel{all:unset;cursor:pointer;color:var(--bad);font-weight:700;margin-left:6px}.sbb.aibd{display:block;margin:12px 0;padding:14px 12px}.aibt{color:#f3f1e6;font-weight:800;font-size:16px;margin:0 2px 12px;text-align:center}.afg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.aft,.afq,.afb{all:unset;box-sizing:border-box;cursor:pointer;color:#f3f1e6;border:2px dashed rgba(243,241,230,.6);border-radius:12px;font-weight:800;font-size:17px;min-height:56px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;padding:8px 10px}
+.aft span{font-size:24px}.afq{margin:0 0 10px;width:100%}.afb{border-style:solid;border-color:transparent;font-size:14px;min-height:40px;text-decoration:underline}.aft:active,.afq:active{background:rgba(255,255,255,.14)}
+.dact .cdl{color:var(--bad)!important;border-color:#e8c4c4!important}.dact{display:flex;flex-wrap:wrap;gap:8px;margin:0 4px 10px}.dact button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink,#222)}.dact .cl{background:#16a34a;border-color:#16a34a;color:#fff}.dact .asg{border-color:var(--navy);color:var(--navy)}.dact button:disabled{opacity:.5}
 .asgp{margin:0 4px 10px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}.asgp button{all:unset;cursor:pointer;display:block;padding:9px 10px;border-radius:8px;font-size:14.5px}.asgp button:active{background:#eef3fb}
 /* Tweet(吹き出し) */
 body.bchat #app{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
@@ -337,9 +340,9 @@ body.kb .bnav{display:none}body.kb .bcomp:not(.inl){bottom:var(--kb,0px);padding
 .n0{--nc:#fff4a8}.n1{--nc:#ffd6e0}.n2{--nc:#cfeaff}.n3{--nc:#d9f2c6}
 .mk{position:absolute;top:-2px;left:-6px;padding:1px 8px;background:#d42b2b;color:#fff;font-size:10px;font-weight:800;border-radius:3px;transform:rotate(-6deg);box-shadow:1px 2px 3px rgba(0,0,0,.3);z-index:3}.mk.b{background:#2f7fd0}.mk.g{background:#7a8294}.note.off{filter:grayscale(.55);opacity:.88}.hdc .mk{top:-8px;left:10px}
 /* サポーター募集: 黒板風の壁(助け合いはコルク。ここは黒板+チョーク+マグネット) */
-.bb{background:linear-gradient(135deg,rgba(255,255,255,.05),transparent 40%),#2f4a3f;border:11px solid #9a6b3a;border-bottom-width:16px;border-radius:8px;padding:18px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;box-shadow:inset 0 0 22px rgba(0,0,0,.55),0 3px 8px rgba(0,0,0,.3);margin:0 0 6px;color:#f3f1e6}.bb.empty{grid-template-columns:1fr}
-.ch{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:5px;min-height:150px;padding:16px 10px 10px;border:2px dashed rgba(243,241,230,.75);border-radius:6px;color:#f7f5ea;cursor:pointer;text-shadow:0 0 1px rgba(255,255,255,.5);transform:rotate(var(--r,0deg))}.ch:active{background:rgba(255,255,255,.08)}.ch b{font-size:15px;line-height:1.35;color:#fff7c2}.ch .nb{font-size:13px;line-height:1.5;color:#e8efe4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}.ch .nm{font-size:12.5px;font-weight:800;color:#ffc9d4}.ch .tgs{margin:0}.ch .at{font-size:10px;background:transparent;color:#cfe6ff;border:1px solid rgba(207,230,255,.6)}
-.ch .cm{position:absolute;top:-10px;left:50%;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e0a43a 55%,#8b5a10);box-shadow:1px 3px 4px rgba(0,0,0,.5)}.ch .ur{position:absolute;top:-13px;right:4px;padding:1px 8px;border:2px solid #ff8f8f;border-radius:50%;color:#ff8f8f;font-size:11px;font-weight:900;transform:rotate(10deg);background:rgba(0,0,0,.18)}
+.sbb{background:linear-gradient(135deg,rgba(255,255,255,.05),transparent 40%),#2f4a3f;border:11px solid #9a6b3a;border-bottom-width:16px;border-radius:8px;padding:18px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;box-shadow:inset 0 0 22px rgba(0,0,0,.55),0 3px 8px rgba(0,0,0,.3);margin:0 0 6px;color:#f3f1e6}.sbb.empty{grid-template-columns:1fr}
+.swc{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:5px;min-height:150px;padding:16px 10px 10px;border:2px dashed rgba(243,241,230,.75);border-radius:6px;color:#f7f5ea;cursor:pointer;text-shadow:0 0 1px rgba(255,255,255,.5);transform:rotate(var(--r,0deg))}.sch:active{background:rgba(255,255,255,.08)}.sch b{font-size:15px;line-height:1.35;color:#fff7c2}.sch .nb{font-size:13px;line-height:1.5;color:#e8efe4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}.sch .nm{font-size:12.5px;font-weight:800;color:#ffc9d4}.sch .tgs{margin:0}.sch .at{font-size:10px;background:transparent;color:#cfe6ff;border:1px solid rgba(207,230,255,.6)}
+.swc .scm{position:absolute;top:-10px;left:50%;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e0a43a 55%,#8b5a10);box-shadow:1px 3px 4px rgba(0,0,0,.5)}.swc .sur{position:absolute;top:-13px;right:4px;padding:1px 8px;border:2px solid #ff8f8f;border-radius:50%;color:#ff8f8f;font-size:11px;font-weight:900;transform:rotate(10deg);background:rgba(0,0,0,.18)}
 .bbtray{height:6px;margin:-2px 14px 8px;background:#b9895a;border-radius:0 0 4px 4px;box-shadow:0 2px 3px rgba(0,0,0,.3)}
 .bbd{position:relative;width:100%;max-width:420px;background:#2f4a3f;color:#f3f1e6;border:9px solid #9a6b3a;border-radius:8px;padding:22px 16px 16px;box-shadow:0 8px 24px rgba(0,0,0,.5),inset 0 0 18px rgba(0,0,0,.5)}.bbd .hdx{color:#fff}.bbd .small{color:#cfd8cf}.bbd .tgs{margin:6px 0 0}.bbd .at{background:transparent;color:#cfe6ff;border:1px solid rgba(207,230,255,.6)}.bbd .sr{margin:7px 0}.bbd .sk{display:block;font-size:12px;font-weight:700;color:#ffd98a}.bbd .sv{font-size:15.5px;line-height:1.6;color:#f7f5ea}.bbd .ttl{font-size:12px;color:#ffd98a;font-weight:800;margin:2px 0 6px;letter-spacing:.06em}.bbd .ur{display:inline-block;padding:1px 9px;border:2px solid #ff8f8f;border-radius:50%;color:#ff8f8f;font-size:12px;font-weight:900;transform:rotate(-6deg);margin-left:6px}
 .bbd .hmg{background:#f3f1e6;color:#2f4a3f}.bbd .sbtn{background:transparent;color:#f3f1e6;border:2px solid #f3f1e6;border-radius:12px;font-weight:700}.sq{font-size:17px;line-height:1.7;margin:10px 0 8px}.apstep{font-size:13px;color:var(--muted,#6b7280);margin:2px 0 4px}.apc{border:1.5px solid var(--line,#d9dfea);border-radius:12px;padding:6px 12px}.apc div{padding:8px 0;border-bottom:1px solid var(--line,#e5e7eb)}.apc div:last-child{border-bottom:0}.apc span{display:block;font-size:13px;color:var(--muted,#6b7280)}.apc b{font-size:17px;word-break:break-all}.so{padding:12px;margin:0 0 10px}.so b{font-size:15px}.so .sm{color:var(--sub);font-size:13px;margin:3px 0}.so .urg{display:inline-block;background:#d42b2b;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:4px;margin-left:6px}.so .ap{font-size:13px;font-weight:700;color:#8a3a10}
@@ -1752,13 +1755,13 @@ function mailView() {
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .mlw'), function (w) { swipeBind(w, d, draw); });
       Array.prototype.forEach.call(document.querySelectorAll('#mlist .mdx'), function (b) { b.onclick = function () {
         var m = d.mails.filter(function (x) { return x.id === b.dataset.del; })[0]; if (!m) return;
-        cf(m.mine ? 'このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?', function () {
+        cf(m.mine ? 'このチャットを削除します(受け取った方からも消えます)。よろしいですか?' : 'このチャットを削除します。よろしいですか?', function () {
           b.disabled = true; api('mail_delete', { id: m.id }).then(function () { d.mails = d.mails.filter(function (x) { return x.id !== m.id; }); MEM.mail_list = d; toast('削除しました'); draw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
         });
       }; });
     }
     function cbarCnt(dd) {
-      var hid = hidGet(), live = dd.mails.filter(function (m) { return hid.indexOf(m.id) < 0; }), c = { unread: live.filter(function (m) { return m.unread; }).length, '未対応': live.filter(function (m) { return m.status === '未対応' && !m.unread; }).length, '対応中': live.filter(function (m) { return m.status === '対応中' || m.status === '進行中'; }).length, 'クローズ': live.filter(function (m) { return m.status === 'クローズ' || m.status === '対応済み'; }).length, all: live.length };
+      var hid = hidGet(), live = dd.mails.filter(function (m) { return hid.indexOf(m.id) < 0; }), c = { unread: live.filter(function (m) { return m.unread; }).length };
       Array.prototype.forEach.call(document.querySelectorAll('#cbar [data-f]'), function (b) { var n = c[b.dataset.f], e = b.querySelector('.cn'); if (e) { e.textContent = n || ''; e.hidden = !n; } });
     }
     function render(dd) {
@@ -1767,7 +1770,7 @@ function mailView() {
       if (MB.filter === 'helpchat' || MB.filter === 'watch') MB.filter = 'all';
       var fb = function (f, ic, lb, aria) { return '<button type="button" data-f="' + f + '" aria-pressed="' + (MB.filter === f ? 'true' : 'false') + '" title="' + (aria || lb) + '" aria-label="' + (aria || lb) + '">' + (ic ? '<span class="ci">' + ic + '</span>' : '') + '<span class="cl">' + lb + '</span><span class="cn" hidden></span></button>'; };
       var top = '<div class="ctop"><button type="button" class="ctb new" id="mnew"><span class="ci">📩</span>新規作成</button><button type="button" class="ctb" data-p="ai" aria-pressed="' + (pane === 'ai') + '"><span class="ci">💬</span>操作質問</button></div>';
-      var chips = staff && pane === 'inbox' ? '<nav class="cchips" id="cbar" aria-label="絞り込み">' + fb('all', '', 'すべて') + fb('unread', '🔴', '未読') + fb('未対応', '🟠', '要対応') + fb('対応中', '🔵', '返信済') + fb('クローズ', '☑️', 'クローズ') + '<button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="cl">非表示</span></button></nav>' : '<nav id="cbar" hidden></nav>' + (pane === 'inbox' && hidGet().length ? '<nav class="cchips"><button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"><span class="cl">非表示</span></button><button type="button" data-f="all" aria-pressed="' + (MB.filter !== 'hidden') + '"><span class="cl">ふつう</span></button></nav>' : '');
+      var chips = staff && pane === 'inbox' ? '<nav class="cchips" id="cbar" aria-label="絞り込み">' + fb('all', '', 'すべて') + fb('unread', '🔴', '未読') + '<button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="cl">非表示</span></button></nav>' : '<nav id="cbar" hidden></nav>' + (pane === 'inbox' && hidGet().length ? '<nav class="cchips"><button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"><span class="cl">非表示</span></button><button type="button" data-f="all" aria-pressed="' + (MB.filter !== 'hidden') + '"><span class="cl">ふつう</span></button></nav>' : '');
       var hb2 = '';
       var main = pane === 'ai' ? '<div class="ctop"><button type="button" class="ctb" data-p="inbox">← 一覧にもどる</button></div>' + aiPaneHtml() : head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>';
       sub('チャット', '<div class="chm' + (pane === 'ai' ? ' aim' : '') + '">' + (pane === 'ai' ? '' : top + chips) + '<div class="cmain" id="cmain">' + main + '</div></div>');
@@ -1812,6 +1815,15 @@ function mailMoreSheet(d, id, redraw) {
 }
 /* ---------- AIに聞く(使い方案内) ---------- */
 var AI = { msgs: [], faq: null, busy: false, last: '' };
+var AIF_ = [
+  { i: '🪪', t: '会員証', q: ['会員証を見たい', '会員証が出てこない', '会員証を家族に見せたい'] },
+  { i: '📌', t: '掲示板', q: ['掲示板を見たい', '掲示板に書き込みたい', '写真を載せたい'] },
+  { i: '💬', t: 'チャット', q: ['役員にメッセージを送りたい', 'チャットで写真を送りたい', '送ったチャットを消したい', '返信が来たか知りたい'] },
+  { i: '📅', t: 'イベント', q: ['町会の予定を見たい', 'イベントに申し込みたい', '申し込みを取り消したい'] },
+  { i: '🤝', t: '助け合い', q: ['助けてほしいときは', '助けに行きたいときは', '助け合いの流れを知りたい'] },
+  { i: '🙋', t: 'サポーター', q: ['サポーター募集を見たい', 'お手伝いに申し込みたい', '申し込みを質問したい'] },
+  { i: '🌤', t: '天気・杉並', q: ['天気を見たい', '杉並区のお知らせを見たい'] }
+];
 var GOL_ = { card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並', weather: '天気' };
 function aiPaneHtml() {
   return '<div id="aiL"></div><div class="bcomp aibar"><div class="aiin"><input class="inp" id="aiq" maxlength="200" placeholder="聞きたいことを書いてね" aria-label="聞きたいこと" autocomplete="off"><button type="button" class="bsend" id="aisend" aria-label="送る">↑</button></div></div>';
@@ -1819,13 +1831,22 @@ function aiPaneHtml() {
 function aiDraw() {
   var el = $('#aiL'); if (!el) return;
   var h = mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: 'こんにちは。このアプリの使い方で、わからないことを聞いてください。\n「会員証を見たい」「写真を送りたい」のように、書くだけで大丈夫です。' });
-  if (AI.faq && !AI.msgs.length) h += '<div class="aifq">' + AI.faq.map(function (q, i) { return '<button type="button" data-fq="' + i + '">' + esc(q) + '</button>'; }).join('') + '</div>';
+  if (!AI.msgs.length) {   // 黒板: 機能を選ぶ → 質問のボタンを押すだけで聞ける
+    var F = AI.feat != null ? AIF_[AI.feat] : null;
+    h += '<div class="sbb aibd">' + (F ? '<div class="aibt">' + F.i + ' ' + esc(F.t) + 'のこと。聞きたいものを押してね</div>' + F.q.map(function (q, i) { return '<button type="button" class="afq" data-afq="' + i + '">' + esc(q) + '</button>'; }).join('') + '<button type="button" class="afb" data-afb="1">← 機能をえらびなおす</button>'
+      : '<div class="aibt">どの機能のことですか?(押してね)</div><div class="afg">' + AIF_.map(function (f, i) { return '<button type="button" class="aft" data-aft="' + i + '"><span>' + f.i + '</span>' + esc(f.t) + '</button>'; }).join('') + '</div>') + '</div>';
+  }
   AI.msgs.forEach(function (m, i) {
     if (m.r === 'u') { h += mBubble({ mine: true, date: '', body: m.t }); return; }
     h += mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: m.t });
+    if (!m.wait && i === AI.msgs.length - 1) h += '<div class="aiact"><button type="button" data-afr="1">他の質問をえらぶ</button></div>';
     if (!m.wait) h += '<div class="aiact">' + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">▶「' + GOL_[m.go] + '」を開く</button>' : '') + (m.esc ? '<button type="button" data-aask="' + i + '">役員に聞く</button>' : '') + '</div>';
   });
   el.innerHTML = h;
+  Array.prototype.forEach.call(el.querySelectorAll('[data-aft]'), function (b) { b.onclick = function () { AI.feat = +b.dataset.aft; aiDraw(); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-afq]'), function (b) { b.onclick = function () { aiSend(AIF_[AI.feat].q[+b.dataset.afq]); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-afb]'), function (b) { b.onclick = function () { AI.feat = null; aiDraw(); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-afr]'), function (b) { b.onclick = function () { AI.msgs = []; AI.feat = null; aiDraw(); window.scrollTo(0, 0); }; });
   Array.prototype.forEach.call(el.querySelectorAll('[data-fq]'), function (b) { b.onclick = function () { aiSend(AI.faq[+b.dataset.fq]); }; });
   Array.prototype.forEach.call(el.querySelectorAll('[data-ago]'), function (b) { b.onclick = function () { var k = b.dataset.ago; go(HASH[k] || k); }; });
   Array.prototype.forEach.call(el.querySelectorAll('[data-aask]'), function (b) { b.onclick = function () { var i = +b.dataset.aask, q = ''; for (var j = i - 1; j >= 0; j--) if (AI.msgs[j].r === 'u') { q = AI.msgs[j].t; break; } MT.type = '役員'; MT.cat = ''; MT.imp = ''; MT.prefill = q ? { subject: q, body: '' } : null; go('mailnew'); }; });
@@ -1871,14 +1892,14 @@ function drawMail(m) {
       '<span>' + stTag(m.status) + (!m.watch && m.status !== '未対応' && m.handler ? ' ・ ' + esc(m.handler) + 'さん ' + esc(fmtMd(m.handledAt)) : '') + '</span></div>';
   }
   if (m.canStatus && !m.watch && m.status) {   // 役員: クローズする / 〇〇さんに返信依頼する
-    h += '<div class="dact"><button type="button" class="cl" id="mclose"' + (m.status === 'クローズ' ? ' disabled' : '') + '>' + (m.status === 'クローズ' ? '✓ クローズ済み' : '✓ クローズする') + '</button><button type="button" class="asg" id="masg">👤 役員に返信を依頼する</button></div><div id="asgp" class="asgp" hidden></div>' +
+    h += '<div class="dact"><button type="button" class="cl" id="mclose"' + (m.status === 'クローズ' ? ' disabled' : '') + '>' + (m.status === 'クローズ' ? '✓ クローズ済み' : '✓ クローズする') + '</button><button type="button" class="asg" id="masg">👤 役員に返信を依頼する</button>' + (m.mine && m.canDelete ? '<button type="button" class="cdl" id="mrootdel">🗑 チャットを削除</button>' : '') + '</div><div id="asgp" class="asgp" hidden></div>' +
       (m.assigned && m.assigned.length ? '<p class="small" style="margin:-4px 6px 8px">返信依頼: ' + m.assigned.map(function (x) { return esc(x.name) + 'さん(' + esc(x.by) + 'さんが依頼 ' + esc(fmtMd(x.at)) + ')'; }).join('、') + '</p>' : '');
   }
   h += '<div id="blist">' + (hc ? '<div class="hnote">' + bodyHtml(m.body) + '</div>' : mBubble({ mine: m.mine, icon: m.icon, ph: m.ph, name: m.mine ? '' : m.sender, date: m.date, body: m.body, rd: m.rd }).replace('</div></div><div class="bmeta">', '</div><div id="rx"></div></div><div class="bmeta">')) +
     (m.replies.length && !hc ? '<div class="bsep">返信 ' + m.replies.length + '</div>' : '') +
     m.replies.map(function (r) { return r.sys ? '<div class="bsep sysn">' + esc(r.body) + '</div>' : mBubble({ mine: r.mine, icon: r.icon, ph: r.ph, name: r.mine ? '' : r.name, date: r.at, body: r.body, rd: r.rd, rk: 'mail_reply', rid: r.id, del: r.canDelete }); }).join('') + '</div>' +
-    (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.readers.length ? ':' + m.readers.map(function (r) { return ' ' + esc(r.name); }).join('') : '') + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') ;
-  if (m.mine && m.canDelete) h += '<p style="margin:6px 6px 0;text-align:right"><button type="button" class="rdel" id="mrootdel">このチャットの送信を取り消す</button></p>';
+    (m.readers ? '<p class="small" style="margin:8px 4px 0">既読 ' + m.readers.length + '人' + (m.repliers && m.repliers.length ? ' ・ 返信あり:' + m.repliers.map(function (n) { return ' ' + esc(n); }).join('') : '') + '</p>' : '') ;
+  if (m.mine && m.canDelete && !(m.canStatus && !m.watch && m.status)) h += '<p style="margin:6px 6px 0;text-align:right"><button type="button" class="rdel" id="mrootdel">チャットを削除</button></p>';
   if (m.stopped) h += '<p class="small" style="text-align:center;margin:10px 0;color:var(--bad)">この助け合いマッチングは終了しました。これ以上、書き込めません。</p>';
   var QRS = ['よろしくお願いします', 'ありがとうございます', '承知しました', 'OKです！'];
   if (m.canReply !== false) h += bdComposer('返信を書く', { max: 2000, pre: '<div class="qrs" id="qrs" hidden>' + QRS.map(function (t) { return '<button type="button" class="qrq" data-q="' + esc(t) + '">' + esc(t) + '</button>'; }).join('') + '</div>' });
@@ -1917,7 +1938,7 @@ function drawMail(m) {
   Array.prototype.forEach.call(document.querySelectorAll('[data-rdel]'), function (b) { b.onclick = function () {
     cf('この返信の送信を取り消します(相手の画面からも消えます)。よろしいですか?', function () { b.disabled = true; api('mail_reply_delete', { id: m.id, rid: b.dataset.rdel }).then(function () { toast('取り消しました'); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); }); });
   }; });
-  var rd = $('#mrootdel'); if (rd) rd.onclick = function () { cf('このチャットの送信を取り消します(受け取った方からも消えます)。よろしいですか?', function () { rd.disabled = true; api('mail_delete', { id: m.id }).then(function () { delete MEM.mail_list; toast('取り消しました'); go('mail'); }).catch(function (e) { rd.disabled = false; toast(e.message); }); }); };
+  var rd = $('#mrootdel'); if (rd) rd.onclick = function () { cf('このチャットを削除します(受け取った方からも消えます)。よろしいですか?', function () { rd.disabled = true; api('mail_delete', { id: m.id }).then(function () { delete MEM.mail_list; toast('取り消しました'); go('mail'); }).catch(function (e) { rd.disabled = false; toast(e.message); }); }); };
   var mc = $('#mclose'); if (mc) mc.onclick = function () { mc.disabled = true; api('mail_status', { id: m.id, status: 'クローズ' }).then(function (x) { m.status = x.status; m.handler = x.handler; m.handledAt = x.handledAt; delete MEM.mail_list; var y = window.scrollY; drawMail(m); window.scrollTo(0, y); toast('クローズにしました'); }).catch(function (e) { mc.disabled = false; toast(e.message); }); };
   var ma = $('#masg'); if (ma) ma.onclick = function () {
     var box = $('#asgp'); if (!box.hidden) { box.hidden = true; return; } box.hidden = false; box.innerHTML = '<p class="small" style="margin:2px 4px">読み込み中…</p>';
@@ -3869,10 +3890,10 @@ function supView() {
 }
 function supReload() { MEM.sup_list = null; return api('sup_list').then(function (d) { MEM.sup_list = d; SUP.d = d; SUP.det = null; SUP.form = null; SUP.bc = null; supDraw(); }); }
 function supWall(items) {
-  if (!items.length) return '<div class="bb empty"><div class="ch" style="--r:-1deg;cursor:default;min-height:90px"><i class="cm"></i><b>いま、募集は ありません</b><span class="nb">募集が出ると、ここに貼られます。</span></div></div><div class="bbtray"></div>';
-  return '<div class="bb">' + items.map(function (x) {
+  if (!items.length) return '<div class="sbb empty"><div class="swc" style="--r:-1deg;cursor:default;min-height:90px"><i class="scm"></i><b>いま、募集は ありません</b><span class="nb">募集が出ると、ここに貼られます。</span></div></div><div class="bbtray"></div>';
+  return '<div class="sbb">' + items.map(function (x) {
     var r = ((hpHash(x.id) % 40) - 20) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join('');
-    return '<button type="button" class="ch" data-sid="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="cm"></i>' + (x.urgent ? '<span class="ur">急募</span>' : '') + '<b>' + esc(supTitle(x)) + '</b>' +
+    return '<button type="button" class="swc" data-sid="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="scm"></i>' + (x.urgent ? '<span class="sur">急募</span>' : '') + '<b>' + esc(supTitle(x)) + '</b>' +
       '<span class="nb">' + esc([x.when, x.place].filter(Boolean).join(' / ')) + '</span>' + (x.count ? '<span class="nm">募集 ' + esc(x.count) + '</span>' : '') + '<div class="tgs">' + tags + '</div></button>';
   }).join('') + '</div><div class="bbtray"></div>';
 }
