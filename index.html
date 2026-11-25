@@ -3894,8 +3894,8 @@ function supBcForm(items) {
 function supAdmDraw(d) {
   var y = window.scrollY, list = d.items.length ? d.items.map(function (x) {
     var n = (x.apps || []).length, b = function (op, l, c) { return '<button type="button" class="sbtn ' + (c || '') + '" data-sop="' + op + '" data-id="' + esc(x.id) + '" style="min-height:40px;flex:1 1 30%">' + l + '</button>'; };
-    return '<div class="card so"><b>' + esc(supTitle(x)) + '</b>' + (x.urgent ? '<span class="urg">急募</span>' : '') + '<div class="sm">' + esc([x.when, x.place].filter(Boolean).join(' / ') || '日時・場所は未記入') + '</div><div class="ap">応募の連絡: ' + n + '人' + (n ? '(' + esc(x.apps.join('、')) + ')' : '') + '</div>' +
-      '<div class="inrow" style="margin-top:8px;flex-wrap:wrap;gap:6px">' + b('bc', '応募者に一斉連絡', 'fill') + b('edit', '編集') + b('urgent', x.urgent ? '急募をはずす' : '急募にする') + b('del', '削除', 'dg') + '</div></div>';
+    return '<div class="card so"' + (x.closed ? ' style="opacity:.78"' : '') + '><b>' + esc(supTitle(x)) + '</b>' + (x.closed ? '<span class="urg" style="background:#6b7280;color:#fff;border-color:#6b7280">締切済み</span>' : x.urgent ? '<span class="urg">急募</span>' : '') + '<div class="sm">' + esc([x.when, x.place].filter(Boolean).join(' / ') || '日時・場所は未記入') + '</div><div class="ap">応募の連絡: ' + n + '人' + (n ? '(' + esc(x.apps.join('、')) + ')' : '') + (x.cap ? ' / 募集 ' + x.cap + '名' : '') + '</div>' + (x.full && !x.closed ? '<div class="small" style="margin:6px 0 0;padding:8px 10px;border-radius:8px;background:#fff3d6;color:#6a4b00;font-weight:700">定員(' + x.cap + '名)に達しました。募集を締め切れます。</div>' : '') +
+      '<div class="inrow" style="margin-top:8px;flex-wrap:wrap;gap:6px">' + b('bc', '応募者に一斉連絡', 'fill') + b('edit', '編集') + (x.closed ? '' : b('urgent', x.urgent ? '急募をはずす' : '急募にする')) + b('close', x.closed ? '募集を再開する' : '募集を締め切る', x.full && !x.closed ? 'fill' : '') + b('del', '削除', 'dg') + '</div></div>';
   }).join('') : '<p class="small" style="margin:8px 4px">いま出している募集は、ありません。</p>';
   sub('サポーター募集', '<button type="button" class="hmg" id="sup-new" style="margin:0 0 12px">＋ サポーターを募集する</button><p class="small" style="margin:0 4px 12px">募集を出すと、みんなのメニューに「サポーター募集」が出ます(黒板に貼られます)。会員の応募は、チャットの「サポーター連絡」に届きます。</p><h3 style="margin:6px 4px">募集中(' + d.items.length + ')</h3>' + list + supBcForm(d.items), 'officer');
   var nb = $('#sup-new'); if (nb) nb.onclick = function () { SUP.form = { id: '', content: '', when: '', place: '', count: '', ages: d.ageDef, tags: [], lead: '', urgent: false }; supFormDraw(); };
@@ -3919,12 +3919,16 @@ function supOp(op) {
   if (op === 'bc') { SUP.bc = x.id; supDraw(); return; }
   if (op === 'edit') { SUP.form = { id: x.id, content: x.content, when: x.when, place: x.place, count: x.count, ages: x.ages, tags: (x.tags || []).slice(), lead: x.lead, urgent: x.urgent }; SUP.det = null; supFormDraw(); return; }
   if (op === 'urgent') { api('sup_urgent', { id: x.id }).then(function (r) { toast(r.urgent ? '急募にしました' : '急募をはずしました'); return supReload(); }).catch(function (e) { toast(e.message); }); return; }
+  if (op === 'close') {
+    var go1 = function () { api('sup_close', { id: x.id }).then(function (r) { toast(r.closed ? '締め切りました(会員の黒板から外れました)' : '募集を再開しました'); return supReload(); }).catch(function (e) { toast(e.message); }); };
+    if (x.closed) go1(); else cf('この募集を締め切ります。会員の黒板から外れます(応募者への連絡はできます)。よろしいですか?', go1); return;
+  }
   if (op === 'del') cf('この募集を削除します。よろしいですか?', function () { api('sup_delete', { id: x.id }).then(function () { toast('削除しました'); return supReload(); }).catch(function (e) { toast(e.message); }); });
 }
 function supFormDraw() {
   var f = SUP.form, d = SUP.d || {}, inp = function (id, lab, v, ph, hint) { return '<div class="field"><label class="l" for="' + id + '">' + lab + '</label>' + (hint ? '<p class="hint">' + hint + '</p>' : '') + '<input class="inp" id="' + id + '" maxlength="80" value="' + esc(v || '') + '" placeholder="' + esc(ph || '') + '"></div>'; };
   sub(f.id ? '募集を編集' : 'サポーターを募集', '<div class="card"><div class="field"><label class="l" for="sf-c">募集内容<span class="req">必須</span></label><textarea class="inp" id="sf-c" maxlength="800" rows="4" placeholder="例: 防災訓練の受付・案内のお手伝い">' + esc(f.content) + '</textarea></div>' +
-    inp('sf-w', '開催日時', f.when, '例: 12月20日(土) 10:00〜12:00') + inp('sf-p', '集合場所', f.place, '例: 浜田山会館 1階') + inp('sf-n', '募集人数', f.count, '例: 5名') + inp('sf-a', '募集年代', f.ages, d.ageDef || '') +
+    inp('sf-w', '開催日時', f.when, '例: 12月20日(土) 10:00〜12:00') + inp('sf-p', '集合場所', f.place, '例: 浜田山会館 1階') + inp('sf-n', '募集人数', f.count, '例: 5名', '数字で入れてください。応募が人数に達すると、役員画面でお知らせします。') + inp('sf-a', '募集年代', f.ages, d.ageDef || '') +
     '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">タグ(いくつでも)</span>' + hpChips('data-sft', d.tags || [], f.tags, true) + '</div>' + inp('sf-l', '本イベント責任者', f.lead, '例: 山田 太郎') +
     (f.id ? '' : '<label style="display:flex;gap:8px;align-items:center;margin:6px 0 12px"><input type="checkbox" id="sf-u"' + (f.urgent ? ' checked' : '') + '> 急募にする</label>') +
     '<p class="small" style="margin:0 0 10px">連絡は、チャットの「サポーター連絡」で届きます。電話番号などは書かないでください。</p><button type="button" class="btn" id="sf-ok">' + (f.id ? '保存する' : '掲載する') + '</button><button type="button" class="btn alt" id="sf-no" style="margin-top:8px">やめる</button></div>', 'o_supporter');
