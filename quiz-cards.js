@@ -26,6 +26,7 @@
     '#qz .pcg{display:grid;gap:5px;margin:8px 0}#qz .pcg .pc{width:100%;height:auto;aspect-ratio:5/7;margin:0}' +
     '#qz .pcsol{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:0 0 6px}#qz .pcsol .pc{width:100%;height:60px;margin:0;font-size:14px}#qz .pccol{position:relative;min-height:60px}#qz .pccol .pc{position:absolute;left:0;right:0}#qz .pc.ph{background:transparent;border:2px dashed #cfc7b4;color:#b5ad98}' +
     '#qz .pcmode{display:grid;gap:8px;margin:8px 0}#qz .pcmode button{min-height:58px;margin:0;text-align:left;display:block}#qz .pcmode small{display:block;font-weight:500;opacity:.8}#qz .pcin{width:100%;box-sizing:border-box;font-size:1.1em;padding:10px;border:2px solid #cfc7b4;border-radius:12px;margin:0 0 6px;font-family:inherit}' +
+    '#qz .pcrw{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-weight:800}#qz .pcsel{flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit}' +
     '#qz .pcch{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .pcch button{margin:0;min-width:48px;min-height:44px}' +
     '#qz .pctab{position:relative;height:270px;margin:6px 0 10px;border-radius:50%/46%;background:radial-gradient(ellipse at center,#4f9a6a 0,#2f7a4c 70%,#236440 100%);border:5px solid #8b5a2b;box-shadow:inset 0 0 18px rgba(0,0,0,.35)}#qz .pcseat{position:absolute;transform:translate(-50%,-50%);text-align:center;color:#fff;font-weight:800;font-size:.9em;width:36%;text-shadow:0 1px 2px rgba(0,0,0,.6)}' +
     '#qz .pcseat .sn{display:inline-block;padding:1px 10px;border-radius:99px;background:rgba(0,0,0,.35);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#qz .pcseat.turn .sn{background:#6a4bd6}#qz .pcseat.tg .sn{background:#e0a300;color:#222;text-shadow:none}#qz .pcseat.dn{opacity:.5}' +
@@ -213,21 +214,26 @@
   function cmpH(a, b) { for (var i = 0; i < Math.max(a.length, b.length); i++) { var d = (a[i] || 0) - (b[i] || 0); if (d) return d; } return 0; }
   var PK = {
     id: 'pk', title: 'ポーカー', hidden: true, min: 2, max: 5, bots: [1, 4],
-    init: function (n, names) {
+    init: function (n, names, opts) {
+      var ex = opts && +opts.ex >= 1 && +opts.ex <= 3 ? +opts.ex : 1;
       var d = []; for (var i = 0; i < 52; i++) d.push(i); shuf(d); var hand = []; for (i = 0; i < n; i++) hand.push(d.splice(0, 5));
-      return { g: 'pk', phase: 'play', n: n, nm: names, hand: hand, deck: d, done: names.map(function () { return false; }), turn: 0, msg: '要らない カードを えらんで こうかん(1回だけ)。いい役を つくろう', over: false };
+      return { g: 'pk', phase: 'play', n: n, nm: names, hand: hand, deck: d, ex: ex, used: names.map(function () { return 0; }), done: names.map(function () { return false; }), turn: 0, msg: '要らない カードを えらんで こうかん(' + (ex > 1 ? 'さいだい ' + ex + '回' : '1回だけ') + ')。いい役を つくろう', over: false };
     },
     turnOf: function (S) { return S.over ? -1 : S.turn; },
     apply: function (S0, m) {
       var S = clone(S0), p = S.turn, sel = (m.draw || []).filter(function (k, i, a) { return k >= 0 && k < 5 && a.indexOf(k) === i; });
-      sel.forEach(function (k) { S.hand[p][k] = S.deck.pop(); }); S.done[p] = true; S.msg = S.nm[p] + 'さんは ' + (sel.length ? sel.length + 'まい こうかんしました' : 'このまま にしました');
+      sel = sel.slice(0, S.deck.length); var ex = S.ex || 1; if (!S.used) S.used = S.nm.map(function () { return 0; });
+      sel.forEach(function (k) { S.hand[p][k] = S.deck.pop(); }); if (sel.length) S.used[p]++;
+      S.msg = S.nm[p] + 'さんは ' + (sel.length ? sel.length + 'まい こうかんしました' : 'このまま にしました');
+      if (sel.length && S.used[p] < ex && S.deck.length) return S;   // まだ こうかんできる(同じ人の ばんが つづく)
+      S.done[p] = true;
       if (p + 1 >= S.n) {
         S.over = true; S.ev = S.hand.map(evalH); var best = S.ev.reduce(function (b, e) { return cmpH(e, b) > 0 ? e : b; }, S.ev[0]); S.win = []; S.ev.forEach(function (e, i) { if (cmpH(e, best) === 0) S.win.push(i); }); S.msg = 'しょうぶ!';
       } else S.turn = p + 1;
       return S;
     },
     bot: function (S) {
-      var h = S.hand[S.turn], e = evalH(h), keep = []; if (e[0] >= 4) return { draw: [] };
+      var h = S.hand[S.turn], e = evalH(h), keep = []; if (e[0] >= 4 || (e[0] >= 1 && S.used && S.used[S.turn] >= 1)) return { draw: [] };
       var cnt = {}; h.forEach(function (c) { cnt[rk(c)] = (cnt[rk(c)] || 0) + 1; });
       h.forEach(function (c, i) { if (cnt[rk(c)] >= 2) keep.push(i); });
       if (!keep.length) { var s = h.map(function (c, i) { return i; }).sort(function (a, b) { var ra = rk(h[a]) || 13, rb = rk(h[b]) || 13; return rb - ra; }); keep = s.slice(0, 2); }
@@ -242,7 +248,7 @@
       if (!S.over && v >= 0) {
         var my = S.turn === v;
         h += '<div class="pcrow"><span class="pcn' + (my ? ' turn' : '') + '">' + esc(S.nm[v]) + '</span><span class="qm">いまの 役: ' + HN[evalH(S.hand[v])[0]] + '</span></div><div class="pcw">' + S.hand[v].map(function (c, k) { return my ? cardB(c, (sel.indexOf(k) >= 0 ? 'sel' : ''), 'data-x="' + k + '"') : cardH(c); }).join('') + '</div>';
-        h += my ? '<div class="qm">かえたい カードを タップ(上に あがります)</div><button type="button" class="qb pri" id="cpk">' + (sel.length ? sel.length + 'まい こうかんする' : 'このまま きめる') + '</button>' : '<div class="qm">' + esc(S.nm[S.turn]) + 'さんの ばんです…</div>';
+        h += my ? '<div class="qm">かえたい カードを タップ' + ((S.ex || 1) > 1 ? '(のこり ' + ((S.ex || 1) - (S.used ? S.used[v] : 0)) + '回)' : '') + '</div><button type="button" class="qb pri" id="cpk">' + (sel.length ? sel.length + 'まい こうかんする' : 'このまま きめる') + '</button>' : '<div class="qm">' + esc(S.nm[S.turn]) + 'さんの ばんです…</div>';
       }
       if (S.over) { var pw = S.win.indexOf(v) >= 0, hn = HN[S.ev[S.win[0]][0]]; h += v >= 0 ? (S.win.length > 1 && pw ? resH('draw', 'ひきわけ', hn) : resH(pw ? 'win' : 'lose', pw ? '勝ち' : '負け', esc(S.nm[S.win[0]]) + 'さんの ' + hn)) : resH('win', S.win.map(function (p) { return esc(S.nm[p]); }).join('・') + 'さんの 勝ち', hn); }
       return h;
@@ -256,7 +262,10 @@
   var KI = [['何かを しようとすると、思わぬ 災難や 幸運に 出会う', '犬も歩けば棒にあたる'], ['話し合うより、証拠を 見せるほうが たしか', '論より証拠'], ['見た目より、実際の 得を とる', '花より団子'], ['急ぐ ときほど、安全な 遠回りの ほうが 結局 早い', '急がば回れ'], ['何度 失敗しても くじけず 立ち上がる', '七転び八起き'], ['小さな ことも つみ重ねれば 大きくなる', '塵も積もれば山となる'], ['いつも 明るく 笑う 家には 幸せが 来る', '笑う門には福来たる'], ['名人でも ときには 失敗する', '猿も木から落ちる'], ['しんぼう強く 続ければ、いつか 成功する', '石の上にも三年'], ['価値の わからない 人に 大切な物を あげても むだ', '猫に小判'], ['いくら 言っても 聞き流して きき目がない', '馬の耳に念仏'], ['強い 者が さらに 強くなる', '鬼に金棒'], ['もめごとの あとは、かえって 前より よくなる', '雨降って地固まる'], ['身近な ことほど、かえって 気づきにくい', '灯台下暗し'], ['ためになる 忠告は、聞くのが つらい', '良薬は口に苦し'], ['住みなれれば、どんな ところも よく思える', '住めば都'], ['あらそわず ゆずった ほうが、結局 得をする', '負けるが勝ち'], ['幸運は、あせらず 待っていれば やって来る', '果報は寝て待て'], ['大きな ことも、小さな 一歩から はじまる', '千里の道も一歩から'], ['みんなで 考えれば、いい 知恵が 出る', '三人寄れば文殊の知恵'], ['目立たない ところで、人を 支える 人', '縁の下の力持ち'], ['心配するより、やってみれば 案外 かんたん', '案ずるより産むが易し'], ['去る ときは、きれいに あとしまつを する', '立つ鳥跡を濁さず'], ['自分の 行いが 原因で、自分が 苦しむ', '身から出たさび'], ['りっぱな ことを 言う 人が、自分では 実行しない', '医者の不養生'], ['子は 親に 似る', '蛙の子は蛙'], ['じゅんびを しておけば、心配ない', '備えあれば憂いなし'], ['似た 者どうしは、自然と 集まる', '類は友を呼ぶ'], ['短気を 起こすと、かえって 損をする', '短気は損気'], ['まわりくどくて、きき目が ない', '二階から目薬'], ['とつぜんの 出来事に おどろく', '寝耳に水'], ['年に 合わない 無理を する', '年寄りの冷や水'], ['苦労した だけで、得る ものが ない', '骨折り損のくたびれもうけ'], ['二つの ものが、くらべ ものに ならない ほど ちがう', '月とスッポン']];
   var KR = [['日本の 初代の 天皇と される人', '神武天皇'], ['十七条の 憲法を 作った人', '聖徳太子'], ['大化の改新を 中大兄皇子と 進めた人', '中臣鎌足'], ['奈良に 大仏を つくらせた 天皇', '聖武天皇'], ['平安京に 都を うつした 天皇', '桓武天皇'], ['「源氏物語」を 書いた人', '紫式部'], ['「枕草子」を 書いた人', '清少納言'], ['鎌倉幕府を 開いた人', '源頼朝'], ['元との 戦い(元寇)の ときの 鎌倉幕府の 執権', '北条時宗'], ['室町幕府を 開いた人', '足利尊氏'], ['京都に 金閣を 建てた 将軍', '足利義満'], ['京都に 銀閣を 建てた 将軍', '足利義政'], ['1543年、種子島に 伝わった 武器', '鉄砲'], ['桶狭間の戦いで 今川義元を やぶった人', '織田信長'], ['太閤検地や 刀狩を 行った人', '豊臣秀吉'], ['関ヶ原の戦いに 勝ち、江戸幕府を 開いた人', '徳川家康'], ['江戸時代、外国との 交流を 制限した 政策', '鎖国'], ['1853年、黒船で 浦賀に 来た アメリカの 使者', 'ペリー'], ['1854年、ペリーと むすんだ 条約', '日米和親条約'], ['政権を 朝廷に 返した、最後の 江戸幕府の 将軍', '徳川慶喜'], ['明治政府が 藩を やめて 県を おいた 改革', '廃藩置県'], ['国が 進めた 産業の 近代化(富岡製糸場など)', '殖産興業'], ['日露戦争の 講和条約', 'ポーツマス条約'], ['1923年、関東地方を おそった 大地震', '関東大震災'], ['1945年8月、日本が 受け入れた 宣言', 'ポツダム宣言'], ['1964年、アジアで はじめて 東京で 開かれた 大会', '東京オリンピック'], ['日本国憲法の 三原則の ひとつ「国民主権」「基本的人権の尊重」と もう1つ', '平和主義'], ['3世紀、邪馬台国の 女王', '卑弥呼'], ['稲作が 広まった 時代', '弥生時代'], ['大きな 前方後円墳が つくられた 時代', '古墳時代'], ['なわ目の もようが ある、古い 土器', '縄文土器'], ['遣唐使の 停止を 提案した 学者・政治家', '菅原道真'], ['唐から 日本に 来て、唐招提寺を ひらいた 僧', '鑑真'], ['大名を 1年おきに 江戸に 住まわせた 江戸幕府の 制度', '参勤交代'], ['「天下の台所」と 呼ばれた、江戸時代の 商業都市', '大阪'], ['瀬戸内海に ある、平清盛が あつく 信仰した 世界遺産の 神社', '厳島神社']];
   var KE = [['受け入れる', 'accept'], ['達成する', 'achieve'], ['利点・強み', 'advantage'], ['(〜する)余裕がある', 'afford'], ['古代の', 'ancient'], ['議論する・言い争う', 'argue'], ['手配する・整える', 'arrange'], ['出席する', 'attend'], ['さける', 'avoid'], ['利益・恩恵', 'benefit'], ['借りる', 'borrow'], ['世紀(100年)', 'century'], ['挑戦・難題', 'challenge'], ['意思を 伝えあう', 'communicate'], ['くらべる', 'compare'], ['よく考える', 'consider'], ['配達する', 'deliver'], ['(様子を)言葉で 描く', 'describe'], ['発展させる', 'develop'], ['発見する', 'discover'], ['努力', 'effort'], ['緊急事態', 'emergency'], ['勇気づける', 'encourage'], ['環境', 'environment'], ['交換する', 'exchange'], ['経験', 'experience'], ['よく 知っている', 'familiar'], ['外国の', 'foreign'], ['家具', 'furniture'], ['政府', 'government'], ['推測する', 'guess'], ['習慣', 'habit'], ['役に立つ', 'helpful'], ['想像する', 'imagine'], ['改善する', 'improve'], ['ふくむ', 'include'], ['増える', 'increase'], ['独立した', 'independent'], ['招待する', 'invite'], ['知識', 'knowledge'], ['言語', 'language'], ['地元の', 'local'], ['なんとか やりとげる・管理する', 'manage'], ['意見', 'opinion'], ['礼儀正しい', 'polite'], ['人気のある', 'popular'], ['準備する', 'prepare'], ['守る・保護する', 'protect'], ['再利用する', 'recycle'], ['ことわる', 'refuse'], ['くつろぐ', 'relax'], ['修理する', 'repair'], ['返事をする', 'reply'], ['尊敬する', 'respect'], ['責任のある', 'responsible'], ['科学', 'science'], ['分ける・はなす', 'separate'], ['さけぶ', 'shout'], ['社会', 'society'], ['成功した', 'successful'], ['提案する', 'suggest'], ['支える・支持する', 'support'], ['おどろき', 'surprise'], ['翻訳する', 'translate'], ['めずらしい', 'unusual'], ['価値の高い', 'valuable'], ['種類・多様性', 'variety'], ['ボランティア・自分から 進んで する', 'volunteer'], ['ふしぎに 思う', 'wonder'], ['しかしながら', 'however'], ['〜だけれども', 'although'], ['たぶん', 'perhaps'], ['さいきん', 'recently'], ['とくに', 'especially'], ['危険な', 'dangerous'], ['薬', 'medicine'], ['博物館', 'museum'], ['汚染', 'pollution'], ['気温・温度', 'temperature'], ['伝統的な', 'traditional'], ['観光客', 'tourist']];
-  var KG = { koto: { label: 'ことわざ(前半→後半)', d: KP, q: 'よみふだ', hint: 'つづきの とりふだを タップ!' }, imi: { label: 'ことわざ(意味から えらぶ)', d: KI, q: 'いみ', hint: 'この 意味の ことわざを タップ!' }, rek: { label: '歴史', d: KR, q: 'せつめい', hint: '答えの 人物・ことがらを タップ!' }, eigo: { label: '英単語(英検2級まで)', d: KE, q: 'いみ', hint: 'この 意味の 英単語を タップ!' } };
+  var KE3 = [['図書館', 'library'], ['病院', 'hospital'], ['空港', 'airport'], ['天気', 'weather'], ['宿題', 'homework'], ['試験', 'exam'], ['旅行', 'trip'], ['買い物をする', 'shopping'], ['夕食', 'dinner'], ['誕生日', 'birthday'], ['季節', 'season'], ['冬', 'winter'], ['夏', 'summer'], ['医者', 'doctor'], ['教師', 'teacher'], ['学生', 'student'], ['野菜', 'vegetable'], ['果物', 'fruit'], ['牛乳', 'milk'], ['卵', 'egg'], ['魚', 'fish'], ['鳥', 'bird'], ['山', 'mountain'], ['川', 'river'], ['海', 'sea'], ['森', 'forest'], ['花', 'flower'], ['音楽', 'music'], ['歌う', 'sing'], ['走る', 'run'], ['泳ぐ', 'swim'], ['勉強する', 'study'], ['忘れる', 'forget'], ['覚えている', 'remember'], ['手伝う', 'help'], ['作る', 'make'], ['開ける', 'open'], ['閉める', 'close'], ['始める', 'start'], ['終わる', 'finish'], ['美しい', 'beautiful'], ['難しい', 'difficult'], ['簡単な', 'easy'], ['忙しい', 'busy'], ['大切な', 'important'], ['幸せな', 'happy'], ['疲れた', 'tired'], ['空腹の', 'hungry'], ['明日', 'tomorrow'], ['昨日', 'yesterday']];
+  var KE2 = [['提案する', 'suggest'], ['決める・決心する', 'decide'], ['説明する', 'explain'], ['招待する', 'invite'], ['予約する', 'reserve'], ['改善する', 'improve'], ['比べる', 'compare'], ['集める', 'collect'], ['届ける・配達する', 'deliver'], ['伝統', 'tradition'], ['文化', 'culture'], ['環境', 'environment'], ['経験', 'experience'], ['機会', 'chance'], ['危険', 'danger'], ['安全な', 'safe'], ['有名な', 'famous'], ['必要な', 'necessary'], ['可能な', 'possible'], ['特別な', 'special'], ['種類', 'kind'], ['冒険', 'adventure'], ['健康', 'health'], ['教育', 'education'], ['社会', 'society'], ['経済', 'economy'], ['広告', 'advertisement'], ['情報', 'information'], ['約束', 'promise'], ['許可', 'permission'], ['成功', 'success'], ['失敗', 'failure'], ['選ぶ', 'choose'], ['参加する', 'join'], ['信じる', 'believe'], ['心配する', 'worry'], ['支払う', 'pay'], ['修理する', 'repair'], ['節約する', 'save'], ['驚いた', 'surprised'], ['興奮した', 'excited'], ['正直な', 'honest'], ['優しい', 'gentle'], ['急に', 'suddenly'], ['たいてい', 'usually'], ['めったに〜ない', 'rarely']];
+  var KE1 = [['曖昧な', 'ambiguous'], ['廃止する', 'abolish'], ['偏見', 'prejudice'], ['持続可能な', 'sustainable'], ['一時的な', 'temporary'], ['包括的な', 'comprehensive'], ['矛盾', 'contradiction'], ['軽減する', 'alleviate'], ['悪化させる', 'exacerbate'], ['倹約的な', 'frugal'], ['気前のよい', 'generous'], ['頑固な', 'stubborn'], ['謙虚な', 'humble'], ['慎重な', 'cautious'], ['勤勉な', 'diligent'], ['欠陥', 'flaw'], ['根拠・証拠', 'evidence'], ['仮説', 'hypothesis'], ['革新', 'innovation'], ['義務的な', 'mandatory'], ['抑制する', 'restrain'], ['緩和する', 'mitigate'], ['阻止する', 'hinder'], ['促進する', 'facilitate'], ['従う・守る', 'comply'], ['論争の的となる', 'controversial'], ['偏った', 'biased'], ['過剰な', 'excessive'], ['不足', 'shortage'], ['繁栄する', 'prosper'], ['衰退する', 'decline'], ['抵抗する', 'resist'], ['強制する', 'enforce'], ['避けられない', 'inevitable'], ['はっきりした・明白な', 'obvious'], ['かすかな', 'subtle'], ['賢明な', 'wise'], ['哀れみ・同情', 'sympathy'], ['寛容', 'tolerance'], ['起源', 'origin']];
+  var KG = { koto: { label: 'ことわざ', d: KP, q: 'よみふだ', hint: 'つづきの とりふだを タップ!' }, imi: { label: 'ことわざ(意味)', d: KI, q: 'いみ', hint: 'この 意味の ことわざを タップ!' }, rek: { label: '歴史', d: KR, q: 'せつめい', hint: '答えの 人物・ことがらを タップ!' }, e3: { label: '英検3級', d: KE3, q: 'いみ', hint: 'この 意味の 英単語を タップ!' }, e2: { label: '英検準2級', d: KE2, q: 'いみ', hint: 'この 意味の 英単語を タップ!' }, e1: { label: '英検1級', d: KE1, q: 'いみ', hint: 'この 意味の 英単語を タップ!' } };
   function kSay(t) { try { if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.85; window.speechSynthesis.speak(u); } } catch (e) { } }
   var KAR = {
     id: 'kar', title: 'カルタ', hidden: false, rt: true, min: 2, max: 4, bots: [1, 3],
@@ -285,7 +294,7 @@
       var gn = S.gn || 'koto', D = KG[gn].d, both = v < 0, who = both ? (sel[0] || 0) : v, h = '<div class="pcs">' + esc(S.msg) + '</div>';
       if (!S.over) { var r = D[S.cards[S.q[S.qi]]]; h += '<div class="kyomi" style="text-align:center"><div class="qm">' + KG[gn].label + ' ・ ' + KG[gn].q + '(' + (S.qi + 1) + '/' + S.q.length + ')</div><div style="font-size:' + (gn === 'koto' ? '1.5em' : '1.2em') + ';font-weight:800;margin:6px 0">' + esc(r[0]) + (gn === 'koto' ? ' …' : '') + '</div><button type="button" class="qb sm" id="ksay">🔊 よみあげ</button></div>'; }
       if (both && !S.over) h += '<div class="qm">だれが とる?</div><div class="pcch">' + S.nm.map(function (n, i) { return '<button type="button" class="qb sm' + (i === who ? ' pri' : '') + '" data-w="' + i + '">' + esc(n) + '</button>'; }).join('') + '</div>';
-      h += '<div class="kmat">' + S.cards.map(function (c, k) { var o = S.own[k], tx = esc(D[c][1]), cl = 'kc ' + (gn === 'eigo' ? 'h' : 'v'), L = D[c][1].length, fs = gn === 'eigo' ? (L > 9 ? 10 : L > 7 ? 11 : 13) : (L > 8 ? 12 : L > 6 ? 13 : 15), st = ' style="font-size:' + fs + 'px"'; return o === -1 ? '<button type="button" class="' + cl + '" data-k="' + k + '"' + st + '><span>' + tx + '</span></button>' : '<div class="' + cl + ' gone"' + st + '><span>' + tx + '</span><b>' + esc(S.nm[o]) + '</b></div>'; }).join('') + '</div>';
+      h += '<div class="kmat">' + S.cards.map(function (c, k) { var o = S.own[k], tx = esc(D[c][1]), cl = 'kc ' + (/^e\d$/.test(gn) ? 'h' : 'v'), L = D[c][1].length, fs = /^e\d$/.test(gn) ? (L > 9 ? 10 : L > 7 ? 11 : 13) : (L > 8 ? 12 : L > 6 ? 13 : 15), st = ' style="font-size:' + fs + 'px"'; return o === -1 ? '<button type="button" class="' + cl + '" data-k="' + k + '"' + st + '><span>' + tx + '</span></button>' : '<div class="' + cl + ' gone"' + st + '><span>' + tx + '</span><b>' + esc(S.nm[o]) + '</b></div>'; }).join('') + '</div>';
       h += '<div class="qm" style="margin-top:6px">' + S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i] + 'まい'; }).join(' / ') + '</div>';
       if (S.over) { var pw = S.win.indexOf(v) >= 0, sm = S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i]; }).join(' / '); h += v >= 0 ? (S.win.length > 1 && pw ? resH('draw', 'ひきわけ', sm) : resH(pw ? 'win' : 'lose', pw ? '勝ち' : '負け', sm)) : resH('win', S.win.map(function (p) { return esc(S.nm[p]); }).join('・') + 'さんの 勝ち', sm); }
       return h;
@@ -344,51 +353,52 @@
   function hub() {
     stopT();
     A.draw('<h2 class="hph">カードゲーム</h2><div class="card hpq"><div class="pcmode">' +
-      '<button type="button" class="hmg wide" data-g="baba">🃏 ババ抜き<small>ジョーカーを 持っていたら まけ</small></button>' +
-      '<button type="button" class="hmg wide" data-g="sev">7️⃣ 7並べ<small>7から つなげて 先に 出しきろう</small></button>' +
-      '<button type="button" class="hmg wide" data-g="pk">♠ ポーカー<small>5まい。1回 こうかんして 役で しょうぶ</small></button>' +
-      '<button type="button" class="hmg wide" data-g="mem">🎴 神経衰弱<small>おなじ 数字・色の ペアを めくろう</small></button>' +
-      '<button type="button" class="hmg wide" data-g="kar">🎴 カルタ<small>ことわざ・歴史・英単語を はやい者勝ちで とろう</small></button>' +
-      '<button type="button" class="hmg wide" data-g="sol">🂡 ソリティア<small>ひとりで あそぶ(クロンダイク)</small></button></div></div><button type="button" class="qb" id="cgback">GAMEに もどる</button>');
-    A.bind('[data-g]', function (b) { b.dataset.g === 'sol' ? solitaire() : modes(b.dataset.g); });
+      '<button type="button" class="hmg wide" data-g="baba">🃏 ババ抜き</button>' +
+      '<button type="button" class="hmg wide" data-g="sev">7️⃣ 7並べ</button>' +
+      '<button type="button" class="hmg wide" data-g="pk">♠ ポーカー</button>' +
+      '<button type="button" class="hmg wide" data-g="mem">🎴 神経衰弱</button>' +
+      '<button type="button" class="hmg wide" data-g="kar">🎴 カルタ</button>' +
+      '<button type="button" class="hmg wide" data-g="sol">🂡 ソリティア</button></div></div><button type="button" class="qb" id="cgback">もどる</button>');
+    A.bind('[data-g]', function (b) { b.dataset.g === 'sol' ? solitaire() : setup(b.dataset.g); });
     $('#cgback').onclick = function () { stopT(); A.hub(); };
   }
-  function modes(id) {
-    var G = GAMES[id];
-    A.draw('<h2 class="hph">' + esc(G.title) + '</h2><div class="card hpq"><div class="pcmode">' +
-      '<button type="button" class="hmg wide" id="m1">🤖 ひとりで あそぶ<small>ロボットと たいせん</small></button>' +
-      '<button type="button" class="hmg wide alt" id="m2">📱 1台で あそぶ(2〜5人)<small>スマホを まわして あそびます</small></button>' +
-      '<button type="button" class="hmg wide alt" id="m3">👥 ともだちと たいせん<small>へやを つくる(べつのスマホと。人数は ' + G.min + '〜' + G.max + '人)</small></button></div></div><button type="button" class="qb" id="mback">もどる</button>');
-    $('#mback').onclick = hub; $('#m1').onclick = function () { setup(id, 'solo'); }; $('#m2').onclick = function () { setup(id, 'pass'); }; $('#m3').onclick = function () { setup(id, 'net'); };
-  }
-  function setup(id, mode) {
-    var G = GAMES[id], n = mode === 'solo' ? 2 : 3, size = 20, lvl = 0.75, genre = 'koto';
+  function modes(id) { setup(id); }
+  function opt(v, t, cur) { return '<option value="' + v + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + t + '</option>'; }
+  function row(label, id, opts) { return '<label class="pcrw"><span>' + label + '</span><select class="pcsel" id="' + id + '">' + opts + '</select></label>'; }
+  function setup(id) {
+    var G = GAMES[id], st = window.__pcs = window.__pcs || {};
+    var S = st[id] = st[id] || { mode: 'solo', bots: 1, pn: 2, genre: 'koto', size: 20, lvl: 0.75, ex: 1 };
+    function nOf() { return S.mode === 'solo' ? S.bots + 1 : S.pn; }
     function paint() {
       var h = '<h2 class="hph">' + esc(G.title) + '</h2><div class="card hpq">';
-      if (mode === 'solo') h += '<div style="font-weight:800">ロボットの 人数</div><div class="pcch">' + [1, 2, 3, 4].filter(function (x) { return x >= G.bots[0] && x <= G.bots[1]; }).map(function (x) { return '<button type="button" class="qb' + (n === x + 1 ? ' pri' : '') + '" data-n="' + (x + 1) + '">' + x + '人</button>'; }).join('') + '</div>';
-      if (mode === 'pass') { h += '<div style="font-weight:800">あそぶ 人数</div><div class="pcch">' + [2, 3, 4, 5].filter(function (x) { return x <= G.max; }).map(function (x) { return '<button type="button" class="qb' + (n === x ? ' pri' : '') + '" data-n="' + x + '">' + x + '人</button>'; }).join('') + '</div>'; for (var i = 0; i < n; i++) h += '<input class="pcin" id="pn' + i + '" maxlength="6" placeholder="プレイヤー' + (i + 1) + ' の なまえ" value="' + esc((window.__pcn || [])[i] || '') + '">'; }
-      if (id === 'kar') h += '<div style="font-weight:800;margin-top:6px">ジャンル</div><div class="pcch" style="flex-wrap:wrap">' + Object.keys(KG).map(function (k) { return '<button type="button" class="qb' + (genre === k ? ' pri' : '') + '" data-gn="' + k + '">' + KG[k].label + '</button>'; }).join('') + '</div>';
-      if (id === 'mem') h += '<div style="font-weight:800;margin-top:6px">カードの まいすう</div><div class="pcch">' + [[12, 'すくない(12)'], [20, 'ふつう(20)'], [30, 'おおい(30)']].map(function (x) { return '<button type="button" class="qb' + (size === x[0] ? ' pri' : '') + '" data-sz="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' + (mode === 'solo' ? '<div style="font-weight:800;margin-top:6px">ロボットの きおく</div><div class="pcch">' + [[0.5, 'わすれっぽい'], [0.75, 'ふつう'], [0.95, 'よく おぼえる']].map(function (x) { return '<button type="button" class="qb' + (lvl === x[0] ? ' pri' : '') + '" data-lv="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' : '');
-      h += '<button type="button" class="qb pri" id="go" style="margin-top:10px">' + (mode === 'net' ? 'へやを つくる / はいる' : 'はじめる') + '</button></div><button type="button" class="qb" id="sback">もどる</button>';
+      h += row('あそびかた', 'sMode', opt('solo', '一人モード', S.mode) + opt('pass', '1台で遊ぶ', S.mode) + opt('net', 'オンライン', S.mode));
+      if (S.mode === 'solo') { var o = ''; for (var x = G.bots[0]; x <= G.bots[1]; x++) o += opt(x, x + '人', S.bots); h += row('ロボットの数', 'sBots', o); }
+      if (S.mode === 'pass') { o = ''; for (x = 2; x <= G.max; x++) o += opt(x, x + '人', S.pn); h += row('人数', 'sPn', o); for (var i = 0; i < S.pn; i++) h += '<input class="pcin" id="pn' + i + '" maxlength="6" placeholder="プレイヤー' + (i + 1) + '" value="' + esc((window.__pcn || [])[i] || '') + '">'; }
+      if (id === 'kar') h += row('ジャンル', 'sGn', Object.keys(KG).map(function (k) { return opt(k, KG[k].label, S.genre); }).join(''));
+      if (id === 'mem') { h += row('カードの数', 'sSz', opt(12, '12まい', S.size) + opt(20, '20まい', S.size) + opt(30, '30まい', S.size)); if (S.mode === 'solo') h += row('ロボの記憶', 'sLv', opt(0.5, '低い', S.lvl) + opt(0.75, 'ふつう', S.lvl) + opt(0.95, '高い', S.lvl)); }
+      if (id === 'pk') h += row('交換回数', 'sEx', opt(1, '1回', S.ex) + opt(2, '2回', S.ex) + opt(3, '3回', S.ex));
+      h += '<button type="button" class="qb pri" id="go" style="margin-top:12px">' + (S.mode === 'net' ? 'へやへ' : 'スタート') + '</button></div><button type="button" class="qb" id="sback">もどる</button>';
       A.draw(h);
-      A.bind('[data-n]', function (b) { keep(); n = +b.dataset.n; paint(); }); A.bind('[data-sz]', function (b) { size = +b.dataset.sz; paint(); }); A.bind('[data-lv]', function (b) { lvl = +b.dataset.lv; paint(); }); A.bind('[data-gn]', function (b) { keep(); genre = b.dataset.gn; paint(); });
-      $('#sback').onclick = function () { modes(id); }; $('#go').onclick = go;
+      function on(i, f) { var e = $('#' + i); if (e) e.onchange = function () { keep(); f(e.value); paint(); }; }
+      on('sMode', function (v) { S.mode = v; }); on('sBots', function (v) { S.bots = +v; }); on('sPn', function (v) { S.pn = +v; }); on('sGn', function (v) { S.genre = v; });
+      on('sSz', function (v) { S.size = +v; }); on('sLv', function (v) { S.lvl = +v; }); on('sEx', function (v) { S.ex = +v; });
+      $('#sback').onclick = hub; $('#go').onclick = go;
     }
-    function keep() { if (mode !== 'pass') return; window.__pcn = []; for (var i = 0; i < 5; i++) { var e = $('#pn' + i); if (e) window.__pcn[i] = e.value; } }
+    function keep() { if (S.mode !== 'pass') return; window.__pcn = []; for (var i = 0; i < 5; i++) { var e = $('#pn' + i); if (e) window.__pcn[i] = e.value; } }
     function go() {
-      var opts = id === 'mem' ? { size: size } : id === 'kar' ? { genre: genre } : {};
-      if (mode === 'net') return net(id, opts);
-      var names = [];
-      if (mode === 'solo') { names.push('あなた'); for (var i = 1; i < n; i++) names.push('ロボ' + 'ABCD'.charAt(i - 1)); }
+      var opts = id === 'mem' ? { size: S.size } : id === 'kar' ? { genre: S.genre } : id === 'pk' ? { ex: S.ex } : {};
+      if (S.mode === 'net') return net(id, opts);
+      var names = [], n = nOf();
+      if (S.mode === 'solo') { names.push('あなた'); for (var i = 1; i < n; i++) names.push('ロボ' + 'ABCD'.charAt(i - 1)); }
       else { keep(); for (i = 0; i < n; i++) names.push((window.__pcn[i] || '').trim() || 'プレイヤー' + (i + 1)); }
-      var again = function () { run(G, { mode: mode, names: names, opts: opts, lvl: lvl, back: function () { modes(id); }, again: again }); };
+      var again = function () { run(G, { mode: S.mode, names: names, opts: opts, lvl: S.lvl, back: function () { setup(id); }, again: again }); };
       again();
     }
     paint();
   }
   function net(id, opts) {
     var G = GAMES[id]; A.withRoom(function (RM) {
-      RM.lobby(A, { game: 'cards-' + id, title: G.title, cfg: opts, min: G.min, max: G.max, cfgText: G.title + (opts && opts.genre ? ' ・ ' + KG[opts.genre].label : '') + '(' + G.min + '〜' + G.max + '人)', back: function () { modes(id); },
+      RM.lobby(A, { game: 'cards-' + id, title: G.title, cfg: opts, min: G.min, max: G.max, cfgText: G.title + (opts && opts.genre ? ' ・ ' + KG[opts.genre].label : '') + (opts && opts.ex ? ' ・ 交換' + opts.ex + '回' : '') + '(' + G.min + '〜' + G.max + '人)', back: function () { modes(id); },
         init: function (R) { var s = G.init(R.players.length, R.players.slice(), R.cfg || {}); s.phase = 'play'; return s; },
         onStart: function (R) { run(G, { mode: 'net', R: R, back: function () { modes(id); } }); } });
     });
