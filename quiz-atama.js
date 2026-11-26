@@ -176,12 +176,11 @@
     var order = rows.slice().sort(function (a, b) { return b.sc - a.sc; }), medal = ['🥇', '🥈', '🥉', '4'];
     s.played++; if (win) s.wins++; save(s);
     var head = give ? 'こんな こたえが あったよ' : (win ? '🎉 いちばん ながい! ポイントゲット' : (top === 0 ? 'だれも こたえられなかった…' : 'ざんねん! こんどは かとう'));
-    A.draw('<h2>' + head + '</h2><div class="qc"><div class="aq" style="margin-top:0"><b>' + esc(f) + '</b><span>…</span><b>' + esc(l) + '</b></div>' +
+    A.draw('<h2>' + head + '</h2>' + (gain ? '<div class="qc" id="afeed">' + petBox(s, 'apet') + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div><div id="abar">' + bar(s) + '</div></div>' : '') + '<div class="qc"><div class="aq" style="margin-top:0"><b>' + esc(f) + '</b><span>…</span><b>' + esc(l) + '</b></div>' +
       (give ? '' : order.map(function (x, i) { return '<div class="arow' + (x.me ? ' me' : '') + '"><span class="rk">' + (x.sc && x.sc === top ? '🥇' : medal[Math.min(i, 3)]) + '</span><span class="nm">' + esc(x.name) + '</span><span>' + (x.w ? esc(x.w) : '(パス)') + '</span><span class="ln">' + (x.w ? (x.me && !x.known ? x.w.length + 'もじ→' + x.sc : x.w.length + 'もじ') : '') + '</span></div>'; }).join('')) +
       (win ? '<p style="margin:8px 0 0;font-weight:800;color:#3a2a8a">+' + gain + ' ポイント' + (bonus ? '(僕が 知っている どの ことばより ながい! ボーナス +2)' : '') + '</p>' : '') +
       (me && !me.known ? '<div class="abub" style="margin:10px 0 0">🐾 僕の知らない言葉だ!<br><span style="font-weight:600;font-size:.92em">「' + esc(me.w) + '」を 覚えたよ。つぎからは 僕が 知っている ことばに なるよ(文字数ぶん ' + me.w.length + 'ポイント)</span></div>' : (me ? '<p class="qm" style="margin:8px 0 0">僕が 知っている ことばだから ポイント2倍!(' + me.w.length + 'もじ × 2)</p>' : '')) + '</div>' +
       (all.length ? '<div class="qc"><b>こんな こたえが あったよ</b><div class="adex" style="margin-top:8px">' + all.slice(0, 8).map(function (w) { return '<span>' + esc(w) + ' <small>' + w.length + '</small></span>'; }).join('') + '</div></div>' : '') +
-      (gain ? '<div class="qc" id="afeed">' + petBox(s, 'apet') + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div><div id="abar">' + bar(s) + '</div></div>' : '') +
       '<button class="qb pri" id="anext">つぎの おだい</button><button class="qb" id="ahome">ホームに もどる</button>');
     $('#anext').onclick = round; $('#ahome').onclick = home;
     if (me && !me.known) learn(s, me.w);
