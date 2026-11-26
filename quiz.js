@@ -369,8 +369,8 @@
       '#qz .gcd::before{content:"\\2605";position:absolute;left:50%;top:-13px;margin-left:-13px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a80,#d32f2f 62%,#a31515);color:#ffe9a8;font-size:14px;line-height:26px;text-align:center;box-shadow:0 3px 3px rgba(0,0,0,.28)}' +
       '#qz .gcd.wd{grid-column:1/-1}'; document.head.appendChild(st); }
     var bt = function (id, ico, t, r, wd) { return '<button type="button" class="gcd' + (wd ? ' wd' : '') + '" id="' + id + '" style="--r:' + r + 'deg"><i>' + ico + '</i>' + t + '</button>'; };
-    draw('<h2 class="hph">GAME</h2><div class="gwall">' + bt('gox', '⭕', '○×ゲーム', -1.5) + bt('gatama2', '🐾', 'あたまおしり', 1.2) + bt('gcards', '🃏', 'カードゲーム', 1) + bt('gcube', '🧊', 'ルービックキューブ', -1.2) + bt('ghun', '💴', '100万円を<br>死守しろ!', -.8) + bt('gtrip', '🗾', '日本一周<br>スゴロク', 1.4) + '</div>');
-    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred;
+    draw('<h2 class="hph">GAME</h2><div class="gwall">' + bt('gox', '⭕', '○×ゲーム', -1.5) + bt('gatama2', '🐾', 'あたまおしり', 1.2) + bt('gcards', '🃏', 'カードゲーム', 1) + bt('gcube', '🧊', 'ルービックキューブ', -1.2) + bt('ghun', '💴', '100万円を<br>死守しろ!', -.8) + bt('gtrip', '🗾', '日本一周<br>スゴロク', 1.4) + bt('gmys', '🏯', '歴史推理', -1, true) + '</div>');
+    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred; $('#gmys').onclick = function () { location.hash = 'mystery'; };
   }
 
   /* --- ○×ゲーム(ひとりプレイ / 2人以上プレイ。レベル1〜3 = 3×3・5×5・7×7、1手の時間つき) --- */
