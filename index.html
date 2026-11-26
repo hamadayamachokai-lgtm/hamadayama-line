@@ -606,7 +606,7 @@ function renderNav(h) {
   var el = $('#bnav');
   if (!S.me || S.me.state !== 'approved') { if (el) el.parentNode.removeChild(el); document.body.classList.remove('hasnav'); return; }
   var items = [['home', 'ホーム', 'home', true]];
-  S.me.menu.forEach(function (m) { if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
+  S.me.menu.forEach(function (m) { if (m.key === 'mystery') return; if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
   items.push(['manual', '説明書', 'manual', true]);
   var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^(bosai|profile)/.test(h) ? 'card' : /^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
@@ -741,7 +741,7 @@ function heroNotes(me) {
 }
 function homeView() {
   var me = S.me, sections = {}, order = [];
-  me.menu.forEach(function (m) { if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
+  me.menu.forEach(function (m) { if (m.key === 'mystery') return; /* 歴史推理は GAME の中にあります */ if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
   order.forEach(function (sec) {
     html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
@@ -3623,7 +3623,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=24'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=26'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
