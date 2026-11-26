@@ -17,7 +17,7 @@
 
   var CSS = '#qz .pc{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:62px;border-radius:7px;background:#fff;border:2px solid #cfc7b4;font-weight:800;font-size:17px;line-height:1.05;box-sizing:border-box;vertical-align:top;margin:0 2px 4px;padding:0;font-family:inherit;cursor:default;color:#1b2438;position:relative}' +
     '#qz .pc.r{color:#d0312d}#qz .pc.jk{color:#7a2fd0;font-size:11px}#qz .pc.bk{background:repeating-linear-gradient(45deg,#6a4bd6 0 6px,#8f78ec 6px 12px);border-color:#4a3399;color:transparent}' +
-    '#qz .pc.md{width:36px;height:50px;font-size:14px}#qz .pc.sm{width:28px;height:38px;font-size:11px;margin:0 1px 2px;border-width:1.5px}' +
+    '#qz .pc.md{width:36px;height:50px;font-size:14px}#qz .pc.big{width:60px;height:84px;font-size:22px}#qz .pc.sm{width:28px;height:38px;font-size:11px;margin:0 1px 2px;border-width:1.5px}' +
     '#qz button.pc{cursor:pointer}#qz .pc.sel{transform:translateY(-8px);border-color:#e0a300;box-shadow:0 0 0 2px #e0a300}#qz .pc.dim{opacity:.35}#qz .pc.ok{border-color:#1f7a4d;box-shadow:0 0 0 2px #1f7a4d}#qz .pc.tk{opacity:.18}' +
     '#qz .pcw{margin:0 0 10px}#qz .pcrow{display:flex;align-items:center;gap:6px;margin:0 0 6px;flex-wrap:wrap}#qz .pcn{font-weight:800;min-width:5em}#qz .pcn.turn{color:#6a4bd6}#qz .pcs{background:#f4f1ff;border:2px solid #cfc7f0;border-radius:12px;padding:8px 10px;margin:0 0 10px;font-weight:800;line-height:1.5}' +
     '#qz .pcb{display:grid;grid-template-columns:18px repeat(13,1fr);gap:2px;margin:0 0 4px;align-items:center}#qz .pcb i{font-style:normal;font-weight:800;text-align:center}#qz .pcb b{display:block;text-align:center;font-size:11px;font-weight:800;border-radius:4px;height:26px;line-height:24px;border:1.5px dashed #d8d1bd;color:transparent}#qz .pcb b.on{background:#fff;border:1.5px solid #8a8472;color:#1b2438}#qz .pcb b.on.r{color:#d0312d}' +
@@ -230,7 +230,62 @@
     bind: function (S, v, act, ui) { A.bind('[data-x]', function (b) { var k = +b.dataset.x, i = ui.sel.indexOf(k); if (i >= 0) ui.sel.splice(i, 1); else ui.sel.push(k); ui.repaint(); }); var b = $('#cpk'); if (b) b.onclick = function () { var d = ui.sel.slice(); ui.sel.length = 0; act({ draw: d }); }; }
   };
 
-  var GAMES = { baba: BABA, sev: SEV, mem: MEM, pk: PK };
+
+  /* ===================== スピード(2人。じゅんばんは なし。はやく 手札を なくした人の かち) ===================== */
+  function adj(a, b) { var d = (rk(a) - rk(b) + 13) % 13; return d === 1 || d === 12; }
+  function spdLegal(S, c) { var r = []; for (var i = 0; i < 2; i++) if (adj(c, S.ctr[i][S.ctr[i].length - 1])) r.push(i); return r; }
+  function spdStuck(S) { for (var p = 0; p < 2; p++) for (var k = 0; k < S.hand[p].length; k++) if (spdLegal(S, S.hand[p][k]).length) return false; return true; }
+  var SPD = {
+    id: 'spd', title: 'スピード', hidden: false, rt: true, min: 2, max: 2, bots: [1, 1],
+    init: function (n, names) {
+      var d = []; for (var i = 0; i < 52; i++) d.push(i); shuf(d);
+      var S = { g: 'spd', phase: 'play', n: 2, nm: names.slice(0, 2), hand: [d.splice(0, 4), d.splice(0, 4)], draw: [d.splice(0, 21), d.splice(0, 21)], ctr: [[d.pop()], [d.pop()]], msg: 'どちらの 山にも、数字が ±1(A と K も つながる)の カードを はやく 出そう!', over: false, win: -1 };
+      return S;
+    },
+    turnOf: function (S) { return S.over ? -1 : 0; },
+    apply: function (S0, m) {
+      var S = clone(S0); if (S.over) return null;
+      if (m.flip) {
+        if (!spdStuck(S)) return null;
+        if (!S.draw[0].length && !S.draw[1].length) {   // どちらも 山札が ない: のこりが すくない ほうの かち
+          var a = S.hand[0].length, b = S.hand[1].length; S.over = true; S.win = a === b ? -2 : (a < b ? 0 : 1); S.msg = 'どちらも 出せません。のこりの まいすうで きまり!'; return S;
+        }
+        for (var p = 0; p < 2; p++) if (S.draw[p].length) S.ctr[p].push(S.draw[p].pop());
+        S.msg = 'つまったので、山札を 1まい めくりました'; return S;
+      }
+      var p = m.p, c = S.hand[p][m.play]; if (c === undefined) return null;
+      var piles = spdLegal(S, c); if (!piles.length) return null;
+      var pile = m.pile !== undefined && piles.indexOf(m.pile) >= 0 ? m.pile : piles[0];
+      S.ctr[pile].push(c); S.hand[p].splice(m.play, 1); if (S.draw[p].length) S.hand[p].push(S.draw[p].pop());
+      if (!S.hand[p].length) { S.over = true; S.win = p; S.msg = S.nm[p] + 'さんが 手札を なくしました!'; }
+      else S.msg = S.nm[p] + 'さんが 出しました';
+      return S;
+    },
+    bot: function (S) {
+      var opts = []; S.hand[1].forEach(function (c, k) { var l = spdLegal(S, c); if (l.length) opts.push({ p: 1, play: k, pile: l[Math.floor(Math.random() * l.length)] }); });
+      if (opts.length) return opts[Math.floor(Math.random() * opts.length)];
+      return spdStuck(S) ? { flip: 1 } : null;
+    },
+    html: function (S, v) {
+      var both = v < 0, me = both ? 0 : v, op = 1 - me, h = '<div class="pcs">' + esc(S.msg) + '</div>';
+      function row(p, flipped) {
+        var cards = S.hand[p].map(function (c, k) { return S.over ? cardH(c, 'md') : (both || p === me ? cardB(c, 'md' + (spdLegal(S, c).length ? ' ok' : ''), 'data-s="' + p + '|' + k + '"') : '<span class="pc md bk">●</span>'); }).join('');
+        return '<div' + (flipped ? ' style="transform:rotate(180deg)"' : '') + '><div class="pcrow"><span class="pcn">' + esc(S.nm[p]) + '</span><span class="qm">山札 ' + S.draw[p].length + 'まい</span></div><div class="pcw" style="text-align:center">' + cards + '</div></div>';
+      }
+      h += row(op, both);
+      h += '<div class="pcrow" style="justify-content:center;gap:14px;margin:8px 0">' + S.ctr.map(function (pl) { return '<div>' + cardH(pl[pl.length - 1], 'big') + '</div>'; }).join('') + '</div>';
+      if (!S.over) h += '<button type="button" class="qb' + (spdStuck(S) ? ' pri' : '') + '" id="spf"' + (spdStuck(S) ? '' : ' disabled') + '>' + (spdStuck(S) ? 'つまった! 山札を めくる' : 'どちらも 出せない ときに めくります') + '</button>';
+      h += row(me, false);
+      if (S.over) h += '<div class="qc" style="text-align:center"><div style="font-size:1.3em;font-weight:800">' + (S.win === -2 ? 'ひきわけ!' : '🎉 ' + esc(S.nm[S.win]) + 'さんの かち!') + '</div></div>';
+      return h;
+    },
+    bind: function (S, v, act) {
+      A.bind('[data-s]', function (b) { var p = b.dataset.s.split('|'); act({ p: +p[0], play: +p[1] }); });
+      var f = $('#spf'); if (f) f.onclick = function () { act({ flip: 1 }); };
+    }
+  };
+
+  var GAMES = { baba: BABA, sev: SEV, mem: MEM, pk: PK, spd: SPD };
 
   /* ===================== 対戦の 進行役(ひとり / 1台 / へや 共通) ===================== */
   function run(G, cfg) {
@@ -238,13 +293,13 @@
     var mode = cfg.mode, R = cfg.R || null, S = mode === 'net' ? R.state : G.init(cfg.names.length, cfg.names, cfg.opts), ready = -1, ui = { sel: [], repaint: null }, lastTurn = -2, pendVer = -1, token = 'cg' + Date.now(), over = false;
     function alive() { return A.root() && A.root().getAttribute('data-cg') === token && document.body.contains(A.root()); }
     function isBot(p) { return mode === 'solo' && p > 0; }
-    function viewer() { if (mode === 'net') return R.my; if (mode === 'solo') return 0; return S.over ? -1 : G.turnOf(S); }
+    function viewer() { if (mode === 'net') return R.my; if (mode === 'solo') return 0; return G.rt ? -1 : (S.over ? -1 : G.turnOf(S)); }
     function commit(n) {
       if (!n) return;
       if (mode === 'net') { n.phase = 'play'; R.set(n).then(function (ok) { S = R.state; paint(); }, function (e) { A.toast(e.message || 'つうしんできませんでした'); }); }
       else { S = n; paint(); }
     }
-    function act(m) { var n = G.apply(S, m); if (n) commit(n); else A.toast('そこには だせません'); }
+    function act(m) { var n = G.apply(S, m); if (n) commit(n); else if (!G.rt) A.toast('そこには だせません'); else paint(); }
     function paint() {
       if (!alive() && over) return; stopT();
       var t = G.turnOf(S), v = viewer(), me = mode === 'net' ? R.my : t;
@@ -253,7 +308,7 @@
         A.root().setAttribute('data-cg', token); $('#cgok').onclick = function () { ready = t; paint(); }; $('#cgq').onclick = quit; return;
       }
       if (t !== lastTurn) { ui.sel.length = 0; lastTurn = t; }
-      var canAct = t >= 0 && (mode === 'net' ? t === R.my : (mode === 'solo' ? t === 0 : true));
+      var canAct = t >= 0 && (G.rt ? true : (mode === 'net' ? t === R.my : (mode === 'solo' ? t === 0 : true)));
       ui.repaint = paint;
       A.draw('<h2 class="hph">' + esc(G.title) + (mode === 'net' ? ' ・ へや' + esc(R.code) : '') + '</h2><div class="pcw">' + G.html(S, v, ui.sel) + '</div>' +
         (S.over ? '<button type="button" class="qb pri" id="cgagain">' + (mode === 'net' ? 'おわる' : 'もう1回') + '</button><button type="button" class="qb" id="cgq">メニューに もどる</button>' : '<button type="button" class="qb" id="cgq">やめる</button>'));
@@ -265,10 +320,11 @@
       if (S.pend && G.resolve && (mode !== 'net' || S.turn === R.my) && pendVer !== (mode === 'net' ? R.ver : -2)) {
         pendVer = mode === 'net' ? R.ver : -2; tm = setTimeout(function () { if (alive()) { pendVer = -1; commit(G.resolve(S)); } }, 1400); return;
       }
+      if (G.rt && mode === 'solo') { tm = setTimeout(function () { if (!alive() || S.over) return; var m = G.bot(S); var n = m ? G.apply(S, m) : null; if (n) commit(n); else paint(); }, 1000 + Math.random() * 900); return; }
       if (isBot(t) && !S.pend) tm = setTimeout(function () { if (alive()) commit(G.apply(S, G.bot(S, cfg.lvl))); }, 900 + Math.random() * 500);
     }
     function quit() { stopT(); over = true; if (mode === 'net') { R.stop(); R.leave(); } A.root().removeAttribute('data-cg'); cfg.back(); }
-    if (mode === 'net') R.watch(function (r, err) { if (err) { R.stop(); A.toast('へやが きえました'); return cfg.back(); } S = R.state; if (alive()) paint(); });
+    if (mode === 'net') { if (G.rt) R.every = 800; R.watch(function (r, err) { if (err) { R.stop(); A.toast('へやが きえました'); return cfg.back(); } S = R.state; if (alive()) paint(); }); }
     paint();
   }
 
@@ -280,6 +336,7 @@
       '<button type="button" class="hmg wide" data-g="sev">7️⃣ 7並べ<small>7から つなげて 先に 出しきろう</small></button>' +
       '<button type="button" class="hmg wide" data-g="pk">♠ ポーカー<small>5まい。1回 こうかんして 役で しょうぶ</small></button>' +
       '<button type="button" class="hmg wide" data-g="mem">🎴 神経衰弱<small>おなじ 数字・色の ペアを めくろう</small></button>' +
+      '<button type="button" class="hmg wide" data-g="spd">⚡ スピード<small>2人で はやい者勝ち(ロボット・1台・ともだち)</small></button>' +
       '<button type="button" class="hmg wide" data-g="sol">🂡 ソリティア<small>ひとりで あそぶ(クロンダイク)</small></button></div></div><button type="button" class="qb" id="cgback">GAMEに もどる</button>');
     A.bind('[data-g]', function (b) { b.dataset.g === 'sol' ? solitaire() : modes(b.dataset.g); });
     $('#cgback').onclick = function () { stopT(); A.hub(); };
@@ -387,5 +444,5 @@
     if (!document.getElementById('qcardcss')) { var st = document.createElement('style'); st.id = 'qcardcss'; st.textContent = CSS; document.head.appendChild(st); }
     hub();
   }
-  window.HmtCards = { start: start, _t: { BABA: BABA, SEV: SEV, MEM: MEM, PK: PK, evalH: evalH, cmpH: cmpH, dropPairs: dropPairs } };
+  window.HmtCards = { start: start, _t: { SPD: SPD, BABA: BABA, SEV: SEV, MEM: MEM, PK: PK, evalH: evalH, cmpH: cmpH, dropPairs: dropPairs } };
 })();
