@@ -365,8 +365,9 @@
       '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">カードゲーム</div><button type="button" class="hmg wide" id="gcards" style="margin:0">カードゲームで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・カルタ(ことわざ・歴史・英単語)。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">ルービックキューブ</div><button type="button" class="hmg wide" id="gcube" style="margin:0">キューブで あそぶ</button><p class="small" style="margin:8px 0 0">レベル1〜5(2×2×2 〜 6×6×6)。特訓・ロボットと対戦・町会みんなの大会(ランキング)。攻略補助つき。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">100万円を死守しろ!</div><button type="button" class="hmg wide" id="ghun" style="margin:0">死守しろ!に 挑戦</button><p class="small" style="margin:8px 0 0">架空の100万円から、まちがえると −10万円。体感・視覚・聴覚・記憶の ミニチャレンジ10問(10秒ぴったり・目盛りのない定規・立体図をなぞる・音あて・記憶)。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。コンピュータと対戦、またはみんなで。止まったマスで1問。まちがえたら戻ります。</p></div>');
-    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube;
+    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred;
   }
 
   /* --- ○×ゲーム(ひとりプレイ / 2人以上プレイ。レベル1〜3 = 3×3・5×5・7×7、1手の時間つき) --- */
@@ -553,7 +554,8 @@
   }
   function openAtama() { loadGame('quiz-atama.js?v=3', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
   function openCards() { loadGame('quiz-cards.js?v=9', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
-  function openCube() { loadGame('quiz-cube.js?v=4', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
+  function openCube() { loadGame('quiz-cube.js?v=5', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
+  function openHundred() { loadGame('quiz-hundred.js?v=1', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
   function openTrip() { loadGame('quiz-trip.js?v=9', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
