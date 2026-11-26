@@ -274,6 +274,10 @@ button.mi{cursor:pointer;min-height:32px}
 .msheet{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:flex;align-items:flex-end;justify-content:center}.msheet>div{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:80vh;overflow:auto}.msheet button.o{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:12px;margin-top:6px;border:1px solid var(--line);border-radius:12px;font-weight:700;cursor:pointer}.msheet button.o[aria-pressed=true]{background:#e3f4e0}
 @media(min-width:700px){.cbar{flex-basis:190px}.cbar button{font-size:14px}}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
+.gsec{display:flex;align-items:center;justify-content:space-between;gap:8px}.gdb{all:unset;cursor:pointer;box-sizing:border-box;padding:7px 14px;border-radius:999px;border:2px solid var(--line);background:#fff;font-size:14px;font-weight:800;color:var(--sub);min-height:38px}.gdb.on{background:#fff6b8;border-color:#e0b400;color:#5a4100}
+.gdp{background:#fffbdc;border:2px solid #ecd35a;border-radius:16px;padding:14px;margin:0 0 14px;color:#2a2400}.gdq{font-size:19px;font-weight:800;line-height:1.5;margin:0 0 10px}.gdg{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
+.gdw{all:unset;cursor:pointer;box-sizing:border-box;width:100%;padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid #e0b400;font-size:17px;font-weight:700;color:#2a2400;min-height:48px}.gdw.ai{background:#fff6b8;margin:0 0 10px}
+.gdo{font-size:14px;line-height:1.6;margin:4px 0 8px}.gdd{margin:0 0 12px}.gdd summary{cursor:pointer;font-weight:800;font-size:16px;padding:10px 0}.gdd .gdw{margin:0 0 8px}.gdh{font-size:15px;font-weight:800;margin:8px 0 8px;padding-top:8px;border-top:1.5px dashed #ecd35a}
 .aiimgs{margin:-4px 0 10px 44px}.aiimgs figure{margin:0 0 10px}.aiimgs img{display:block;width:100%;max-width:300px;border:1.5px solid var(--line);border-radius:14px}.aiimgs figcaption{font-size:12px;opacity:.7;margin-top:4px}
 .aiact button.go.tr{background:#fff7d6;border-color:#e0a800;color:#5a4100;font-size:15px}.aiact button.ask{background:#fff;border-color:#c0392b;color:#c0392b;font-size:15px}
 .tourhole{position:fixed;z-index:99990;pointer-events:none;border:4px solid #ffd43b;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.62);transition:all .25s}
@@ -746,12 +750,45 @@ function heroNotes(me) {
   }).join('');
   return n.length || tq ? '<div class="hnotes">' + tq + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
 }
+var GD_ = { on: false };
+try { GD_.on = localStorage.getItem('hmtGuide') === '1'; } catch (e) { /* 保存できなくても動く */ }
+var GWISH_ = [
+  ['会員証・登録', [['会員証を出したい', 'card'], ['会員証を編集したい', 'cardedit']]],
+  ['祭礼', [['祭礼に申し込む', 'evfest'], ['祭礼をキャンセルする', 'evfestx']]],
+  ['演芸会', [['演芸会に申し込む', 'evengei'], ['演芸会をキャンセルする', 'evgeix']]],
+  ['イベント', [['イベントの申し込み状況を見たい', 'evstat']]],
+  ['ゲーム', [['ゲームをやりたい', 'game']]],
+  ['助け合い・サポーター', [['助け合いを見てみる', 'helplook'], ['助け合いで募集したい', 'helprec'], ['サポーターを見てみる', 'suplook'], ['サポーターをやってみたい', 'supdo']]],
+  ['天気', [['天気を知りたい', 'weather']]]
+];
+var GDESC_ = { o_summary: '集計結果を見たい', o_unpaid: '未納の方を確認したい', o_circ: '回覧元を確認したい', headchg: '回覧元を変更したい', o_roster: '会員を検索したい(会員名簿)', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', o_mama: 'スナックママを開きたい', o_sched: '役員の予定を見たい', o_report: '事業報告・計画を見たい', o_sokai: '総会資料を見たい', o_kanban: '捨て看板を依頼したい', a_sched: '予定を登録したい', a_image: '推理の画像を変えたい', a_disaster: '災害モードを切りかえたい', a_docs: '書類を更新したい', a_notice: 'お知らせを更新したい', a_mama: 'ママを設定したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい', mail: 'チャットで役員に連絡したい', dashboard: '町会のお知らせ(掲示板)を見たい', board: 'Tweetを見たい・書きたい', suginami: '杉並区の防災情報を見たい', blog: '町会ブログを見たい' };
+var GCOVER_ = { card: 1, event: 1, tips: 1, help: 1, supporter: 1, weather: 1, mystery: 1 };
+function gdMenuTour(k) {
+  var id = 'm_' + k, lab = LABEL[k] || k;
+  TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
+  return id;
+}
+function gdPanel() {
+  var me = S.me, wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; };
+  var h = '<div class="gdp"><div class="gdq">使いたいメニューや<br>やりたいことを教えてください</div>';
+  GWISH_.forEach(function (g) { h += '<div class="gdg">' + g[1].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div>'; });
+  var other = [], off = [];
+  me.menu.forEach(function (m) {
+    if (GCOVER_[m.key]) return;
+    (m.section === 'common' ? other : off).push(m);
+  });
+  h += '<div class="gdo">他にも機能があります。' + (other.length ? '下の「他のメニュー」から選ぶか、' : '') + 'チャットの「操作質問」で、聞きたいことを書いてください。</div>';
+  h += '<button type="button" class="gdw ai" data-gtour="chatai">操作質問(AIに聞く)の場所を教えてもらう</button>';
+  if (other.length) h += '<details class="gdd"><summary>他のメニュー</summary>' + other.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</details>';
+  if (off.length) h += '<div class="gdh">役員メニュー</div><div class="gdg">' + off.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</div>';
+  return h + '</div>';
+}
 function homeView() {
   var me = S.me, sections = {}, order = [];
   me.menu.forEach(function (m) { if (m.key === 'mystery') return; /* 歴史推理は GAME の中にあります */ if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
   order.forEach(function (sec) {
-    html += '<div class="sec">' + SECTION[sec] + '</div><div class="grid">' + sections[sec].map(function (m) {
+    html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
@@ -759,6 +796,8 @@ function homeView() {
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
+  var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.hqy'), function (bt) {
     bt.onclick = function () {
       var box = bt.closest('.hq'), id = box.dataset.sid, ans = bt.dataset.sans;
@@ -1803,7 +1842,7 @@ function mailView() {
       var top = '<div class="ctop"><button type="button" class="ctb new" id="mnew"><span class="ci">📩</span>新規作成</button><button type="button" class="ctb" data-p="ai" aria-pressed="' + (pane === 'ai') + '"><span class="ci">💬</span>操作質問</button></div>';
       var chips = staff && pane === 'inbox' ? '<nav class="cchips" id="cbar" aria-label="絞り込み">' + fb('all', '', 'すべて') + fb('unread', '🔴', '未読') + '<button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"' + (hidGet().length ? '' : ' hidden') + '><span class="cl">非表示</span></button></nav>' : '<nav id="cbar" hidden></nav>' + (pane === 'inbox' && hidGet().length ? '<nav class="cchips"><button type="button" data-f="hidden" aria-pressed="' + (MB.filter === 'hidden') + '" id="mfh"><span class="cl">非表示</span></button><button type="button" data-f="all" aria-pressed="' + (MB.filter !== 'hidden') + '"><span class="cl">ふつう</span></button></nav>' : '');
       var hb2 = '';
-      var main = pane === 'ai' ? '<div class="ctop"><button type="button" class="ctb" data-p="inbox">← 一覧にもどる</button></div>' + aiPaneHtml() : head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>';
+      var main = pane === 'ai' ? '<div class="ctop"><button type="button" class="ctb" data-p="inbox">一覧にもどる</button></div>' + aiPaneHtml() : head + '<div id="mlist"></div><p class="small" style="margin:8px 4px">掲載は' + d.days + '日間です。過ぎたチャットは自動で消えます。LINEへの通知は届かないので、このアプリを開いたときに赤い印でお知らせします。</p>';
       sub('チャット', '<div class="chm' + (pane === 'ai' ? ' aim' : '') + '">' + (pane === 'ai' ? '' : top + chips) + '<div class="cmain" id="cmain">' + main + '</div></div>');
       Array.prototype.forEach.call(document.querySelectorAll('.chm [data-p], .chm [data-f], #mnew'), function (b) { b.onclick = function () {
         if (b.id === 'mnew') { MT.type = '全員'; MT.cat = ''; MT.imp = ''; go('mailnew'); return; }
@@ -1862,6 +1901,34 @@ var TOURS_ = {
   event: { t: 'イベントの申し込み場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
     { sel: '[data-ap]', say: '申し込みたいイベントの、この「申し込む」を押します' } ] },
+  cardedit: { t: '会員証の内容を直す場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="card"]', say: 'この「会員証」を押します' },
+    { sel: '#cedit', say: '「編集」を押すと、登録の内容を直せます' } ] },
+  evfest: { t: '祭礼の申し込み場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
+    { sel: '[data-ap="祭礼"]', say: '「祭礼」の欄の、この「申し込む」を押します(はじめての方は、すぐ上の「祭礼対象者登録」で、お子さんを先に登録します)' } ] },
+  evfestx: { t: '祭礼を取り消す場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
+    { sel: function () { return tourEvBtn('祭礼', 'cx'); }, say: '「祭礼」の欄の、この「取り消す」を押します。受け取りがすんだものは、取り消せません' } ] },
+  evengei: { t: '演芸会の申し込み場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
+    { sel: '[data-ap="演芸会"]', say: '「演芸会」の欄の、この「申し込む」を押します(受付が始まる前は出ません。70歳以上の方が対象です)' } ] },
+  evgeix: { t: '演芸会を取り消す場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
+    { sel: function () { return tourEvBtn('演芸会', 'cx'); }, say: '「演芸会」の欄の、この「取り消す」を押します' } ] },
+  evstat: { t: 'イベントの申し込み状況を見る場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します。申し込んだ内容と受け取りの状況が、この画面に出ます', next: 1 } ] },
+  suplook: { t: 'サポーター募集を見る場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="supporter"]', say: 'この「サポーター募集」を押します。募集の一覧が出ます' } ] },
+  supdo: { t: 'サポーターに申し込む場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="supporter"]', say: 'この「サポーター募集」を押します' },
+    { sel: '.swc', say: 'やってみたい募集を、1つ押します' },
+    { sel: '[data-sop="yes"]', say: '「やります」を押すと、申し込めます' } ] },
+  helplook: { t: '助け合いを見る場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="help"]', say: 'この「助け合い」を押します(災害モードのときに使えます)' } ] },
+  helprec: { t: '助け合いで募集する場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="help"]', say: 'この「助け合い」を押します(災害モードのときに使えます)' },
+    { sel: '[data-hgo="recruit"]', say: '人手がほしいときは、この「みんなに募集する」を押します' } ] },
   card: { t: '会員証を開く場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="card"]', say: 'この「会員証」を押すと、QRコードが出ます' } ] },
   board: { t: '町会のお知らせを見る場所を、教えてもらう', home: 1, steps: [
@@ -1871,6 +1938,10 @@ var TOURS_ = {
   weather: { t: '天気を見る場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="weather"]', say: 'この「天気」を押すと、浜田山の天気が見られます' } ] }
 };
+function tourEvBtn(name, kind) {
+  var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
+  var row = e.parentNode; return row ? row.querySelector('[data-' + kind + ']') : null;
+}
 var TR = { on: false, name: '', i: 0, t: 0, wait: 0, hole: null, box: null, el: null };
 function tourStart(name) {
   var T = TOURS_[name]; if (!T) return; tourStop(true);
@@ -1893,14 +1964,14 @@ function tourStep() { return TR.on ? TOURS_[TR.name].steps[TR.i] : null; }
 function tourVisible(e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
 function tourTick() {
   var st = tourStep(); if (!st) return;
-  var e = document.querySelector(st.sel);
+  var e = typeof st.sel === 'function' ? st.sel() : document.querySelector(st.sel);
   if (!tourVisible(e)) { TR.el = null; TR.wait += 150; TR.hole.style.display = 'none'; if (TR.wait > 5000) tourLost(); return; }
   TR.wait = 0;
   if (TR.el !== e) {
     TR.el = e; var r0 = e.getBoundingClientRect();
     if (r0.top < 70 || r0.bottom > window.innerHeight - 90) { try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
     var n = TOURS_[TR.name].steps.length;
-    TR.box.innerHTML = '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div><span class="th">👆</span> ' + esc(st.say) + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
+    TR.box.innerHTML = '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>' + esc(st.say) + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
     var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
     TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
   }
@@ -1917,7 +1988,7 @@ function tourPos() {
 function tourNext() {
   var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
   if (TR.i >= T.steps.length) { tourStop(true); toast('ここまでです。おつかれさまでした'); return; }
-  TR.box.innerHTML = '<span class="th">⏳</span> つぎの画面を ひらいています…';
+  TR.box.innerHTML = 'つぎの画面を ひらいています…';
 }
 function tourClick(ev) {
   var st = tourStep(); if (!st || !TR.el) return;
@@ -1930,7 +2001,7 @@ function tourClick(ev) {
 function tourLost() {
   var st = tourStep(); TR.wait = -1e9; TR.hole.style.display = 'none';
   TR.box.style.top = '30%'; TR.box.style.left = '12px';
-  TR.box.innerHTML = '<span class="th">🙏</span> 画面が かわってしまったようです。<div class="tb"><button type="button" data-tr="1">はじめから</button><button type="button" class="q" data-tq="1">やめる</button></div>';
+  TR.box.innerHTML = '画面が かわってしまったようです。<div class="tb"><button type="button" data-tr="1">はじめから</button><button type="button" class="q" data-tq="1">やめる</button></div>';
   TR.box.querySelector('[data-tr]').onclick = function (ev) { ev.stopPropagation(); var n = TR.name; tourStop(true); tourStart(n); };
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
 }
@@ -1957,7 +2028,7 @@ function aiDraw() {
   var h = mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: 'こんにちは。このアプリの使い方で、わからないことを聞いてください。\n「会員証を見たい」「写真を送りたい」のように、書くだけで大丈夫です。' });
   if (!AI.msgs.length) {   // 黒板: 機能を選ぶ → 質問のボタンを押すだけで聞ける
     var F = AI.feat != null ? AIF_[AI.feat] : null;
-    h += '<div class="aibd">' + (F ? '<div class="aibt">' + F.i + ' ' + esc(F.t) + 'のこと。聞きたいものを押してね</div>' + F.q.map(function (q, i) { return '<button type="button" class="afq" data-afq="' + i + '">' + esc(q) + '</button>'; }).join('') + '<button type="button" class="afb" data-afb="1">← 機能をえらびなおす</button>'
+    h += '<div class="aibd">' + (F ? '<div class="aibt">' + F.i + ' ' + esc(F.t) + 'のこと。聞きたいものを押してね</div>' + F.q.map(function (q, i) { return '<button type="button" class="afq" data-afq="' + i + '">' + esc(q) + '</button>'; }).join('') + '<button type="button" class="afb" data-afb="1">機能をえらびなおす</button>'
       : '<div class="aibt">どの機能のことですか?(押してね)</div><div class="afg">' + AIF_.map(function (f, i) { return '<button type="button" class="aft" data-aft="' + i + '"><span>' + f.i + '</span>' + esc(f.t) + '</button>'; }).join('') + '</div>') + '</div>';
   }
   AI.msgs.forEach(function (m, i) {
@@ -1966,7 +2037,7 @@ function aiDraw() {
     h += mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: tx });
     if (!m.wait && imgs.length) h += '<div class="aiimgs">' + imgs.map(function (n) { return '<figure><img src="guide/' + n + '.jpg?v=1" alt="画面の見本" loading="lazy" onerror="this.parentNode.style.display=\'none\'"><figcaption>画面の見本です。赤い丸の数字が、押すところです</figcaption></figure>'; }).join('') + '</div>';
     if (!m.wait && i === AI.msgs.length - 1) h += '<div class="aiact"><button type="button" data-afr="1">他の質問をえらぶ</button></div>';
-    if (!m.wait) h += '<div class="aiact">' + tours.map(function (n) { return '<button type="button" class="go tr" data-atour="' + n + '">👆 ' + esc(TOURS_[n].t) + '</button>'; }).join('') + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">▶「' + GOL_[m.go] + '」を開く</button>' : '') + '<button type="button" class="ask" data-aask="' + i + '">それでもわからないときは → 役員に聞く</button></div>';
+    if (!m.wait) h += '<div class="aiact">' + tours.map(function (n) { return '<button type="button" class="go tr" data-atour="' + n + '">' + esc(TOURS_[n].t) + '</button>'; }).join('') + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">「' + GOL_[m.go] + '」を開く</button>' : '') + '<button type="button" class="ask" data-aask="' + i + '">それでもわからないときは、役員に聞く</button></div>';
   });
   el.innerHTML = h;
   Array.prototype.forEach.call(el.querySelectorAll('[data-aft]'), function (b) { b.onclick = function () { AI.feat = +b.dataset.aft; aiDraw(); }; });
