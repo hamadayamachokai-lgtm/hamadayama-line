@@ -65,7 +65,9 @@
   }
   function scrambled(level, seed) {
     var L = LV[level], c, tries = 0;
-    do { c = make(L.n); scrambleMoves(seed + '#' + tries, L.mv).forEach(function (m) { turn(c, m[0], m[1]); }); tries++; } while (solved(c) && tries < 20);
+    var mv;
+    do { c = make(L.n); mv = scrambleMoves(seed + '#' + tries, L.mv); mv.forEach(function (m) { turn(c, m[0], m[1]); }); tries++; } while (solved(c) && tries < 20);
+    c.scr = mv.map(function (m) { var f = FACE[m[0]]; return [f.a, f.s, -f.s * m[1]]; });   // かきまぜた手(段の形)。攻略補助が、これを 逆にもどす
     return c;
   }
   /* 展開図の位置: 上U / 左L 前F 右R 後B / 下D */
@@ -205,13 +207,44 @@
         ctx.font = '800 ' + Math.max(12, Math.round(sz * 0.5)) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = (o.t.c === 0 || o.t.c === 1) ? '#1b2438' : '#fff'; ctx.fillText(CN[o.t.c], cx, cy);
       }
     });
+    if (V.hint && !anim) drawHint(ctx, cube, V, list, W);
     return list;
+  }
+  /* 攻略補助: つぎに まわす段を ふちどりして、まわす向きの矢印を 描く */
+  var AXN = [['左', '中', '右'], ['下', '中', '上'], ['後ろ', '中', '前']];
+  function drawHint(ctx, cube, V, list, W) {
+    var h = V.hint, a = h[0], c = h[1], q = h[2], N = cube.N, lay = list.filter(function (o) { return o.t.p[a] === c; });
+    ctx.save(); ctx.lineJoin = 'round';
+    lay.forEach(function (o) { ctx.beginPath(); o.body.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.strokeStyle = '#e11d48'; ctx.lineWidth = Math.max(3, W / 110); ctx.stroke(); });
+    var side = lay.filter(function (o) { return o.t.n[a] === 0; }), by = {};
+    side.forEach(function (o) { var k = o.t.n.join(','); (by[k] = by[k] || []).push(o); });
+    var bk = null, bz = -1e9;   // いちばん 手前を向いている 面
+    Object.keys(by).forEach(function (k) { var o = by[k][0], nv = viewV(o.t.n, V); if (nv[2] > bz) { bz = nv[2]; bk = k; } });
+    if (bk) {
+      var items = by[bk].map(function (o) {
+        var w = worldOf(N, o.t), s1 = proj(viewV(w, V), V), s2 = proj(viewV(rotW(w, a, q * 0.3), V), V), cx = 0, cy = 0;
+        o.face.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
+        return { cx: cx, cy: cy, dx: s2[0] - s1[0], dy: s2[1] - s1[1] };
+      });
+      var tx = 0, ty = 0; items.forEach(function (m) { tx += m.dx; ty += m.dy; }); var tl = Math.sqrt(tx * tx + ty * ty) || 1; tx /= tl; ty /= tl;
+      items.sort(function (m, n) { return (m.cx * tx + m.cy * ty) - (n.cx * tx + n.cy * ty); });
+      var f = items[0], l = items[items.length - 1], sz = Math.max(10, Math.abs(l.cx - f.cx) + Math.abs(l.cy - f.cy));
+      var ext = (items.length > 1 ? sz / (items.length - 1) : W / 8) * 0.55, x1 = f.cx - tx * ext * 0.4, y1 = f.cy - ty * ext * 0.4, x2 = l.cx + tx * ext, y2 = l.cy + ty * ext, ah = Math.max(14, W / 24), ang = Math.atan2(y2 - y1, x2 - x1);
+      ctx.lineCap = 'round';
+      [['#ffffff', Math.max(10, W / 40)], ['#e11d48', Math.max(6, W / 64)]].forEach(function (z) {
+        ctx.strokeStyle = z[0]; ctx.fillStyle = z[0]; ctx.lineWidth = z[1];
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * ah * 0.6, y2 - Math.sin(ang) * ah * 0.6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(ang - 0.5) * ah, y2 - Math.sin(ang - 0.5) * ah); ctx.lineTo(x2 - Math.cos(ang + 0.5) * ah, y2 - Math.sin(ang + 0.5) * ah); ctx.closePath(); ctx.fill();
+        if (z[0] === '#ffffff') { ctx.lineWidth = z[1]; ctx.stroke(); }
+      });
+    }
+    ctx.restore();
   }
 
   function play(cup) {
     stop();
     var lv = S.level, L = LV[lv], seed = cup ? cup.seed : 'free-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
-    var cube = scrambled(lv, seed), start = null, moves = 0, hist = [], letters = false, ref = false, done = false, whole = false, anim = null;
+    var cube = scrambled(lv, seed), start = null, moves = 0, hist = [], letters = false, ref = false, done = false, hint = false, anim = null, todo = (cube.scr || []).slice().reverse().map(function (m) { return [m[0], m[1], -m[2]]; }), canHint = !cup && S.mode !== 'battle';
     var best = load().best[lv], robotMs = 0, battle = S.mode === 'battle', V = { yaw: -0.62, pitch: 0.5, D: 9, F: 0, cx: 0, cy: 0 }, last = [];
     if (battle) { var base = [0, 25000, 70000, 50000, 130000, 420000][lv], r = Math.random(); robotMs = best ? Math.round(best.ms * (0.9 + r * 0.5)) : Math.round(base * (0.8 + r * 0.6)); }
     var title = cup ? '大会' : battle ? '対戦' : '特訓';
@@ -219,8 +252,8 @@
       '<div class="qm" style="margin:0 0 6px">手数: <b id="cbmv">0</b> <span id="cbhint">・ 色の ところを なぞると、その段が まわります</span></div>';
     if (battle) h += '<div class="qm">あなた</div><div class="cbp"><i id="cbme" style="width:0%"></i></div><div class="qm">ロボット</div><div class="cbp rb"><i id="cbrb" style="width:0%"></i></div>';
     h += '<canvas id="cbcv" style="width:100%;aspect-ratio:1/1;touch-action:none;display:block;background:radial-gradient(#fffdf4,#efe9d6);border-radius:16px" aria-label="ルービックキューブ(なぞって まわします)"></canvas></div>' +
-      '<div class="qgrid"><button type="button" class="qb sm" id="cbundo">ひとつ もどす</button><button type="button" class="qb sm" id="cbwhole">全体を まわす</button><button type="button" class="qb sm" id="cbref">展開図・みほん</button><button type="button" class="qb sm" id="cbltr">色を 文字でも</button></div>' +
-      '<div id="cbrefbox"></div><details class="qc" style="margin-top:10px"><summary style="font-weight:800">ボタンで まわす</summary><div class="cbs">' +
+      '<div class="qgrid"><button type="button" class="qb sm" id="cbundo">ひとつ もどす</button><button type="button" class="qb sm" id="cbhelp">' + (canHint ? '🤖攻略補助' : '🤖攻略補助(特訓のみ)') + '</button><button type="button" class="qb sm" id="cbref">展開図・みほん</button><button type="button" class="qb sm" id="cbltr">色を 文字でも</button></div>' +
+      '<div id="cbhelpbox"></div><div id="cbrefbox"></div><details class="qc" style="margin-top:10px"><summary style="font-weight:800">ボタンで まわす</summary><div class="cbs">' +
       ['U', 'D', 'L', 'R', 'F', 'B'].map(function (k) { return '<button type="button" class="qb" data-mv="' + k + '" data-d="1">' + FACE[k].nm + ' ↻</button><button type="button" class="qb" data-mv="' + k + '" data-d="-1">' + FACE[k].nm + ' ↺</button>'; }).join('') + '</div><div class="qm">「↻」右まわり、「↺」左まわり(その面を 外から見て)</div></details>' +
       '<button type="button" class="qb" id="cbquit" style="margin-top:10px">やめる</button>';
     A.draw(h);
@@ -244,16 +277,25 @@
         var k = Math.min(1, (Date.now() - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         anim.th = q * e * Math.PI / 2; render();
         if (k < 1) return requestAnimationFrame(step);
-        anim = null; turnLayer(cube, a, c, q); moves++; if (rec) hist.push([a, c, q]); setStat(); render();
+        anim = null; turnLayer(cube, a, c, q); moves++; if (rec) hist.push([a, c, q]); noteMove(a, c, q); setStat(); render();
         if (solved(cube)) finish(true);
       })();
+    }
+    /* 攻略補助: 「やること」の一覧(todo)。自分で回したら、その手を 打ち消す手を 足す(おなじ手なら 1つ へる) */
+    function noteMove(a, c, q) { var n = todo[0]; if (n && n[0] === a && n[1] === c && n[2] === q) todo.shift(); else todo.unshift([a, c, -q]); helpRefresh(); }
+    function helpRefresh() {
+      var bx = document.getElementById('cbhelpbox'); if (!bx) return;
+      if (!hint || done) { V.hint = null; bx.innerHTML = ''; return render(); }
+      if (!todo.length || solved(cube)) { V.hint = null; bx.innerHTML = '<div class="qc" style="margin-top:10px"><b>そろっています!</b></div>'; return render(); }
+      V.hint = todo[0]; window.HmtCube._cur = V.hint; var m = todo[0], nm = AXN[m[0]][m[1] + 1] + 'の段';
+      bx.innerHTML = '<div class="qc" style="margin-top:10px"><div style="font-weight:800">🤖 つぎは <span style="color:#e11d48">' + nm + '</span> を、赤い矢印の向きに まわします</div><div class="qm">のこり ' + todo.length + '手 ・ 赤いふちの段が まわす段です。矢印が見えないときは、キューブを すこし ななめに 回してください。</div></div>'; render();
     }
     var drag = null;
     function pos(ev) { var r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
     cv.onpointerdown = function (ev) {
       ev.preventDefault(); try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
       var p = pos(ev), hit = null;
-      if (!whole) { for (var i = last.length - 1; i >= 0; i--) { if (inPoly(p, last[i].body)) { hit = last[i].t; break; } } }
+      for (var i = last.length - 1; i >= 0; i--) { if (inPoly(p, last[i].body)) { hit = last[i].t; break; } }
       drag = { x: p[0], y: p[1], t: hit, mode: hit ? 'layer' : 'view', ox: p[0], oy: p[1] };
     };
     cv.onpointermove = function (ev) {
@@ -264,7 +306,7 @@
     cv.onpointerup = cv.onpointercancel = function () { drag = null; };
     A.bind('[data-mv]', function (b) { var f = FACE[b.dataset.mv], d = +b.dataset.d; doTurn(f.a, f.s, -f.s * d, true); });
     document.getElementById('cbundo').onclick = function () { var m = hist.pop(); if (m) doTurn(m[0], m[1], -m[2], false); };
-    document.getElementById('cbwhole').onclick = function () { whole = !whole; this.textContent = whole ? '面を まわす に戻す' : '全体を まわす'; this.classList.toggle('pri', whole); var hn = document.getElementById('cbhint'); if (hn && !start) hn.textContent = whole ? '・ どこを なぞっても、キューブ全体が まわります' : '・ 色の ところを なぞると、その段が まわります'; };
+    document.getElementById('cbhelp').onclick = function () { if (!canHint) return A.toast('攻略補助は、特訓だけで 使えます'); hint = !hint; this.classList.toggle('pri', hint); helpRefresh(); };
     document.getElementById('cbref').onclick = function () { ref = !ref; var bx = document.getElementById('cbrefbox'); bx.innerHTML = ref ? '<div class="qc" style="margin-top:10px"><div class="qm" style="margin:0 0 6px">いまの 6つの面(ひろげた図)</div>' + netSvg(cube, letters, 300) + '<div class="qm" style="margin:8px 0 6px">完成すると、6つの面が それぞれ 1色に なります。</div></div>' : ''; this.textContent = ref ? '展開図を 閉じる' : '展開図・みほん'; };
     document.getElementById('cbltr').onclick = function () { letters = !letters; this.textContent = letters ? '文字を 消す' : '色を 文字でも'; render(); };
     document.getElementById('cbquit').onclick = function () { if (!start || confirm('やめて もどりますか?')) { stop(); cup ? cupHome(null) : home(); } };
@@ -295,5 +337,5 @@
     if (!document.getElementById('qcbcss')) { var st = document.createElement('style'); st.id = 'qcbcss'; st.textContent = CSS; document.head.appendChild(st); }
     home();
   }
-  window.HmtCube = { start: start, _t: { decide: decide, turnLayer: turnLayer, worldOf: worldOf, layerQuadList: layerQuadList, rotW: rotW, viewV: viewV, proj: proj, make: make, turn: turn, solved: solved, scrambled: scrambled, scrambleMoves: scrambleMoves, cell: cell, progress: progress, LV: LV, FK: FK } };
+  window.HmtCube = { start: start, _t: { decide: decide, turnLayer: turnLayer, worldOf: worldOf, layerQuadList: layerQuadList, rotW: rotW, viewV: viewV, proj: proj, make: make, turn: turn, solved: solved, scrambled: scrambled, scrambleMoves: scrambleMoves, cell: cell, progress: progress, drawHint: drawHint, LV: LV, FK: FK } };
 })();
