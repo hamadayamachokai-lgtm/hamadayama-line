@@ -2090,7 +2090,7 @@ function mailWriteView() {
 function mailNewViewKeep() { var p = MT.prefill; MT.prefill = null; mailNewView(); MT.prefill = p; }
 
 /* ---------- 推理 ---------- */
-var MY = { story: null, round: 1, tab: 'monthly', streak: 0, nm: '' };
+var MY = { story: null, round: 1, tab: 'monthly', streak: 0, losses: 0, nm: '' };
 /* ---------- 歴史推理: 陣地取りマップ(昔の地図風)。連続正解で陣地が増え、炎が上がる ---------- */
 var MYM_ISL = [
   [[140.0, 41.5], [140.1, 42.5], [140.4, 43.2], [141.4, 43.3], [141.7, 45.4], [142.2, 45.4], [143.8, 44.2], [145.3, 43.5], [145.8, 43.3], [144.0, 42.9], [143.2, 42.0], [141.6, 42.5], [141.0, 41.7]],
@@ -2267,13 +2267,13 @@ function mysteryView() {
   mymProbe(); mymLoadImg();
   sub('歴史推理', '<div class="skel" style="height:240px"></div>');
   api('mystery_rank').then(function (r) {
-    var me = r.total.me, nm = r.nick || r.lineName; MY.streak = r.streak || 0; MY.nm = nm;
+    var me = r.total.me, nm = r.nick || r.lineName; MY.streak = r.streak || 0; MY.losses = r.losses || 0; MY.nm = nm;
     var nickCard = r.needNick || MY.editNick ? '<div class="card"><h2>ランキングの名前</h2><p style="margin:0 0 10px;line-height:1.7">ランキングに出る名前を決めてください(個人情報保護のため、ニックネームがおすすめです)。入れなければ、LINEの会員名「' + esc(r.lineName) + '」で参加します。</p>' +
       '<input id="mnick" maxlength="12" autocomplete="off" placeholder="ニックネーム(12文字まで)" value="' + esc(r.nick || '') + '" aria-label="ニックネーム" style="width:100%;font-size:18px;padding:12px;box-sizing:border-box;border:2px solid var(--line);border-radius:10px"><div style="height:10px"></div>' +
       '<button class="btn" id="mnickok">この名前にする</button><div style="height:8px"></div><button class="btn ghost" id="mnickno">入れずに、LINEの会員名で参加する</button></div>' : '';
     sub('歴史推理', nickCard + '<div class="card"><h2>事件を解こう</h2><p style="margin:0 0 12px;line-height:1.7">幕末の志士(Aチーム)と戦国武将(Bチーム)の事件が、かわるがわる起こります。証言を聞いて、犯人を当てる推理ゲームです。証言は3ラウンド。<b>早く当てるほど高得点</b>(1回目の投票で犯人を見つけたら3点・2回目で2点・最後の3回目で1点)。</p>' +
       '<button class="btn" id="mgo">🔍 事件をはじめる</button><p class="muted" style="margin:10px 0 0">ランキングの名前: <b>' + esc(nm) + '</b> <a href="#" id="mnickchg" style="color:var(--brand,#06c755)">変える</a></p>' + (me ? '<p class="muted" style="margin:12px 0 0">あなたの記録: 累計 ' + me.points + '点(' + me.plays + '件中 ' + me.wins + '件正解・' + me.rank + '位)</p>' : '') + '</div>' +
-      '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;line-height:1.7">正解が続くと、陣地を1つずつ落とせます(落とす国は、推理のあとに自分でえらびます)。日本を10か所とったら、次は中国(武将がいます)です。まちがえると、うばわれます。</p>' + mymMapSvg(MY.streak, MY.nm) + '<p class="muted" style="margin:8px 0 0">連続正解 <b>' + MY.streak + '</b> ・ 最高 <b>' + (r.bestStreak || 0) + '</b></p></div>' +
+      '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;line-height:1.7"><b>1問正解すると、陣地を1つ落とせます</b>(落とす国は、推理のあとに自分でえらびます)。日本を10か所とったら、次は中国(武将がいます)です。<b>3回まけると、落とした国はすべて没収</b>されます。</p>' + mymMapSvg(MY.streak, MY.nm) + '<p class="muted" style="margin:8px 0 0">落とした国 <b>' + MY.streak + '</b> ・ まけ <b>' + MY.losses + '</b> / 3(あと ' + (3 - MY.losses) + '回で没収) ・ 最高 <b>' + (r.bestStreak || 0) + '</b></p></div>' +
       '<div class="card"><h2>ランキング</h2><div class="seg" id="mtab"><button data-t="monthly" aria-pressed="true">今月</button><button data-t="total" aria-pressed="false">累計</button></div><div id="mrk"></div></div>', 'home');
     $('#mgo').onclick = startMystery;
     function saveNick(v) { api('mystery_nick', { nick: v }).then(function () { MY.editNick = false; toast(v ? 'ニックネームを決めました' : 'LINEの会員名で参加します'); mysteryView(); }).catch(function (e) { toast(e.message); }); }
@@ -2342,11 +2342,11 @@ function mysResult(r) {
     '<div class="card"><div class="mycast">' + roles + '</div><div style="font-size:19px;font-weight:700;margin-top:12px">犯人: ' + esc(r.culprit) + '</div>' + (r.accomplice ? '<div style="font-weight:700;color:var(--gold);margin-top:2px">共犯者: ' + esc(r.accomplice) + '</div>' : '<div class="muted" style="margin-top:2px">共犯者: いませんでした</div>') +
     '<div class="a" style="margin-top:12px;padding:12px;border-radius:10px;background:#f5f7fa;line-height:1.8"><div class="muted" style="font-weight:700">真相</div>' + esc(r.truth) + '</div>' +
     (r.history && r.history.note ? '<div style="margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #d9b44a;line-height:1.7"><b>' + (r.history.based ? '📜 史実をもとにした話' : '📜 補足') + '</b><br>' + esc(r.history.note) + '</div>' : '') + '</div>' +
-    (r.scored ? (r.win && (MY.streak || 0) + 1 <= 20 ? '<div id="mpkbox">' + mymPickHtml((MY.streak || 0) + 1) + '</div>' : '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;font-weight:700;color:' + (r.win ? 'var(--ok)' : 'var(--bad)') + '">' + (r.win ? '正解! すでに中華統一ずみです!' : '陣地を、うばわれました…') + '</p>' + mymMapSvg(r.win ? (MY.streak || 0) + 1 : 0, MY.nm, -1) + '</div>') : '') +
+    (r.scored ? (r.win && (MY.streak || 0) + 1 <= 20 ? '<div id="mpkbox">' + mymPickHtml((MY.streak || 0) + 1) + '</div>' : r.win ? '<div class="card"><h2>🔥 陣地取り</h2><p style="margin:0 0 10px;font-weight:700;color:var(--ok)">正解! すでに中華統一ずみです!</p>' + mymMapSvg(MY.streak || 0, MY.nm, -1) + '</div>' : '<div class="card"><h2>🔥 陣地取り</h2>' + (r.forfeit ? '<p style="margin:0 0 10px;font-weight:700;color:var(--bad)">😱 3回まけました。落とした ' + r.forfeit + ' か所を、すべて没収されました…</p>' : '<p style="margin:0 0 10px;font-weight:700;color:var(--bad)">まけました…(まけ ' + (r.losses || 0) + ' / 3)。あと ' + (3 - (r.losses || 0)) + '回まけると、落とした国を没収されます。</p>') + mymMapSvg(r.forfeit ? 0 : (MY.streak || 0), MY.nm, -1) + '</div>') : '') +
     '<button class="btn" id="mnx">次の事件へ</button><div style="height:10px"></div><button class="btn ghost" id="mrk">ランキングを見る</button>';
   var sPrev = MY.streak || 0;
-  if (r.scored) MY.streak = r.win ? sPrev + 1 : 0;
-  if (r.scored && !r.win) mymCaps(0);
+  if (r.scored) { MY.streak = typeof r.streak === 'number' ? r.streak : (r.win ? Math.min(20, sPrev + 1) : sPrev); MY.losses = r.losses || 0; }
+  if (r.scored && r.forfeit) mymCaps(0);
   sub('結果', h, 'mystery');
   mymBindPick(sPrev + 1);
   $('#mnx').onclick = startMystery; $('#mrk').onclick = function () { go('mystery'); };
@@ -3623,7 +3623,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=19'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=20'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
