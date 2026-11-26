@@ -552,7 +552,7 @@
     document.head.appendChild(sc);
   }
   function openAtama() { loadGame('quiz-atama.js?v=3', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
-  function openCards() { loadGame('quiz-cards.js?v=8', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
+  function openCards() { loadGame('quiz-cards.js?v=9', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
   function openCube() { loadGame('quiz-cube.js?v=4', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
   function openTrip() { loadGame('quiz-trip.js?v=9', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
