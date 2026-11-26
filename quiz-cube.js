@@ -108,20 +108,20 @@
 
   /* ---------- 画面 ---------- */
   function home() {
-    stop(); var d = load(), L = LV[S.level];
-    A.draw('<h2 class="hph">ルービックキューブ</h2>' +
-      '<div class="qc"><div style="font-weight:800;margin:0 0 8px">あそびかた</div><div class="cbm">' +
-      [['train', '特訓', 'ひとりで れんしゅう'], ['battle', '対戦', 'ロボットと きょうそう'], ['cup', '大会', '町会で ランキング']].map(function (m) { return '<button type="button" class="qb' + (S.mode === m[0] ? ' pri' : '') + '" data-md="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '</div>' +
-      '<div style="font-weight:800;margin:6px 0 8px">レベル</div><div class="cbl">' +
-      [1, 2, 3, 4, 5].map(function (i) { var b = d.best[i]; return '<button type="button" class="qb' + (S.level === i ? ' pri' : '') + '" data-lv="' + i + '"><span>レベル' + i + ' ' + LV[i].t + '<small>' + LV[i].d + '</small></span><span>' + (b ? 'ベスト ' + fmt(b.ms) : '') + '</span></button>'; }).join('') + '</div>' +
-      '<button type="button" class="qb pri" id="cbgo">' + (S.mode === 'cup' ? '今週の大会を見る' : S.mode === 'battle' ? 'ロボットと対戦する' : '特訓をはじめる') + '</button></div>' +
-      '<div class="qc"><div class="qm" style="line-height:1.7">キューブの 6つの面を、ひろげた図で 見ます。下の ボタンで 面を まわして、<b>6つの面が それぞれ 同じ色</b>に なったら 完成です。<br>「↻」は 右まわり、「↺」は 左まわり(その面を 外から見て)。</div></div>' +
-      '<button type="button" class="qb" id="cbback">GAME にもどる</button>');
-    A.bind('[data-md]', function (b) { S.mode = b.dataset.md; home(); });
-    A.bind('[data-lv]', function (b) { S.level = +b.dataset.lv; home(); });
+    stop(); var d = load();
+    var op = function (v, t, c) { return '<option value="' + v + '"' + (String(c) === String(v) ? ' selected' : '') + '>' + t + '</option>'; };
+    var rw = function (l, id, o) { return '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-weight:800"><span>' + l + '</span><select id="' + id + '" style="flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit">' + o + '</select></label>'; };
+    var bst = d.best[S.level];
+    A.draw('<h2 class="hph">ルービックキューブ</h2><div class="qc">' +
+      rw('モード', 'cbMd', op('train', '特訓', S.mode) + op('battle', '対戦', S.mode) + op('cup', '大会', S.mode)) +
+      rw('レベル', 'cbLv', [1, 2, 3, 4, 5].map(function (i) { return op(i, 'レベル' + i, S.level); }).join('')) +
+      (bst ? '<div class="qm">ベスト ' + fmt(bst.ms) + '</div>' : '') +
+      '<button type="button" class="qb pri" id="cbgo" style="margin-top:10px">' + (S.mode === 'cup' ? '大会へ' : 'スタート') + '</button></div>' +
+      '<button type="button" class="qb" id="cbback">もどる</button>');
+    document.getElementById('cbMd').onchange = function () { S.mode = this.value; home(); };
+    document.getElementById('cbLv').onchange = function () { S.level = +this.value; home(); };
     document.getElementById('cbgo').onclick = function () { S.mode === 'cup' ? cupHome() : play(null); };
     document.getElementById('cbback').onclick = function () { A.hub(); };
-    L = null;
   }
 
   function cupHome(info) {
