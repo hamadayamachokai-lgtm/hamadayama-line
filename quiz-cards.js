@@ -26,7 +26,16 @@
     '#qz .pcg{display:grid;gap:5px;margin:8px 0}#qz .pcg .pc{width:100%;height:auto;aspect-ratio:5/7;margin:0}' +
     '#qz .pcsol{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:0 0 6px}#qz .pcsol .pc{width:100%;height:60px;margin:0;font-size:14px}#qz .pccol{position:relative;min-height:60px}#qz .pccol .pc{position:absolute;left:0;right:0}#qz .pc.ph{background:transparent;border:2px dashed #cfc7b4;color:#b5ad98}' +
     '#qz .pcmode{display:grid;gap:8px;margin:8px 0}#qz .pcmode button{min-height:58px;margin:0;text-align:left;display:block}#qz .pcmode small{display:block;font-weight:500;opacity:.8}#qz .pcin{width:100%;box-sizing:border-box;font-size:1.1em;padding:10px;border:2px solid #cfc7b4;border-radius:12px;margin:0 0 6px;font-family:inherit}' +
-    '#qz .pcch{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .pcch button{margin:0;min-width:48px;min-height:44px}';
+    '#qz .pcch{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .pcch button{margin:0;min-width:48px;min-height:44px}' +
+    '#qz .pctab{position:relative;height:270px;margin:6px 0 10px;border-radius:50%/46%;background:radial-gradient(ellipse at center,#4f9a6a 0,#2f7a4c 70%,#236440 100%);border:5px solid #8b5a2b;box-shadow:inset 0 0 18px rgba(0,0,0,.35)}#qz .pcseat{position:absolute;transform:translate(-50%,-50%);text-align:center;color:#fff;font-weight:800;font-size:.9em;width:36%;text-shadow:0 1px 2px rgba(0,0,0,.6)}' +
+    '#qz .pcseat .sn{display:inline-block;padding:1px 10px;border-radius:99px;background:rgba(0,0,0,.35);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#qz .pcseat.turn .sn{background:#6a4bd6}#qz .pcseat.tg .sn{background:#e0a300;color:#222;text-shadow:none}#qz .pcseat.dn{opacity:.5}' +
+    '#qz .pcseat .bks{display:flex;justify-content:center;margin:4px 0 2px;min-height:30px}#qz .pcseat .bks .pc{width:18px;height:27px;margin:0 -5px;border-radius:4px;border-width:1.5px;box-shadow:0 1px 3px rgba(0,0,0,.4)}#qz .pcseat .cnt{font-size:.8em;opacity:.95}' +
+    '#qz .pcdraw{background:#fff7e0;border:2px solid #e0a300;border-radius:14px;padding:8px;margin:0 0 10px;text-align:center}#qz .pcdraw .pc{width:34px;height:48px;margin:2px 1px}' +
+    '#qz .kmat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0;padding:12px 8px;border-radius:14px;background:repeating-linear-gradient(90deg,#9db97a 0 22px,#93b070 22px 24px);border:4px solid #6b4f2a;box-shadow:inset 0 0 12px rgba(0,0,0,.25)}' +
+    '#qz .kc{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:5/7;margin:0;padding:6px 3px;border-radius:7px;background:#fffaf0;border:3px solid #c0392b;box-shadow:0 3px 0 #b9a77c,0 5px 8px rgba(0,0,0,.3);font-family:inherit;font-weight:800;font-size:14px;line-height:1.25;color:#2b2118;box-sizing:border-box;cursor:pointer;min-width:0;overflow:hidden}' +
+    '#qz .kc::before{content:"";position:absolute;inset:3px;border:1px solid #e3c9a0;border-radius:4px;pointer-events:none}#qz .kc.v span{writing-mode:vertical-rl;text-orientation:upright;max-height:100%;letter-spacing:.05em}#qz .kc.h span{text-align:center;font-size:inherit}' +
+    '#qz .kc:active{transform:translateY(2px);box-shadow:0 1px 0 #b9a77c}#qz .kc.gone{cursor:default;background:#e9e1cc;border-color:#b3a98f;color:#9b9078;box-shadow:none;opacity:.8}#qz .kc.gone b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-12deg);background:#c0392b;color:#fff;border-radius:6px;padding:2px 6px;font-size:11px;white-space:nowrap;z-index:1}' +
+    '#qz .kyomi{background:#fffaf0;border:3px double #c0392b;border-radius:10px;padding:10px 12px;margin:0 0 6px;box-shadow:0 2px 6px rgba(0,0,0,.18)}';
 
   /* ===================== ババ抜き ===================== */
   function dropPairs(h) {
@@ -37,7 +46,7 @@
   }
   function nextAct(S, i) { for (var k = 1; k <= S.n; k++) { var p = (i + k) % S.n; if (S.out.indexOf(p) < 0) return p; } return i; }
   var BABA = {
-    id: 'baba', title: 'ババ抜き', hidden: true, min: 2, max: 12, bots: [1, 4],
+    id: 'baba', title: 'ババ抜き', hidden: true, min: 2, max: 4, bots: [1, 3],
     init: function (n, names) {
       var d = []; for (var i = 0; i < 53; i++) d.push(i); shuf(d);
       var hand = []; for (i = 0; i < n; i++) hand.push([]); d.forEach(function (c, i) { hand[i % n].push(c); });
@@ -57,12 +66,15 @@
     },
     bot: function (S) { var j = nextAct(S, S.turn); return { k: Math.floor(Math.random() * S.hand[j].length) }; },
     html: function (S, v) {
-      var h = '<div class="pcs">' + esc(S.msg) + '</div>', tgt = v >= 0 && S.turn === v && !S.over ? nextAct(S, v) : -1;
+      var h = '<div class="pcs">' + esc(S.msg) + '</div>', tgt = v >= 0 && S.turn === v && !S.over ? nextAct(S, v) : -1, vv = v >= 0 ? v : 0;
+      h += '<div class="pctab">';   // 円になって すわる(じぶんが 下)
       for (var p = 0; p < S.n; p++) {
-        if (p === v) continue; var done = S.out.indexOf(p) >= 0;
-        h += '<div class="pcrow"><span class="pcn' + (S.turn === p && !S.over ? ' turn' : '') + '">' + esc(S.nm[p]) + (done ? '(あがり)' : '') + '</span><span class="qm">' + S.hand[p].length + 'まい</span></div>';
-        if (p === tgt) h += '<div class="pcw">' + S.hand[p].map(function (c, k) { return '<button type="button" class="pc bk" data-k="' + k + '" aria-label="' + (k + 1) + 'まいめを ひく">●</button>'; }).join('') + '</div>';
+        var d = (p - vv + S.n) % S.n, ang = (90 + d * 360 / S.n) * Math.PI / 180, x = 50 + 36 * Math.cos(ang), y = 50 + 34 * Math.sin(ang), done = S.out.indexOf(p) >= 0, cn = Math.min(S.hand[p].length, 7), bk = '';
+        for (var q = 0; q < cn; q++) bk += '<span class="pc bk"></span>';
+        h += '<div class="pcseat' + (S.turn === p && !S.over ? ' turn' : '') + (p === tgt ? ' tg' : '') + (done ? ' dn' : '') + '" style="left:' + x.toFixed(1) + '%;top:' + y.toFixed(1) + '%"><span class="sn">' + esc(S.nm[p]) + (done ? '(あがり)' : '') + '</span>' + (p === vv ? '' : '<div class="bks">' + bk + '</div>') + '<div class="cnt">' + (p === vv ? '' : S.hand[p].length + 'まい') + (p === tgt ? ' ← ひく' : '') + '</div></div>';
       }
+      h += '</div>';
+      if (tgt >= 0) h += '<div class="pcdraw"><div class="qm" style="margin:0 0 4px">' + esc(S.nm[tgt]) + 'さんの カードを 1まい えらんで タップ</div>' + S.hand[tgt].map(function (c, k) { return '<button type="button" class="pc bk" data-k="' + k + '" aria-label="' + (k + 1) + 'まいめを ひく">●</button>'; }).join('') + '</div>';
       if (v >= 0) h += '<div class="pcrow"><span class="pcn' + (S.turn === v && !S.over ? ' turn' : '') + '">' + esc(S.nm[v]) + (v === 0 && S.nm[v] === 'あなた' ? '' : '') + (S.out.indexOf(v) >= 0 ? '(あがり)' : '') + '</span></div><div class="pcw">' + S.hand[v].slice().sort(function (a, b) { return a - b; }).map(function (c) { return cardH(c); }).join('') + '</div>';
       if (!S.over && v >= 0 && S.turn === v) h += '<div class="qm">' + esc(S.nm[tgt]) + 'さんの カードを 1まい えらんで タップ(ひきます)</div>';
       else if (!S.over) h += '<div class="qm">' + esc(S.nm[S.turn]) + 'さんの ばんです…</div>';
@@ -247,7 +259,7 @@
   var KG = { koto: { label: 'ことわざ(前半→後半)', d: KP, q: 'よみふだ', hint: 'つづきの とりふだを タップ!' }, imi: { label: 'ことわざ(意味から えらぶ)', d: KI, q: 'いみ', hint: 'この 意味の ことわざを タップ!' }, rek: { label: '歴史', d: KR, q: 'せつめい', hint: '答えの 人物・ことがらを タップ!' }, eigo: { label: '英単語(英検2級まで)', d: KE, q: 'いみ', hint: 'この 意味の 英単語を タップ!' } };
   function kSay(t) { try { if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.85; window.speechSynthesis.speak(u); } } catch (e) { } }
   var KAR = {
-    id: 'kar', title: 'カルタ', hidden: false, rt: true, min: 2, max: 6, bots: [1, 3],
+    id: 'kar', title: 'カルタ', hidden: false, rt: true, min: 2, max: 4, bots: [1, 3],
     init: function (n, names, opts) {
       var gn = opts && KG[opts.genre] ? opts.genre : 'koto', D = KG[gn].d;
       var ix = []; for (var i = 0; i < D.length; i++) ix.push(i); shuf(ix); var cards = ix.slice(0, 8), q = []; for (i = 0; i < 8; i++) q.push(i); shuf(q);
@@ -271,9 +283,9 @@
     },
     html: function (S, v, sel) {
       var gn = S.gn || 'koto', D = KG[gn].d, both = v < 0, who = both ? (sel[0] || 0) : v, h = '<div class="pcs">' + esc(S.msg) + '</div>';
-      if (!S.over) { var r = D[S.cards[S.q[S.qi]]]; h += '<div class="qc" style="text-align:center"><div class="qm">' + KG[gn].label + ' ・ ' + KG[gn].q + '(' + (S.qi + 1) + '/' + S.q.length + ')</div><div style="font-size:' + (gn === 'koto' ? '1.5em' : '1.2em') + ';font-weight:800;margin:6px 0">' + esc(r[0]) + (gn === 'koto' ? ' …' : '') + '</div><button type="button" class="qb sm" id="ksay">🔊 よみあげ</button></div>'; }
+      if (!S.over) { var r = D[S.cards[S.q[S.qi]]]; h += '<div class="kyomi" style="text-align:center"><div class="qm">' + KG[gn].label + ' ・ ' + KG[gn].q + '(' + (S.qi + 1) + '/' + S.q.length + ')</div><div style="font-size:' + (gn === 'koto' ? '1.5em' : '1.2em') + ';font-weight:800;margin:6px 0">' + esc(r[0]) + (gn === 'koto' ? ' …' : '') + '</div><button type="button" class="qb sm" id="ksay">🔊 よみあげ</button></div>'; }
       if (both && !S.over) h += '<div class="qm">だれが とる?</div><div class="pcch">' + S.nm.map(function (n, i) { return '<button type="button" class="qb sm' + (i === who ? ' pri' : '') + '" data-w="' + i + '">' + esc(n) + '</button>'; }).join('') + '</div>';
-      h += '<div class="pcsol" style="flex-wrap:wrap;gap:6px;justify-content:center">' + S.cards.map(function (c, k) { var o = S.own[k]; return o === -1 ? '<button type="button" class="qb" style="min-width:42%;margin:0" data-k="' + k + '">' + esc(D[c][1]) + '</button>' : '<div class="qb" style="min-width:42%;margin:0;opacity:.55;text-align:center">' + (gn === 'koto' ? esc(D[c][0]) : '') + esc(D[c][1]) + '<br><small>' + esc(S.nm[o]) + '</small></div>'; }).join('') + '</div>';
+      h += '<div class="kmat">' + S.cards.map(function (c, k) { var o = S.own[k], tx = esc(D[c][1]), cl = 'kc ' + (gn === 'eigo' ? 'h' : 'v'), L = D[c][1].length, fs = gn === 'eigo' ? (L > 9 ? 10 : L > 7 ? 11 : 13) : (L > 8 ? 12 : L > 6 ? 13 : 15), st = ' style="font-size:' + fs + 'px"'; return o === -1 ? '<button type="button" class="' + cl + '" data-k="' + k + '"' + st + '><span>' + tx + '</span></button>' : '<div class="' + cl + ' gone"' + st + '><span>' + tx + '</span><b>' + esc(S.nm[o]) + '</b></div>'; }).join('') + '</div>';
       h += '<div class="qm" style="margin-top:6px">' + S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i] + 'まい'; }).join(' / ') + '</div>';
       if (S.over) { var pw = S.win.indexOf(v) >= 0, sm = S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i]; }).join(' / '); h += v >= 0 ? (S.win.length > 1 && pw ? resH('draw', 'ひきわけ', sm) : resH(pw ? 'win' : 'lose', pw ? '勝ち' : '負け', sm)) : resH('win', S.win.map(function (p) { return esc(S.nm[p]); }).join('・') + 'さんの 勝ち', sm); }
       return h;
