@@ -27,7 +27,7 @@
           if (v && v.same) return;
           R.apply(v); R._cb(R);
         }, function (e) { R._busy = false; if (R._cb && e && /へや|メンバー/.test(e.message || '')) R._cb(R, e); });
-      }, 2000);
+      }, R.every || 2000);
     };
     R.stop = function () { if (R._t) { clearInterval(R._t); R._t = null; } R._cb = null; };
     R.leave = function () { R.stop(); A.call('room_leave', { code: R.code }).catch(function () {}); };
