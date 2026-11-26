@@ -11,7 +11,8 @@
     '#qz svg .mo{display:none}#qz svg.op .mc{display:none}#qz svg.op .mo{display:inline}' +
     '@keyframes abl{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}#qz .apet svg .ey{transform-box:fill-box;transform-origin:center;animation:abl 4s infinite}' +
     '@keyframes abob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}#qz .apet.bob svg{animation:abob 1.6s ease-in-out infinite}' +
-    '#qz .atok{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7b0,#f2b705 70%);border:2px solid #d99a00;box-shadow:0 2px 4px rgba(0,0,0,.2);z-index:3;font-size:13px;font-weight:800;color:#8a5a00;text-align:center;line-height:22px}' +
+    '#qz .atok{position:absolute;min-width:30px;height:30px;padding:0 2px;box-sizing:border-box;border-radius:8px;background:#fff;border:2px solid #6a4bd6;box-shadow:0 2px 4px rgba(0,0,0,.2);z-index:3;font-size:19px;font-weight:800;color:#3a2a8a;text-align:center;line-height:26px}' +
+    '#qz .abub{position:relative;background:#fffbe6;border:2px solid #e0a300;border-radius:16px;padding:10px 12px;margin:0 0 10px;font-weight:800;line-height:1.6;color:#5a3b00}#qz .abub:before{content:"";position:absolute;left:24px;top:-10px;border:8px solid transparent;border-bottom-color:#e0a300;border-top:0}' +
     '#qz .abad{display:inline-block;padding:2px 12px;border-radius:99px;background:#6a4bd6;color:#fff;font-weight:800;font-size:.9em;margin-right:6px}#qz .abad.pm{background:linear-gradient(90deg,#e0a300,#f6d365);color:#5a3b00}' +
     '#qz .aq{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 10px}#qz .aq b{display:flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:20px;background:#fff;border:3px solid #6a4bd6;font-size:46px;color:#3a2a8a;box-shadow:0 3px 0 #cfc7f0}#qz .aq span{font-size:1.4em;color:#667085;font-weight:800}' +
     '#qz .ain{width:100%;font-size:1.3em;padding:12px 14px;border:3px solid #cfc7b4;border-radius:14px;background:#fff;color:#1b2438;font-family:inherit}#qz .ain:focus{outline:none;border-color:#6a4bd6}' +
@@ -102,7 +103,7 @@
     if (/(.)\1{3,}/.test(w)) return { ok: false, msg: 'おなじ もじが つづきすぎだよ' };
     return { ok: true, known: !!SET[w] };
   }
-  function scoreOf(w, known) { return known ? w.length : Math.max(1, Math.floor(w.length / 2)); }
+  function scoreOf(w, known) { return known ? w.length * 2 : w.length; }   // 僕が知っている言葉は 2倍。知らない言葉は 文字数ぶん
   var DIFF = [{ n: 'やさしい', sec: 90, lo: 0, hi: .45, pass: .25 }, { n: 'ふつう', sec: 60, lo: .2, hi: .75, pass: .12 }, { n: 'むずかしい', sec: 45, lo: .55, hi: 1, pass: .03 }];
   var RIVALS = [['モコ', '#f2a65a'], ['ピポ', '#7aa7e8'], ['ガブ', '#c98ad8']];
   function rivalWord(list, d) {   // list は ながさ順
@@ -122,10 +123,10 @@
   function home() {
     stop(); var s = load();
     if (!s.pet) return choose(s, false);
-    A.draw('<h2>あたまおしり</h2><div class="qc">' + petBox(s) + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div>' + bar(s) +
+    A.draw('<h2>あたまおしり</h2><div class="abub">僕は 知らない言葉が いっぱい!<br>みんなと 一緒に 覚えるよ!<br>僕が 知っていると ポイント<b style="color:#d9381e">2倍</b>!<br>知らない言葉だと <b style="color:#d9381e">文字数ぶん</b>が ポイントに なるよ</div><div class="qc">' + petBox(s) + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div>' + bar(s) +
       '<p class="qm" style="margin:10px 0 6px">むずかしさ</p><div class="adf">' + DIFF.map(function (d, i) { return '<button type="button" data-d="' + i + '" class="' + (s.diff === i ? 'on' : '') + '">' + d.n + '</button>'; }).join('') + '</div>' +
       '<button class="qb pri" id="aplay">あそぶ</button><button class="qb" id="achg">どうぶつを えらびなおす</button><button class="qb" id="adex">ずかん(そだてた どうぶつ ' + s.grads.length + ')</button><button class="qb" id="aback">GAMEに もどる</button></div>' +
-      '<div class="qc"><b>あそびかた</b><p class="qm" style="margin:6px 0 0">おだいは「さいしょの もじ」と「さいごの もじ」。その もじで はじまって おわる ことばを つくろう。いちばん ながい ひとが ポイント(もじの かず)。ポイントは どうぶつが パクッと たべて おおきくなるよ。いっぱいに なると ずかんに のって、つぎは ひとつ うえの レベルに!</p></div>');
+      '<div class="qc"><b>あそびかた</b><p class="qm" style="margin:6px 0 0">おだいは「さいしょの もじ」と「さいごの もじ」。その もじで はじまって おわる ことばを つくろう。いちばん ポイントが おおきい ひとが かち。ポイントは どうぶつが パクッと たべて おおきくなるよ。いっぱいに なると ずかんに のって、つぎは ひとつ うえの レベルに!</p></div>');
     A.bind('[data-d]', function (b) { s.diff = +b.dataset.d; save(s); home(); });
     $('#aplay').onclick = round; $('#achg').onclick = function () { choose(s, true); }; $('#adex').onclick = dex; $('#aback').onclick = function () { stop(); A.hub(); };
   }
@@ -145,28 +146,22 @@
   }
 
   function round() {
-    stop(); var s = load(), d = DIFF[s.diff] || DIFF[1], k = pickPair(), f = k.charAt(0), l = k.charAt(1), mine = [], left = d.sec, done = false;
+    stop(); var s = load(), d = DIFF[s.diff] || DIFF[1], k = pickPair(), f = k.charAt(0), l = k.charAt(1), left = d.sec, done = false;
     A.draw('<div class="qc"><div class="qm">おだい(ながい ことばを つくろう)</div><div class="aq"><b>' + esc(f) + '</b><span>…</span><b>' + esc(l) + '</b></div><p class="qm" style="text-align:center;margin:0 0 8px">「' + esc(f) + '」で はじまって「' + esc(l) + '」で おわる ことば</p>' +
       '<div class="qbar t"><i id="atb" style="width:100%"></i></div><div class="qm" id="atl" style="text-align:right;margin-bottom:6px">のこり ' + left + 'びょう</div>' +
       '<input class="ain" id="ain" type="text" placeholder="ひらがなで ことばを いれてね" autocomplete="off" autocapitalize="off"><div class="qm" id="amsg" style="min-height:1.6em;margin:6px 0 4px"></div>' +
-      '<button class="qb pri" id="aok">こたえる</button><div class="aw" id="aws"></div>' +
-      '<button class="qb" id="afin">これで けってい</button><button class="qb" id="agive">こたえられない(こたえを みる)</button></div>');
+      '<button class="qb pri" id="aok">けってい</button>' +
+      '<button class="qb" id="agive">こたえられない(こたえを みる)</button></div>');
     var inp = $('#ain'); try { inp.focus(); } catch (e) {}
-    function finish(give) { if (done) return; done = true; stop(); result(s, d, k, mine, give); }
+    function finish(give, w, known) { if (done) return; done = true; stop(); result(s, d, k, w ? [{ w: w, known: known, sc: scoreOf(w, known) }] : [], give); }
     function submit() {
       var w = hira(inp.value), v = validate(w, f, l), m = $('#amsg');
       if (!v.ok) { m.style.color = '#b3261e'; m.textContent = v.msg; return; }
-      if (mine.some(function (x) { return x.w === w; })) { m.style.color = '#b3261e'; m.textContent = 'それは もう いれたよ'; return; }
-      mine.push({ w: w, known: v.known, sc: scoreOf(w, v.known) }); inp.value = '';
-      m.style.color = v.known ? '#1f7a4d' : '#8a6a10'; m.textContent = v.known ? 'いいね! ' + w.length + 'もじ' : 'じしょに ないことば。ポイントは はんぶんで かぞえるよ(' + w.length + 'もじ)';
-      var best = Math.max.apply(null, mine.map(function (x) { return x.sc; }));
-      $('#aws').innerHTML = mine.map(function (x) { return '<span class="' + (x.sc === best ? 'best ' : '') + (x.known ? '' : 'unk') + '">' + esc(x.w) + '(' + x.w.length + ')</span>'; }).join('');
-      try { inp.focus(); } catch (e) {}
+      finish(false, w, v.known);
     }
     $('#aok').onclick = submit; inp.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } };
-    $('#afin').onclick = function () { if (!mine.length) { $('#amsg').style.color = '#b3261e'; $('#amsg').textContent = 'ひとつも いれてないよ。こたえられないときは したの ボタンで'; return; } finish(false); };
     $('#agive').onclick = function () { finish(true); };
-    timer = setInterval(function () { left--; var tb = $('#atb'), tl = $('#atl'); if (!tb) return stop(); tb.style.width = Math.max(0, left / d.sec * 100) + '%'; tl.textContent = 'のこり ' + Math.max(0, left) + 'びょう'; if (left <= 0) finish(mine.length ? false : true); }, 1000);
+    timer = setInterval(function () { left--; var tb = $('#atb'), tl = $('#atl'); if (!tb) return stop(); tb.style.width = Math.max(0, left / d.sec * 100) + '%'; tl.textContent = 'のこり ' + Math.max(0, left) + 'びょう'; if (left <= 0) { var w0 = hira(inp.value), v0 = validate(w0, f, l); if (v0.ok) finish(false, w0, v0.known); else finish(true); } }, 1000);
   }
 
   function result(s, d, k, mine, give) {
@@ -174,7 +169,7 @@
     var me = mine.length ? mine.slice().sort(function (a, b) { return b.sc - a.sc; })[0] : null;
     var rows = [{ name: 'あなた', w: me ? me.w : '', sc: me ? me.sc : 0, me: true, known: me ? me.known : true }];
     var asc = (IDX[k] || []).slice();
-    RIVALS.forEach(function (r) { var w = give ? '' : rivalWord(asc, d); rows.push({ name: r[0], w: w, sc: w ? w.length : 0 }); });
+    RIVALS.forEach(function (r) { var w = give ? '' : rivalWord(asc, d); rows.push({ name: r[0], w: w, sc: w ? w.length * 2 : 0 }); });
     var top = Math.max.apply(null, rows.map(function (x) { return x.sc; })), win = !give && me && me.sc === top && top > 0;
     var bonus = win && (!all.length || me.w.length > all[0].length) ? 2 : 0, gain = win ? me.sc + bonus : 0;
     var order = rows.slice().sort(function (a, b) { return b.sc - a.sc; }), medal = ['🥇', '🥈', '🥉', '4'];
@@ -182,24 +177,32 @@
     var head = give ? 'こんな こたえが あったよ' : (win ? '🎉 いちばん ながい! ポイントゲット' : (top === 0 ? 'だれも こたえられなかった…' : 'ざんねん! こんどは かとう'));
     A.draw('<h2>' + head + '</h2><div class="qc"><div class="aq" style="margin-top:0"><b>' + esc(f) + '</b><span>…</span><b>' + esc(l) + '</b></div>' +
       (give ? '' : order.map(function (x, i) { return '<div class="arow' + (x.me ? ' me' : '') + '"><span class="rk">' + (x.sc && x.sc === top ? '🥇' : medal[Math.min(i, 3)]) + '</span><span class="nm">' + esc(x.name) + '</span><span>' + (x.w ? esc(x.w) : '(パス)') + '</span><span class="ln">' + (x.w ? (x.me && !x.known ? x.w.length + 'もじ→' + x.sc : x.w.length + 'もじ') : '') + '</span></div>'; }).join('')) +
-      (win ? '<p style="margin:8px 0 0;font-weight:800;color:#3a2a8a">+' + gain + ' ポイント' + (bonus ? '(じしょの どの こたえより ながい! ボーナス +2)' : '') + '</p>' : '') +
-      (me && !me.known ? '<p class="qm" style="margin:6px 0 0">「' + esc(me.w) + '」は じしょに なかったので、もじの かずの はんぶんで くらべたよ。</p>' : '') + '</div>' +
+      (win ? '<p style="margin:8px 0 0;font-weight:800;color:#3a2a8a">+' + gain + ' ポイント' + (bonus ? '(僕が 知っている どの ことばより ながい! ボーナス +2)' : '') + '</p>' : '') +
+      (me && !me.known ? '<div class="abub" style="margin:10px 0 0">🐾 僕の知らない言葉だ!<br><span style="font-weight:600;font-size:.92em">「' + esc(me.w) + '」を 覚えたよ。つぎからは 僕が 知っている ことばに なるよ(文字数ぶん ' + me.w.length + 'ポイント)</span></div>' : (me ? '<p class="qm" style="margin:8px 0 0">僕が 知っている ことばだから ポイント2倍!(' + me.w.length + 'もじ × 2)</p>' : '')) + '</div>' +
       (all.length ? '<div class="qc"><b>こんな こたえが あったよ</b><div class="adex" style="margin-top:8px">' + all.slice(0, 8).map(function (w) { return '<span>' + esc(w) + ' <small>' + w.length + '</small></span>'; }).join('') + '</div></div>' : '') +
       (gain ? '<div class="qc" id="afeed">' + petBox(s, 'apet') + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div><div id="abar">' + bar(s) + '</div></div>' : '') +
       '<button class="qb pri" id="anext">つぎの おだい</button><button class="qb" id="ahome">ホームに もどる</button>');
     $('#anext').onclick = round; $('#ahome').onclick = home;
-    if (gain) setTimeout(function () { feed(s, gain); }, 350);
+    if (me && !me.known) learn(s, me.w);
+    if (gain) setTimeout(function () { feed(s, gain, me ? me.w : ''); }, 350);
   }
 
-  /* パクッ: ポイントのたまが とんできて、どうぶつが たべて おおきくなる */
-  function feed(s, gain) {
-    var box = $('#apet'); if (!box) return; var svg = box.querySelector('svg'), n = Math.min(gain, 10), before = s.pts, i = 0;
+  /* 知らない言葉を覚える: この端末にも、町会のみんなの分にも ためる */
+  function learn(s, w) {
+    if (!SET[w]) { SET[w] = 1; DICT.push(w); build(); }
+    s.learn = (s.learn || []).filter(function (x) { return x !== w; }); s.learn.push(w); if (s.learn.length > 300) s.learn.shift(); save(s);
+    try { A.call('atama_learn', { words: [w] }).then(function () {}, function () {}); } catch (e) {}
+  }
+
+  /* パクッ: 答えの文字が とんできて、どうぶつが 1文字ずつ たべて おおきくなる */
+  function feed(s, gain, word) {
+    var box = $('#apet'); if (!box) return; var svg = box.querySelector('svg'), chars = Array.from(word || '').slice(0, 14), n = chars.length || Math.min(gain, 10), before = s.pts, i = 0;
     var nb = $('#anext'), nh = $('#ahome'); if (nb) nb.disabled = true; if (nh) nh.disabled = true;
     function mouth() { var r = svg.getBoundingClientRect(), b = box.getBoundingClientRect(); return [r.left - b.left + r.width * .5, r.top - b.top + r.height * .62]; }
     function step() {
       if (!$('#apet')) return;
       if (i >= n) return after();
-      var m = mouth(), tok = document.createElement('div'); tok.className = 'atok'; tok.textContent = '+'; box.appendChild(tok);
+      var m = mouth(), tok = document.createElement('div'); tok.className = 'atok'; tok.textContent = chars.length ? chars[i] : '+'; box.appendChild(tok);
       var sx = 20 + Math.random() * (box.clientWidth - 60), t = tok.animate ? tok.animate([{ left: sx + 'px', top: '-30px', opacity: 1 }, { left: (m[0] - 13) + 'px', top: (m[1] - 13) + 'px', opacity: 1 }], { duration: 520, easing: 'ease-in', fill: 'forwards' }) : null;
       function eat() {
         tok.remove(); svg.classList.add('op'); i++;
@@ -226,7 +229,9 @@
     if (!document.getElementById('qatcss')) { var st = document.createElement('style'); st.id = 'qatcss'; st.textContent = CSS; document.head.appendChild(st); }
     if (DICT) return home();
     A.draw('<div class="qc">よみこみ中…</div>');
-    fetch('quiz-atama.json?v=1', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { DICT = d.w || []; build(); home(); }, function () { A.toast('ことばを よみこめませんでした'); A.hub(); });
+    fetch('quiz-atama.json?v=1', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { DICT = (d.w || []).slice(); var lc = load().learn || []; lc.forEach(function (w) { if (DICT.indexOf(w) < 0) DICT.push(w); }); build(); home();
+      try { A.call('atama_words').then(function (r) { var add = 0, have = {}; DICT.forEach(function (w) { have[w] = 1; }); ((r && r.words) || []).forEach(function (w) { if (!have[w]) { have[w] = 1; DICT.push(w); add++; } }); if (add) build(); }, function () {}); } catch (e) {}
+    }, function () { A.toast('ことばを よみこめませんでした'); A.hub(); });
   }
   window.HmtAtama = { start: start, _t: { validate: validate, hira: hira, firstCh: firstCh, lastCh: lastCh, scoreOf: scoreOf, need: need } };
 })();
