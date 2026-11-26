@@ -363,7 +363,7 @@
   function hub() {
     draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">トランプ</div><button type="button" class="hmg wide" id="gcards" style="margin:0">トランプで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・スピード。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">カードゲーム</div><button type="button" class="hmg wide" id="gcards" style="margin:0">カードゲームで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・カルタ。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">ルービックキューブ</div><button type="button" class="hmg wide" id="gcube" style="margin:0">キューブで あそぶ</button><p class="small" style="margin:8px 0 0">レベル1〜5(2×2×2 〜 6×6×6)。特訓・ロボットと対戦・町会みんなの大会(ランキング)。攻略補助つき。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。コンピュータと対戦、またはみんなで。止まったマスで1問。まちがえたら戻ります。</p></div>');
     $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube;
@@ -530,8 +530,8 @@
   function openCards() {
     var run = function () { window.HmtCards.start(api()); };
     if (window.HmtCards) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-cards.js?v=3'; sc.onload = run;
-    sc.onerror = function () { toastMsg('トランプを よみこめませんでした'); };
+    var sc = document.createElement('script'); sc.src = 'quiz-cards.js?v=4'; sc.onload = run;
+    sc.onerror = function () { toastMsg('カードゲームを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
   function openCube() {
