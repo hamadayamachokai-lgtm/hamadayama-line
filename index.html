@@ -276,7 +276,7 @@ button.mi{cursor:pointer;min-height:32px}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
 .gsec{display:flex;align-items:center;justify-content:space-between;gap:8px}.gdb{all:unset;cursor:pointer;box-sizing:border-box;padding:7px 14px;border-radius:999px;border:2px solid var(--line);background:#fff;font-size:14px;font-weight:800;color:var(--sub);min-height:38px}.gdb.on{background:#fff6b8;border-color:#e0b400;color:#5a4100}
 .gdp{background:#fffbdc;border:2px solid #ecd35a;border-radius:16px;padding:14px;margin:0 0 14px;color:#2a2400}.gdq{font-size:19px;font-weight:800;line-height:1.5;margin:0 0 10px}.gdg{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
-.gdw{all:unset;cursor:pointer;box-sizing:border-box;width:100%;padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid #e0b400;font-size:17px;font-weight:700;color:#2a2400;min-height:48px}.gdw.ai{background:#fff6b8;margin:0 0 10px}
+.gdw{all:unset;cursor:pointer;box-sizing:border-box;width:100%;padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid #e0b400;font-size:17px;font-weight:700;color:#2a2400;min-height:48px}.gdw.ai{background:#fff6b8;margin:0 0 10px}.gdw.back{background:#f1f1f1;border-color:#bbb;color:#444;margin-top:4px}
 .gdo{font-size:14px;line-height:1.6;margin:4px 0 8px}.gdd{margin:0 0 12px}.gdd summary{cursor:pointer;font-weight:800;font-size:16px;padding:10px 0}.gdd .gdw{margin:0 0 8px}.gdh{font-size:15px;font-weight:800;margin:8px 0 8px;padding-top:8px;border-top:1.5px dashed #ecd35a}
 .aiimgs{margin:-4px 0 10px 44px}.aiimgs figure{margin:0 0 10px}.aiimgs img{display:block;width:100%;max-width:300px;border:1.5px solid var(--line);border-radius:14px}.aiimgs figcaption{font-size:12px;opacity:.7;margin-top:4px}
 .aiact button.go.tr{background:#fff7d6;border-color:#e0a800;color:#5a4100;font-size:15px}.aiact button.ask{background:#fff;border-color:#c0392b;color:#c0392b;font-size:15px}
@@ -750,37 +750,44 @@ function heroNotes(me) {
   }).join('');
   return n.length || tq ? '<div class="hnotes">' + tq + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
 }
-var GD_ = { on: false };
+var GD_ = { on: false, pick: null };
 try { GD_.on = localStorage.getItem('hmtGuide') === '1'; } catch (e) { /* 保存できなくても動く */ }
-var GWISH_ = [
-  ['会員証・登録', [['会員証を出したい', 'card'], ['会員証を編集したい', 'cardedit']]],
-  ['祭礼', [['祭礼に申し込む', 'evfest'], ['祭礼をキャンセルする', 'evfestx']]],
-  ['演芸会', [['演芸会に申し込む', 'evengei'], ['演芸会をキャンセルする', 'evgeix']]],
-  ['イベント', [['イベントの申し込み状況を見たい', 'evstat']]],
-  ['ゲーム', [['ゲームをやりたい', 'game']]],
-  ['助け合い・サポーター', [['助け合いを見てみる', 'helplook'], ['助け合いで募集したい', 'helprec'], ['サポーターを見てみる', 'suplook'], ['サポーターをやってみたい', 'supdo']]],
-  ['天気', [['天気を知りたい', 'weather']]]
+var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイドスタート
+  ['card', '会員証', [['見たい(QRコードを出す)', 'card'], ['編集したい', 'cardedit']]],
+  ['dashboard', '掲示板', [['情報を見たい', 'board']]],
+  ['board', 'ツイート', [['見たい', 'tweetlook'], ['投稿したい', 'tweetnew']]],
+  ['mail', 'チャット', [['役員に連絡したい(新規作成)', 'chat'], ['使い方を質問したい(ロボット)', 'chatai']]],
+  ['event', 'イベント', [['祭礼に申し込みたい', 'evfest'], ['祭礼をキャンセルしたい', 'evfestx'], ['演芸会に申し込みたい', 'evengei'], ['演芸会をキャンセルしたい', 'evgeix'], ['申し込み状況を見たい', 'evstat']]],
+  ['help', '助け合い', [['探したい(見てみる)', 'helplook'], ['募集したい', 'helprec']]],
+  ['supporter', 'サポーター募集', [['探したい(見てみる)', 'suplook'], ['やってみたい', 'supdo']]],
+  ['headchg', '回覧元変更', [['変更したい', 'headchg']]],
+  ['suginami', '防災情報', [['情報を見たい', 'bosai']]],
+  ['weather', '天気', [['情報を見たい', 'weather']]],
+  ['tips', 'ゲーム', [['ババ抜きで遊びたい', 'g_baba'], ['7並べで遊びたい', 'g_sev'], ['ポーカーで遊びたい', 'g_pk'], ['神経衰弱で遊びたい', 'g_mem'], ['カルタで遊びたい', 'g_kar'], ['ソリティアで遊びたい', 'g_sol'], ['○×ゲームで遊びたい', 'g_ox'], ['あたまおしりで遊びたい', 'g_atama'], ['ルービックキューブで遊びたい', 'g_cube'], ['100万円ゲームで遊びたい', 'g_hun'], ['日本一周スゴロクで遊びたい', 'g_trip'], ['歴史推理で遊びたい', 'g_mys']]],
+  ['blog', '町会ブログ', [['見たい', 'blog']]]
 ];
-var GDESC_ = { o_summary: '集計結果を見たい', o_unpaid: '未納の方を確認したい', o_circ: '回覧元を確認したい', headchg: '回覧元を変更したい', o_roster: '会員を検索したい(会員名簿)', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', o_mama: 'スナックママを開きたい', o_sched: '役員の予定を見たい', o_report: '事業報告・計画を見たい', o_sokai: '総会資料を見たい', o_kanban: '捨て看板を依頼したい', a_sched: '予定を登録したい', a_image: '推理の画像を変えたい', a_disaster: '災害モードを切りかえたい', a_docs: '書類を更新したい', a_notice: 'お知らせを更新したい', a_mama: 'ママを設定したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい', mail: 'チャットで役員に連絡したい', dashboard: '町会のお知らせ(掲示板)を見たい', board: 'Tweetを見たい・書きたい', suginami: '杉並区の防災情報を見たい', blog: '町会ブログを見たい' };
-var GCOVER_ = { card: 1, event: 1, tips: 1, help: 1, supporter: 1, weather: 1, mystery: 1 };
+var GOFF_ = [['o_sched', '役員の予定を見たい'], ['o_circ', '回覧元を見たい'], ['headchg', '回覧元を変更したい'], ['o_roster', '会員情報を見たい(会員検索)'], ['o_report', '事業報告・計画を記載したい'], ['o_mama', 'スナックママの部屋に行きたい'], ['o_supporter', 'サポーターの募集をしたい'], ['o_summary', '集計結果を見たい'], ['o_kanban', '捨て看板を依頼したい'], ['o_sokai', '総会資料を見たい']];
+var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '推理の画像を変えたい', a_disaster: '災害モードを切りかえたい', a_docs: '書類を更新したい', a_notice: 'お知らせを更新したい', a_mama: 'ママを設定したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
 function gdMenuTour(k) {
   var id = 'm_' + k, lab = LABEL[k] || k;
-  TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
+  if (!TOURS_[id]) TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
   return id;
 }
 function gdPanel() {
-  var me = S.me, wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; };
-  var h = '<div class="gdp"><div class="gdq">使いたいメニューや<br>やりたいことを教えてください</div>';
-  GWISH_.forEach(function (g) { h += '<div class="gdg">' + g[1].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div>'; });
-  var other = [], off = [];
-  me.menu.forEach(function (m) {
-    if (GCOVER_[m.key]) return;
-    (m.section === 'common' ? other : off).push(m);
-  });
-  h += '<div class="gdo">他にも機能があります。' + (other.length ? '下の「他のメニュー」から選ぶか、' : '') + 'チャットの「操作質問」で、聞きたいことを書いてください。</div>';
-  h += '<button type="button" class="gdw ai" data-gtour="chatai">操作質問(AIに聞く)の場所を教えてもらう</button>';
-  if (other.length) h += '<details class="gdd"><summary>他のメニュー</summary>' + other.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</details>';
-  if (off.length) h += '<div class="gdh">役員メニュー</div><div class="gdg">' + off.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</div>';
+  var me = S.me, has = {}; me.menu.forEach(function (m) { has[m.key] = 1; });
+  var wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; }, h = '<div class="gdp">';
+  var pk = GD_.pick, M = null; GM_.forEach(function (m) { if (m[0] === pk && has[m[0]]) M = m; });
+  if (M) {
+    h += '<div class="gdq">「' + esc(M[1]) + '」で、したいことを選んでください</div><div class="gdg">' + M[2].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div><button type="button" class="gdw back" data-gpick="">メニュー選びにもどる</button>';
+  } else {
+    h += '<div class="gdq">どれを使いたいですか?</div><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
+    var offs = GOFF_.filter(function (x) { return has[x[0]] && x[0] !== 'headchg'; }), done = {}; GOFF_.forEach(function (x) { done[x[0]] = 1; }); GM_.forEach(function (m) { done[m[0]] = 1; }); done.mystery = 1;
+    var rest = me.menu.filter(function (m) { return !done[m.key] && m.section !== 'common'; });
+    if (offs.length || rest.length) {
+      h += '<div class="gdh">役員メニュー</div><div class="gdg">' + offs.map(function (x) { return wish(x[1], gdMenuTour(x[0])); }).join('') + '</div>';
+      if (rest.length) h += '<details class="gdd"><summary>その他の役員・管理メニュー</summary>' + rest.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</details>';
+    }
+  }
   return h + '</div>';
 }
 function homeView() {
@@ -796,8 +803,9 @@ function homeView() {
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
-  var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
+  var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; GD_.pick = null; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-gpick]'), function (b) { b.onclick = function () { GD_.pick = b.dataset.gpick || null; tourStop(true); homeView(); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.hqy'), function (bt) {
     bt.onclick = function () {
       var box = bt.closest('.hq'), id = box.dataset.sid, ans = bt.dataset.sans;
@@ -1885,6 +1893,13 @@ function mailMoreSheet(d, id, redraw) {
 }
 
 /* ---------- 「次はここをタップ」ガイド(吹き出しで、押す場所を順番に教える) ---------- */
+function GSTART_(g, name) {
+  return [{ sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' }, { sel: '#gcards', say: 'つぎに「カードゲーム」を押します' },
+    { sel: '.hmg[data-g="' + g + '"]', say: 'この「' + name + '」を押します' },
+    { sel: '#sMode', say: '「一人モード」「1台で遊ぶ」「オンライン」を、ここで選びます。はじめての方は「一人モード」(ロボットと遊びます)がおすすめです', next: 1 },
+    { sel: '#go', say: '選んだら、この「スタート」を押します' }];
+}
+function GTOP_(sel, name) { return [{ sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' }, { sel: sel, say: 'この「' + name + '」を押すと、はじまります' }]; }
 var TOURS_ = {
   game: { t: 'GAMEを開く場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' },
@@ -1901,6 +1916,39 @@ var TOURS_ = {
   event: { t: 'イベントの申し込み場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
     { sel: '[data-ap]', say: '申し込みたいイベントの、この「申し込む」を押します' } ] },
+  g_baba: { t: 'ババ抜きのはじめ方を、教えてもらう', home: 1, steps: GSTART_('baba', 'ババ抜き').concat([
+    { sel: '.pcdraw', say: 'あなたの番です。相手のカード(裏向き)の中から、1まい選んで押します', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
+    { sel: '.pcw', say: '引いたカードは、この下のあなたの手札に入ります。同じ数字が2まいそろうと、自動で捨てられます。最後までババ(ジョーカー)を持っていた人の負けです', next: 1, wait: '少し待ちましょう' } ]) },
+  g_sev: { t: '7並べのはじめ方を、教えてもらう', home: 1, steps: GSTART_('sev', '7並べ').concat([
+    { sel: '.pcw .pc[data-p]', say: 'あなたの番です。光っているカードを押すと、上の表に出せます', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
+    { sel: '.pcb', say: '出したカードは、この表の、同じマークの列に入ります。7のとなり(6か8)から、つなげていきます。出せるカードがないときは「パスする」を押します', next: 1, wait: '少し待ちましょう' } ]) },
+  g_pk: { t: 'ポーカーのはじめ方を、教えてもらう', home: 1, steps: GSTART_('pk', 'ポーカー').concat([
+    { sel: '.pcw .pc[data-x]', say: 'いらないカードがあれば、そのカードを押して選びます。(選ばなくてもよいです)', next: 1, wait: '少し待ちましょう' },
+    { sel: '#cpk', say: 'この「こうかんする」を押すと、選んだカードが新しいカードに入れかわります。何も選ばないときは「このまま きめる」です', wait: '少し待ちましょう' } ]) },
+  g_mem: { t: '神経衰弱のはじめ方を、教えてもらう', home: 1, steps: GSTART_('mem', '神経衰弱').concat([
+    { sel: '.pcg [data-f]', say: 'あなたの番です。裏向きのカードを、1まい押します', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
+    { sel: '.pcg [data-f]', say: 'もう1まい押します。同じ数字ならそろって、もらえます(マークは関係ありません)', wait: '少し待ちましょう' } ]) },
+  g_kar: { t: 'カルタのはじめ方を、教えてもらう', home: 1, steps: GSTART_('kar', 'カルタ').concat([
+    { sel: '.kmat', say: '問題が読まれます。答えの札を、この中から探して押します。早く押した人が、その札をもらえます', next: 1, wait: '少し待ちましょう' } ]) },
+  g_sol: { t: 'ソリティアのはじめ方を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' }, { sel: '#gcards', say: 'つぎに「カードゲーム」を押します' },
+    { sel: '.hmg[data-g="sol"]', say: 'この「ソリティア」を押します' },
+    { sel: '#sst', say: 'この山札を押すと、カードが1まいめくれます' },
+    { sel: '.pcsol + .pcsol', say: 'めくったカードや、この下の列のカードは、「1つ大きい数字で、ちがう色」のカードの上に置けます。動かしたいカードを押して、置きたい場所を押します。Aは右上の空き場所に置きます', next: 1 } ] },
+  g_ox: { t: '○×ゲームの場所を、教えてもらう', home: 1, steps: GTOP_('#gox', '○×ゲーム') },
+  g_atama: { t: 'あたまおしりの場所を、教えてもらう', home: 1, steps: GTOP_('#gatama2', 'あたまおしり') },
+  g_cube: { t: 'ルービックキューブの場所を、教えてもらう', home: 1, steps: GTOP_('#gcube', 'ルービックキューブ') },
+  g_hun: { t: '100万円ゲームの場所を、教えてもらう', home: 1, steps: GTOP_('#ghun', '100万円を死守しろ!') },
+  g_trip: { t: '日本一周スゴロクの場所を、教えてもらう', home: 1, steps: GTOP_('#gtrip', '日本一周スゴロク') },
+  g_mys: { t: '歴史推理の場所を、教えてもらう', home: 1, steps: GTOP_('#gmys', '歴史推理') },
+  tweetlook: { t: 'Tweetを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="board"]', say: 'この「Tweet」を押すと、みんなの投稿が見られます' }] },
+  tweetnew: { t: 'Tweetを書く場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="board"]', say: 'この「Tweet」を押します' },
+    { sel: '#bin', say: 'この欄に、書きたいことを書きます(名前は出ません)', next: 1 },
+    { sel: '.bcomp .bsend', say: '書けたら、この送るボタンを押します' } ] },
+  bosai: { t: '防災情報を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="suginami"]', say: 'この「杉並(防災)」を押すと、杉並区の防災情報が見られます' }] },
+  blog: { t: '町会ブログを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="blog"]', say: 'この「町会ブログ」を押すと、ブログが開きます' }] },
+  headchg: { t: '回覧元を変更する場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="headchg"]', say: 'この「回覧元変更」を押します' }] },
   cardedit: { t: '会員証の内容を直す場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="card"]', say: 'この「会員証」を押します' },
     { sel: '#cedit', say: '「編集」を押すと、登録の内容を直せます' } ] },
@@ -1942,10 +1990,10 @@ function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
   var row = e.parentNode; return row ? row.querySelector('[data-' + kind + ']') : null;
 }
-var TR = { on: false, name: '', i: 0, t: 0, wait: 0, hole: null, box: null, el: null };
+var TR = { on: false, name: '', i: 0, t: 0, wait: 0, ws: false, hole: null, box: null, el: null };
 function tourStart(name) {
   var T = TOURS_[name]; if (!T) return; tourStop(true);
-  TR = { on: true, name: name, i: 0, t: 0, wait: 0, hole: null, box: null, el: null };
+  TR = { on: true, name: name, i: 0, t: 0, wait: 0, ws: false, hole: null, box: null, el: null };
   var h = document.createElement('div'); h.className = 'tourhole tourui'; h.style.display = 'none'; document.body.appendChild(h);
   var b = document.createElement('div'); b.className = 'tourb tourui'; b.setAttribute('role', 'dialog'); document.body.appendChild(b);
   TR.hole = h; TR.box = b;
@@ -1965,7 +2013,8 @@ function tourVisible(e) { if (!e) return false; var r = e.getBoundingClientRect(
 function tourTick() {
   var st = tourStep(); if (!st) return;
   var e = typeof st.sel === 'function' ? st.sel() : document.querySelector(st.sel);
-  if (!tourVisible(e)) { TR.el = null; TR.wait += 150; TR.hole.style.display = 'none'; if (TR.wait > 5000) tourLost(); return; }
+  if (!tourVisible(e)) { TR.el = null; TR.wait += 150; TR.hole.style.display = 'none'; if (TR.wait > 1000 && !TR.ws) tourWaitUI(st.wait || '画面の読み込み中。少し待ちましょう'); return; }
+  TR.wait = 0; TR.ws = false;
   TR.wait = 0;
   if (TR.el !== e) {
     TR.el = e; var r0 = e.getBoundingClientRect();
@@ -1988,7 +2037,7 @@ function tourPos() {
 function tourNext() {
   var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
   if (TR.i >= T.steps.length) { tourStop(true); toast('ここまでです。おつかれさまでした'); return; }
-  TR.box.innerHTML = 'つぎの画面を ひらいています…';
+  tourWaitUI(TOURS_[TR.name].steps[TR.i].wait || '画面の読み込み中。少し待ちましょう');
 }
 function tourClick(ev) {
   var st = tourStep(); if (!st || !TR.el) return;
@@ -1998,11 +2047,9 @@ function tourClick(ev) {
   ev.preventDefault(); ev.stopPropagation();
   TR.box.classList.remove('shake'); void TR.box.offsetWidth; TR.box.classList.add('shake');
 }
-function tourLost() {
-  var st = tourStep(); TR.wait = -1e9; TR.hole.style.display = 'none';
-  TR.box.style.top = '30%'; TR.box.style.left = '12px';
-  TR.box.innerHTML = '画面が かわってしまったようです。<div class="tb"><button type="button" data-tr="1">はじめから</button><button type="button" class="q" data-tq="1">やめる</button></div>';
-  TR.box.querySelector('[data-tr]').onclick = function (ev) { ev.stopPropagation(); var n = TR.name; tourStop(true); tourStart(n); };
+function tourWaitUI(txt) {
+  TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px'; TR.ws = true;
+  TR.box.innerHTML = esc(txt) + '<div class="tb"><button type="button" class="q" data-tq="1">やめる</button></div>';
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
 }
 /* ---------- AIに聞く(使い方案内) ---------- */
