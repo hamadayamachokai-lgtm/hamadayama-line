@@ -361,12 +361,8 @@
 
   /* --- GAME メニュー(助け合いの最初の画面と同じ作り) --- */
   function hub() {
-    draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">カードゲーム</div><button type="button" class="hmg wide" id="gcards" style="margin:0">カードゲームで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・カルタ(ことわざ・歴史・英単語)。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">ルービックキューブ</div><button type="button" class="hmg wide" id="gcube" style="margin:0">キューブで あそぶ</button><p class="small" style="margin:8px 0 0">レベル1〜5(2×2×2 〜 6×6×6)。特訓・ロボットと対戦・町会みんなの大会(ランキング)。攻略補助つき。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">100万円を死守しろ!</div><button type="button" class="hmg wide" id="ghun" style="margin:0">死守しろ!に 挑戦</button><p class="small" style="margin:8px 0 0">架空の100万円から、まちがえると −10万円。体感・視覚・聴覚・記憶の ミニチャレンジ10問(10秒ぴったり・目盛りのない定規・立体図をなぞる・音あて・記憶)。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。コンピュータと対戦、またはみんなで。止まったマスで1問。まちがえたら戻ります。</p></div>');
+    var bt = function (id, t) { return '<button type="button" class="hmg wide" id="' + id + '" style="margin:0 0 10px">' + t + '</button>'; };
+    draw('<h2 class="hph">GAME</h2><div class="card hpq">' + bt('gox', '○×ゲーム') + bt('gatama2', 'あたまおしり') + bt('gcards', 'カードゲーム') + bt('gcube', 'ルービックキューブ') + bt('ghun', '100万円を死守しろ!') + bt('gtrip', '日本一周スゴロク') + '</div>');
     $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred;
   }
 
@@ -416,8 +412,19 @@
   }
   function oxLvLabel(i) { var z = OXS[i]; return 'レベル' + (i + 1) + ' ・ ' + z.n + '×' + z.n + '(' + z.k + 'つそろえ) ・ 1手 ' + z.sec + '秒'; }
   function ox() {
-    draw('<h2 class="hph">○×ゲーム</h2><div class="card hpq"><div class="hpl" style="margin-top:0">だれと あそぶ?</div><button type="button" class="hmg wide" id="oxs" style="margin:0 0 10px">ひとりプレイ</button><button type="button" class="hmg wide alt" id="oxm" style="margin:0">2人以上プレイ</button><p class="small" style="margin:8px 0 0">ひとりプレイは コンピューターと たいせん。</p></div><button class="qb" id="oxb">← GAMEの メニュー</button>');
-    $('#oxs').onclick = function () { oxLevel('cpu'); }; $('#oxm').onclick = oxWhere; $('#oxb').onclick = hub;
+    var S = window.__oxs = window.__oxs || { mode: 'cpu', lv: 2 };
+    var op = function (v, t, c) { return '<option value="' + v + '"' + (String(c) === String(v) ? ' selected' : '') + '>' + t + '</option>'; };
+    var rw = function (l, id, o) { return '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-weight:800"><span>' + l + '</span><select id="' + id + '" style="flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit">' + o + '</select></label>'; };
+    draw('<h2 class="hph">○×ゲーム</h2><div class="card hpq">' + rw('あそびかた', 'oxMode', op('cpu', '一人モード', S.mode) + op('pvp', '1台で遊ぶ', S.mode) + op('net', 'オンライン', S.mode)) + rw('レベル', 'oxLv', OXS.map(function (z, i) { return op(i, 'レベル' + (i + 1), S.lv); }).join('')) +
+      '<button type="button" class="qb pri" id="oxgo" style="margin-top:12px">' + (S.mode === 'net' ? 'へやへ' : 'スタート') + '</button>' + (S.mode === 'net' ? '<button type="button" class="qb" id="oxjoin">ともだちの へやに はいる(番号)</button>' : '') + '</div><button class="qb" id="oxb">もどる</button>');
+    $('#oxMode').onchange = function () { S.mode = this.value; ox(); }; $('#oxLv').onchange = function () { S.lv = +this.value; };
+    $('#oxb').onclick = hub;
+    $('#oxgo').onclick = function () {
+      var i = +$('#oxLv').value, z = OXS[i]; S.lv = i;
+      if (S.mode === 'net') return withRoom(function (RM) { RM.lobby(api(), oxNetSpec(i)); });
+      oxStart({ mode: S.mode, lv: z.cpu, first: 'O', n: z.n, k: z.k, sec: z.sec, level: i });
+    };
+    var jb = $('#oxjoin'); if (jb) jb.onclick = function () { withRoom(function (RM) { RM.lobby(api(), oxNetSpec(+$('#oxLv').value)); }); };
   }
   function oxWhere() {
     draw('<h2 class="hph">2人以上プレイ</h2><div class="card hpq"><button type="button" class="hmg wide" id="oxsame" style="margin:0 0 10px">同じスマホで(貸し借り)</button><button type="button" class="hmg wide alt" id="oxnet" style="margin:0">べつのスマホと(4けたの番号)</button></div><button class="qb" id="oxb">← もどる</button>');
@@ -552,11 +559,11 @@
     tm = setTimeout(fail, 25000);
     document.head.appendChild(sc);
   }
-  function openAtama() { loadGame('quiz-atama.js?v=3', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
-  function openCards() { loadGame('quiz-cards.js?v=9', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
-  function openCube() { loadGame('quiz-cube.js?v=5', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
+  function openAtama() { loadGame('quiz-atama.js?v=4', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
+  function openCards() { loadGame('quiz-cards.js?v=10', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
+  function openCube() { loadGame('quiz-cube.js?v=6', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
   function openHundred() { loadGame('quiz-hundred.js?v=1', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
-  function openTrip() { loadGame('quiz-trip.js?v=9', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
+  function openTrip() { loadGame('quiz-trip.js?v=10', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
     return { call: function (a, b) { return CALL ? CALL(a, b) : Promise.reject(new Error('つながっていません')); }, toast: toastMsg, withRoom: withRoom, ask: ask, addXp: addXp, giveCard: giveCard, draw: draw, bind: bind, st: st, Store: Store, K: K, T: T, esc: esc, rng: rng, shuffle: shuffle, poolFor: poolFor, qById: qById, buddySVG: buddySVG, home: home, hub: hub, bsel: bsel, data: DATA, root: function () { return root; }, LV_SEC: LV_SEC, stageOf: stageOf, stopTimer: stopTimer };
