@@ -154,17 +154,17 @@
     id: 'mem', title: '神経衰弱', hidden: false, min: 2, max: 12, bots: [1, 3],
     init: function (n, names, o) {
       var m = (o && o.size) || 20, all = [];
-      for (var r = 0; r < 13; r++) { all.push([r, 0]); all.push([r, 1]); }   // おなじ数字・おなじ色(黒 / 赤)で ペア
+      for (var r = 0; r < 13; r++) { all.push([r, 0]); all.push([r, 1]); }   // おなじ数字を2まい(マークは かんけいなし)。30まいは おなじ数字が4まい入ることも
       shuf(all); var cards = [];
       all.slice(0, m / 2).forEach(function (pr) { var a = pr[1] === 0 ? [r0(pr[0], 0), r0(pr[0], 3)] : [r0(pr[0], 1), r0(pr[0], 2)]; cards.push(a[0], a[1]); });
       shuf(cards);
-      return { g: 'mem', phase: 'play', n: n, nm: names, cards: cards, st: cards.map(function () { return 0; }), own: cards.map(function () { return -1; }), f: [], seen: [], turn: 0, score: names.map(function () { return 0; }), pend: '', msg: 'おなじ 数字・おなじ色(黒どうし/赤どうし)を そろえよう', over: false, size: m };
+      return { g: 'mem', phase: 'play', n: n, nm: names, cards: cards, st: cards.map(function () { return 0; }), own: cards.map(function () { return -1; }), f: [], seen: [], turn: 0, score: names.map(function () { return 0; }), pend: '', msg: 'おなじ 数字を そろえよう(マークは かんけいなし)', over: false, size: m };
     },
     turnOf: function (S) { return S.over ? -1 : S.turn; },
     apply: function (S0, m) {
       var S = clone(S0), i = m.flip; if (S.pend || S.st[i] !== 0 || S.f.length >= 2) return null;
       S.st[i] = 1; S.f.push(i); if (S.seen.indexOf(i) < 0) S.seen.push(i);
-      if (S.f.length === 2) { var a = S.cards[S.f[0]], b = S.cards[S.f[1]]; S.pend = rk(a) === rk(b) && red(a) === red(b) ? 'hit' : 'miss'; S.msg = S.pend === 'hit' ? '👏 そろった!' : 'ざんねん…'; }
+      if (S.f.length === 2) { var a = S.cards[S.f[0]], b = S.cards[S.f[1]]; S.pend = rk(a) === rk(b) ? 'hit' : 'miss'; S.msg = S.pend === 'hit' ? '👏 そろった!' : 'ざんねん…'; }
       return S;
     },
     resolve: function (S0) {
@@ -176,7 +176,7 @@
     bot: function (S, lvl) {
       var free = []; S.st.forEach(function (x, i) { if (x === 0) free.push(i); });
       var known = S.seen.filter(function (i) { return S.st[i] === 0 && Math.random() < (lvl || 0.75); });
-      function mate(i) { var c = S.cards[i]; for (var k = 0; k < known.length; k++) { var j = known[k]; if (j !== i && S.st[j] === 0 && rk(S.cards[j]) === rk(c) && red(S.cards[j]) === red(c)) return j; } return -1; }
+      function mate(i) { var c = S.cards[i]; for (var k = 0; k < known.length; k++) { var j = known[k]; if (j !== i && S.st[j] === 0 && rk(S.cards[j]) === rk(c)) return j; } return -1; }
       if (S.f.length === 0) {
         for (var q = 0; q < known.length; q++) { var j = mate(known[q]); if (j >= 0) return { flip: known[q] }; }
         var un = free.filter(function (i) { return S.seen.indexOf(i) < 0; }); var pool = un.length ? un : free; return { flip: pool[Math.floor(Math.random() * pool.length)] };
