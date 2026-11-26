@@ -752,6 +752,13 @@ function heroNotes(me) {
 }
 var GD_ = { on: false, pick: null };
 try { GD_.on = localStorage.getItem('hmtGuide') === '1'; } catch (e) { /* 保存できなくても動く */ }
+var START_MSG_ = '登録ありがとうございます!\nまずは、ボタンを触ってみましょう!\n\n天気を見たり、\n町会ブログを見てもいいですね。\n\nわからなくなったら、一度LINEを終了して、\nもう一度入り直せば大丈夫ですよ。\nこわれたりすることはありません!\n\n慣れてきたら、\nゲームはどうでしょう。\nガイドONでやれば、きっと操作できます。\n一緒に楽しみましょう。\n\nさあ、どこから行きましょうか。';
+var REC_ = [['天気', 'weather', 'weather'], ['ブログ', 'blog', 'blog'], ['防災情報', 'bosai', 'suginami'], ['掲示板', 'board', 'dashboard'], ['ゲーム', 'game', 'tips'], ['イベント申込者の登録', 'evreg', 'event']];
+function recHtml(attr) {
+  var has = {}; ((S.me && S.me.menu) || []).forEach(function (m) { has[m.key] = 1; });
+  var b = REC_.filter(function (r) { return has[r[2]]; }).map(function (r) { return '<button type="button" class="gdw" ' + attr + '="' + r[1] + '">' + esc(r[0]) + '</button>'; }).join('');
+  return b ? '<div class="gdh" style="border:0;padding-top:0">あなたにおすすめ</div><div class="gdg">' + b + '</div>' : '';
+}
 var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイドスタート
   ['card', '会員証', [['見たい(QRコードを出す)', 'card'], ['編集したい', 'cardedit']]],
   ['dashboard', '掲示板', [['情報を見たい', 'board']]],
@@ -776,11 +783,12 @@ function gdMenuTour(k) {
 function gdPanel() {
   var me = S.me, has = {}; me.menu.forEach(function (m) { has[m.key] = 1; });
   var wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; }, h = '<div class="gdp">';
-  var pk = GD_.pick, M = null; GM_.forEach(function (m) { if (m[0] === pk && has[m[0]]) M = m; });
+  var pk = GD_.pick, M = null;
+  if (pk === '__start') return '<div class="gdp">' + mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: START_MSG_ }) + recHtml('data-gtour') + '<button type="button" class="gdw back" data-gpick="">メニュー選びにもどる</button></div>'; GM_.forEach(function (m) { if (m[0] === pk && has[m[0]]) M = m; });
   if (M) {
     h += '<div class="gdq">「' + esc(M[1]) + '」で、したいことを選んでください</div><div class="gdg">' + M[2].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div><button type="button" class="gdw back" data-gpick="">メニュー選びにもどる</button>';
   } else {
-    h += '<div class="gdq">どれを使いたいですか?</div><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
+    h += '<div class="gdq">どれを使いたいですか?</div><button type="button" class="gdw ai" data-gpick="__start">登録したけど、何からやったらいいかわからない</button><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
     var offs = GOFF_.filter(function (x) { return has[x[0]] && x[0] !== 'headchg'; }), done = {}; GOFF_.forEach(function (x) { done[x[0]] = 1; }); GM_.forEach(function (m) { done[m[0]] = 1; }); done.mystery = 1;
     var rest = me.menu.filter(function (m) { return !done[m.key] && m.section !== 'common'; });
     if (offs.length || rest.length) {
@@ -1949,6 +1957,9 @@ var TOURS_ = {
   bosai: { t: '防災情報を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="suginami"]', say: 'この「杉並(防災)」を押すと、杉並区の防災情報が見られます' }] },
   blog: { t: '町会ブログを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="blog"]', say: 'この「町会ブログ」を押すと、ブログが開きます' }] },
   headchg: { t: '回覧元を変更する場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="headchg"]', say: 'この「回覧元変更」を押します' }] },
+  evreg: { t: 'イベント申込者の登録場所を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
+    { sel: '[data-pn="祭礼"]', say: 'お子さんを祭礼に申し込むときは、この「祭礼対象者登録」を押して、先に登録します' } ] },
   cardedit: { t: '会員証の内容を直す場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="card"]', say: 'この「会員証」を押します' },
     { sel: '#cedit', say: '「編集」を押すと、登録の内容を直せます' } ] },
@@ -2055,6 +2066,7 @@ function tourWaitUI(txt) {
 /* ---------- AIに聞く(使い方案内) ---------- */
 var AI = { msgs: [], faq: null, busy: false, last: '' };
 var AIF_ = [
+  { i: '🔰', t: 'はじめての方', q: ['登録したけど何からやったらいいかわからない'] },
   { i: '🪪', t: '会員証', q: ['会員証を見たい', '会員証が出てこない', '会員証を家族に見せたい'] },
   { i: '📌', t: '掲示板', q: ['掲示板を見たい', '掲示板に書き込みたい', '写真を載せたい'] },
   { i: '💬', t: 'チャット', q: ['役員にメッセージを送りたい', 'チャットで写真を送りたい', '送ったチャットを消したい', '返信が来たか知りたい'] },
@@ -2080,8 +2092,9 @@ function aiDraw() {
   }
   AI.msgs.forEach(function (m, i) {
     if (m.r === 'u') { h += mBubble({ mine: true, date: '', body: m.t }); return; }
-    var imgs = [], tours = [], tx = String(m.t || '').replace(/\[\[img:([a-z0-9_]+)\]\]/g, function (a, n) { imgs.push(n); return ''; }).replace(/\[\[tour:([a-z0-9_]+)\]\]/g, function (a, n) { if (TOURS_[n] && tours.indexOf(n) < 0) tours.push(n); return ''; }).replace(/\n{3,}/g, '\n\n').trim();
+    var rec = /\[\[rec\]\]/.test(m.t || ''), imgs = [], tours = [], tx = String(m.t || '').replace(/\[\[rec\]\]/g, '').replace(/\[\[img:([a-z0-9_]+)\]\]/g, function (a, n) { imgs.push(n); return ''; }).replace(/\[\[tour:([a-z0-9_]+)\]\]/g, function (a, n) { if (TOURS_[n] && tours.indexOf(n) < 0) tours.push(n); return ''; }).replace(/\n{3,}/g, '\n\n').trim();
     h += mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: tx });
+    if (!m.wait && rec) h += '<div class="aiimgs" style="margin-left:44px">' + recHtml('data-atour') + '</div>';
     if (!m.wait && imgs.length) h += '<div class="aiimgs">' + imgs.map(function (n) { return '<figure><img src="guide/' + n + '.jpg?v=1" alt="画面の見本" loading="lazy" onerror="this.parentNode.style.display=\'none\'"><figcaption>画面の見本です。赤い丸の数字が、押すところです</figcaption></figure>'; }).join('') + '</div>';
     if (!m.wait && i === AI.msgs.length - 1) h += '<div class="aiact"><button type="button" data-afr="1">他の質問をえらぶ</button></div>';
     if (!m.wait) h += '<div class="aiact">' + tours.map(function (n) { return '<button type="button" class="go tr" data-atour="' + n + '">' + esc(TOURS_[n].t) + '</button>'; }).join('') + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">「' + GOL_[m.go] + '」を開く</button>' : '') + '<button type="button" class="ask" data-aask="' + i + '">それでもわからないときは、役員に聞く</button></div>';
