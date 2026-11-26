@@ -442,7 +442,9 @@
       if (won) h += '<div class="qc" style="text-align:center"><div style="font-size:1.4em;font-weight:800">🎉 クリア! おめでとう!</div></div>';
       else h += '<div class="qm" style="margin:6px 0">' + (sel ? 'おきたい ところを タップ(もう1回 タップで 上の 4つの山へ)' : 'うごかしたい カードを タップ。左上の 山札で めくります') + '</div>';
       h += '<div class="qgrid"><button type="button" class="qb sm" id="sun"' + (hist.length ? '' : ' disabled') + '>ひとつ もどす</button><button type="button" class="qb sm" id="sau">おまかせ(上の山へ)</button><button type="button" class="qb sm" id="sne">あたらしい ゲーム</button><button type="button" class="qb sm" id="sqt">やめる</button></div>';
+      var sy = window.pageYOffset, sc = document.scrollingElement || document.documentElement, first = !T.__p; T.__p = 1;
       A.draw(h);
+      if (!first) { sc.scrollTop = sy; window.scrollTo(0, sy); }   // 再描画しても 画面の位置は うごかさない
       $('#sst').onclick = function () { snap(); if (T.stock.length) T.waste.push(T.stock.pop()); else { T.stock = T.waste.reverse(); T.waste = []; } sel = null; paint(); };
       var sw = $('#sw'); if (sw) sw.onclick = function () { if (sel && sel.t === 'w') { if (!moveFnd(sel)) { for (var c = 0; c < 7; c++) if (moveTab.call(null, c)) break; sel = null; } } else sel = { t: 'w' }; check(); };
       A.bind('[data-fs]', function (b) { if (sel) moveFnd(sel) || A.toast('そこには おけません'); check(); });
