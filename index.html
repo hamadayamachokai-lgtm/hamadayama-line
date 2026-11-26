@@ -4068,7 +4068,7 @@ function hpBoard(list) {
   if (!list.length) return '<div class="cork empty"><div class="cnt n0" style="--r:-1.5deg;cursor:default"><i class="pin"></i><b>いま、募集は ありません</b><span class="nb">新しい募集が出ると、ここに ピンで貼られます。</span></div></div>';
   return '<div class="cork">' + list.map(function (x) {
     var hs = hpHash(x.id), r = ((hs % 50) - 25) / 10, tags = (x.tags || []).slice(0, 3).map(function (t) { return '<span class="at">' + esc(t) + '</span>'; }).join(''), off = hpIsOwn(x) && x.status !== '公開';
-    return '<button type="button" class="cnt n' + (hs % 4) + (off ? ' off' : '') + '" data-hcase="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + hpMark(x) + (x.urgent && x.status === '公開' ? '<span class="nu">急募</span>' : '') + '<b>' + esc(x.by) + '</b><span class="nb">' + esc(String(x.body || '').replace(/\s+/g, ' ')) + '</span><span class="nm">募集 ' + esc(x.scale || '1人') + (x.status === '公開' ? ' ・ あと' + x.left + '人' : '') + '</span><span class="tgs">' + tags + '</span><span class="nd">' + esc(fmtMd(x.date)) + (hpDays(x) ? ' ・ ' + hpDays(x) : '') + '</span></button>';
+    return '<button type="button" class="cnt n' + (hs % 4) + (off ? ' off' : '') + '" data-hcase="' + esc(x.id) + '" style="--r:' + r + 'deg" aria-label="募集の詳細を見る"><i class="pin"></i>' + hpMark(x) + (x.urgent && x.status === '公開' ? '<span class="nu">急募</span>' : '') + '<b>' + esc(x.by) + '</b><span class="nb">' + esc(String(x.body || '').replace(/\s+/g, ' ')) + '</span><span class="nm">募集 ' + esc(x.scale || '1人') + (x.status === '公開' ? ' ・ あと' + x.left + '人' : '') + '</span>' + (x.psex || x.page ? '<span class="nm">募集した方: ' + esc([x.psex, x.page].filter(Boolean).join(' ・ ')) + '</span>' : '') + '<span class="tgs">' + tags + '</span><span class="nd">' + esc(fmtMd(x.date)) + (hpDays(x) ? ' ・ ' + hpDays(x) : '') + '</span></button>';
   }).join('') + '</div>';
 }
 function hpDetail(items) {
@@ -4099,7 +4099,7 @@ function hpDetail(items) {
   }
   return '<div class="hdov" data-hclose><div class="hdc n' + (hpHash(x.id) % 4) + '"><i class="pin"></i><button type="button" class="hdx" data-hclose aria-label="とじる">×</button>' + hpMark(x) +
     '<div style="display:flex;gap:10px;align-items:center;margin:6px 0 8px">' + av(x.icon, '', x.ph) + '<div><b style="font-size:17px">' + esc(x.by) + '</b>' + (x.urgent && open ? ' <span class="tk urg">急募</span>' : '') + '<div class="hms">' + esc(fmtMd(x.date)) + (x.no ? ' ・ No.' + esc(x.no) : '') + (hpDays(x) ? ' ・ ' + hpDays(x) : '') + '</div></div></div>' +
-    '<div class="hmb" style="font-size:16px;line-height:1.7">' + bodyHtml(x.body) + '</div><div class="hmw"><span>募集 ' + esc(x.scale || '1人') + '</span><i>' + (open ? 'あと' + x.left + '人' : '') + '</i></div><div class="tgs">' + tags + '</div>' + acts + '</div></div>';
+    '<div class="hmb" style="font-size:16px;line-height:1.7">' + bodyHtml(x.body) + '</div><div class="hmw"><span>募集 ' + esc(x.scale || '1人') + '</span><i>' + (open ? 'あと' + x.left + '人' : '') + '</i></div>' + (x.psex || x.page ? '<div class="hmw"><span>募集した方</span><i>' + esc([x.psex, x.page].filter(Boolean).join(' ・ ')) + '</i></div>' : '') + '<div class="tgs">' + tags + '</div>' + acts + '</div></div>';
 }
 function hpHidNote() { var n = hpHid().length; return n ? '<p class="small" style="text-align:center;margin:10px 0 0">「行かない」にした募集 ' + n + '件 <button type="button" class="sbtn xs" data-hunhide>すべて もどす</button></p>' : ''; }
 /** 募集中の案件のカード(以前の形。いまは使っていません) */
@@ -4123,9 +4123,9 @@ function drawHelp() {
   var alertH = toMe.map(function (x) { return '<div class="card hpal"><b style="font-size:17px">お願いが届いています</b><p style="margin:6px 0 2px;font-size:15px"><b>' + esc(x.by) + '</b> から</p><div class="thb" style="margin:0 0 10px">' + bodyHtml(x.body) + '</div><div class="inrow"><button type="button" class="btn" data-hyes="' + esc(x.id) + '" style="flex:1">できます</button><button type="button" class="btn ghost" data-hno="' + esc(x.id) + '" style="flex:1">できません</button></div></div>'; }).join('');
   alertH = hpCandAlerts(items) + alertH;
   if (sc === 'start') {
-    h = demo + alertH + hpTabs('start', act) +       '<h2 class="hph">どちらですか?</h2><div class="card hpq"><div class="hpl" style="margin-top:0">🙏 助けてほしい場合</div><button type="button" class="hmg wide" data-hstart="need" style="margin:0 0 10px">🔍 検索からマッチング</button><button type="button" class="hmg wide alt" data-hgo="recruit" style="margin:0">📢 自分で募集をかける</button><p class="small" style="margin:8px 0 0">検索は、いま手伝える人から選んでお願いします。募集は、人数を決めてみんなに呼びかけます(Tweetにも載ります)。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">🤝 助けに行ける場合</div><button type="button" class="hmg wide" data-hstart="go" style="margin:0">募集中の案件を見る' + (cases.length ? '(' + cases.length + ')' : '') + '</button><p class="small" style="margin:8px 0 0">そこから「今お手伝い可能です」も出せます。</p></div>' +
-      '<div class="hpl">いま募集中の案件(タップで くわしく)</div>' + hpBoard(ownOpen.concat(waiting, cases)) + hpHidNote();
+    h = demo + alertH + hpTabs('start', act) +       '<div class="card hpq"><div class="hpl" style="margin-top:0">🙏 助けてほしい場合</div><button type="button" class="hmg wide" data-hgo="recruit" style="margin:0">📢 こちらから募集</button><p class="small" style="margin:8px 0 0">募集を書くと、いま行ける方から「この方どうですか?」とご提案します。そのまま、みんなへの募集も始められます(Tweetにも載ります)。</p></div>' +
+      '<h2 class="hph" style="margin-top:18px">募集中案件</h2><p class="muted" style="margin:0 0 8px;font-size:15px">行ける人は、気になる案件を タップしてね!</p>' + hpBoard(ownOpen.concat(waiting, cases)) + hpHidNote() +
+      '<button type="button" class="hmg wide alt" data-hgo="avail" style="margin:14px 0 0">🤝 行ける人の募集(今お手伝い可能です)</button><p class="small" style="margin:6px 0 0">押すと「今 行けます」が登録され、助けてほしい方に提案されます。</p>';
   } else if (sc === 'home') {
     var fl = HP.flt[HP.mode].on, body = '';
     if (HP.mode === 'need') {
@@ -4151,8 +4151,8 @@ function drawHelp() {
       6: '<p class="sq">⑥ <b>訪問先</b>は?(現在地、またはテキストで入力)</p><button type="button" class="sbtn" id="rw-loc" style="min-height:46px;width:100%">📍 いまいる場所を使う</button><div class="small" style="margin:4px 0">' + (f.lat !== null ? '✅ 現在地を入れました' : '') + '</div><input class="inp" id="rw-place" maxlength="100" value="' + esc(f.place) + '" placeholder="例: 浜田山3丁目○○の倉庫" style="width:100%;font-size:17px;min-height:48px;box-sizing:border-box">',
       7: '<p class="sq">⑦ その他、相手に伝えたい内容を記載してください(なくてもOK)</p><textarea class="inp" id="rw-note" rows="4" maxlength="300" style="width:100%;box-sizing:border-box;font-size:17px">' + esc(f.note) + '</textarea>'
     };
-    h = back + '<h2 class="hph">助けてほしい</h2><div class="card hpq"><p class="small" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#3b1f63">年齢や性別地域によって行ける人の範囲が変わるのでお答えください。この情報は<b>マッチング後に相手にのみ公開</b>です。</p><div class="small" style="margin:0 0 6px">' + st + ' / 7</div>' + qh[st] +
-      '<div class="inrow" style="margin-top:14px">' + (st > 1 ? '<button type="button" class="sbtn" id="rw-prev" style="flex:1;min-height:48px">← もどる</button>' : '') + '<button type="button" class="hmg" id="rw-next" style="flex:2;margin:0">' + (st < 7 ? '次へ' : 'この内容で募集する') + '</button></div>' +
+    h = back + '<h2 class="hph">助けてほしい</h2><div class="card hpq"><p class="small" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#3b1f63">年齢や性別地域によって行ける人の範囲が変わるのでお答えください。<b>年代・性別</b>は募集カードに出ます。<b>氏名・訪問先</b>は、マッチング後に相手にのみ公開です。</p>' + (st <= 7 ? '<div class="small" style="margin:0 0 6px">' + st + ' / 7</div>' + qh[st] : hpSuggest(f)) +
+      '<div class="inrow" style="margin-top:14px">' + (st > 1 ? '<button type="button" class="sbtn" id="rw-prev" style="flex:1;min-height:48px">← もどる</button>' : '') + (st <= 7 ? '<button type="button" class="hmg" id="rw-next" style="flex:2;margin:0">' + (st < 7 ? '次へ' : '行ける人を さがす') + '</button>' : '<button type="button" class="hmg" id="rw-post" style="flex:2;margin:0">みんなに 募集を開始する</button>') + '</div>' +
       '<p class="small" style="margin:10px 0 0">電話番号は書かないでください。募集には名前は出ません(「3丁目会員様」と出ます)。Tweetにも載ります。</p></div>';
   } else if (sc === 'avail') {
     var a = HP.av, af = HP.af;
@@ -4172,7 +4172,7 @@ function drawHelp() {
     h = hpTabs('done', act) + '<h2 class="hph">マッチング済</h2><p class="muted" style="margin:0 0 10px;font-size:14px">つながった助け合いです。タップすると、チャットを開いたり、キャンセルなどができます。</p>' + (matched.length ? hpBoard(matched) : '<div class="card"><p class="muted" style="margin:0">まだ、マッチングした助け合いは、ありません。</p></div>') +
       (ended.length ? '<h2 class="hph" style="margin-top:22px">掲載がおわった、じぶんの募集</h2><p class="muted" style="margin:0 0 10px;font-size:14px">「再掲載」で、また5日間 出せます。</p>' + hpBoard(ended) : '');
   }
-  if (HP.det && (sc === 'mine' || sc === 'done' || sc === 'task' || (sc === 'home' && HP.mode === 'go'))) h += hpDetail(items); else HP.det = null;
+  if (HP.det && (sc === 'mine' || sc === 'done' || sc === 'task' || (sc === 'start') || (sc === 'home' && HP.mode === 'go'))) h += hpDetail(items); else HP.det = null;
   h += hpApplyForm(items) + hpChooseForm(items);
   sub('助け合い', h);
   var q = function (sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }, go2 = function (to) { HP.scr = to; HP.ask = null; HP.det = null; window.scrollTo(0, 0); drawHelp(); };
@@ -4205,12 +4205,18 @@ function drawHelp() {
   bt('#rw-next', function () { rwRead(); var f = HP.rf, st = f.step || 1;
     var need = { 1: [f.name, '氏名を入れてください'], 2: [f.scale, '募集人数を選んでください'], 3: [f.need, '手伝って欲しい内容を選んでください'], 4: [f.age, 'あなたの年代を選んでください'], 5: [f.sex, 'あなたの性別を選んでください'], 6: [f.place || f.lat !== null, '訪問先を、現在地かテキストで入れてください'] }[st];
     if (need && !need[0]) return toast(need[1]);
-    if (st < 7) { f.step = st + 1; window.scrollTo(0, 0); return drawHelp(); }
-    cf('募集します。Tweetにも載ります(年代・性別・訪問先は出ません)。よろしいですか?', function () {
-      var b = $('#rw-next'); if (b) b.disabled = true;
+    f.step = st + 1; window.scrollTo(0, 0); if (f.step === 8) hpLoadPick(); drawHelp(); });
+  bt('#rw-post', function () { var f = HP.rf;
+    cf('みんなに募集を開始します。Tweetにも載ります(氏名・訪問先は出ません)。よろしいですか?', function () {
+      var b = $('#rw-post'); if (b) b.disabled = true;
       var req = { kind: 'お願い', tweet: true, wiz: true, name: f.name, scale: f.scale, need: f.need, age: f.age, sex: f.sex, place: f.place, note: f.note }; if (f.lat !== null) { req.lat = f.lat; req.lng = f.lng; }
       api('help_post', req).then(function (r) { toast(r.tweeted ? '募集しました。Tweetにも載せました' : '募集しました'); HP.rf = hpRf0(); HP.scr = 'mine'; helpReload(); }).catch(function (e) { if (b) b.disabled = false; toast(e.message); });
     }); });
+  q('[data-sg]', function (b) { b.onclick = function () { var f = HP.rf, nm = b.dataset.sgn;
+    cf(nm + 'さんに、お願いを送ります。よろしいですか?', function () { b.disabled = true;
+      var body = f.need + (f.note ? '\n' + f.note : '') + '\n(お願いする方: ' + f.sex + ' ・ ' + f.age + '。場所は、つながったら チャットでお伝えします)';
+      api('help_ask', { to: b.dataset.sg, tags: [f.need], body: body }).then(function () { toast('お願いしました。お返事を待ちましょう'); HP.rf = hpRf0(); HP.scr = 'mine'; helpReload(); }).catch(function (e) { b.disabled = false; toast(e.message); if (e.code === 'gone') hpLoadPick(); });
+    }); }; });
   bt('#av-on', function () { var f = HP.af, b = $('#av-on'); b.disabled = true; api('help_avail_set', { on: true, sex: f.sex, age: f.age, tags: f.tags }).then(function (r) { toast(r.until + 'まで、一覧に出ます'); HP.scr = 'home'; helpReload(); }).catch(function (e) { b.disabled = false; toast(e.message); }); });
   bt('#av-off', function () { cf('お手伝い可能を、やめます。よろしいですか?', function () { api('help_avail_set', { on: false }).then(function () { toast('やめました'); helpReload(); }).catch(function (e) { toast(e.message); }); }); });
   q('[data-hcase]', function (b) { b.onclick = function () { HP.det = b.dataset.hcase; var y = window.scrollY; drawHelp(); window.scrollTo(0, y); }; });
@@ -4294,7 +4300,15 @@ function hpChooseBind() {
     api('help_choose', req).then(function (r) { HP.ch = null; MEM.help_list = null; nt('お願いしました。ここから先の連絡は、チャットの「助け合い」でします。', function () { MB.pane = 'inbox'; MB.filter = 'helpchat'; helpReload(); go(r && r.chatId ? 'mail/' + r.chatId : 'mail'); }); }).catch(function (e) { ok.disabled = false; toast(e.message); if (e.code === 'not_found' || e.code === 'full') { HP.ch = null; helpReload(); } });
   };
 }
-function hpLoadPick() { HP.pick = null; api('help_avail_list').then(function (r) { HP.pick = r; if (HP.scr === 'home' && HP.mode === 'need') drawHelp(); }).catch(function (e) { toast(e.message); }); }
+function hpSuggest(f) {
+  var ppl = HP.pick ? HP.pick.items.filter(function (p) { return !p.tags.length || p.tags.indexOf(f.need) >= 0; }) : null;
+  return '<p class="sq">🤝 行ける人から、この方どうですか?</p><p class="small" style="margin:0 0 8px">「' + esc(f.need) + '」に行ける方です。お願いすると、その方にだけ届きます。</p>' +
+    (ppl === null ? '<div class="skel" style="height:120px"></div>' : ppl.length ? ppl.map(function (v) {
+      var meta = [v.area ? '浜田山' + v.area : '', v.sex, v.age].filter(Boolean).map(esc).join(' ・ ');
+      return '<article class="hmc"><div class="hmcl">' + av(v.icon, '', v.ph) + '</div><div class="hmr"><b>' + esc(v.name) + '</b><div class="hms">' + meta + (v.until ? ' ・ ' + esc(v.until) + 'まで' : '') + '</div>' + (v.asked ? '<p class="small" style="margin:8px 0 0"><b>お願い済みです</b></p>' : '<button type="button" class="hmg" data-sg="' + esc(v.id) + '" data-sgn="' + esc(v.name) + '">この方に お願いする</button>') + '</div></article>';
+    }).join('') : '<div class="card"><p class="muted" style="margin:0">いま、行ける方は いません。下の「みんなに募集を開始する」で、呼びかけましょう。</p></div>');
+}
+function hpLoadPick() { HP.pick = null; api('help_avail_list').then(function (r) { HP.pick = r; if ((HP.scr === 'home' && HP.mode === 'need') || (HP.scr === 'recruit' && HP.rf && HP.rf.step === 8)) drawHelp(); }).catch(function (e) { toast(e.message); }); }
 function hpCell(x, d) {
   var gone = x.status === '完了' || x.status === 'キャンセル' || x.status === '見送り' || x.status === '辞退', open = x.status === '公開', closed = x.status === '成立';
   var btn = function (op, label, cls, extra) { return '<button class="sbtn xs ' + (cls || '') + '" data-hp="' + op + '|' + esc(x.id) + (extra || '') + '">' + label + '</button>'; };
