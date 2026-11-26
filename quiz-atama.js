@@ -124,11 +124,11 @@
   function home() {
     stop(); var s = load();
     if (!s.pet) return choose(s, false);
-    A.draw('<h2>あたまおしり</h2><div class="abub">僕は 知らない言葉が いっぱい!<br>みんなと 一緒に 覚えるよ!<br>僕が 知っていると ポイント<b style="color:#d9381e">2倍</b>!<br>知らない言葉だと <b style="color:#d9381e">文字数ぶん</b>が ポイントに なるよ</div><div class="qc">' + petBox(s) + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div>' + bar(s) +
-      '<p class="qm" style="margin:10px 0 6px">むずかしさ</p><div class="adf">' + DIFF.map(function (d, i) { return '<button type="button" data-d="' + i + '" class="' + (s.diff === i ? 'on' : '') + '">' + d.n + '</button>'; }).join('') + '</div>' +
-      '<button class="qb pri" id="aplay">あそぶ</button><button class="qb" id="achg">どうぶつを えらびなおす</button><button class="qb" id="adex">ずかん(そだてた どうぶつ ' + s.grads.length + ')</button><button class="qb" id="aback">GAMEに もどる</button></div>' +
-      '<div class="qc"><b>あそびかた</b><p class="qm" style="margin:6px 0 0">おだいは「さいしょの もじ」と「さいごの もじ」。その もじで はじまって おわる ことばを つくろう。いちばん ポイントが おおきい ひとが かち。ポイントは どうぶつが パクッと たべて おおきくなるよ。いっぱいに なると ずかんに のって、つぎは ひとつ うえの レベルに!</p></div>');
-    A.bind('[data-d]', function (b) { s.diff = +b.dataset.d; save(s); home(); });
+    A.draw('<h2>あたまおしり</h2><div class="abub">僕が 知っている言葉だと ポイント<b style="color:#d9381e">2倍</b>!</div><div class="qc">' + petBox(s) + '<div>' + badge(s.lv) + '<b>' + esc(petName(s.pet)) + '</b></div>' + bar(s) +
+      '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;font-weight:800"><span>むずかしさ</span><select id="adsel" style="flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit">' + DIFF.map(function (d, i) { return '<option value="' + i + '"' + (s.diff === i ? ' selected' : '') + '>' + d.n + '</option>'; }).join('') + '</select></label>' +
+      '<button class="qb pri" id="aplay">スタート</button><button class="qb" id="achg">どうぶつを えらびなおす</button><button class="qb" id="adex">ずかん(そだてた どうぶつ ' + s.grads.length + ')</button><button class="qb" id="aback">GAMEに もどる</button></div>' +
+      '<div class="qc"><p class="qm" style="margin:0">おだいの「さいしょ」と「さいご」の 字で ことばを つくろう。</p></div>');
+    $('#adsel').onchange = function () { s.diff = +this.value; save(s); };
     $('#aplay').onclick = round; $('#achg').onclick = function () { choose(s, true); }; $('#adex').onclick = dex; $('#aback').onclick = function () { stop(); A.hub(); };
   }
   function choose(s, keep) {
