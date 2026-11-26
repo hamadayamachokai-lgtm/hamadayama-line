@@ -3596,7 +3596,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=9'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=10'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
@@ -4006,7 +4006,7 @@ function supFormDraw() {
 }
 var HP = { scr: 'home', mode: 'need', d: null, av: null, pick: null, ask: null, rf: null, af: null, ap: null, ch: null, flt: { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } } };
 var HPBACK = { recruit: 'start', avail: 'home' };
-function hpRf0() { return { sex: '性別問わず', ages: [], tags: [], text: '', scale: '1人', area: '' }; }
+function hpRf0() { return { step: 1, name: '', scale: '1人', need: '', age: '', sex: '', place: '', lat: null, lng: null, note: '' }; }
 function helpView() {
   HP.scr = window.HP_OPEN === 'task' || window.HP_OPEN === 'done' ? window.HP_OPEN : (window.HP_APPLY ? 'mine' : 'start'); window.HP_OPEN = ''; HP.ap = window.HP_APPLY ? { id: window.HP_APPLY, step: 1, name: hpMyName(), sex: '', age: '' } : null; window.HP_APPLY = ''; HP.ch = null; HP.ask = null; HP.rf = hpRf0(); HP.af = { sex: '', age: '', tags: [] }; HP.flt = { need: { tags: [], area: '', on: null }, go: { tags: [], area: '', on: null } };
   if (!MEM.help_list) sub('助け合い', '<div class="skel" style="height:300px"></div>');
@@ -4123,9 +4123,9 @@ function drawHelp() {
   var alertH = toMe.map(function (x) { return '<div class="card hpal"><b style="font-size:17px">お願いが届いています</b><p style="margin:6px 0 2px;font-size:15px"><b>' + esc(x.by) + '</b> から</p><div class="thb" style="margin:0 0 10px">' + bodyHtml(x.body) + '</div><div class="inrow"><button type="button" class="btn" data-hyes="' + esc(x.id) + '" style="flex:1">できます</button><button type="button" class="btn ghost" data-hno="' + esc(x.id) + '" style="flex:1">できません</button></div></div>'; }).join('');
   alertH = hpCandAlerts(items) + alertH;
   if (sc === 'start') {
-    h = demo + alertH + hpTabs('start', act) + '<div class="hcnote"><span>連絡は、<b>チャットの「助け合い」</b>からできます(つながってから3日間)。</span><button type="button" class="sbtn" data-htab="chat">チャットを開く</button></div>' +
-      '<h2 class="hph">どちらですか?</h2><div class="card hpq"><div class="hpl" style="margin-top:0">🙏 助けてほしい場合</div><button type="button" class="hmg wide" data-hstart="need" style="margin:0 0 10px">🔍 検索からマッチング</button><button type="button" class="hmg wide alt" data-hgo="recruit" style="margin:0">📢 自分で募集をかける</button><p class="small" style="margin:8px 0 0">検索は、いま手伝える人から選んでお願いします。募集は、人数を決めてみんなに呼びかけます(Tweetにも載ります)。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">🤝 助けに行ける場合</div><button type="button" class="hmg wide" data-hstart="go" style="margin:0">募集中の案件を見る' + (cases.length ? '(' + cases.length + ')' : '') + '</button><p class="small" style="margin:8px 0 0">そこから「今お手伝い可能です」も出せます。</p></div>';
+    h = demo + alertH + hpTabs('start', act) +       '<h2 class="hph">どちらですか?</h2><div class="card hpq"><div class="hpl" style="margin-top:0">🙏 助けてほしい場合</div><button type="button" class="hmg wide" data-hstart="need" style="margin:0 0 10px">🔍 検索からマッチング</button><button type="button" class="hmg wide alt" data-hgo="recruit" style="margin:0">📢 自分で募集をかける</button><p class="small" style="margin:8px 0 0">検索は、いま手伝える人から選んでお願いします。募集は、人数を決めてみんなに呼びかけます(Tweetにも載ります)。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">🤝 助けに行ける場合</div><button type="button" class="hmg wide" data-hstart="go" style="margin:0">募集中の案件を見る' + (cases.length ? '(' + cases.length + ')' : '') + '</button><p class="small" style="margin:8px 0 0">そこから「今お手伝い可能です」も出せます。</p></div>' +
+      '<div class="hpl">いま募集中の案件(タップで くわしく)</div>' + hpBoard(ownOpen.concat(waiting, cases)) + hpHidNote();
   } else if (sc === 'home') {
     var fl = HP.flt[HP.mode].on, body = '';
     if (HP.mode === 'need') {
@@ -4138,17 +4138,22 @@ function drawHelp() {
       body = '<button type="button" class="hmg wide alt" data-hgo="avail" style="margin:0 0 12px">' + (a2 && a2.on ? '今お手伝い可能(' + esc(a2.me.until) + 'まで)・変更する' : '今お手伝い可能です(押すと、お願いが届きます)') + '</button>' + hpFltBox(d) +
         '<div class="hpl" style="margin-top:0">募集内容(タップで くわしく)</div>' + (cs.length ? hpBoard(cs) : '<div class="card"><p class="muted" style="margin:0">' + (fl ? '条件に合う募集は、ありません。' : 'いま、募集中のお願いは、ありません。') + '</p></div>') + hpHidNote();
     }
-    h = demo + alertH + hpTabs('home', act) + '<div class="hcnote"><span>連絡は、<b>チャットの「助け合い」</b>からできます(つながってから3日間)。</span><button type="button" class="sbtn" data-htab="chat">チャットを開く</button></div>' +
-      '<div style="margin:0 0 12px"><button type="button" class="sbtn" data-hgo="start">← 最初にもどる</button> <b style="margin-left:8px">' + (HP.mode === 'need' ? '助けてほしい(検索)' : '助けに行ける') + '</b></div>' + body;
+    h = demo + alertH + hpTabs('home', act) +       '<div style="margin:0 0 12px"><button type="button" class="sbtn" data-hgo="start">← 最初にもどる</button> <b style="margin-left:8px">' + (HP.mode === 'need' ? '助けてほしい(検索)' : '助けに行ける') + '</b></div>' + body;
   } else if (sc === 'recruit') {
-    var f = HP.rf;
-    h = back + '<h2 class="hph">みんなに募集する</h2><div class="card hpq">' +
-      '<div class="hpl">① 手伝ってほしい人の性別</div>' + hpChips('data-rs', d.sexAll || ['男性', '女性', '性別問わず'], f.sex, false) +
-      '<div class="hpl">② 年代(いくつでも)</div>' + hpChips('data-ra', d.ages, f.ages, true) +
-      '<div class="hpl">③ どんなお手伝いですか?</div>' + hpChips('data-rc', d.cats, f.tags, true) + '<textarea class="inp" id="hr-text" rows="3" maxlength="1000" placeholder="くわしく書くとき(例: 町会の倉庫の片付け)" style="width:100%;box-sizing:border-box;margin-top:8px">' + esc(f.text) + '</textarea>' +
-      '<div class="hpl">④ 何人ほしいですか?</div>' + hpChips('data-rn', d.scales, f.scale, false) +
-      '<div class="hpl">⑤ 場所(地域)</div>' + hpChips('data-rg', hpAreasOf(d), f.area, false) +
-      '<p class="small" style="margin:10px 0">電話番号・番地は書かないでください。名前は出ません(「3丁目会員様」と出ます)。Tweetにも載ります。手を挙げた人が入ると、自動でチャットができます(2人以上なら、グループチャット・3日間)。</p><button type="button" class="hmg wide" id="hr-send">この内容で募集する</button></div>';
+    var f = HP.rf, st = f.step || 1, NEEDS = d.needs || ['力仕事全般', '荷物運び', 'その他'], AGES = ['〜10代', '20代', '30代', '40代', '50代', '60代', '70代', '80代〜'], SCL = d.scales || ['1人', '2〜3人', '4〜10人', '11人以上'];
+    var sel = function (id, list, v, ph) { return '<select class="inp" id="' + id + '" style="width:100%;font-size:17px;min-height:48px"><option value="">' + ph + '</option>' + list.map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>'; };
+    var qh = {
+      1: '<p class="sq">① <b>氏名</b>を教えてください</p><input class="inp" id="rw-name" maxlength="30" value="' + esc(f.name || hpMyName()) + '" placeholder="例: 浜田 太郎" style="width:100%;font-size:17px;min-height:48px;box-sizing:border-box">',
+      2: '<p class="sq">② <b>募集人数</b>を選択してください</p>' + sel('rw-scale', SCL, f.scale, '選んでください'),
+      3: '<p class="sq">③ <b>手伝って欲しい内容</b>を選択してください</p>' + sel('rw-need', NEEDS, f.need, '選んでください'),
+      4: '<p class="sq">④ あなたの<b>年代</b>は?</p>' + sel('rw-age', AGES, f.age, '選んでください'),
+      5: '<p class="sq">⑤ あなたの<b>性別</b>は?</p>' + sel('rw-sex', ['男性', '女性'], f.sex, '選んでください'),
+      6: '<p class="sq">⑥ <b>訪問先</b>は?(現在地、またはテキストで入力)</p><button type="button" class="sbtn" id="rw-loc" style="min-height:46px;width:100%">📍 いまいる場所を使う</button><div class="small" style="margin:4px 0">' + (f.lat !== null ? '✅ 現在地を入れました' : '') + '</div><input class="inp" id="rw-place" maxlength="100" value="' + esc(f.place) + '" placeholder="例: 浜田山3丁目○○の倉庫" style="width:100%;font-size:17px;min-height:48px;box-sizing:border-box">',
+      7: '<p class="sq">⑦ その他、相手に伝えたい内容を記載してください(なくてもOK)</p><textarea class="inp" id="rw-note" rows="4" maxlength="300" style="width:100%;box-sizing:border-box;font-size:17px">' + esc(f.note) + '</textarea>'
+    };
+    h = back + '<h2 class="hph">助けてほしい</h2><div class="card hpq"><p class="small" style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#3b1f63">年齢や性別地域によって行ける人の範囲が変わるのでお答えください。この情報は<b>マッチング後に相手にのみ公開</b>です。</p><div class="small" style="margin:0 0 6px">' + st + ' / 7</div>' + qh[st] +
+      '<div class="inrow" style="margin-top:14px">' + (st > 1 ? '<button type="button" class="sbtn" id="rw-prev" style="flex:1;min-height:48px">← もどる</button>' : '') + '<button type="button" class="hmg" id="rw-next" style="flex:2;margin:0">' + (st < 7 ? '次へ' : 'この内容で募集する') + '</button></div>' +
+      '<p class="small" style="margin:10px 0 0">電話番号は書かないでください。募集には名前は出ません(「3丁目会員様」と出ます)。Tweetにも載ります。</p></div>';
   } else if (sc === 'avail') {
     var a = HP.av, af = HP.af;
     h = back + '<h2 class="hph">今お手伝い可能です</h2>' + (!a ? '<div class="skel" style="height:160px"></div>' : a.on ?
@@ -4183,11 +4188,6 @@ function drawHelp() {
   bt0('#hflt-go', function () { var f = HP.flt[HP.mode]; f.on = (f.tags.length || f.area) ? { tags: f.tags.slice(), area: f.area } : null; drawHelp(); });
   bt0('#hflt-clr', function () { HP.flt[HP.mode] = { tags: [], area: '', on: null }; drawHelp(); });
   var tog = function (arr, v) { var i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); };
-  q('[data-rs]', function (b) { b.onclick = function () { keepText(); HP.rf.sex = b.dataset.rs; drawHelp(); }; });
-  q('[data-ra]', function (b) { b.onclick = function () { keepText(); tog(HP.rf.ages, b.dataset.ra); drawHelp(); }; });
-  q('[data-rc]', function (b) { b.onclick = function () { keepText(); tog(HP.rf.tags, b.dataset.rc); drawHelp(); }; });
-  q('[data-rn]', function (b) { b.onclick = function () { keepText(); HP.rf.scale = b.dataset.rn; drawHelp(); }; });
-  q('[data-rg]', function (b) { b.onclick = function () { keepText(); HP.rf.area = b.dataset.rg; drawHelp(); }; });
   q('[data-as]', function (b) { b.onclick = function () { HP.af.sex = HP.af.sex === b.dataset.as ? '' : b.dataset.as; drawHelp(); }; });
   q('[data-aa]', function (b) { b.onclick = function () { HP.af.age = HP.af.age === b.dataset.aa ? '' : b.dataset.aa; drawHelp(); }; });
   q('[data-ac]', function (b) { b.onclick = function () { tog(HP.af.tags, b.dataset.ac); drawHelp(); }; });
@@ -4196,12 +4196,20 @@ function drawHelp() {
   var bt = function (id, fn) { var e = $(id); if (e) e.onclick = fn; };
   bt('#hk-send', function () { keepText(); var k = HP.ask; if (!k.tags.length && !k.text.trim()) return toast('お願いしたいことを、選ぶか書いてください'); var b = $('#hk-send'); b.disabled = true;
     api('help_ask', { to: k.id, tags: k.tags, body: k.text.trim() }).then(function () { toast('お願いしました。お返事を待ちましょう'); HP.ask = null; hpLoadPick(); helpReload(); }).catch(function (e) { b.disabled = false; toast(e.message); if (e.code === 'gone') hpLoadPick(); }); });
-  bt('#hr-send', function () { keepText(); var f = HP.rf;
-    if (!f.text.trim() && !f.tags.length) return toast('「どんなお手伝いか」を、選ぶか書いてください'); if (!f.area) return toast('場所(地域)を選んでください');
-    cf('募集します。Tweetにも載ります。よろしいですか?', function () {
-      var tags = f.tags.concat(f.ages, f.sex ? [f.sex] : [], [f.area]), body = f.text.trim() || f.tags.join('・');
-      var b = $('#hr-send'); if (b) b.disabled = true;
-      api('help_post', { kind: 'お願い', tweet: true, tags: tags, scale: f.scale, body: body }).then(function (r) { toast(r.tweeted ? '募集しました。Tweetにも載せました' : '募集しました'); HP.rf = hpRf0(); HP.scr = 'mine'; helpReload(); }).catch(function (e) { if (b) b.disabled = false; toast(e.message); });
+  var rwRead = function () { var f = HP.rf, g = function (id) { var e = $(id); return e ? e.value : null; }, v;
+    if ((v = g('#rw-name')) !== null) f.name = v.trim(); if ((v = g('#rw-scale')) !== null) f.scale = v; if ((v = g('#rw-need')) !== null) f.need = v; if ((v = g('#rw-age')) !== null) f.age = v;
+    if ((v = g('#rw-sex')) !== null) f.sex = v; if ((v = g('#rw-place')) !== null) f.place = v.trim(); if ((v = g('#rw-note')) !== null) f.note = v; };
+  bt('#rw-prev', function () { rwRead(); HP.rf.step--; drawHelp(); });
+  bt('#rw-loc', function () { rwRead(); var lb = $('#rw-loc'); if (!navigator.geolocation) return toast('この端末では、現在地を取得できません。場所を文字で入れてください'); lb.disabled = true; toast('現在地を取得しています…');
+    navigator.geolocation.getCurrentPosition(function (p) { HP.rf.lat = p.coords.latitude; HP.rf.lng = p.coords.longitude; drawHelp(); }, function () { lb.disabled = false; toast('現在地を取得できませんでした。場所を文字で入れてください'); }, { enableHighAccuracy: true, timeout: 10000 }); });
+  bt('#rw-next', function () { rwRead(); var f = HP.rf, st = f.step || 1;
+    var need = { 1: [f.name, '氏名を入れてください'], 2: [f.scale, '募集人数を選んでください'], 3: [f.need, '手伝って欲しい内容を選んでください'], 4: [f.age, 'あなたの年代を選んでください'], 5: [f.sex, 'あなたの性別を選んでください'], 6: [f.place || f.lat !== null, '訪問先を、現在地かテキストで入れてください'] }[st];
+    if (need && !need[0]) return toast(need[1]);
+    if (st < 7) { f.step = st + 1; window.scrollTo(0, 0); return drawHelp(); }
+    cf('募集します。Tweetにも載ります(年代・性別・訪問先は出ません)。よろしいですか?', function () {
+      var b = $('#rw-next'); if (b) b.disabled = true;
+      var req = { kind: 'お願い', tweet: true, wiz: true, name: f.name, scale: f.scale, need: f.need, age: f.age, sex: f.sex, place: f.place, note: f.note }; if (f.lat !== null) { req.lat = f.lat; req.lng = f.lng; }
+      api('help_post', req).then(function (r) { toast(r.tweeted ? '募集しました。Tweetにも載せました' : '募集しました'); HP.rf = hpRf0(); HP.scr = 'mine'; helpReload(); }).catch(function (e) { if (b) b.disabled = false; toast(e.message); });
     }); });
   bt('#av-on', function () { var f = HP.af, b = $('#av-on'); b.disabled = true; api('help_avail_set', { on: true, sex: f.sex, age: f.age, tags: f.tags }).then(function (r) { toast(r.until + 'まで、一覧に出ます'); HP.scr = 'home'; helpReload(); }).catch(function (e) { b.disabled = false; toast(e.message); }); });
   bt('#av-off', function () { cf('お手伝い可能を、やめます。よろしいですか?', function () { api('help_avail_set', { on: false }).then(function () { toast('やめました'); helpReload(); }).catch(function (e) { toast(e.message); }); }); });
@@ -4212,7 +4220,8 @@ function drawHelp() {
   q('[data-hyes]', function (b) { b.onclick = function () { b.disabled = true; api('help_raise', { id: b.dataset.hyes }).then(function (r) { hpMatched(r); }).catch(function (e) { b.disabled = false; toast(e.message); helpReload(); }); }; });
   q('[data-hno]', function (b) { b.onclick = function () { cf('お断りします。よろしいですか?', function () { api('help_decline', { id: b.dataset.hno }).then(function () { toast('お断りしました'); helpReload(); }).catch(function (e) { toast(e.message); }); }); }; });
   q('[data-hyes2]', function (b) { b.onclick = function () { HP.ap = { id: b.dataset.hyes2, step: 1, name: hpMyName(), sex: '', age: '' }; HP.det = null; drawHelp(); }; });
-  q('[data-hcho]', function (b) { b.onclick = function () { var p = b.dataset.hcho.split('|'), x = HP.d.items.filter(function (i) { return i.id === p[0]; })[0], r = x && (x.raisers || []).filter(function (z) { return z.id === p[1]; })[0]; if (!r) return; HP.ch = { id: p[0], helperId: p[1], name: r.name, place: '', lat: null, lng: null, note: '', sex: '', age: '' }; HP.det = null; drawHelp(); }; });
+  q('[data-hcho]', function (b) { b.onclick = function () { var p = b.dataset.hcho.split('|'), x = HP.d.items.filter(function (i) { return i.id === p[0]; })[0], r = x && (x.raisers || []).filter(function (z) { return z.id === p[1]; })[0]; if (!r) return;
+    if (x.pre) { return cf(r.name + 'さんにお願いします。募集のときに答えた年代・性別・訪問先が、相手に伝わります。よろしいですか?', function () { b.disabled = true; api('help_choose', { id: p[0], helperId: p[1], pre: true }).then(function (rr) { HP.det = null; MEM.help_list = null; nt('お願いしました。ここから先の連絡は、チャットの「助け合い」でします。', function () { MB.pane = 'inbox'; MB.filter = 'helpchat'; helpReload(); go(rr && rr.chatId ? 'mail/' + rr.chatId : 'mail'); }); }).catch(function (e) { b.disabled = false; toast(e.message); helpReload(); }); }); } HP.ch = { id: p[0], helperId: p[1], name: r.name, place: '', lat: null, lng: null, note: '', sex: '', age: '' }; HP.det = null; drawHelp(); }; });
   q('[data-hpas]', function (b) { b.onclick = function () { var p = b.dataset.hpas.split('|'); cf(p[2] + 'さんには「別の方で決まりました」とお知らせして、お断りします。募集は続きます。よろしいですか?', function () { b.disabled = true; api('help_pass', { id: p[0], helperId: p[1] }).then(function () { toast('お断りしました(募集は続きます)'); helpReload(); }).catch(function (e) { b.disabled = false; toast(e.message); helpReload(); }); }); }; });
   q('[data-hcand]', function (b) { b.onclick = function () { HP.scr = 'mine'; HP.det = b.dataset.hcand; window.scrollTo(0, 0); drawHelp(); }; });
   hpApplyBind(); hpChooseBind();
