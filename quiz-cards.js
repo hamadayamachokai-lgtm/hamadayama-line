@@ -1,4 +1,4 @@
-/* トランプ(quiz.js の GAME メニューから呼ばれます: HmtCards.start(api))
+/* カードゲーム(quiz.js の GAME メニューから呼ばれます: HmtCards.start(api))
    ババ抜き / 7並べ / ポーカー / 神経衰弱 … ひとり(ロボット対戦) ・ 1台で2〜5人 ・ 友達と対戦(へや。ホストが はじめる)
    ソリティア … ひとりだけ
    ゲームの中身は「状態(state)をうけとって、新しい状態を返す」だけの計算にしてあります(通信の へやでも おなじ計算)。 */
@@ -239,61 +239,48 @@
   };
 
 
-  /* ===================== スピード(2人。じゅんばんは なし。はやく 手札を なくした人の かち) ===================== */
-  function adj(a, b) { var d = (rk(a) - rk(b) + 13) % 13; return d === 1 || d === 12; }
-  function spdLegal(S, c) { var r = []; for (var i = 0; i < 2; i++) if (adj(c, S.ctr[i][S.ctr[i].length - 1])) r.push(i); return r; }
-  function spdStuck(S) { for (var p = 0; p < 2; p++) for (var k = 0; k < S.hand[p].length; k++) if (spdLegal(S, S.hand[p][k]).length) return false; return true; }
-  var SPD = {
-    id: 'spd', title: 'スピード', hidden: false, rt: true, min: 2, max: 2, bots: [1, 1],
+  /* ===================== カルタ(ことわざ。読み札の つづきの 取り札を はやく とる) ===================== */
+  var KP = [['犬も歩けば', '棒にあたる'], ['論より', '証拠'], ['花より', 'だんご'], ['骨折り損の', 'くたびれもうけ'], ['二階から', '目薬'], ['年寄りの', '冷や水'], ['寝耳に', '水'], ['可愛い子には', '旅をさせよ'], ['石の上にも', '三年'], ['猿も木から', '落ちる'], ['急がば', 'まわれ'], ['七転び', '八起き'], ['塵も積もれば', '山となる'], ['笑う門には', '福来たる'], ['縁の下の', '力持ち'], ['鬼に', '金棒'], ['猫に', '小判'], ['河童の', '川流れ'], ['案ずるより', '産むが易し'], ['立つ鳥', '跡を濁さず'], ['身から出た', 'さび'], ['医者の', '不養生'], ['蛙の子は', '蛙'], ['雨降って', '地固まる'], ['灯台', '下暗し'], ['良薬は', '口に苦し'], ['住めば', '都'], ['豚に', '真珠'], ['負けるが', '勝ち'], ['果報は', '寝て待て'], ['千里の道も', '一歩から'], ['馬の耳に', '念仏'], ['三人寄れば', '文殊の知恵'], ['月とスッポン', 'ほど ちがう'], ['短気は', '損気'], ['類は', '友を呼ぶ'], ['備えあれば', '憂いなし']];
+  function kSay(t) { try { if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.85; window.speechSynthesis.speak(u); } } catch (e) { } }
+  var KAR = {
+    id: 'kar', title: 'カルタ', hidden: false, rt: true, min: 2, max: 6, bots: [1, 3],
     init: function (n, names) {
-      var d = []; for (var i = 0; i < 52; i++) d.push(i); shuf(d);
-      var S = { g: 'spd', phase: 'play', n: 2, nm: names.slice(0, 2), hand: [d.splice(0, 4), d.splice(0, 4)], draw: [d.splice(0, 21), d.splice(0, 21)], ctr: [[d.pop()], [d.pop()]], msg: 'どちらの 山にも、数字が ±1(A と K も つながる)の カードを はやく 出そう!', over: false, win: -1 };
-      return S;
+      var ix = []; for (var i = 0; i < KP.length; i++) ix.push(i); shuf(ix); var cards = ix.slice(0, 8), q = []; for (i = 0; i < 8; i++) q.push(i); shuf(q);
+      var sc = []; for (i = 0; i < n; i++) sc.push(0);
+      return { g: 'kar', phase: 'play', n: n, nm: names.slice(0, n), cards: cards, own: [-1, -1, -1, -1, -1, -1, -1, -1], q: q, qi: 0, sc: sc, msg: 'よみふだを 見て、つづきの とりふだを はやく タップ!', over: false, win: [] };
     },
     turnOf: function (S) { return S.over ? -1 : 0; },
     apply: function (S0, m) {
-      var S = clone(S0); if (S.over) return null;
-      if (m.flip) {
-        if (!spdStuck(S)) return null;
-        if (!S.draw[0].length && !S.draw[1].length) {   // どちらも 山札が ない: のこりが すくない ほうの かち
-          var a = S.hand[0].length, b = S.hand[1].length; S.over = true; S.win = a === b ? -2 : (a < b ? 0 : 1); S.msg = 'どちらも 出せません。のこりの まいすうで きまり!'; return S;
-        }
-        for (var p = 0; p < 2; p++) if (S.draw[p].length) S.ctr[p].push(S.draw[p].pop());
-        S.msg = 'つまったので、山札を 1まい めくりました'; return S;
-      }
-      var p = m.p, c = S.hand[p][m.play]; if (c === undefined) return null;
-      var piles = spdLegal(S, c); if (!piles.length) return null;
-      var pile = m.pile !== undefined && piles.indexOf(m.pile) >= 0 ? m.pile : piles[0];
-      S.ctr[pile].push(c); S.hand[p].splice(m.play, 1); if (S.draw[p].length) S.hand[p].push(S.draw[p].pop());
-      if (!S.hand[p].length) { S.over = true; S.win = p; S.msg = S.nm[p] + 'さんが 手札を なくしました!'; }
-      else S.msg = S.nm[p] + 'さんが 出しました';
+      var S = clone(S0); if (S.over) return null; var p = m.p, k = m.take; if (S.own[k] !== -1 || p === undefined || p < 0 || p >= S.n) return null;
+      if (k === S.q[S.qi]) {
+        S.own[k] = p; S.sc[p]++; S.qi++; S.msg = S.nm[p] + 'さんが とりました!';
+        if (S.qi >= S.q.length) { var mx = Math.max.apply(null, S.sc); S.win = []; S.sc.forEach(function (x, i) { if (x === mx) S.win.push(i); }); S.over = true; S.msg = 'おしまい!'; }
+      } else { S.sc[p] = Math.max(0, S.sc[p] - 1); S.msg = S.nm[p] + 'さん おてつき(-1てん)'; }
       return S;
     },
+    botMs: function () { return 2200 + Math.random() * 2600; },
     bot: function (S) {
-      var opts = []; S.hand[1].forEach(function (c, k) { var l = spdLegal(S, c); if (l.length) opts.push({ p: 1, play: k, pile: l[Math.floor(Math.random() * l.length)] }); });
-      if (opts.length) return opts[Math.floor(Math.random() * opts.length)];
-      return spdStuck(S) ? { flip: 1 } : null;
+      var p = 1 + Math.floor(Math.random() * (S.n - 1)), left = []; S.own.forEach(function (o, k) { if (o === -1) left.push(k); });
+      if (Math.random() < 0.3) return null;
+      return { p: p, take: Math.random() < 0.88 ? S.q[S.qi] : left[Math.floor(Math.random() * left.length)] };
     },
-    html: function (S, v) {
-      var both = v < 0, me = both ? 0 : v, op = 1 - me, h = '<div class="pcs">' + esc(S.msg) + '</div>';
-      function row(p, flipped) {
-        var cards = S.hand[p].map(function (c, k) { return S.over ? cardH(c, 'md') : (both || p === me ? cardB(c, 'md' + (spdLegal(S, c).length ? ' ok' : ''), 'data-s="' + p + '|' + k + '"') : '<span class="pc md bk">●</span>'); }).join('');
-        return '<div' + (flipped ? ' style="transform:rotate(180deg)"' : '') + '><div class="pcrow"><span class="pcn">' + esc(S.nm[p]) + '</span><span class="qm">山札 ' + S.draw[p].length + 'まい</span></div><div class="pcw" style="text-align:center">' + cards + '</div></div>';
-      }
-      h += row(op, both);
-      h += '<div class="pcrow" style="justify-content:center;gap:14px;margin:8px 0">' + S.ctr.map(function (pl) { return '<div>' + cardH(pl[pl.length - 1], 'big') + '</div>'; }).join('') + '</div>';
-      if (!S.over) h += '<button type="button" class="qb' + (spdStuck(S) ? ' pri' : '') + '" id="spf"' + (spdStuck(S) ? '' : ' disabled') + '>' + (spdStuck(S) ? 'つまった! 山札を めくる' : 'どちらも 出せない ときに めくります') + '</button>';
-      h += row(me, false);
-      if (S.over) h += S.win === -2 ? resH('draw', 'ひきわけ', '') : (v >= 0 ? resH(S.win === v ? 'win' : 'lose', S.win === v ? '勝ち' : '負け', '') : resH('win', esc(S.nm[S.win]) + 'さんの 勝ち', ''));
+    html: function (S, v, sel) {
+      var both = v < 0, who = both ? (sel[0] || 0) : v, h = '<div class="pcs">' + esc(S.msg) + '</div>';
+      if (!S.over) { var r = KP[S.cards[S.q[S.qi]]]; h += '<div class="qc" style="text-align:center"><div class="qm">よみふだ(' + (S.qi + 1) + '/' + S.q.length + ')</div><div style="font-size:1.5em;font-weight:800;margin:6px 0">' + esc(r[0]) + ' …</div><button type="button" class="qb sm" id="ksay">🔊 よみあげ</button></div>'; }
+      if (both && !S.over) h += '<div class="qm">だれが とる?</div><div class="pcch">' + S.nm.map(function (n, i) { return '<button type="button" class="qb sm' + (i === who ? ' pri' : '') + '" data-w="' + i + '">' + esc(n) + '</button>'; }).join('') + '</div>';
+      h += '<div class="pcsol" style="flex-wrap:wrap;gap:6px;justify-content:center">' + S.cards.map(function (c, k) { var o = S.own[k]; return o === -1 ? '<button type="button" class="qb" style="min-width:42%;margin:0" data-k="' + k + '">' + esc(KP[c][1]) + '</button>' : '<div class="qb" style="min-width:42%;margin:0;opacity:.55;text-align:center">' + esc(KP[c][0]) + esc(KP[c][1]) + '<br><small>' + esc(S.nm[o]) + '</small></div>'; }).join('') + '</div>';
+      h += '<div class="qm" style="margin-top:6px">' + S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i] + 'まい'; }).join(' / ') + '</div>';
+      if (S.over) { var pw = S.win.indexOf(v) >= 0, sm = S.nm.map(function (n, i) { return esc(n) + ' ' + S.sc[i]; }).join(' / '); h += v >= 0 ? (S.win.length > 1 && pw ? resH('draw', 'ひきわけ', sm) : resH(pw ? 'win' : 'lose', pw ? '勝ち' : '負け', sm)) : resH('win', S.win.map(function (p) { return esc(S.nm[p]); }).join('・') + 'さんの 勝ち', sm); }
       return h;
     },
-    bind: function (S, v, act) {
-      A.bind('[data-s]', function (b) { var p = b.dataset.s.split('|'); act({ p: +p[0], play: +p[1] }); });
-      var f = $('#spf'); if (f) f.onclick = function () { act({ flip: 1 }); };
+    bind: function (S, v, act, ui) {
+      var sy = $('#ksay'); if (sy) sy.onclick = function () { kSay(KP[S.cards[S.q[S.qi]]][0]); };
+      A.bind('[data-w]', function (b) { ui.sel[0] = +b.dataset.w; ui.repaint(); });
+      A.bind('[data-k]', function (b) { act({ p: v < 0 ? (ui.sel[0] || 0) : v, take: +b.dataset.k }); });
     }
   };
 
-  var GAMES = { baba: BABA, sev: SEV, mem: MEM, pk: PK, spd: SPD };
+  var GAMES = { baba: BABA, sev: SEV, mem: MEM, pk: PK, kar: KAR };
 
   /* ===================== 対戦の 進行役(ひとり / 1台 / へや 共通) ===================== */
   function run(G, cfg) {
@@ -328,7 +315,7 @@
       if (S.pend && G.resolve && (mode !== 'net' || S.turn === R.my) && pendVer !== (mode === 'net' ? R.ver : -2)) {
         pendVer = mode === 'net' ? R.ver : -2; tm = setTimeout(function () { if (alive()) { pendVer = -1; commit(G.resolve(S)); } }, 1400); return;
       }
-      if (G.rt && mode === 'solo') { tm = setTimeout(function () { if (!alive() || S.over) return; var m = G.bot(S); var n = m ? G.apply(S, m) : null; if (n) commit(n); else paint(); }, 1000 + Math.random() * 900); return; }
+      if (G.rt && mode === 'solo') { tm = setTimeout(function () { if (!alive() || S.over) return; var m = G.bot(S); var n = m ? G.apply(S, m) : null; if (n) commit(n); else paint(); }, G.botMs ? G.botMs(S) : 1000 + Math.random() * 900); return; }
       if (isBot(t) && !S.pend) tm = setTimeout(function () { if (alive()) commit(G.apply(S, G.bot(S, cfg.lvl))); }, 900 + Math.random() * 500);
     }
     function quit() { stopT(); over = true; if (mode === 'net') { R.stop(); R.leave(); } A.root().removeAttribute('data-cg'); cfg.back(); }
@@ -339,12 +326,12 @@
   /* ===================== メニュー ===================== */
   function hub() {
     stopT();
-    A.draw('<h2 class="hph">トランプ</h2><div class="card hpq"><div class="pcmode">' +
+    A.draw('<h2 class="hph">カードゲーム</h2><div class="card hpq"><div class="pcmode">' +
       '<button type="button" class="hmg wide" data-g="baba">🃏 ババ抜き<small>ジョーカーを 持っていたら まけ</small></button>' +
       '<button type="button" class="hmg wide" data-g="sev">7️⃣ 7並べ<small>7から つなげて 先に 出しきろう</small></button>' +
       '<button type="button" class="hmg wide" data-g="pk">♠ ポーカー<small>5まい。1回 こうかんして 役で しょうぶ</small></button>' +
       '<button type="button" class="hmg wide" data-g="mem">🎴 神経衰弱<small>おなじ 数字・色の ペアを めくろう</small></button>' +
-      '<button type="button" class="hmg wide" data-g="spd">⚡ スピード<small>2人で はやい者勝ち(ロボット・1台・ともだち)</small></button>' +
+      '<button type="button" class="hmg wide" data-g="kar">🎴 カルタ<small>ことわざの つづきを はやい者勝ちで とろう</small></button>' +
       '<button type="button" class="hmg wide" data-g="sol">🂡 ソリティア<small>ひとりで あそぶ(クロンダイク)</small></button></div></div><button type="button" class="qb" id="cgback">GAMEに もどる</button>');
     A.bind('[data-g]', function (b) { b.dataset.g === 'sol' ? solitaire() : modes(b.dataset.g); });
     $('#cgback').onclick = function () { stopT(); A.hub(); };
@@ -452,5 +439,5 @@
     if (!document.getElementById('qcardcss')) { var st = document.createElement('style'); st.id = 'qcardcss'; st.textContent = CSS; document.head.appendChild(st); }
     hub();
   }
-  window.HmtCards = { start: start, _t: { SPD: SPD, BABA: BABA, SEV: SEV, MEM: MEM, PK: PK, evalH: evalH, cmpH: cmpH, dropPairs: dropPairs } };
+  window.HmtCards = { start: start, _t: { KAR: KAR, KP: KP, BABA: BABA, SEV: SEV, MEM: MEM, PK: PK, evalH: evalH, cmpH: cmpH, dropPairs: dropPairs } };
 })();
