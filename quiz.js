@@ -530,7 +530,7 @@
   function openCards() {
     var run = function () { window.HmtCards.start(api()); };
     if (window.HmtCards) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-cards.js?v=2'; sc.onload = run;
+    var sc = document.createElement('script'); sc.src = 'quiz-cards.js?v=3'; sc.onload = run;
     sc.onerror = function () { toastMsg('トランプを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
