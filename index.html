@@ -3417,7 +3417,7 @@ function eventView() {
       if (ev.name === '祭礼') {
         var au = pl.filter(function (p) { return p.auto; });
         h += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>毎年 自動申込</b>' + (au.length ? au.map(function (p) {
-          return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + gradeTag(p.grade) + ' <span class="tg ok">自動申込</span>' + (s.feeUnpaid ? ' <span class="tg" style="color:#c0392b">未納で停止中</span>' : '') + '</div><button class="sbtn" data-aoff="' + esc(p.id) + '" style="color:var(--bad);border-color:var(--bad)">やめる</button></div>';
+          return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + gradeTag(p.grade) + ' <span class="tg ok">自動申込</span>' + (p.autoPaused ? ' <span class="tg">今年は 停止中(役員が停止)</span>' : '') + (s.feeUnpaid ? ' <span class="tg" style="color:#c0392b">未納で停止中</span>' : '') + '</div><button class="sbtn" data-aoff="' + esc(p.id) + '" style="color:var(--bad);border-color:var(--bad)">やめる</button></div>';
         }).join('') : '<p class="muted" style="margin:6px 0 0">設定している お子様は いません。</p>') +
           '<p class="small" style="margin:6px 0 0">小学校を 卒業するまで、毎年 自動で 申込されます。町会費が 9/1 時点で 未納の年は 止まり、納入されると 自動で 再開します。申し込むときに「毎年 自動申込」を 選べます。</p>' +
           (pl.filter(function (p) { return !p.auto && /^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || ''); }).map(function (p) { return '<button class="sbtn" style="margin:6px 6px 0 0" data-aon="' + esc(p.id) + '">＋ ' + esc(p.name) + 'さんを 自動申込にする</button>'; }).join('')) + '</div>';
