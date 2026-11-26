@@ -521,22 +521,23 @@
     document.head.appendChild(sc);
   }
   /* ゲームの よみこみ: すぐ「よみこみ中」を出し、失敗したら 画面に理由と「もう一度」を出す */
-  function loadGame(src, glob, label, run) {
+  function loadGame(src, glob, label, run, retried) {
     var diag = [];
     var onErr = function (ev) { try { if (!ev) return; var f = String(ev.filename || ''); if (!f || f.indexOf(src.split('?')[0]) >= 0) diag.push((ev.message || 'error') + ' (' + (ev.lineno || '?') + ':' + (ev.colno || '?') + ')'); } catch (x) {} };
     window.addEventListener('error', onErr);
     var go = function () {
       window.removeEventListener('error', onErr);
+      if (!window[glob] && !retried) { var bust = src + (src.indexOf('?') < 0 ? '?' : '&') + 'r=' + Date.now(); return loadGame(bust, glob, label, run, true); }   // 古い(まちがった)ファイルが端末に残っていたときは、キャッシュを避けて もう一度よむ
       if (!window[glob]) {
         var box = function (extra) {
           root.innerHTML = '<div class="qc"><h2>' + label + 'を ひらけませんでした</h2><p>ファイル「' + esc(src.split('?')[0]) + '」が 正しく よみこめていません。</p><p style="font-size:.8em;word-break:break-all">' + esc(diag.join(' / ') + extra) + '</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>';
-          document.getElementById('qretry').onclick = function () { loadGame(src, glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); };
+          document.getElementById('qretry').onclick = function () { loadGame(src.replace(/[?&]r=\d+/, ''), glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); };
         };
         try { fetch(src, { cache: 'no-store' }).then(function (r) { return r.text().then(function (t) { box(' / HTTP ' + r.status + ' ' + t.length + '文字 / はじめ: ' + t.slice(0, 40).replace(/\s+/g, ' ')); }); }).catch(function () { box(''); }); } catch (x) { box(''); }
         return;
       }
       try { run(window[glob]); }
-      catch (e) { root.innerHTML = '<div class="qc"><h2>' + label + 'を ひらけませんでした</h2><p>' + esc(String((e && e.message) || e)) + '</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>'; document.getElementById('qretry').onclick = function () { loadGame(src, glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); }; }
+      catch (e) { root.innerHTML = '<div class="qc"><h2>' + label + 'を ひらけませんでした</h2><p>' + esc(String((e && e.message) || e)) + '</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>'; document.getElementById('qretry').onclick = function () { loadGame(src.replace(/[?&]r=\d+/, ''), glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); }; }
     };
     if (window[glob]) return go();
     root.innerHTML = '<div class="qc"><h2>' + label + '</h2><p>よみこみ中です。しばらく おまちください…(はじめだけ 時間がかかります)</p></div>';
@@ -544,16 +545,16 @@
     var fail = function () {
       if (done) return; done = true; clearTimeout(tm); if (sc.parentNode) sc.parentNode.removeChild(sc);
       root.innerHTML = '<div class="qc"><h2>よみこめませんでした</h2><p>通信が おそいか、つながっていません。もう一度 おためしください。</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>';
-      document.getElementById('qretry').onclick = function () { loadGame(src, glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); };
+      document.getElementById('qretry').onclick = function () { loadGame(src.replace(/[?&]r=\d+/, ''), glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); };
     };
     sc.src = src; sc.onload = function () { if (done) return; done = true; clearTimeout(tm); go(); }; sc.onerror = fail;
     tm = setTimeout(fail, 25000);
     document.head.appendChild(sc);
   }
   function openAtama() { loadGame('quiz-atama.js?v=3', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
-  function openCards() { loadGame('quiz-cards.js?v=7', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
+  function openCards() { loadGame('quiz-cards.js?v=8', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
   function openCube() { loadGame('quiz-cube.js?v=4', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
-  function openTrip() { loadGame('quiz-trip.js?v=8', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
+  function openTrip() { loadGame('quiz-trip.js?v=9', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
     return { call: function (a, b) { return CALL ? CALL(a, b) : Promise.reject(new Error('つながっていません')); }, toast: toastMsg, withRoom: withRoom, ask: ask, addXp: addXp, giveCard: giveCard, draw: draw, bind: bind, st: st, Store: Store, K: K, T: T, esc: esc, rng: rng, shuffle: shuffle, poolFor: poolFor, qById: qById, buddySVG: buddySVG, home: home, hub: hub, bsel: bsel, data: DATA, root: function () { return root; }, LV_SEC: LV_SEC, stageOf: stageOf, stopTimer: stopTimer };
