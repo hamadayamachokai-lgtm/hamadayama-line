@@ -361,8 +361,15 @@
 
   /* --- GAME メニュー(助け合いの最初の画面と同じ作り) --- */
   function hub() {
-    var bt = function (id, t) { return '<button type="button" class="hmg wide" id="' + id + '" style="margin:0 0 10px">' + t + '</button>'; };
-    draw('<h2 class="hph">GAME</h2><div class="card hpq">' + bt('gox', '○×ゲーム') + bt('gatama2', 'あたまおしり') + bt('gcards', 'カードゲーム') + bt('gcube', 'ルービックキューブ') + bt('ghun', '100万円を死守しろ!') + bt('gtrip', '日本一周スゴロク') + '</div>');
+    if (!document.getElementById('gwallcss')) { var st = document.createElement('style'); st.id = 'gwallcss'; st.textContent =
+      '#qz .gwall{background:#fbfaf6;background-image:radial-gradient(rgba(0,0,0,.035) 1px,transparent 1.2px),radial-gradient(rgba(0,0,0,.025) 1px,transparent 1.2px);background-size:7px 7px,11px 11px;background-position:0 0,3px 4px;border-radius:16px;padding:26px 14px 14px;box-shadow:inset 0 0 0 1px #e6e2d6,inset 0 6px 14px rgba(0,0,0,.04);display:grid;grid-template-columns:1fr 1fr;gap:26px 14px}' +
+      '#qz .gcd{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:104px;padding:20px 8px 12px;background:#fff;border-radius:4px;box-shadow:0 1px 1px rgba(0,0,0,.12),0 4px 10px rgba(80,70,50,.18);font-weight:800;font-size:15px;line-height:1.35;text-align:center;color:#2f2a22;transform:rotate(var(--r,0deg));touch-action:manipulation}' +
+      '#qz .gcd:active{transform:rotate(var(--r,0deg)) translateY(1px);box-shadow:0 1px 3px rgba(0,0,0,.2)}#qz .gcd:focus-visible{outline:3px solid #6b4fd8}' +
+      '#qz .gcd i{font-style:normal;font-size:30px;line-height:1}' +
+      '#qz .gcd::before{content:"\\2605";position:absolute;left:50%;top:-13px;margin-left:-13px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a80,#d32f2f 62%,#a31515);color:#ffe9a8;font-size:14px;line-height:26px;text-align:center;box-shadow:0 3px 3px rgba(0,0,0,.28)}' +
+      '#qz .gcd.wd{grid-column:1/-1}'; document.head.appendChild(st); }
+    var bt = function (id, ico, t, r, wd) { return '<button type="button" class="gcd' + (wd ? ' wd' : '') + '" id="' + id + '" style="--r:' + r + 'deg"><i>' + ico + '</i>' + t + '</button>'; };
+    draw('<h2 class="hph">GAME</h2><div class="gwall">' + bt('gox', '⭕', '○×ゲーム', -1.5) + bt('gatama2', '🐾', 'あたまおしり', 1.2) + bt('gcards', '🃏', 'カードゲーム', 1) + bt('gcube', '🧊', 'ルービックキューブ', -1.2) + bt('ghun', '💴', '100万円を<br>死守しろ!', -.8) + bt('gtrip', '🗾', '日本一周<br>スゴロク', 1.4) + '</div>');
     $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred;
   }
 
@@ -559,7 +566,7 @@
     tm = setTimeout(fail, 25000);
     document.head.appendChild(sc);
   }
-  function openAtama() { loadGame('quiz-atama.js?v=4', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
+  function openAtama() { loadGame('quiz-atama.js?v=5', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
   function openCards() { loadGame('quiz-cards.js?v=11', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
   function openCube() { loadGame('quiz-cube.js?v=6', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
   function openHundred() { loadGame('quiz-hundred.js?v=1', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
