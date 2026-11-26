@@ -363,7 +363,7 @@
   function hub() {
     draw('<h2 class="hph">GAME</h2><div class="card hpq"><div class="hpl" style="margin-top:0">○×ゲーム</div><button type="button" class="hmg wide" id="gox" style="margin:0">○×ゲームで あそぶ</button><p class="small" style="margin:8px 0 0">同じスマホを 貸し借りして 2人で対戦、またはコンピューターと対戦します。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">あたまおしり</div><button type="button" class="hmg wide" id="gatama2" style="margin:0">あたまおしりで あそぶ</button><p class="small" style="margin:8px 0 0">「さいしょの字」と「さいごの字」で ことばを つくり、いちばん 長い人が ポイント。ポイントを どうぶつが パクッと食べて 大きく育ちます。</p></div>' +
-      '<div class="card hpq"><div class="hpl" style="margin-top:0">カードゲーム</div><button type="button" class="hmg wide" id="gcards" style="margin:0">カードゲームで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・カルタ。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
+      '<div class="card hpq"><div class="hpl" style="margin-top:0">カードゲーム</div><button type="button" class="hmg wide" id="gcards" style="margin:0">カードゲームで あそぶ</button><p class="small" style="margin:8px 0 0">ババ抜き・ソリティア・7並べ・ポーカー・神経衰弱・カルタ(ことわざ・歴史・英単語)。ひとり(ロボット対戦)、1台で2〜5人、友達と対戦(部屋を作る)。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">ルービックキューブ</div><button type="button" class="hmg wide" id="gcube" style="margin:0">キューブで あそぶ</button><p class="small" style="margin:8px 0 0">レベル1〜5(2×2×2 〜 6×6×6)。特訓・ロボットと対戦・町会みんなの大会(ランキング)。攻略補助つき。</p></div>' +
       '<div class="card hpq"><div class="hpl" style="margin-top:0">日本一周スゴロク</div><button type="button" class="hmg wide" id="gtrip" style="margin:0">スゴロクで あそぶ</button><p class="small" style="margin:8px 0 0">日本地図の上を旅します。コンピュータと対戦、またはみんなで。止まったマスで1問。まちがえたら戻ります。</p></div>');
     $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube;
@@ -520,34 +520,28 @@
     sc.onerror = function () { toastMsg('よみこめませんでした。通信を たしかめてください'); };
     document.head.appendChild(sc);
   }
-  function openAtama() {
-    var run = function () { window.HmtAtama.start(api()); };
-    if (window.HmtAtama) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-atama.js?v=3'; sc.onload = run;
-    sc.onerror = function () { toastMsg('あたまおしりを よみこめませんでした'); };
+  /* ゲームの よみこみ: すぐ「よみこみ中」を出し、失敗したら 画面に理由と「もう一度」を出す */
+  function loadGame(src, glob, label, run) {
+    var go = function () {
+      try { run(window[glob]); }
+      catch (e) { root.innerHTML = '<div class="qc"><h2>' + label + 'を ひらけませんでした</h2><p>' + esc(String((e && e.message) || e)) + '</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>'; document.getElementById('qretry').onclick = function () { loadGame(src, glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); }; }
+    };
+    if (window[glob]) return go();
+    root.innerHTML = '<div class="qc"><h2>' + label + '</h2><p>よみこみ中です。しばらく おまちください…(はじめだけ 時間がかかります)</p></div>';
+    var done = false, tm, sc = document.createElement('script');
+    var fail = function () {
+      if (done) return; done = true; clearTimeout(tm); if (sc.parentNode) sc.parentNode.removeChild(sc);
+      root.innerHTML = '<div class="qc"><h2>よみこめませんでした</h2><p>通信が おそいか、つながっていません。もう一度 おためしください。</p><button class="qb pri" id="qretry">もう一度</button><button class="qb sm" id="qhome">もどる</button></div>';
+      document.getElementById('qretry').onclick = function () { loadGame(src, glob, label, run); }; document.getElementById('qhome').onclick = function () { hub(); };
+    };
+    sc.src = src; sc.onload = function () { if (done) return; done = true; clearTimeout(tm); go(); }; sc.onerror = fail;
+    tm = setTimeout(fail, 25000);
     document.head.appendChild(sc);
   }
-  function openCards() {
-    var run = function () { window.HmtCards.start(api()); };
-    if (window.HmtCards) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-cards.js?v=4'; sc.onload = run;
-    sc.onerror = function () { toastMsg('カードゲームを よみこめませんでした'); };
-    document.head.appendChild(sc);
-  }
-  function openCube() {
-    var run = function () { window.HmtCube.start(api()); };
-    if (window.HmtCube) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-cube.js?v=4'; sc.onload = run;
-    sc.onerror = function () { toastMsg('キューブを よみこめませんでした'); };
-    document.head.appendChild(sc);
-  }
-  function openTrip() {
-    var run = function () { window.HmtQuizTrip.start(api()); };
-    if (window.HmtQuizTrip) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-trip.js?v=6'; sc.onload = run;
-    sc.onerror = function () { toastMsg('すごろくを よみこめませんでした'); };
-    document.head.appendChild(sc);
-  }
+  function openAtama() { loadGame('quiz-atama.js?v=3', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
+  function openCards() { loadGame('quiz-cards.js?v=6', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
+  function openCube() { loadGame('quiz-cube.js?v=4', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
+  function openTrip() { loadGame('quiz-trip.js?v=7', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
     return { call: function (a, b) { return CALL ? CALL(a, b) : Promise.reject(new Error('つながっていません')); }, toast: toastMsg, withRoom: withRoom, ask: ask, addXp: addXp, giveCard: giveCard, draw: draw, bind: bind, st: st, Store: Store, K: K, T: T, esc: esc, rng: rng, shuffle: shuffle, poolFor: poolFor, qById: qById, buddySVG: buddySVG, home: home, hub: hub, bsel: bsel, data: DATA, root: function () { return root; }, LV_SEC: LV_SEC, stageOf: stageOf, stopTimer: stopTimer };
