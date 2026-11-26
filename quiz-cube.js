@@ -103,6 +103,7 @@
     '#qz .cbl{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}#qz .cbl button{display:flex;justify-content:space-between;align-items:center;text-align:left;margin:0;min-height:56px}#qz .cbl button small{display:block;font-weight:500;opacity:.75}' +
     '#qz .cbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}#qz .cbs button{min-height:60px;margin:0;font-size:1.15em;padding:6px 2px}' +
     '#qz .cblk{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#6b5a3a;background:rgba(255,255,255,.85);border:1px solid #cfc7b4;border-radius:12px;padding:6px 4px;cursor:pointer;touch-action:manipulation;z-index:2}#qz .cblk input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}#qz .cblk i{display:block;width:22px;height:44px;border-radius:12px;background:#cfc7b4;position:relative;transition:background .15s}#qz .cblk i::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:top .15s}#qz .cblk input:checked+i{background:#e11d48}#qz .cblk input:checked+i::after{top:24px}' +
+    '#qz .cbfx{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0;font-weight:800;font-size:.9em}#qz .cbfx select{min-height:42px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 6px;background:#fff;color:inherit}' +
     '#qz .cbi{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin:0 0 8px;font-size:1.1em}#qz .cbp{height:14px;border-radius:7px;background:#e8e2d2;overflow:hidden;margin:4px 0 8px}#qz .cbp i{display:block;height:100%;background:#2e9d4a;transition:width .4s}#qz .cbp.rb i{background:#d93a2b}' +
     '#qz .cbr{width:100%;border-collapse:collapse}#qz .cbr td{padding:8px 6px;border-bottom:1px solid #e8e2d2}#qz .cbr tr.me td{background:#fff3c8;font-weight:800}#qz .cbbig{font-size:2em;font-weight:800;text-align:center;margin:6px 0}';
 
@@ -260,6 +261,7 @@
       '<div class="qm" style="margin:0 0 6px">手数: <b id="cbmv">0</b> <span id="cbhint">・ 色の ところを なぞると、その段が まわります</span></div>';
     if (battle) h += '<div class="qm">あなた</div><div class="cbp"><i id="cbme" style="width:0%"></i></div><div class="qm">ロボット</div><div class="cbp rb"><i id="cbrb" style="width:0%"></i></div>';
     h += '<div style="position:relative"><canvas id="cbcv" style="width:100%;aspect-ratio:1/1;touch-action:none;display:block;background:radial-gradient(#fffdf4,#efe9d6);border-radius:16px" aria-label="ルービックキューブ(なぞって まわします)"></canvas><label class="cblk" title="ロック"><span>Lock</span><input type="checkbox" id="cblock" role="switch" aria-label="キューブの向きを ロック"><i></i></label></div></div>' +
+      '<label class="cbfx"><span>下の面の色(固定)</span><select id="cbfix"><option value="">固定しない</option>' + CN.map(function (n, i) { return '<option value="' + i + '">' + n + 'を 下に</option>'; }).join('') + '</select></label>' +
       '<div class="qgrid"><button type="button" class="qb sm" id="cbundo">ひとつ もどす</button><button type="button" class="qb sm" id="cbhelp">' + (canHint ? '🤖攻略補助' : '🤖攻略補助(特訓のみ)') + '</button><button type="button" class="qb sm" id="cbref">展開図・みほん</button><button type="button" class="qb sm" id="cbltr">色を 文字でも</button></div>' +
       '<div id="cbhelpbox"></div><div id="cbrefbox"></div><details class="qc" style="margin-top:10px"><summary style="font-weight:800">ボタンで まわす</summary><div class="cbs">' +
       ['U', 'D', 'L', 'R', 'F', 'B'].map(function (k) { return '<button type="button" class="qb" data-mv="' + k + '" data-d="1">' + FACE[k].nm + ' ↻</button><button type="button" class="qb" data-mv="' + k + '" data-d="-1">' + FACE[k].nm + ' ↺</button>'; }).join('') + '</div><div class="qm">「↻」右まわり、「↺」左まわり(その面を 外から見て)</div></details>' +
@@ -267,6 +269,34 @@
     A.draw(h);
     var cv = document.getElementById('cbcv'), dpr = Math.min(2, window.devicePixelRatio || 1), cssW = cv.clientWidth || 340;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssW * dpr); V.cx = cv.width / 2; V.cy = cv.height / 2; V.F = cv.width * 1.15;
+    /* 色で向きを固定: えらんだ色の「真ん中」を いつも 下の面に する(キューブ全体を もちかえる)。奇数サイズは 真ん中の まいが 目印、偶数サイズは その時点で いちばん多い面を 下にする */
+    var fixC = null, fixSt = null, T_DN = [0, -1, 0];
+    try { var fv = localStorage.getItem('hmt_cube_fix'); fixC = fv === null || fv === '' ? null : +fv; } catch (e) {}
+    function rseq(v, seq) { seq.forEach(function (q) { v = rot(v, q[0], q[1]); }); return v; }
+    function seqTo(n) {   // nを 下(0,-1,0)に する、いちばん短い もちかえ
+      var one = [[0, 1], [0, -1], [1, 1], [1, -1], [2, 1], [2, -1]], i, j, c = [[]];
+      one.forEach(function (a) { c.push([a]); }); one.forEach(function (a) { one.forEach(function (b) { c.push([a, b]); }); });
+      for (i = 0; i < c.length; i++) { var w = rseq(n, c[i]); if (w[0] === 0 && w[1] === -1 && w[2] === 0) return c[i]; }
+      return [];
+    }
+    function mapMv(m, seq) { var e = [0, 0, 0]; e[m[0]] = 1; var w = rseq(e, seq), a = w[0] ? 0 : w[1] ? 1 : 2, sg = w[a]; return [a, sg * m[1], sg * m[2]]; }
+    function pickRef() {
+      fixSt = null; if (fixC === null) return;
+      if (cube.N % 2 === 1) { cube.st.forEach(function (t) { var z = t.p.filter(function (x) { return x === 0; }).length; if (z === 2 && t.c === fixC) fixSt = t; }); }
+    }
+    function faceOfColor() {   // 偶数サイズ: その色が いちばん多い面の向き
+      var by = {}, best = null, bn = -1; cube.st.forEach(function (t) { if (t.c !== fixC) return; var k = t.n.join(','); by[k] = (by[k] || 0) + 1; if (by[k] > bn) { bn = by[k]; best = t.n.slice(); } }); return best;
+    }
+    function refix(oneShot) {
+      if (fixC === null) return false;
+      var n = fixSt ? fixSt.n.slice() : (oneShot ? faceOfColor() : null); if (!n) return false;
+      var seq = seqTo(n); if (!seq.length) return false;
+      cube.st.forEach(function (t) { t.p = rseq(t.p, seq); t.n = rseq(t.n, seq); });
+      todo = todo.map(function (m) { return mapMv(m, seq); }); hist = hist.map(function (m) { return mapMv(m, seq); });
+      if (cube.scr) cube.scr = cube.scr.map(function (m) { return mapMv(m, seq); });
+      return true;
+    }
+    pickRef(); refix(true); try { window.HmtCube._cube = cube; window.HmtCube._turn = function (a, c, q) { doTurn(a, c, q, true); }; window.HmtCube._todo = function () { return todo; }; } catch (e) { /* テスト用 */ }
     function render() { if (!document.getElementById('cbcv')) return; last = drawCube(cv, cube, V, anim, letters); }
     function setStat() { var m = document.getElementById('cbmv'); if (m) m.textContent = moves; var me = document.getElementById('cbme'); if (me) me.style.width = Math.round(progress(cube) * 100) + '%'; }
     function arm() {
@@ -285,7 +315,7 @@
         var k = Math.min(1, (Date.now() - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         anim.th = q * e * Math.PI / 2; render();
         if (k < 1) return requestAnimationFrame(step);
-        anim = null; turnLayer(cube, a, c, q); moves++; if (rec) hist.push([a, c, q]); noteMove(a, c, q); setStat(); render();
+        anim = null; turnLayer(cube, a, c, q); moves++; if (rec) hist.push([a, c, q]); noteMove(a, c, q); refix(false); helpRefresh(); setStat(); render();
         if (solved(cube)) finish(true);
       })();
     }
@@ -302,6 +332,12 @@
     try { lockOn = localStorage.getItem('hmt_cube_lock') === '1'; } catch (e) {}
     var lk = document.getElementById('cblock'); lk.checked = lockOn;
     lk.onchange = function () { lockOn = lk.checked; drag = null; try { localStorage.setItem('hmt_cube_lock', lockOn ? '1' : '0'); } catch (e) {} A.toast(lockOn ? 'ロック: キューブの向きは 動きません' : 'ロックを はずしました'); };
+    var fx = document.getElementById('cbfix'); fx.value = fixC === null ? '' : String(fixC);
+    fx.onchange = function () {
+      fixC = fx.value === '' ? null : +fx.value; try { localStorage.setItem('hmt_cube_fix', fixC === null ? '' : String(fixC)); } catch (e) {}
+      pickRef(); refix(true); helpRefresh(); render(); setStat();
+      if (fixC !== null) { lockOn = true; lk.checked = true; try { localStorage.setItem('hmt_cube_lock', '1'); } catch (e) {} A.toast(CN[fixC] + 'の 面を 下に そろえました(向きも ロック)'); } else A.toast('色の固定を はずしました');
+    };
     function pos(ev) { var r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
     cv.onpointerdown = function (ev) {
       ev.preventDefault(); try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
