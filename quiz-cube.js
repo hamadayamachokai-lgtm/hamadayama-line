@@ -1,312 +1,352 @@
-/* 日本旅すごろく(quiz.js から呼ばれます)
-   都道府県を相棒と渡り歩き、マスで クイズ・人生イベント。コンピューター対戦は最下位に「1本ハゲのおじさん」が乗ります。
-   ※ 遊び方のアイデアは「すごろく型ボードゲーム」から。キャラクターや絵は すべてオリジナルです。 */
+/* ルービックキューブ(quiz.js の GAME メニューから呼ばれます: HmtCube.start(api))
+   レベル1〜5(2×2×2 〜 6×6×6)。ボタンで面をまわし、展開図(6めんを ひろげた図)で見ます。
+   ・特訓 … ひとりで れんしゅう(この端末に ベスト記録)
+   ・対戦 … ロボットと おなじ並びから よーいドン(先に そろえたら勝ち)
+   ・大会 … 町会みんなで 今週の おなじ並びに挑戦。ニックネームで 町会内ランキング(サーバー: cube_info / cube_submit / cube_nick) */
 (function () {
   'use strict';
-  var A, D, G, TRIPCSS = '#qz .tbd{height:380px;overflow:auto;border:2px solid #e4ddcf;border-radius:16px;background:#fbf8ef;margin:0 0 12px}#qz .tbd svg{display:block;width:820px;max-width:none;height:auto}' +
-    '#qz .tdice{font-size:2.4em;display:inline-block;min-width:1.3em;text-align:center}@keyframes tdr{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#qz .tdice.roll{animation:tdr .35s linear infinite}' +
-    '#qz .tlog{font-size:.88em;color:#4a5160;min-height:2.6em}#qz .trk{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .trk span{padding:2px 10px;border-radius:99px;background:#fff;border:2px solid var(--pc);font-weight:700;font-size:.85em}' +
-    '#qz .tev{text-align:center}#qz .tev .big{font-size:4em;line-height:1.2}@keyframes tbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}#qz .tbob{animation:tbob 1s ease-in-out infinite}' +
-    '#qz .pcard{background:#d8392f;border-radius:18px;padding:10px 10px 12px;margin:0 0 12px;box-shadow:0 2px 6px rgba(0,0,0,.18)}#qz .pcard h2{color:#fff;text-align:center;margin:2px 0 8px;font-size:1.7em;letter-spacing:.08em}#qz .pcard .pin{background:#fff;border-radius:12px;padding:12px}#qz .pcard .pill{display:inline-block;background:#d8392f;color:#fff;border-radius:6px;padding:1px 8px;font-size:.8em;font-weight:700;margin-right:8px}#qz .pcard .pill.g{background:#3f9a3a}#qz .pcard .pill.b{background:#2f86d0}#qz .pcard .prow{margin:0 0 9px;line-height:1.6}#qz .pcard .pil{text-align:center;font-size:2.6em;line-height:1.3;letter-spacing:.15em;background:#fff8e1;border-radius:10px;margin:0 0 10px}#qz .ttok{transition:transform .22s ease-out}@media (prefers-reduced-motion:reduce){#qz .tdice.roll,#qz .tbob{animation:none}#qz .ttok{transition:none}}';
-  var N = 47, GOAL = 47, TOTAL = 25;
-  var KINDS = ['goto', 'quiz', 'event', 'goto', 'quiz', 'goto', 'event', 'quiz', 'goto', 'event', 'quiz', 'goto'];
-  var KCOL = { goto: '#f6c85f', quiz: '#7fb8e8', event: '#ee8fb0' };
-  var KICON = { goto: '🍴', quiz: '❓', event: '🎁' };
-  var CPU = [{ name: 'モコ', c: '#f2a65a', p: .55 }, { name: 'ピポ', c: '#7aa7e8', p: .65 }, { name: 'ガブ', c: '#c98ad8', p: .45 }];
-  var ME_COL = '#4fb7a1', VW = 576, VH = 752;
-  // 県庁所在地のだいたいの経度・緯度(地図の上の位置)
-  var LL = [[141.35, 43.06], [140.74, 40.82], [141.15, 39.7], [140.87, 38.27], [140.1, 39.72], [140.36, 38.24], [140.47, 37.75], [140.45, 36.34], [139.88, 36.57], [139.06, 36.39], [139.65, 35.86], [140.12, 35.61], [139.69, 35.69], [139.64, 35.45], [139.02, 37.9], [137.21, 36.7], [136.63, 36.59], [136.22, 36.07], [138.57, 35.66], [138.18, 36.65], [136.72, 35.39], [138.38, 34.98], [136.91, 35.18], [136.51, 34.73], [135.87, 35.0], [135.76, 35.02], [135.52, 34.69], [135.18, 34.69], [135.83, 34.69], [135.17, 34.23], [134.24, 35.5], [133.05, 35.47], [133.93, 34.66], [132.46, 34.4], [131.47, 34.19], [134.56, 34.07], [134.04, 34.34], [132.77, 33.84], [133.53, 33.56], [130.42, 33.61], [130.3, 33.25], [129.87, 32.74], [130.74, 32.79], [131.61, 33.24], [131.42, 31.91], [130.56, 31.56]];
-  var ISL = [ // 日本列島のおおまかな形(経度,緯度)
-    [[140.0, 41.5], [140.1, 42.5], [140.4, 43.2], [141.4, 43.3], [141.7, 45.4], [142.2, 45.4], [143.8, 44.2], [145.3, 43.5], [145.8, 43.3], [144.0, 42.9], [143.2, 42.0], [141.6, 42.5], [141.0, 41.7]],
-    [[140.9, 41.4], [141.5, 40.5], [141.9, 39.5], [141.9, 38.3], [141.0, 37.0], [140.9, 36.0], [140.9, 35.7], [139.9, 35.1], [139.8, 35.0], [139.3, 35.2], [138.8, 34.65], [138.2, 34.6], [137.0, 34.6], [136.9, 34.3], [136.3, 33.6], [135.8, 33.45], [135.2, 33.6], [135.0, 34.2], [135.3, 34.7], [134.0, 34.7], [132.6, 34.2], [131.0, 33.95], [130.9, 34.4], [131.7, 34.7], [132.9, 35.4], [133.5, 35.5], [134.6, 35.65], [135.3, 35.7], [136.1, 36.0], [136.7, 37.4], [137.0, 37.5], [137.5, 36.9], [138.5, 37.4], [139.3, 38.2], [140.0, 39.6], [140.0, 40.6], [140.4, 41.2]],
-    [[132.0, 33.4], [132.5, 34.0], [133.5, 34.3], [134.5, 34.3], [134.7, 34.0], [134.2, 33.8], [133.6, 33.3], [133.0, 32.9]],
-    [[130.0, 33.6], [130.9, 33.95], [131.8, 33.7], [131.9, 32.8], [131.4, 31.4], [130.6, 31.0], [130.2, 31.4], [130.1, 32.5], [129.7, 32.8], [129.6, 33.3]]];
-  function proj(lon, lat) { return [(lon - 129.2) / 17.2 * (VW - 30) + 10, (45.8 - lat) / 15.2 * (VH - 80) + 14]; }
-  function K(a, b) { return A.K(a, b); }
-  function kindOf(i) { return KINDS[i % 12]; }
-  function ageOf(pos) { return Math.round(Math.min(pos, 46) / 46 * 65); }
-  function phaseOf(age) { return age < 6 ? 0 : age < 13 ? 1 : age < 19 ? 2 : age < 25 ? 3 : age < 46 ? 4 : 5; }
-  function pxy(i) { if (i >= 46) return i === 46 ? [64, VH - 36] : [104, VH - 36]; return proj(LL[i][0], LL[i][1]); }   // 沖縄(46)は左下の小さな枠、47はゴール
+  var A, S = { mode: 'train', level: 1 }, tick = null, KEY = 'hmt_cube_v2';
+  var LV = [null,
+    { n: 2, mv: 8, t: '(2×2×2)', d: 'いちばん 小さい キューブ。8回かきまぜた形' },
+    { n: 3, mv: 12, t: '(3×3×3)', d: 'ふつうの ルービックキューブ。12回かきまぜた形' },
+    { n: 4, mv: 16, t: '(4×4×4)', d: '内側の段も まわります。16回かきまぜた形' },
+    { n: 5, mv: 20, t: '(5×5×5)', d: '大きい キューブ。20回かきまぜた形' },
+    { n: 6, mv: 24, t: '(6×6×6)', d: 'いちばん 大きい キューブ。24回かきまぜた形' }];
+  var COL = ['#f4f4f0', '#f7d21e', '#2e9d4a', '#2563c9', '#d93a2b', '#f08a1c'], CN = ['白', '黄', '緑', '青', '赤', '橙'];   // 0=上 1=下 2=前 3=後 4=右 5=左
+  var FACE = { U: { a: 1, s: 1, nm: '上' }, D: { a: 1, s: -1, nm: '下' }, F: { a: 2, s: 1, nm: '前' }, B: { a: 2, s: -1, nm: '後' }, R: { a: 0, s: 1, nm: '右' }, L: { a: 0, s: -1, nm: '左' } };
+  var NORM = { U: [0, 1, 0, 0], D: [0, -1, 0, 1], F: [0, 0, 1, 2], B: [0, 0, -1, 3], R: [1, 0, 0, 4], L: [-1, 0, 0, 5] };
+  var FK = ['U', 'D', 'F', 'B', 'R', 'L'];
 
-  /* ===== 絵 ===== */
-  function ojiSVG(size) {   // 1本ハゲのおじさん(オリジナル)
-    return '<svg viewBox="0 0 80 84" width="' + size + '" height="' + size * 84 / 80 + '" role="img" aria-label="1本ハゲのおじさん"><rect x="12" y="58" width="56" height="26" rx="10" fill="#5b6b8a"/><path d="M40 60l-6 22h12z" fill="#e8e8f0"/><path d="M40 62l-3 5l3 12l3 -12z" fill="#c0392b"/><circle cx="40" cy="34" r="22" fill="#f2c9a0" stroke="#c99a6e" stroke-width="1.5"/><path d="M40 12q-2 -8 4 -10" stroke="#3b2a1d" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M27 29l8 -2M53 29l-8 -2" stroke="#6b4a32" stroke-width="2.2" stroke-linecap="round"/><circle cx="32" cy="34" r="2.4" fill="#222"/><circle cx="48" cy="34" r="2.4" fill="#222"/><circle cx="40" cy="41" r="4" fill="#e9a98a"/><path d="M30 47q10 -5 20 0q-4 4 -10 3q-6 1 -10 -3z" fill="#7a5a3a"/><path d="M34 52q6 4 12 0" stroke="#7a3b2a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M20 30q-2 6 0 8M60 30q2 6 0 8" stroke="#c99a6e" stroke-width="2" fill="none"/></svg>';
-  }
-  function tokenG(p, id) {
-    var eye = '<circle cx="-4.5" cy="-1" r="1.8" fill="#222"/><circle cx="4.5" cy="-1" r="1.8" fill="#222"/>';
-    var body = '<ellipse cx="0" cy="2" rx="11" ry="10" fill="' + p.c + '" stroke="#fff" stroke-width="2"/>' + eye + '<path d="M-3 5q3 3 6 0" stroke="#222" stroke-width="1.5" fill="none"/>';
-    var extra = p.me ? '<path d="M0 -8q-5 -1 -7 -5q6 -1 7 5zM0 -8q5 -1 7 -5q-6 -1 -7 5z" fill="#4fae5a"/>' : '<circle cx="-8" cy="-7" r="3" fill="' + p.c + '"/><circle cx="8" cy="-7" r="3" fill="' + p.c + '"/>';
-    return '<g class="ttok" id="tk' + id + '"><g class="tbob" style="transform-box:fill-box">' + body + extra + '</g><g id="oj' + id + '" style="display:none" transform="translate(-13,-30) scale(.34)">' + ojiInner() + '</g><text y="21" font-size="9" text-anchor="middle" fill="#3b2a1d" font-weight="700" style="paint-order:stroke;stroke:#f6ecd2;stroke-width:3px">' + A.esc(p.name) + '</text></g>';
-  }
-  function ojiInner() { return ojiSVG(80).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''); }
-  function prefLabels() {   // 47都道府県の名前。ほかの名前や点と かさならない位置をさがす
-    var FS = 8, placed = [], dots = [], out = [], i, p;
-    for (i = 0; i <= GOAL; i++) { p = pxy(i); dots.push([p[0] - 7, p[1] - 7, p[0] + 7, p[1] + 7]); }
-    function hit(a, b) { return a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]; }
-    function cost(b, self) { var c = 0; placed.forEach(function (q) { if (hit(b, q)) c += 3; }); dots.forEach(function (q, k) { if (k !== self && hit(b, q)) c += 2; }); if (b[0] < 1 || b[2] > VW - 1) c += 5; return c; }
-    for (i = 0; i < 47; i++) {
-      p = pxy(i); var n = D.prefs[i].n, w = n.length * FS + 3, h = FS + 2, best = null;
-      [[8, 0, 'start'], [-8, 0, 'end'], [0, -9, 'middle'], [0, 14, 'middle'], [8, -8, 'start'], [-8, -8, 'end'], [8, 11, 'start'], [-8, 11, 'end'], [14, 0, 'start'], [-14, 0, 'end'], [0, -17, 'middle'], [0, 22, 'middle']].some(function (c) {
-        var x = p[0] + c[0], y = p[1] + c[1] + 3, bx = c[2] === 'start' ? x : c[2] === 'end' ? x - w : x - w / 2, b = [bx, y - h + 1, bx + w, y + 2], k = cost(b, i);
-        if (!best || k < best.k) best = { k: k, x: x, y: y, a: c[2], b: b };
-        return k === 0;
-      });
-      placed.push(best.b);
-      out.push('<text x="' + best.x.toFixed(1) + '" y="' + best.y.toFixed(1) + '" font-size="' + FS + '" text-anchor="' + best.a + '" font-weight="700" fill="#3b2a1d" stroke="#fffbea" stroke-width="2.4" paint-order="stroke" stroke-linejoin="round">' + A.esc(n) + '</text>');
-    }
-    return out.join('');
-  }
-  function boardSVG() {
-    var o = [], pts = [];
-    o.push('<rect width="' + VW + '" height="' + VH + '" fill="#9cc7d9"/><rect width="' + VW + '" height="' + VH + '" fill="url(#qgrid)" opacity=".25"/>');
-    o.push('<defs><pattern id="qgrid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M0 12q6 -5 12 0t12 0" stroke="#fff" fill="none" stroke-width="1"/></pattern></defs>');
-    ISL.forEach(function (poly) { o.push('<polygon points="' + poly.map(function (q) { return proj(q[0], q[1]).map(function (v) { return v.toFixed(1); }).join(','); }).join(' ') + '" fill="#efe2b8" stroke="#a88a4e" stroke-width="2" stroke-linejoin="round"/>'); });
-    o.push('<rect x="22" y="' + (VH - 72) + '" width="120" height="58" rx="10" fill="#efe2b8" stroke="#a88a4e" stroke-width="2" stroke-dasharray="5 3"/><text x="82" y="' + (VH - 60) + '" font-size="9" text-anchor="middle" fill="#7a5a2a">沖縄(べつの枠)</text>');
-    for (var i = 0; i <= GOAL; i++) pts.push(pxy(i).join(','));
-    o.push('<polyline points="' + pts.join(' ') + '" fill="none" stroke="#b5533c" stroke-width="2.4" stroke-dasharray="1 5" stroke-linecap="round"/>');
-    o.push(prefLabels());
-    for (i = 0; i <= GOAL; i++) { var p = pxy(i), k = i >= GOAL ? 'goal' : kindOf(i); o.push('<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === GOAL ? 9 : 5.5) + '" fill="' + (k === 'goal' ? '#e8453c' : KCOL[k]) + '" stroke="#5b3b1e" stroke-width="1.4"/>' + (i === GOAL ? '<text x="' + p[0] + '" y="' + (p[1] + 4) + '" font-size="11" text-anchor="middle">🏁</text>' : '')); }
-    o.push('<g id="tlab"></g>');
-    G.players.forEach(function (pl, j) { o.push(tokenG(pl, j)); });
-    return '<svg viewBox="0 0 ' + VW + ' ' + VH + '" role="img" aria-label="日本地図の すごろく">' + o.join('') + '</svg>';
-  }
-  function labels() {}
-
-  /* ===== 状態 ===== */
-  function me() { return G.players[G.my || 0]; }
-  function rankKey(p) { return (p.goalRound != null ? 1000 - p.goalRound : 0) * 100000 + p.pos * 1000 + p.money; }
-  function ranks() { return G.players.map(function (p, i) { return i; }).sort(function (a, b) { return rankKey(G.players[b]) - rankKey(G.players[a]); }); }
-  function lastIdx() { var r = ranks(); return r[r.length - 1]; }
-  function setTok(j) {
-    var p = G.players[j], el = A.root().querySelector('#tk' + j); if (!el) return;
-    var xy = pxy(p.pos), same = G.players.filter(function (q, k) { return k < j && q.pos === p.pos; }).length;
-    el.style.transform = 'translate(' + (xy[0] + (same ? (same % 2 ? 11 : -11) : 0)) + 'px,' + (xy[1] - 6 + (same > 1 ? 9 : 0)) + 'px)';
-    if (j === (G.focus != null ? G.focus : (G.my || 0))) {
-      var bd = A.root().querySelector('.tbd'), sv = bd && bd.querySelector('svg'); if (bd && sv) { var k2 = sv.clientWidth / VW; bd.scrollTo({ left: Math.max(0, xy[0] * k2 - bd.clientWidth / 2), top: Math.max(0, xy[1] * k2 - bd.clientHeight / 2) }); }
-      labels();
-    }
-  }
-  function showOji() {
-    var li = (G.round >= 3 || G.over) ? lastIdx() : -1;
-    G.players.forEach(function (p, j) { var o = A.root().querySelector('#oj' + j); if (o) o.style.display = (G.mode !== 'solo' && j === li) ? '' : 'none'; });
-  }
-  function statusHtml() {
-    var m = me();
-    return '<div class="qc" style="padding:10px 14px"><div class="qhead" style="margin:0"><b>🗾 ' + K('第', 'だい') + (G.round + 1) + K('ターン', 'ターン') + ' ・ ' + ageOf(m.pos) + K('歳', 'さい') + '</b><b>' + (m.pos >= GOAL ? '🏁 ゴール!' : '📍 ' + A.esc(D.prefs[Math.min(m.pos, 46)].n)) + ' ・ 💰' + m.money + '</b></div></div>';
-  }
-  function rankHtml() {
-    return '<div class="trk">' + ranks().map(function (i, k) { var p = G.players[i]; return '<span style="--pc:' + p.c + '">' + (k + 1) + '位 ' + A.esc(p.name) + ' ' + (p.pos >= GOAL ? '🏁' : p.pos + '/' + GOAL) + '</span>'; }).join('') + '</div>';
-  }
-  function logHtml() { return G.log.slice(-3).map(function (l) { return '<div>' + A.esc(l) + '</div>'; }).join(''); }
-
-  /* ===== はじまり ===== */
-  function start(api) {
-    A = api; D = A.data;
-    if (!document.getElementById('qztripcss')) { var s = document.createElement('style'); s.id = 'qztripcss'; s.textContent = TRIPCSS; document.head.appendChild(s); }
-    var md = window.__trm || 'battle';
-    A.draw('<h2 class="hph">' + K('日本一周すごろく', 'にほんいっしゅう すごろく') + '</h2><div class="card hpq"><label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-weight:800"><span>' + K('あそびかた', 'あそびかた') + '</span><select id="trmd" style="flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit"><option value="battle"' + (md === 'battle' ? ' selected' : '') + '>' + K('一人モード', 'ひとりモード') + '</option><option value="net"' + (md === 'net' ? ' selected' : '') + '>' + K('オンライン', 'オンライン') + '</option></select></label>' +
-      '<button type="button" class="qb pri" id="trgo" style="margin-top:12px">' + K('スタート', 'スタート') + '</button></div><button class="qb sm" id="tback">' + K('もどる', 'もどる') + '</button>');
-    document.getElementById('trmd').onchange = function () { window.__trm = this.value; };
-    document.getElementById('trgo').onclick = function () { var m = document.getElementById('trmd').value; window.__trm = m; if (m === 'net') return netStart(); init(m); };
-    A.root().querySelector('#tback').onclick = function () { if (A.hub) A.hub(); else A.home(); };
-  }
-  function init(mode) {
-    var st = A.st(), r = A.rng(Date.now());
-    G = { mode: mode, round: 0, over: false, log: [], used: {}, usedEv: {}, r: r, qUsed: [], start0: 0,
-      players: [{ name: st.name || 'あなた', c: ME_COL, money: 100, pos: 0, me: true, goalRound: null }] };
-    if (mode === 'battle') CPU.forEach(function (c) { G.players.push({ name: c.name, c: c.c, money: 100, pos: 0, p: c.p, goalRound: null }); });
-    birth();
-  }
-  /* ===== べつのスマホと(へや) ===== */
-  var PAL = ['#4fb7a1', '#f2a65a', '#7aa7e8', '#c98ad8', '#e8c040', '#e8453c'];
-  function netStart() {
-    A.withRoom(function (RM) {
-      RM.lobby(A, { game: 'trip', title: '日本一周すごろく', cfg: {}, min: 2, max: 4, cfgText: '2〜4人で あそびます', back: function () { start(A); },
-        init: function (R) { return { phase: 'play', turn: 0, round: 0, over: false, msg: '', p: R.players.map(function () { return { pos: 0, money: 120, gr: null }; }) }; },
-        onStart: function (R) { netInit(R); } });
-    });
-  }
-  function netInit(R) {
-    var S = R.state;
-    G = { mode: 'net', R: R, my: R.my, token: 'tr' + Date.now(), round: S.round || 0, over: false, log: [], used: {}, usedEv: {}, r: A.rng(Date.now() + R.my), qUsed: [], start0: 0, seen: R.ver, turnNow: S.turn || 0, focus: S.turn || 0,
-      players: R.players.map(function (nm, i) { return { name: nm, c: PAL[i % PAL.length], money: S.p[i].money, pos: S.p[i].pos, me: i === R.my, goalRound: S.p[i].gr }; }) };
-    var g = G; G.log.push('みんなで すごろく スタート!');
-    function alive() { return G === g && document.body.contains(A.root()); }
-    function skipDead() {
-      var S2 = JSON.parse(JSON.stringify(R.state)); if (S2.over) return; S2.turn = (S2.turn + 1) % S2.p.length; if (S2.turn === 0) { S2.round++; if (S2.p.some(function (q) { return q.gr != null; }) || S2.round >= TOTAL) S2.over = true; }
-      S2.msg = R.players[R.state.turn] + ' は おやすみ(じかんぎれ)'; R.set(S2);
-    }
-    R.watch(function (r, err) {
-      if (!alive()) { r.stop(); return; }
-      if (err) { r.stop(); A.toast('へやが きえました'); G = null; return start(A); }
-      var S2 = r.state; if (r.ver === g.seen) return; g.seen = r.ver;
-      S2.p.forEach(function (q, i) { if (i === g.my && g.turnNow === g.my && !S2.over && S2.turn === g.my) return; var pl = g.players[i]; pl.pos = q.pos; pl.money = q.money; pl.goalRound = q.gr; });
-      if (S2.over) { r.stop(); g.round = S2.round; return finish(); }
-      if (S2.turn === g.my && g.turnNow === g.my) return;   // いま じぶんの番の さいちゅう
-      g.round = S2.round; g.turnNow = S2.turn; g.focus = S2.turn; board(S2.msg);
-    });
-    g.iv = setInterval(function () { if (!alive() || G.over) { clearInterval(g.iv); return; } if (g.turnNow !== g.my && Date.now() - R._lastChange > 150000) { R._lastChange = Date.now(); skipDead(); } }, 5000);
-    board();
-  }
-  function netEnd() {
-    var R = G.R, m = me(), S = JSON.parse(JSON.stringify(R.state)), delta = m.money - (G.m0 || m.money), g = G;
-    S.p[G.my] = { pos: m.pos, money: m.money, gr: m.goalRound };
-    S.msg = m.name + ': ' + (m.pos >= GOAL ? 'ゴール!' : D.prefs[Math.min(m.pos, 46)].n) + ' ' + (delta >= 0 ? '+' : '') + delta + '万円';
-    S.turn = (S.turn + 1) % S.p.length;
-    if (S.turn === 0) { S.round++; if (S.p.some(function (q) { return q.gr != null; }) || S.round >= TOTAL) S.over = true; }
-    R.set(S).then(function (ok) {
-      if (G !== g) return;
-      var T = ok ? S : R.state;
-      T.p.forEach(function (q, i) { var pl = g.players[i]; pl.pos = q.pos; pl.money = q.money; pl.goalRound = q.gr; });
-      g.seen = R.ver; g.round = T.round; g.turnNow = T.turn; g.focus = T.turn;
-      if (T.over) { R.stop(); return finish(); }
-      board(T.msg);
-    }, function (e) { A.toast(e.message || 'つうしんできませんでした'); });
-  }
-  function birth() {
-    var ev = D.events.filter(function (e) { return e.n === '誕生'; })[0];
-    A.draw('<div class="qc tev"><div class="big">' + ev.i + '</div><h2>' + A.esc(ev.n) + '</h2><p>' + A.T(ev.t) + '</p><div class="qfb ok">' + A.esc(ev.good) + ' +' + ev.gp + K('万円', 'まんえん') + '</div></div><button class="qb pri" id="tgo">' + K('旅に 出発!', 'たびに しゅっぱつ!') + '</button>');
-    me().money += ev.gp; G.log.push('👶 誕生! お祝い +' + ev.gp);
-    A.root().querySelector('#tgo').onclick = function () { board(); };
-  }
-
-  /* ===== ボード画面 ===== */
-  function board(msg) {
-    if (typeof msg === 'string') G.log.push(msg);
-    A.draw(statusHtml() + '<div class="qc" style="text-align:center;padding:10px"><div class="tdice" id="tdice">🎲</div><br><button class="qb pri" id="troll" style="margin:6px 0 0">' + K('サイコロを ふる', 'サイコロを ふる') + '</button>' + rankHtml() + '<div class="tlog" id="tlog">' + logHtml() + '</div></div><div class="tbd">' + boardSVG() + '</div>');
-    G.players.forEach(function (p, j) { setTok(j); });
-    showOji();
-    A.root().querySelector('#troll').onclick = function () { rollMe(); };
-    if (G.mode === 'net') {
-      A.root().setAttribute('data-rm', G.token);
-      var bt = A.root().querySelector('#troll');
-      if (G.turnNow !== G.my) { bt.disabled = true; bt.textContent = G.R.players[G.turnNow] + K(' の番を まっています…', ' の ばんを まっています…'); }
-    }
-  }
-  function setLog(t) { G.log.push(t); var el = A.root().querySelector('#tlog'); if (el) el.innerHTML = logHtml(); }
-  function rollDice(cb) {
-    var el = A.root().querySelector('#tdice'), faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'], n = 0, v = 1 + Math.floor(G.r() * 6);
-    if (el) el.classList.add('roll');
-    var iv = setInterval(function () { n++; if (el) el.textContent = faces[Math.floor(Math.random() * 6)]; if (n >= 7) { clearInterval(iv); if (el) { el.classList.remove('roll'); el.textContent = faces[v - 1]; } setTimeout(function () { cb(v); }, 250); } }, 70);
-  }
-  function hop(j, steps, cb, back) {   // back=true: もどる(はやめに)
-    var p = G.players[j];
-    (function one(i) {
-      if (i >= steps || (!back && p.pos >= GOAL)) return setTimeout(cb, 150);
-      p.pos += back ? -1 : 1; setTok(j); setTimeout(function () { one(i + 1); }, back ? 140 : 230);
-    })(0);
-  }
-  function rollMe() {
-    var b = A.root().querySelector('#troll'); if (b) b.disabled = true;
-    G.start0 = me().pos;
-    G.m0 = me().money; rollDice(function (v) { hop(G.my || 0, v, function () { landMe(); }); });
-  }
-  /** まちがえたとき: サイコロを ふる前の マスに もどる */
-  function backMe(after) {
-    var n = me().pos - G.start0; if (n <= 0) return after();
-    A.draw(statusHtml() + '<div class="qc tev"><div class="big">↩️</div><h2>' + K('もとの マスに もどる…', 'もとの マスに もどる…') + '</h2></div><div class="tbd">' + boardSVG() + '</div>');
-    G.players.forEach(function (p, j) { setTok(j); }); showOji();
-    setTimeout(function () { hop(G.my || 0, n, function () { after(); }, true); }, 500);
-  }
-
-  /* ===== マスの結果(毎回1問) ===== */
-  function pickQuestion(genre, i) {
-    var st = A.st();
-    if (genre === 'ご当地') { var pn = D.prefs[Math.min(i, 46)].n, q = D.questions.filter(function (x) { return x.g === 'ご当地' && x.a === pn; })[0]; if (q) return q; }
-    var pool = A.poolFor(st.level, genre && genre !== 'ご当地' ? [genre] : [], 10).filter(function (x) { return x.g !== 'ご当地' && G.qUsed.indexOf(x.id) < 0; });
-    if (!pool.length) { G.qUsed = []; pool = A.poolFor(st.level, [], 10).filter(function (x) { return x.g !== 'ご当地'; }); }
-    return A.shuffle(pool, G.r)[0];
-  }
-  function ask(q, head, ok, ng, after) {
-    G.qUsed.push(q.id); var wrong = false;
-    A.ask(q, { r: A.rng(Date.now() + q.id), sec: A.LV_SEC[A.st().level], head: statusHtml() + head, nextLabel: K('次へ', 'つぎへ'),
-      onAnswer: function (good) {
-        var gain = good ? ok.v : ng.v; me().money += gain; wrong = !good;
-        if (good) A.giveCard(q, A.rng(Date.now() + q.id));
-        A.addXp(good ? 3 : 1); A.Store.save();
-        var fb = A.root().querySelector('#qfb'); if (fb) fb.insertAdjacentHTML('afterbegin', '<div class="qfb ' + (good ? 'ok' : 'ng') + '"><b>' + (good ? ok.msg : ng.msg) + '</b> ' + (gain >= 0 ? '+' : '') + gain + K('万円', 'まんえん') + (good ? '' : '<br>↩️ ' + K('まちがえたので、もとの マスに もどります', 'まちがえたので もどるよ')) + '</div>');
-      }, next: function () { if (wrong) backMe(after); else after(); } });
-  }
-  function fullName(n) { return n === '北海道' ? n : n === '東京' ? '東京都' : n === '大阪' || n === '京都' ? n + '府' : n + '県'; }
-  function prefCard(pr) {
-    var li = function (a) { return (a || []).map(A.esc).join('・'); };
-    return '<div class="pcard"><h2>' + A.esc(fullName(pr.n)) + '</h2><div class="pin"><div class="pil" aria-hidden="true">' + (pr.i || pr.e) + '</div>' +
-      '<div class="prow"><span class="pill">' + K('県庁所在地', 'けんちょうしょざいち') + '</span>' + A.esc(pr.c || '') + '</div>' +
-      '<div class="prow"><span class="pill g">' + K('めいぶつ', 'めいぶつ') + '</span>' + li(pr.t) + '</div>' +
-      '<div class="prow" style="margin:0"><span class="pill b">' + K('川・湖・山など', 'かわ・みずうみ・やま') + '</span>' + li(pr.w) + '</div></div></div>';
-  }
-  function landMe() {
-    var i = me().pos; if (i >= GOAL) { me().goalRound = G.round; return cpuTurns(); }
-    A.draw(statusHtml() + prefCard(D.prefs[i]) + '<button class="qb pri" id="pnext">' + K('つぎへ', 'つぎへ') + '</button>');
-    A.root().querySelector('#pnext').onclick = landMe2;
-  }
-  function landMe2() {
-    var i = me().pos; if (i >= GOAL) { me().goalRound = G.round; return cpuTurns(); }
-    var k = kindOf(i), pr = D.prefs[i], head = '<div class="qc" style="padding:10px 14px"><b>' + pr.e + ' ' + A.esc(pr.n) + '</b> <span class="qm">' + K('名物:', 'めいぶつ:') + A.esc(pr.s) + '</span></div>';
-    var done = function () { if (me().pos >= GOAL && me().goalRound == null) me().goalRound = G.round; cpuTurns(); };
-    if (k === 'goto') ask(pickQuestion('ご当地', i), head, { v: 30, msg: 'ご当地クイズ 正解!' }, { v: 0, msg: 'おしい! 名物を おぼえよう' }, done);
-    else if (k === 'quiz') ask(pickQuestion(null, i), head, { v: 20, msg: 'ナイス!' }, { v: -10, msg: 'ざんねん…' }, done);
-    else eventMe(head, done);
-  }
-  function pickEvent(pos) {
-    var ph = phaseOf(ageOf(pos)), pool = D.events.filter(function (e) { return e.n !== '誕生' && e.ph.indexOf(ph) >= 0; });
-    var fresh = pool.filter(function (e) { return !G.usedEv[e.n]; }); if (fresh.length) pool = fresh;
-    var e = A.shuffle(pool, G.r)[0]; G.usedEv[e.n] = 1; return e;
-  }
-  function eventMe(head, after) {
-    var ev = pickEvent(me().pos);
-    A.draw(statusHtml() + '<div class="qc tev"><span class="qtag">' + K('人生イベント', 'じんせい イベント') + ' ・ ' + ageOf(me().pos) + K('歳', 'さい') + '</span><div class="big tbob">' + ev.i + '</div><h2>' + A.esc(ev.n) + '</h2><p>' + A.T(ev.t) + '</p><div class="qm">' + K('クイズに 正解すると いい 結果に!(まちがえると もどる)', 'せいかいすると いい けっかに!') + '</div></div><button class="qb pri" id="tch">' + K('チャレンジ!', 'チャレンジ!') + '</button>');
-    A.root().querySelector('#tch').onclick = function () {
-      ask(pickQuestion(ev.g, me().pos), '<div class="qc" style="padding:10px 14px"><b>' + ev.i + ' ' + A.esc(ev.n) + '</b></div>', { v: ev.gp, msg: '🎉 ' + ev.good }, { v: ev.bp, msg: '💦 ' + ev.bad }, after);
-    };
-  }
-
-  /* ===== コンピューターの番 ===== */
-  function cpuTurns() {
-    if (G.mode === 'net') return netEnd();
-    if (G.mode !== 'battle') return endRound();
-    board(); var bt = A.root().querySelector('#troll'); if (bt) { bt.disabled = true; bt.textContent = K('みんなの 番…', 'みんなの ばん…'); } var j = 1;
-    (function nextCpu() {
-      if (j >= G.players.length) return setTimeout(endRound, 400);
-      var jj = j++, p = G.players[jj];
-      if (p.pos >= GOAL) return nextCpu();
-      rollDice(function (v) { var s0 = p.pos; hop(jj, v, function () {
-        var i = Math.min(p.pos, 46), k = p.pos >= GOAL ? 'goal' : kindOf(i), pr = D.prefs[i], ok = G.r() < p.p, g = 0, t = '';
-        if (k === 'goal') { p.goalRound = G.round; t = '🏁 ゴール!'; }
-        else if (k === 'goto') { g = ok ? 30 : 0; t = pr.n + ' ご当地' + (ok ? '正解' : 'おしい'); }
-        else if (k === 'quiz') { g = ok ? 20 : -10; t = pr.n + ' クイズ' + (ok ? '正解' : 'ざんねん'); }
-        else { var ev = pickEvent(p.pos); g = ok ? ev.gp : ev.bp; t = ev.i + ev.n + (ok ? ' うまくいった' : ' たいへん'); }
-        p.money += g; setLog(p.name + ': ' + t + ' ' + (g ? (g > 0 ? '+' : '') + g : '') + (k !== 'goal' && !ok ? ' ↩️もどる' : ''));
-        var after = function () { var rk = A.root().querySelector('.trk'); if (rk) rk.outerHTML = rankHtml(); showOji(); setTimeout(nextCpu, 600); };
-        if (k !== 'goal' && !ok) setTimeout(function () { hop(jj, p.pos - s0, after, true); }, 500); else after();
+  /* ---------- キューブの中身(だれが見ても同じ結果になる、ただの計算) ---------- */
+  function coords(N) { var o = []; for (var i = 0; i < N; i++) o.push(2 * i - (N - 1)); return o; }   // 段の位置: 2×2 は -1,1 / 3×3 は -2,0,2 / 6×6 は -5,-3,-1,1,3,5
+  function make(N) {
+    var st = [], cs = coords(N), M = N - 1;
+    FK.forEach(function (k) {
+      var nv = NORM[k];
+      cs.forEach(function (i) { cs.forEach(function (j) {
+        var p;
+        if (nv[1] !== 0) p = [i, nv[1] * M, j]; else if (nv[2] !== 0) p = [i, j, nv[2] * M]; else p = [nv[0] * M, i, j];
+        st.push({ p: p, n: [nv[0], nv[1], nv[2]], c: nv[3] });
       }); });
-    })();
+    });
+    return { N: N, st: st };
   }
-  function endRound() {
-    var someoneGoal = G.players.some(function (p) { return p.goalRound != null; });
-    G.round++;
-    if (someoneGoal || G.round >= TOTAL) return finish();
-    board();
+  function rot(v, a, q) {   // 軸aのまわりに 90度×q (q=+1 / -1)
+    var x = v[0], y = v[1], z = v[2];
+    if (a === 0) return q > 0 ? [x, -z, y] : [x, z, -y];
+    if (a === 1) return q > 0 ? [z, y, -x] : [-z, y, x];
+    return q > 0 ? [-y, x, z] : [y, -x, z];
+  }
+  function turn(cube, k, dir) {   // dir: +1 = 右まわり(時計) / -1 = 左まわり。その面を そとから見て
+    var f = FACE[k], q = -f.s * dir, M = cube.N - 1;
+    cube.st.forEach(function (t) { if (t.p[f.a] === f.s * M) { t.p = rot(t.p, f.a, q); t.n = rot(t.n, f.a, q); } });
+  }
+  function solved(cube) {
+    var m = {}, ok = true;
+    cube.st.forEach(function (t) { var key = t.n.join(','); if (m[key] === undefined) m[key] = t.c; else if (m[key] !== t.c) ok = false; });
+    return ok;
+  }
+  function progress(cube) {   // 0〜1(そろい具合)。ロボットとの競争の ものさし
+    var by = {}, N2 = cube.N * cube.N;
+    cube.st.forEach(function (t) { var key = t.n.join(','); (by[key] = by[key] || [0, 0, 0, 0, 0, 0])[t.c]++; });
+    var sum = 0; Object.keys(by).forEach(function (k) { sum += Math.max.apply(null, by[k]); });
+    return Math.max(0, Math.min(1, (sum / (6 * N2) - 0.34) / 0.66));
+  }
+  function rng(seed) {
+    var h = 1779033703 ^ seed.length, i;
+    for (i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+    var a = h >>> 0;
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function scrambleMoves(seed, n, N) {   // [軸, 段の位置, 向き] を n 個(内側の段も まぜます)
+    var r = rng(seed), out = [], cs = coords(N || 3), la = -1, lc = 0;
+    while (out.length < n) {
+      var a = Math.floor(r() * 3), c = cs[Math.floor(r() * cs.length)], q = r() < 0.5 ? 1 : -1;
+      if (a === la && c === lc) continue; la = a; lc = c; out.push([a, c, q]);
+    }
+    return out;
+  }
+  function scrambled(level, seed) {
+    var L = LV[level], c, tries = 0, mv;
+    do { c = make(L.n); mv = scrambleMoves(seed + '#' + tries, L.mv, L.n); mv.forEach(function (m) { turnLayer(c, m[0], m[1], m[2]); }); tries++; } while (solved(c) && tries < 20);
+    c.scr = mv;   // かきまぜた手。攻略補助が、これを 逆にもどす
+    return c;
+  }
+  /* 展開図の位置: 上U / 左L 前F 右R 後B / 下D */
+  function idx(N, c) { return (c + N - 1) / 2; }
+  function cell(N, t) {
+    var x = t.p[0], y = t.p[1], z = t.p[2], k = t.n.join(',');
+    var rc = { '0,1,0': [idx(N, z), idx(N, x)], '0,0,1': [idx(N, -y), idx(N, x)], '1,0,0': [idx(N, -y), idx(N, -z)], '0,0,-1': [idx(N, -y), idx(N, -x)], '-1,0,0': [idx(N, -y), idx(N, z)], '0,-1,0': [idx(N, -z), idx(N, x)] }[k];
+    var off = { '0,1,0': [0, 1], '-1,0,0': [1, 0], '0,0,1': [1, 1], '1,0,0': [1, 2], '0,0,-1': [1, 3], '0,-1,0': [2, 1] }[k];
+    return { r: off[0] * N + rc[0], c: off[1] * N + rc[1] };
+  }
+  function netSvg(cube, letters, w) {
+    var N = cube.N, cs = Math.floor(w / (4 * N)), g = 2, W = cs * 4 * N, H = cs * 3 * N, h = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="キューブの展開図" style="display:block;max-width:' + W + 'px;margin:0 auto">';
+    cube.st.forEach(function (t) {
+      var q = cell(N, t);
+      h += '<rect x="' + (q.c * cs + g / 2) + '" y="' + (q.r * cs + g / 2) + '" width="' + (cs - g) + '" height="' + (cs - g) + '" rx="4" fill="' + COL[t.c] + '" stroke="#1b2438" stroke-width="1.2"/>';
+      if (letters) h += '<text x="' + (q.c * cs + cs / 2) + '" y="' + (q.r * cs + cs / 2 + cs * 0.16) + '" text-anchor="middle" font-size="' + Math.round(cs * 0.5) + '" font-weight="800" fill="' + (t.c === 1 || t.c === 0 ? '#1b2438' : '#fff') + '">' + CN[t.c] + '</text>';
+    });
+    [['上', 0, 0], ['下', 0, 2]].forEach(function (f) { h += '<text x="' + (N * cs / 2) + '" y="' + (f[2] * N * cs + N * cs / 2 + 8) + '" text-anchor="middle" font-size="15" font-weight="800" fill="#9aa3b2">' + f[0] + 'の面</text>'; });
+    h += '<text x="' + (W - 6) + '" y="' + (H - 8) + '" text-anchor="end" font-size="11" font-weight="700" fill="#9aa3b2">中段: 左・前・右・後ろ</text>';
+    return h + '</svg>';
   }
 
-  /* ===== おしまい ===== */
-  function finish() {
-    if (G.over) return;
-    G.over = true;
-    var st = A.st(), m = me(), r = ranks(), myRank = r.indexOf(G.my || 0) + 1, li = r[r.length - 1], vs = G.mode !== 'solo';
-    var reached = m.goalRound != null;
-    var oji = vs ? li : (reached ? -1 : 0);
-    var xp = 15 + (vs && myRank === 1 ? 10 : 0) + (G.mode === 'solo' && reached ? 10 : 0);
-    var evo = A.addXp(xp); st.trip = st.trip || { played: 0, best: 0 }; st.trip.played++; st.trip.best = Math.max(st.trip.best, m.money); A.Store.save();
-    var rows = r.map(function (i, k) { var p = G.players[i]; return '<div class="qhead" style="margin:0 0 6px"><b>' + (k + 1) + '位 ' + A.esc(p.name) + (i === oji ? ' 👴' : '') + '</b><span>' + (p.pos >= GOAL ? '🏁ゴール ' : A.esc(D.prefs[Math.min(p.pos, 46)].n) + ' ') + '💰' + p.money + '</span></div>'; }).join('');
-    var tail = vs ? (oji === (G.my || 0) ? K('あなたが 最下位…。1本ハゲの おじさんが 乗っかりました!', 'さいかい…。はげの おじさんが のっかった!') : A.esc(G.players[oji].name) + K(' が 最下位。おじさんが 乗っかりました!', ' に おじさんが のっかった!'))
-      : (reached ? K('日本一周 達成! おじさんは 来ませんでした', 'ゴール! おじさんは こなかったよ') : K('ゴールに とどかず、おじさんが 乗っかりました…', 'ゴールに とどかず おじさんが のっかった…'));
-    A.draw('<div class="qc tev"><h2>' + K('旅の けっか', 'たびの けっか') + '</h2><div style="font-size:1.4em;font-weight:700">' + (vs ? myRank + K('位', 'い') : (reached ? K('日本一周!', 'ゴール!') : A.esc(D.prefs[Math.min(m.pos, 46)].n) + 'まで')) + '</div>' +
-      (oji >= 0 ? '<div class="tbob" style="display:inline-block;margin:8px">' + ojiSVG(110) + '</div>' : '<div style="font-size:3em">🎉</div>') + '<div class="qbub">' + tail + '</div></div><div class="qc">' + rows + '</div>' +
-      '<div class="qfb ok"><b>+' + xp + ' ' + K('経験値', 'けいけんち') + '</b>' + (evo ? '<br>🎊 あいぼうが しんかした!' : '') + '</div><button class="qb pri" id="tagain">' + K('もういちど あそぶ', 'もういちど') + '</button><button class="qb" id="thome">' + K('GAMEへ もどる', 'GAMEへ もどる') + '</button>');
-    var leaveNet = function () { if (G && G.R) { G.R.leave(); } G = null; };
-    A.root().querySelector('#tagain').onclick = function () { leaveNet(); start(A); }; A.root().querySelector('#thome').onclick = function () { leaveNet(); if (A.hub) A.hub(); else A.home(); };
+  /* ---------- きろく(この端末) ---------- */
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || { best: {} }; } catch (e) { return { best: {} }; } }
+  function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+  function fmt(ms) { var s = Math.floor(ms / 1000), m = Math.floor(s / 60); return m + ':' + ('0' + (s % 60)).slice(-2) + (ms < 60000 ? '.' + Math.floor((ms % 1000) / 100) : ''); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function stop() { if (tick) { clearInterval(tick); tick = null; } }
+
+  var CSS = '#qz .cbm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}#qz .cbm button{min-height:64px;margin:0;font-size:1.05em;line-height:1.3}#qz .cbm button{flex-direction:column;gap:2px;padding:8px 4px}#qz .cbm button small{display:block;font-weight:500;font-size:.72em;opacity:.8;text-align:center}#qz .cbl button>span:first-child{text-align:left}' +
+    '#qz .cbl{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}#qz .cbl button{display:flex;justify-content:space-between;align-items:center;text-align:left;margin:0;min-height:56px}#qz .cbl button small{display:block;font-weight:500;opacity:.75}' +
+    '#qz .cbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}#qz .cbs button{min-height:60px;margin:0;font-size:1.15em;padding:6px 2px}' +
+    '#qz .cblk{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#6b5a3a;background:rgba(255,255,255,.85);border:1px solid #cfc7b4;border-radius:12px;padding:6px 4px;cursor:pointer;touch-action:manipulation;z-index:2}#qz .cblk input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}#qz .cblk i{display:block;width:22px;height:44px;border-radius:12px;background:#cfc7b4;position:relative;transition:background .15s}#qz .cblk i::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:top .15s}#qz .cblk input:checked+i{background:#e11d48}#qz .cblk input:checked+i::after{top:24px}' +
+    '#qz .cbi{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin:0 0 8px;font-size:1.1em}#qz .cbp{height:14px;border-radius:7px;background:#e8e2d2;overflow:hidden;margin:4px 0 8px}#qz .cbp i{display:block;height:100%;background:#2e9d4a;transition:width .4s}#qz .cbp.rb i{background:#d93a2b}' +
+    '#qz .cbr{width:100%;border-collapse:collapse}#qz .cbr td{padding:8px 6px;border-bottom:1px solid #e8e2d2}#qz .cbr tr.me td{background:#fff3c8;font-weight:800}#qz .cbbig{font-size:2em;font-weight:800;text-align:center;margin:6px 0}';
+
+  /* ---------- 画面 ---------- */
+  function home() {
+    stop(); var d = load();
+    var op = function (v, t, c) { return '<option value="' + v + '"' + (String(c) === String(v) ? ' selected' : '') + '>' + t + '</option>'; };
+    var rw = function (l, id, o) { return '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-weight:800"><span>' + l + '</span><select id="' + id + '" style="flex:1;max-width:62%;min-height:46px;font-size:1em;font-weight:700;border:2px solid #ccd;border-radius:10px;padding:0 8px;background:#fff;color:inherit">' + o + '</select></label>'; };
+    var bst = d.best[S.level];
+    A.draw('<h2 class="hph">ルービックキューブ</h2><div class="qc">' +
+      rw('モード', 'cbMd', op('train', '特訓', S.mode) + op('battle', '対戦', S.mode) + op('cup', '大会', S.mode)) +
+      rw('レベル', 'cbLv', [1, 2, 3, 4, 5].map(function (i) { return op(i, 'レベル' + i, S.level); }).join('')) +
+      (bst ? '<div class="qm">ベスト ' + fmt(bst.ms) + '</div>' : '') +
+      '<button type="button" class="qb pri" id="cbgo" style="margin-top:10px">' + (S.mode === 'cup' ? '大会へ' : 'スタート') + '</button></div>' +
+      '<button type="button" class="qb" id="cbback">もどる</button>');
+    document.getElementById('cbMd').onchange = function () { S.mode = this.value; home(); };
+    document.getElementById('cbLv').onchange = function () { S.level = +this.value; home(); };
+    document.getElementById('cbgo').onclick = function () { S.mode === 'cup' ? cupHome() : play(null); };
+    document.getElementById('cbback').onclick = function () { A.hub(); };
   }
 
-  window.HmtQuizTrip = { start: start };
+  function cupHome(info) {
+    var lv = S.level;
+    if (!info) {
+      A.draw('<div class="qc">よみこみ中…</div>');
+      return A.call('cube_info', { level: lv }).then(function (r) { cupHome(r); }, function (e) { A.toast(e.message || 'つながりませんでした'); home(); });
+    }
+    var h = '<h2 class="hph">大会 ・ レベル' + lv + '</h2><div class="qc"><div style="font-weight:800">' + LV[lv].t + '</div><div class="qm">今週(' + esc(info.weekLabel) + ')の おなじ並びに、みんなで 挑戦。いちばん早い記録が 順位に のります。</div></div>';
+    h += '<div class="qc"><div style="font-weight:800;margin:0 0 6px">今週のランキング</div>' + rankHtml(info) + '</div>';
+    if (info.needNick) h += '<div class="qc"><div style="font-weight:800;margin:0 0 6px">ニックネームを きめてください(ランキングに のります)</div><input id="cbnick" maxlength="12" placeholder="ニックネーム(12文字まで)" style="width:100%;min-height:52px;font-size:1em;padding:8px 12px;border:2px solid #cfc7b4;border-radius:12px;margin-bottom:10px" aria-label="ニックネーム"><button type="button" class="qb pri" id="cbnk">これで きめる</button></div>';
+    else h += '<div class="qc"><div class="qm">ニックネーム: <b>' + esc(info.nick) + '</b></div><button type="button" class="qb pri" id="cbplay">挑戦する(スタート)</button></div>';
+    h += '<button type="button" class="qb" id="cbhome">もどる</button>';
+    A.draw(h);
+    var go = document.getElementById('cbplay'); if (go) go.onclick = function () { play(info); };
+    var nk = document.getElementById('cbnk'); if (nk) nk.onclick = function () { var v = document.getElementById('cbnick').value.trim(); if (!v) return A.toast('ニックネームを いれてください'); nk.disabled = true; A.call('cube_nick', { nick: v }).then(function () { cupHome(null); }, function (e) { nk.disabled = false; A.toast(e.message || 'うまく いきませんでした'); }); };
+    document.getElementById('cbhome').onclick = home;
+  }
+  function rankHtml(info) {
+    if (!info.rank || !info.rank.length) return '<div class="qm">まだ だれも 挑戦していません。いちばん乗りを めざしましょう!</div>';
+    return '<table class="cbr">' + info.rank.map(function (r) { return '<tr class="' + (r.me ? 'me' : '') + '"><td>' + r.rank + '位</td><td>' + esc(r.name) + (r.me ? '(あなた)' : '') + '</td><td style="text-align:right">' + fmt(r.ms) + '</td><td style="text-align:right;color:#6b7280">' + r.moves + '手</td></tr>'; }).join('') + '</table>' +
+      (info.mine && info.mine.rank > 10 ? '<div class="qm" style="margin-top:6px">あなたは ' + info.mine.rank + '位(' + fmt(info.mine.ms) + ')です。</div>' : '');
+  }
+
+  /* ---------- 立体表示(canvas) ---------- */
+  function rotW(v, a, th) {   // 軸aのまわりに th ラジアン(右ねじ)
+    var c = Math.cos(th), s = Math.sin(th), x = v[0], y = v[1], z = v[2];
+    if (a === 0) return [x, y * c - z * s, y * s + z * c];
+    if (a === 1) return [x * c + z * s, y, -x * s + z * c];
+    return [x * c - y * s, x * s + y * c, z];
+  }
+  function viewV(v, V) { var r = rotW(v, 1, V.yaw); return rotW(r, 0, V.pitch); }
+  function proj(v, V) { var k = V.F / (V.D - v[2]); return [V.cx + v[0] * k, V.cy - v[1] * k, v[2]]; }
+  function cellW(N) { return 3 / N; }
+  function worldOf(N, t) {
+    var sc = 1.5 / N, w = [t.p[0] * sc, t.p[1] * sc, t.p[2] * sc];
+    for (var i = 0; i < 3; i++) if (t.n[i] !== 0) w[i] = t.n[i] * 1.5;
+    return w;
+  }
+  function quad(N, t, h) {   // ワールドの4すみ(その面の中)
+    var w = worldOf(N, t), an = t.n[0] ? 0 : t.n[1] ? 1 : 2, b = (an + 1) % 3, c = (an + 2) % 3, out = [];
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (q) { var v = w.slice(); v[b] += q[0] * h; v[c] += q[1] * h; out.push(v); });
+    return out;
+  }
+  function layerQuadList(cube, V, anim) {   // 画面に出す板のリスト(奥から手前の順)
+    var N = cube.N, cw = cellW(N), out = [], D = V.D;
+    cube.st.forEach(function (t) {
+      var inl = anim && t.p[anim.a] === anim.c, th = inl ? anim.th : 0;
+      var nrm = t.n.map(function (x) { return x; }), w = worldOf(N, t);
+      if (inl) { nrm = rotW(nrm, anim.a, th); }
+      var nv = viewV(nrm, V), cwv = viewV(inl ? rotW(w, anim.a, th) : w, V);
+      if (nv[0] * (0 - cwv[0]) + nv[1] * (0 - cwv[1]) + nv[2] * (D - cwv[2]) <= 0.02) return;   // うら向きは 描かない
+      var mk = function (h) { return quad(N, t, h).map(function (v) { if (inl) v = rotW(v, anim.a, th); return proj(viewV(v, V), V); }); };
+      out.push({ t: t, body: mk(cw * 0.5), face: mk(cw * 0.43), z: cwv[2] });
+    });
+    out.sort(function (a, b) { return a.z - b.z; });
+    return out;
+  }
+  function inPoly(pt, poly) {
+    var neg = false, pos = false;
+    for (var i = 0; i < poly.length; i++) { var a = poly[i], b = poly[(i + 1) % poly.length], cr = (b[0] - a[0]) * (pt[1] - a[1]) - (b[1] - a[1]) * (pt[0] - a[0]); if (cr < 0) neg = true; if (cr > 0) pos = true; }
+    return !(neg && pos);
+  }
+  /* ドラッグの向きから、どの段を どちらへ回すか決める(ぬった面を 指でなぞった方向に動く回し方を えらぶ) */
+  function decide(cube, V, t, dx, dy) {
+    var N = cube.N, w = worldOf(N, t), an = t.n[0] ? 0 : t.n[1] ? 1 : 2, s1 = proj(viewV(w, V), V), best = null, bs = -1e9;
+    [0, 1, 2].forEach(function (a) {
+      if (a === an) return;
+      [1, -1].forEach(function (q) {
+        var s2 = proj(viewV(rotW(w, a, q * 0.3), V), V), vx = s2[0] - s1[0], vy = s2[1] - s1[1], L = Math.sqrt(vx * vx + vy * vy) || 1, sc = (vx * dx + vy * dy) / L;
+        if (sc > bs) { bs = sc; best = { a: a, c: t.p[a], q: q }; }
+      });
+    });
+    return best;
+  }
+  function turnLayer(cube, a, c, q) { cube.st.forEach(function (t) { if (t.p[a] === c) { t.p = rot(t.p, a, q); t.n = rot(t.n, a, q); } }); }
+  function drawCube(cv, cube, V, anim, letters) {
+    var ctx = cv.getContext('2d'), W = cv.width, list = layerQuadList(cube, V, anim);
+    ctx.clearRect(0, 0, W, cv.height); ctx.lineJoin = 'round';
+    list.forEach(function (o) {
+      ctx.beginPath(); o.body.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fillStyle = '#15181f'; ctx.fill(); ctx.strokeStyle = '#15181f'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); o.face.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fillStyle = COL[o.t.c]; ctx.fill();
+      if (letters) {
+        var cx = 0, cy = 0; o.face.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
+        var sz = Math.abs(o.face[1][0] - o.face[0][0]) + Math.abs(o.face[1][1] - o.face[0][1]);
+        ctx.font = '800 ' + Math.max(12, Math.round(sz * 0.5)) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = (o.t.c === 0 || o.t.c === 1) ? '#1b2438' : '#fff'; ctx.fillText(CN[o.t.c], cx, cy);
+      }
+    });
+    if (V.hint && !anim) drawHint(ctx, cube, V, list, W);
+    return list;
+  }
+  /* 攻略補助: つぎに まわす段を ふちどりして、まわす向きの矢印を 描く */
+  var AXN = [['左', '右'], ['下', '上'], ['後ろ', '前']];
+  function layerName(N, a, c) {   // 近いほうの はしから かぞえた 名前(例: 左から2番目の段)
+    var i = (c + N - 1) / 2, lo = i <= (N - 1) / 2, k = lo ? i : N - 1 - i, side = AXN[a][lo ? 0 : 1];
+    if (N % 2 === 1 && i === (N - 1) / 2) return ['左右', '上下', '前後'][a] + 'の まんなかの段';
+    return k === 0 ? 'いちばん' + side + 'の段' : side + 'から' + (k + 1) + '番目の段';
+  }
+  function drawHint(ctx, cube, V, list, W) {
+    var h = V.hint, a = h[0], c = h[1], q = h[2], N = cube.N, lay = list.filter(function (o) { return o.t.p[a] === c; });
+    ctx.save(); ctx.lineJoin = 'round';
+    lay.forEach(function (o) { ctx.beginPath(); o.body.forEach(function (p, i) { i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.strokeStyle = '#e11d48'; ctx.lineWidth = Math.max(3, W / 110); ctx.stroke(); });
+    var side = lay.filter(function (o) { return o.t.n[a] === 0; }), by = {};
+    side.forEach(function (o) { var k = o.t.n.join(','); (by[k] = by[k] || []).push(o); });
+    var bk = null, bz = -1e9;   // いちばん 手前を向いている 面
+    Object.keys(by).forEach(function (k) { var o = by[k][0], nv = viewV(o.t.n, V); if (nv[2] > bz) { bz = nv[2]; bk = k; } });
+    if (bk) {
+      var items = by[bk].map(function (o) {
+        var w = worldOf(N, o.t), s1 = proj(viewV(w, V), V), s2 = proj(viewV(rotW(w, a, q * 0.3), V), V), cx = 0, cy = 0;
+        o.face.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
+        return { cx: cx, cy: cy, dx: s2[0] - s1[0], dy: s2[1] - s1[1] };
+      });
+      var tx = 0, ty = 0; items.forEach(function (m) { tx += m.dx; ty += m.dy; }); var tl = Math.sqrt(tx * tx + ty * ty) || 1; tx /= tl; ty /= tl;
+      items.sort(function (m, n) { return (m.cx * tx + m.cy * ty) - (n.cx * tx + n.cy * ty); });
+      var f = items[0], l = items[items.length - 1], sz = Math.max(10, Math.abs(l.cx - f.cx) + Math.abs(l.cy - f.cy));
+      var ext = (items.length > 1 ? sz / (items.length - 1) : W / 8) * 0.55, x1 = f.cx - tx * ext * 0.4, y1 = f.cy - ty * ext * 0.4, x2 = l.cx + tx * ext, y2 = l.cy + ty * ext, ah = Math.max(14, W / 24), ang = Math.atan2(y2 - y1, x2 - x1);
+      ctx.lineCap = 'round';
+      [['#ffffff', Math.max(10, W / 40)], ['#e11d48', Math.max(6, W / 64)]].forEach(function (z) {
+        ctx.strokeStyle = z[0]; ctx.fillStyle = z[0]; ctx.lineWidth = z[1];
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * ah * 0.6, y2 - Math.sin(ang) * ah * 0.6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(ang - 0.5) * ah, y2 - Math.sin(ang - 0.5) * ah); ctx.lineTo(x2 - Math.cos(ang + 0.5) * ah, y2 - Math.sin(ang + 0.5) * ah); ctx.closePath(); ctx.fill();
+        if (z[0] === '#ffffff') { ctx.lineWidth = z[1]; ctx.stroke(); }
+      });
+    }
+    ctx.restore();
+  }
+
+  function play(cup) {
+    stop();
+    var lv = S.level, L = LV[lv], seed = cup ? cup.seed : 'free-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+    var cube = scrambled(lv, seed), start = null, moves = 0, hist = [], letters = false, ref = false, done = false, hint = false, anim = null, todo = (cube.scr || []).slice().reverse().map(function (m) { return [m[0], m[1], -m[2]]; }), canHint = !cup && S.mode !== 'battle';
+    var best = load().best[lv], robotMs = 0, battle = S.mode === 'battle', V = { yaw: -0.62, pitch: 0.5, D: 9, F: 0, cx: 0, cy: 0 }, last = [];
+    if (battle) { var base = [0, 25000, 90000, 240000, 480000, 900000][lv], r = Math.random(); robotMs = best ? Math.round(best.ms * (0.9 + r * 0.5)) : Math.round(base * (0.8 + r * 0.6)); }
+    var title = cup ? '大会' : battle ? '対戦' : '特訓';
+    var h = '<div class="qc"><div class="cbi"><span>' + title + ' ・ レベル' + lv + '</span><span id="cbt">0:00</span></div>' +
+      '<div class="qm" style="margin:0 0 6px">手数: <b id="cbmv">0</b> <span id="cbhint">・ 色の ところを なぞると、その段が まわります</span></div>';
+    if (battle) h += '<div class="qm">あなた</div><div class="cbp"><i id="cbme" style="width:0%"></i></div><div class="qm">ロボット</div><div class="cbp rb"><i id="cbrb" style="width:0%"></i></div>';
+    h += '<div style="position:relative"><canvas id="cbcv" style="width:100%;aspect-ratio:1/1;touch-action:none;display:block;background:radial-gradient(#fffdf4,#efe9d6);border-radius:16px" aria-label="ルービックキューブ(なぞって まわします)"></canvas><label class="cblk" title="ロック"><span>Lock</span><input type="checkbox" id="cblock" role="switch" aria-label="キューブの向きを ロック"><i></i></label></div></div>' +
+      '<div class="qgrid"><button type="button" class="qb sm" id="cbundo">ひとつ もどす</button><button type="button" class="qb sm" id="cbhelp">' + (canHint ? '🤖攻略補助' : '🤖攻略補助(特訓のみ)') + '</button><button type="button" class="qb sm" id="cbref">展開図・みほん</button><button type="button" class="qb sm" id="cbltr">色を 文字でも</button></div>' +
+      '<div id="cbhelpbox"></div><div id="cbrefbox"></div><details class="qc" style="margin-top:10px"><summary style="font-weight:800">ボタンで まわす</summary><div class="cbs">' +
+      ['U', 'D', 'L', 'R', 'F', 'B'].map(function (k) { return '<button type="button" class="qb" data-mv="' + k + '" data-d="1">' + FACE[k].nm + ' ↻</button><button type="button" class="qb" data-mv="' + k + '" data-d="-1">' + FACE[k].nm + ' ↺</button>'; }).join('') + '</div><div class="qm">「↻」右まわり、「↺」左まわり(その面を 外から見て)</div></details>' +
+      '<button type="button" class="qb" id="cbquit" style="margin-top:10px">やめる</button>';
+    A.draw(h);
+    var cv = document.getElementById('cbcv'), dpr = Math.min(2, window.devicePixelRatio || 1), cssW = cv.clientWidth || 340;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssW * dpr); V.cx = cv.width / 2; V.cy = cv.height / 2; V.F = cv.width * 1.15;
+    function render() { if (!document.getElementById('cbcv')) return; last = drawCube(cv, cube, V, anim, letters); }
+    function setStat() { var m = document.getElementById('cbmv'); if (m) m.textContent = moves; var me = document.getElementById('cbme'); if (me) me.style.width = Math.round(progress(cube) * 100) + '%'; }
+    function arm() {
+      stop();
+      tick = setInterval(function () {
+        var t = document.getElementById('cbt'); if (!t) return stop();
+        var ms = Date.now() - start; t.textContent = fmt(ms);
+        if (battle && !done) { var rb = document.getElementById('cbrb'); if (rb) rb.style.width = Math.min(100, Math.round(ms / robotMs * 100)) + '%'; if (ms >= robotMs) finish(false, true); }
+      }, 200);
+    }
+    function doTurn(a, c, q, rec) {
+      if (done || anim) return;
+      if (!start) { start = Date.now(); arm(); var hn = document.getElementById('cbhint'); if (hn) hn.textContent = ''; }
+      var t0 = Date.now(), dur = 200; anim = { a: a, c: c, q: q, th: 0 };
+      (function step() {
+        var k = Math.min(1, (Date.now() - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        anim.th = q * e * Math.PI / 2; render();
+        if (k < 1) return requestAnimationFrame(step);
+        anim = null; turnLayer(cube, a, c, q); moves++; if (rec) hist.push([a, c, q]); noteMove(a, c, q); setStat(); render();
+        if (solved(cube)) finish(true);
+      })();
+    }
+    /* 攻略補助: 「やること」の一覧(todo)。自分で回したら、その手を 打ち消す手を 足す(おなじ手なら 1つ へる) */
+    function noteMove(a, c, q) { var n = todo[0]; if (n && n[0] === a && n[1] === c && n[2] === q) todo.shift(); else todo.unshift([a, c, -q]); helpRefresh(); }
+    function helpRefresh() {
+      var bx = document.getElementById('cbhelpbox'); if (!bx) return;
+      if (!hint || done) { V.hint = null; bx.innerHTML = ''; return render(); }
+      if (!todo.length || solved(cube)) { V.hint = null; bx.innerHTML = '<div class="qc" style="margin-top:10px"><b>そろっています!</b></div>'; return render(); }
+      V.hint = todo[0]; window.HmtCube._cur = V.hint; var m = todo[0], nm = layerName(cube.N, m[0], m[1]);
+      bx.innerHTML = '<div class="qc" style="margin-top:10px"><div style="font-weight:800">🤖 つぎは <span style="color:#e11d48">' + nm + '</span> を、赤い矢印の向きに まわします</div><div class="qm">のこり ' + todo.length + '手 ・ 赤いふちの段が まわす段です。矢印が見えないときは、キューブを すこし ななめに 回してください。</div></div>'; render();
+    }
+    var drag = null, lockOn = false;
+    try { lockOn = localStorage.getItem('hmt_cube_lock') === '1'; } catch (e) {}
+    var lk = document.getElementById('cblock'); lk.checked = lockOn;
+    lk.onchange = function () { lockOn = lk.checked; drag = null; try { localStorage.setItem('hmt_cube_lock', lockOn ? '1' : '0'); } catch (e) {} A.toast(lockOn ? 'ロック: キューブの向きは 動きません' : 'ロックを はずしました'); };
+    function pos(ev) { var r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
+    cv.onpointerdown = function (ev) {
+      ev.preventDefault(); try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
+      var p = pos(ev), hit = null;
+      for (var i = last.length - 1; i >= 0; i--) { if (inPoly(p, last[i].body)) { hit = last[i].t; break; } }
+      drag = { x: p[0], y: p[1], t: hit, mode: hit ? 'layer' : (lockOn ? 'none' : 'view'), ox: p[0], oy: p[1] };
+    };
+    cv.onpointermove = function (ev) {
+      if (!drag) return; ev.preventDefault(); var p = pos(ev), dx = p[0] - drag.x, dy = p[1] - drag.y;
+      if (drag.mode === 'view') { V.yaw += dx * 0.011 / dpr; V.pitch = Math.max(-1.45, Math.min(1.45, V.pitch + dy * 0.011 / dpr)); drag.x = p[0]; drag.y = p[1]; render(); }
+      else if (drag.mode === 'layer' && Math.sqrt(dx * dx + dy * dy) > 14 * dpr) { var d = decide(cube, V, drag.t, dx, dy); drag.mode = 'done'; if (d) doTurn(d.a, d.c, d.q, true); }
+    };
+    cv.onpointerup = cv.onpointercancel = function () { drag = null; };
+    A.bind('[data-mv]', function (b) { var f = FACE[b.dataset.mv], d = +b.dataset.d; doTurn(f.a, f.s * (cube.N - 1), -f.s * d, true); });
+    document.getElementById('cbundo').onclick = function () { var m = hist.pop(); if (m) doTurn(m[0], m[1], -m[2], false); };
+    document.getElementById('cbhelp').onclick = function () { if (!canHint) return A.toast('攻略補助は、特訓だけで 使えます'); hint = !hint; this.classList.toggle('pri', hint); helpRefresh(); };
+    document.getElementById('cbref').onclick = function () { ref = !ref; var bx = document.getElementById('cbrefbox'); bx.innerHTML = ref ? '<div class="qc" style="margin-top:10px"><div class="qm" style="margin:0 0 6px">いまの 6つの面(ひろげた図)</div>' + netSvg(cube, letters, 300) + '<div class="qm" style="margin:8px 0 6px">完成すると、6つの面が それぞれ 1色に なります。</div></div>' : ''; this.textContent = ref ? '展開図を 閉じる' : '展開図・みほん'; };
+    document.getElementById('cbltr').onclick = function () { letters = !letters; this.textContent = letters ? '文字を 消す' : '色を 文字でも'; render(); };
+    document.getElementById('cbquit').onclick = function () { if (!start || confirm('やめて もどりますか?')) { stop(); cup ? cupHome(null) : home(); } };
+    render(); setStat();
+    function finish(ok, robotWin) {
+      if (done) return; done = true; stop();
+      var ms = Date.now() - start, d = load(), nb = false;
+      if (ok) { if (!d.best[lv] || ms < d.best[lv].ms) { d.best[lv] = { ms: ms, moves: moves }; nb = true; save(d); } }
+      var hh = '<h2 class="hph">' + title + ' ・ レベル' + lv + '</h2><div class="qc"><div class="qm" style="text-align:center">' + (ok ? '完成!' : 'ざんねん…') + '</div>';
+      if (ok) hh += '<div class="cbbig">' + fmt(ms) + '</div><div class="qm" style="text-align:center">' + moves + '手' + (nb ? ' ・ じぶんの ベスト記録!' : '') + '</div>';
+      if (battle) hh += '<div class="cbbig" style="font-size:1.4em">' + (ok ? (ms < robotMs ? 'ロボットに 勝ちました!' : '惜しい!ロボットが 先でした') : 'ロボットが 先に そろえました') + '</div>';
+      hh += netSvg(cube, false, 260) + '</div><div id="cbres"></div>';
+      hh += '<button type="button" class="qb pri" id="cbagain">' + (cup ? 'ランキングを見る' : 'もう1回') + '</button><button type="button" class="qb" id="cbhome2">メニューに もどる</button>';
+      A.draw(hh);
+      document.getElementById('cbagain').onclick = function () { cup ? cupHome(null) : play(null); };
+      document.getElementById('cbhome2').onclick = home;
+      if (cup && ok) {
+        var box = document.getElementById('cbres'); box.innerHTML = '<div class="qc"><div class="qm">記録を おくっています…</div></div>';
+        A.call('cube_submit', { level: lv, ms: ms, moves: moves, seed: cup.seed }).then(function (r) {
+          box.innerHTML = '<div class="qc"><div style="font-weight:800;margin:0 0 6px">今週のランキング(レベル' + lv + ')</div>' + rankHtml(r) + '</div>';
+        }, function (e) { box.innerHTML = '<div class="qc"><div class="qm">記録を おくれませんでした: ' + esc(e.message || '') + '</div></div>'; });
+      }
+    }
+  }
+
+  function start(api) {
+    A = api;
+    if (!document.getElementById('qcbcss')) { var st = document.createElement('style'); st.id = 'qcbcss'; st.textContent = CSS; document.head.appendChild(st); }
+    home();
+  }
+  window.HmtCube = { start: start, _t: { layerName: layerName, decide: decide, turnLayer: turnLayer, worldOf: worldOf, layerQuadList: layerQuadList, rotW: rotW, viewV: viewV, proj: proj, make: make, turn: turn, solved: solved, scrambled: scrambled, scrambleMoves: scrambleMoves, cell: cell, progress: progress, drawHint: drawHint, LV: LV, FK: FK } };
 })();
