@@ -790,7 +790,7 @@ function cardView() {
     sub('会員証', '<div class="mcard"><div class="t1">HAMADAYAMA NEIGHBORHOOD ASSOCIATION</div><div class="t2">浜田山町会 会員証</div>' +
       '<div class="nm">' + esc(c.name) + '</div><div class="row"><span class="chip role">' + esc(c.role) + '</span><span class="no">' + (c.memberNo ? esc(c.memberNo) : '会員番号 未設定') + '</span></div>' +
       '<div class="gold"></div><div class="qrbox">' + (qr || '<div style="display:grid;place-items:center;height:100%;color:#1b2438;font-weight:700">QRを表示できません</div>') + '</div><div class="code">' + esc(c.code) + '</div></div>' +
-      '<div class="card" style="margin-top:16px"><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="muted">' + c.year + '年度 町会費</div><div class="big">' + f[1] + '</div></div></div></div>' +
+      '<div class="card" style="margin-top:16px"><div class="feebig ' + f[0] + '"><div class="dot">' + svg(f[2]) + '</div><div><div class="muted">' + (c.feeYear || c.year) + '年度 町会費</div><div class="big">' + f[1] + '</div></div></div></div>' +
       '<div class="cacts"><button type="button" id="cedit" aria-label="編集">' + ICO_EDIT_ + '編集</button><button type="button" id="cdel" aria-label="削除(LINE会員登録の解除)">' + ICO_TRASH_ + '削除</button></div>' +
       '<p class="muted" style="text-align:center">受付では、この画面を見せてください。<br>画面の明るさを上げると読み取りやすくなります。</p>');
     $('#cedit').onclick = function () {
@@ -1372,7 +1372,8 @@ function scanView() {
 }
 function autoQueue(r) {   // 祭礼・演芸会は、読んだらそのまま受付待ちに入れる(続けて何人読んでも、順番に並ぶ)
   if (!r || r.mode === 'disaster' || !r.apps) return;
-  var todo = r.apps.filter(function (a) { return !a.received; });
+  if (r.mode === 'matsuri' && r.fee && r.fee.unpaid) return toast('町会費が 未納です。受付待ちには入れていません');
+  var todo = r.apps.filter(function (a) { return !a.received && a.channel !== '自動申込(未納)'; });
   if (!todo.length) return toast(r.apps.length ? 'すでに受取済みです' : '申込が見つかりません');
   var chain = Promise.resolve();
   todo.forEach(function (a) { chain = chain.then(function () { return api('o_queue_add', { id: a.id }); }); });
@@ -1444,11 +1445,14 @@ function doFind() {
   $('#fres').innerHTML = '<div class="card"><div class="skel" style="height:80px"></div></div>';
   api('o_find', { event: ev, q: q }).then(findDraw).catch(function (e) { $('#fres').innerHTML = '<div class="card scanres warn"><b>探せませんでした</b><p>' + esc(e.message) + '</p></div>'; });
 }
+function unpaidBanner(r) {
+  return r && r.fee && r.fee.unpaid ? '<div class="card" style="border:3px solid #c0392b;background:#fdecea;text-align:center;padding:16px"><div style="font-size:clamp(28px,6vw,44px);font-weight:900;color:#c0392b">未納です</div><div style="margin-top:6px;font-weight:700">' + esc(r.fee.year) + '年度の町会費が 未納 です。<br>納入を ご案内ください(お菓子の お渡しは 確認してから)。</div></div>' : '';
+}
 function drawScan(r) {
   var p = r.person, h = '';
   var who = '<div class="nm" style="font-size:19px;font-weight:700">' + esc(p.memberName || p.name) + ' 様</div><div class="muted">' + esc([p.district, p.group && p.group + '班', p.memberNo, p.role].filter(Boolean).join(' ・ ')) + (p.memberName && p.name !== p.memberName ? '(' + esc(p.name) + ')' : '') + '</div>';
   if (r.mode === 'matsuri') {
-    h = '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込' + (r.via ? ' <span class="tg">' + esc(r.via) + '</span>' : '') + '</h2>' + who + (r.apps.length ? appRowsHtml(r.apps, true) : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
+    h = unpaidBanner(r) + '<div class="card scanres ' + (r.apps.length ? 'good' : 'warn') + '"><h2>祭礼 ' + r.year + ' の申込' + (r.via ? ' <span class="tg">' + esc(r.via) + '</span>' : '') + '</h2>' + who + (r.apps.length ? appRowsHtml(r.apps, true) : '<p style="margin-top:8px"><b>この会員の祭礼の申込は、見つかりません。</b><br><span class="muted">当日分は、受付の方が管理画面で入力します。</span></p>') + '</div>';
   } else if (r.mode === 'engeikai') {
     h = '<div class="card scanres ' + (r.already ? 'warn' : 'good') + '"><h2>演芸会 ' + r.year + '</h2>' + who + '<p style="margin:10px 0 0"><b>' + (r.already ? 'すでに来場を記録済みです(' + esc(r.already) + ')' : '✓ 来場を記録しました') + '</b></p><p class="muted" style="margin:4px 0 0">来場者 合計 ' + r.checkedIn + ' 人</p>' +
       (r.paperIssued ? '<div class="card scanres warn" style="margin:10px 0 0;border:2px solid #b87400"><div style="font-size:20px;font-weight:700;color:#b87400">📄 紙引換券 発行済</div><p style="margin:8px 0 0">口頭で、紙の申込書でのお申込みがあったので、<b>引換券をお渡ししていると思いますが、引換券はお持ちではないですか？</b></p><p style="margin:8px 0 0">お持ちでない場合は、<b>「ご氏名」と「ご住所」の記載をお願いします。</b><br><span class="muted">あとで、紙の申込書に書かれた氏名・住所と照合します。(来場の記録の備考にも「紙引換券発行済」と残しました)</span></p></div>' : '') + (r.apps && r.apps.length ? '<h2 style="margin-top:12px">お土産の申込</h2>' + appRowsHtml(r.apps, true) : '<p class="muted" style="margin:6px 0 0">事前の申込は、見つかりません。</p>') + (r.apps && r.apps.length && r.lineApp === false && !r.paperIssued ? '<p style="margin:8px 0 0;color:#b87400"><b>⚠ LINEでの申込ではありません。</b><br><span class="muted">演芸会のQRが使えるのは、LINEで申し込んだ方だけです(紙の申込の方は、QRなしでご案内ください)。</span></p>' : '') + '</div>';
@@ -1599,7 +1603,12 @@ function deskView() {
     var isCode = /^(HMT_FESTIVAL:|HMD1:)/i.test(v) || /^[A-Za-z2-9]{8}$/.test(v);
     if (isCode) {
       msg('確認中…');
-      api('o_scan', { mode: DK.mode, code: v }).then(function (r) { $('#dcode').value = ''; queueApps((r.apps || []).filter(function (a) { return r.mode === 'matsuri' ? true : a.event === '演芸会' || true; }), (r.person.memberName || r.person.name) + ' 様'); })
+      api('o_scan', { mode: DK.mode, code: v }).then(function (r) {
+        $('#dcode').value = ''; var who = (r.person.memberName || r.person.name) + ' 様', apps = (r.apps || []).filter(function (a) { return a.channel !== '自動申込(未納)'; });
+        $('#dres').innerHTML = unpaidBanner(r);
+        if (r.fee && r.fee.unpaid) return msg(who + ': 町会費が 未納です。(受付待ちには入れていません。確認してから 手で入れてください)', true);
+        queueApps(apps, who);
+      })
         .catch(function (e) { msg(e.message, true); });
     } else {
       msg('探しています…');
@@ -3389,7 +3398,8 @@ function eventView() {
   sub('イベント', '<div class="skel" style="height:300px"></div>');
   evLoad().then(function (s) {
     if (s.noMember) return sub('イベント', '<div class="notice-box">ご自身の会員番号が確認できないため、この機能はまだ使えません。役員にお問い合わせください。</div>');
-    var h = '<p class="muted" style="margin:0 0 12px">' + esc(s.year) + '年度のお申し込みです。ご家族は同じ「対象者」を共有します。</p>';
+    var h = '<p class="muted" style="margin:0 0 12px">' + esc(s.year) + '年度のお申し込みです。ご家族は同じ「対象者」を共有します。</p>' +
+      (s.feeUnpaid ? '<div class="notice-box" style="border:2px solid #c0392b;background:#fdecea"><b style="color:#c0392b">町会費が 未納です</b><br>' + esc(s.feeYear) + '年度の町会費が 未納のため、祭礼の「自動申込」は 停止中です(納入されると 自動で 再開します)。当日 QRを 見せても「未納です」と 表示されます。</div>' : '');
     s.events.forEach(function (ev) {
       var chs = ev.apps.map(function (a) { return a.channel === '紙申込書' ? '紙の申込書' : a.channel === 'グーグルフォーム' ? 'フォーム' : a.channel; });
       h += '<div class="card"><h2>' + esc(ev.name) + (ev.apps.length ? ' <span class="tg ok">申込済み(' + esc(chs.join('・')) + ')</span>' : '') + '</h2>' +
@@ -3397,13 +3407,21 @@ function eventView() {
         (ev.note ? '<div class="mbody" style="margin-top:8px">' + linkify(ev.note) + '</div>' : '');
       if (ev.apps.length) h += '<p class="small" style="margin:10px 0 0">' + (ev.apps.some(function (a) { return a.channel === '紙申込書'; }) ? '紙でお申し込みの方は、引換券で受け取れます。' : '') + '当日は、<b>会員証のQR</b>を受付で見せてください(フォームのQRメールをお持ちの方はそれでも大丈夫です)。QRがわからないときは、お名前で受付できます。</p>';
       if (ev.apps.length) h += '<div style="margin-top:10px">' + ev.apps.map(function (a) {
-        return '<div class="rp' + (a.mine ? ' me' : '') + '"><div class="who">' + esc(a.channel) + 'から申込 ・ ' + esc(fmtMd(a.date)) + (a.received ? ' ・ 受取済み' : '') + '</div>' +
+        return '<div class="rp' + (a.mine ? ' me' : '') + '"><div class="who">' + esc(a.channel) + (a.auto ? '' : 'から申込') + ' ・ ' + esc(fmtMd(a.date)) + (a.received ? ' ・ 受取済み' : '') + '</div>' +
           '<div class="tx">' + a.people.map(function (p) { return esc(p.name) + gradeTag(p.grade); }).join('、') + ' ／ ' + a.count + '個' + (a.note ? '<br><span class="muted">' + esc(a.note) + '</span>' : '') + '</div>' +
           (a.editable ? '<div class="inrow" style="margin-top:8px"><button class="sbtn" data-ed="' + esc(ev.name) + '|' + esc(a.id) + '">直す</button><button class="sbtn" data-cx="' + esc(a.id) + '" style="color:var(--bad);border-color:var(--bad)">取り消す</button></div>' :
-            (a.channel !== 'LINE' ? '<div class="small">LINE以外の申込は、役員が直します。</div>' : '')) + '</div>';
+            (a.channel !== 'LINE' && !a.auto ? '<div class="small">LINE以外の申込は、役員が直します。</div>' : '')) + '</div>';
       }).join('') + '</div>';
       else h += '<p class="muted" style="margin:10px 0 0">申込はまだありません。</p>';
       var pl = s.people.filter(function (p) { return !p.event || p.event === ev.name; });
+      if (ev.name === '祭礼') {
+        var au = pl.filter(function (p) { return p.auto; });
+        h += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>毎年 自動申込</b>' + (au.length ? au.map(function (p) {
+          return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + gradeTag(p.grade) + ' <span class="tg ok">自動申込</span>' + (s.feeUnpaid ? ' <span class="tg" style="color:#c0392b">未納で停止中</span>' : '') + '</div><button class="sbtn" data-aoff="' + esc(p.id) + '" style="color:var(--bad);border-color:var(--bad)">やめる</button></div>';
+        }).join('') : '<p class="muted" style="margin:6px 0 0">設定している お子様は いません。</p>') +
+          '<p class="small" style="margin:6px 0 0">小学校を 卒業するまで、毎年 自動で 申込されます。町会費が 9/1 時点で 未納の年は 止まり、納入されると 自動で 再開します。申し込むときに「毎年 自動申込」を 選べます。</p>' +
+          (pl.filter(function (p) { return !p.auto && /^(小[1-6]|年長|年中|年少|未就学|幼稚園|保育園)/.test(p.grade || ''); }).map(function (p) { return '<button class="sbtn" style="margin:6px 6px 0 0" data-aon="' + esc(p.id) + '">＋ ' + esc(p.name) + 'さんを 自動申込にする</button>'; }).join('')) + '</div>';
+      }
       if (ev.name === '祭礼' && s.guardian) h += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)"><b>保護者</b><div class="muted" style="margin-top:4px">' + esc(s.guardian.name) + ' ・ ' + esc(s.guardian.email) + '</div><button class="sbtn" id="gedit" style="margin-top:6px">直す</button></div>';
       h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>' + esc(ev.name) + 'の対象者</b>' + (pl.length ? pl.map(function (p) {
         return '<div class="inrow" style="align-items:center;margin:8px 0 0"><div style="flex:1;min-width:0">' + esc(p.name) + (ev.name === '祭礼' ? gradeTag(p.grade) : '') + '</div><button class="sbtn" data-pe="' + esc(p.id) + '|' + esc(ev.name) + '">直す</button></div>';
@@ -3411,13 +3429,21 @@ function eventView() {
       var mine = ev.apps.filter(function (a) { return a.mine; })[0], other = ev.apps.filter(function (a) { return !a.mine; })[0];
       h += '<div style="height:12px"></div>' + (ev.open && !ev.apps.length ? '<button class="btn" data-ap="' + esc(ev.name) + '">申し込む</button>' : '') +
         (ev.open && ev.apps.length ? '<button class="btn" type="button" disabled aria-disabled="true" style="opacity:.4;filter:grayscale(1);cursor:not-allowed">申し込む(申込済みのため押せません)</button>' : '') +
-        (ev.apps.length ? '<p class="small" style="margin:8px 0 8px">' + (other ? 'ご家族の方が、すでに「' + esc(other.channel === 'グーグルフォーム' ? 'フォーム' : other.channel === '紙申込書' ? '紙の申込書' : other.channel) + '」で申込済みです。' : '') + '申込は、1会員(ご家族を含む)につき1件です。<b>数量を変えたいときは、チャットで役員へお送りください。</b></p><button class="sbtn" data-mailnew="1">チャットで役員へ送る</button>' : '') + '</div>';
+        (ev.apps.length ? '<p class="small" style="margin:8px 0 8px">' + (other && other.auto ? '「' + esc(other.channel) + '」が、自動で入っています(受取は QRで)。' : other ? 'ご家族の方が、すでに「' + esc(other.channel === 'グーグルフォーム' ? 'フォーム' : other.channel === '紙申込書' ? '紙の申込書' : other.channel) + '」で申込済みです。' : '') + '申込は、1会員(ご家族を含む)につき1件です。<b>数量を変えたいときは、チャットで役員へお送りください。</b></p><button class="sbtn" data-mailnew="1">チャットで役員へ送る</button>' : '') + '</div>';
     });
     sub('イベント', h);
     Array.prototype.forEach.call(document.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { EV.edit = null; EV.back = null; go('evapply/' + b.dataset.ap); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-ed]'), function (b) { b.onclick = function () { var x = b.dataset.ed.split('|'); EV.edit = x[1]; go('evapply/' + x[0]); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-pe]'), function (b) { b.onclick = function () { var x = b.dataset.pe.split('|'); EV.pev = x[1]; go('evperson/' + x[0]); }; });
     var ge = $('#gedit'); if (ge) ge.onclick = function () { go('evguardian'); };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-aon],[data-aoff]'), function (b) {
+      b.onclick = function () {
+        var on = !!b.dataset.aon, id = b.dataset.aon || b.dataset.aoff;
+        cf(on ? '毎年、小学校を卒業するまで 自動で申込します。よろしいですか?' : '自動申込を やめます(これまでの申込は そのままです)。よろしいですか?', function () {
+          b.disabled = true; api('ev_auto_set', { personIds: [id], on: on }).then(function () { toast(on ? '自動申込にしました' : 'やめました'); EV.state = null; eventView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+        });
+      };
+    });
     Array.prototype.forEach.call(document.querySelectorAll('[data-mailnew]'), function (b) { b.onclick = function () { go('mailnew'); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-pn]'), function (b) { b.onclick = function () { go('evreg/' + b.dataset.pn); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-cx]'), function (b) {
@@ -3572,6 +3598,7 @@ function evApplyView(name) {
       }).join('') : '<p class="muted">先に「' + name + '対象者」を登録してください。</p>') +
       '<button class="sbtn" id="addp" type="button">＋ ' + name + '対象者を登録する</button></div>';
     h += '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">申込個数</span><div id="acn" style="font-size:20px;font-weight:700">0個</div><p class="hint">選んだ人数が、自動で入ります。</p></div>' +
+      (fest && !cur ? '<div class="field"><label class="opt"><input type="checkbox" id="aut" checked><span><b>来年からも、小学校を卒業するまで 毎年 自動で申し込む</b><br><span class="muted">町会費が 9/1 時点で 未納の年は 止まり、納入されると 自動で 再開します。(あとから やめられます)</span></span></label></div>' : '') +
       '<div class="field"><label class="l" for="an">連絡事項(任意)</label><input class="inp" id="an" maxlength="200" value="' + esc(cur ? cur.note : '') + '"></div>' +
       (fest && s.guardian ? '<p class="small" style="margin:0 0 8px">保護者: ' + esc(s.guardian.name) + '(' + esc(s.guardian.email) + ')</p>' : '') +
       '<button class="btn" id="asv">' + (cur ? '修正して保存' : '申し込む') + '</button><p class="small" style="margin:8px 0 0">申込は1会員につき1件です。申込のあとで人数を増やしたいときは、役員へご連絡ください。</p></div>';
@@ -3582,7 +3609,7 @@ function evApplyView(name) {
     $('#asv').onclick = function () {
       var ids = Array.prototype.map.call(document.querySelectorAll('[data-id]:checked'), function (c) { return c.dataset.id; });
       var b = $('#asv'); b.disabled = true;
-      api('ev_apply', { event: name, appId: cur ? cur.id : '', personIds: ids, note: $('#an').value })
+      api('ev_apply', { event: name, appId: cur ? cur.id : '', personIds: ids, note: $('#an').value, auto: !!($('#aut') && $('#aut').checked) })
         .then(function () { toast(cur ? '修正しました' : '申し込みました'); EV.edit = null; go('event'); }).catch(function (e) { b.disabled = false; toast(e.message); });
     };
   };
@@ -3596,7 +3623,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=13'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=14'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
