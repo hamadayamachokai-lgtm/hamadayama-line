@@ -524,14 +524,14 @@
   function openAtama() {
     var run = function () { window.HmtAtama.start(api()); };
     if (window.HmtAtama) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-atama.js?v=1'; sc.onload = run;
+    var sc = document.createElement('script'); sc.src = 'quiz-atama.js?v=2'; sc.onload = run;
     sc.onerror = function () { toastMsg('あたまおしりを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
   function openCube() {
     var run = function () { window.HmtCube.start(api()); };
     if (window.HmtCube) return run();
-    var sc = document.createElement('script'); sc.src = 'quiz-cube.js?v=2'; sc.onload = run;
+    var sc = document.createElement('script'); sc.src = 'quiz-cube.js?v=3'; sc.onload = run;
     sc.onerror = function () { toastMsg('キューブを よみこめませんでした'); };
     document.head.appendChild(sc);
   }
