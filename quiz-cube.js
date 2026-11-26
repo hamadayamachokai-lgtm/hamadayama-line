@@ -102,6 +102,7 @@
   var CSS = '#qz .cbm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}#qz .cbm button{min-height:64px;margin:0;font-size:1.05em;line-height:1.3}#qz .cbm button{flex-direction:column;gap:2px;padding:8px 4px}#qz .cbm button small{display:block;font-weight:500;font-size:.72em;opacity:.8;text-align:center}#qz .cbl button>span:first-child{text-align:left}' +
     '#qz .cbl{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}#qz .cbl button{display:flex;justify-content:space-between;align-items:center;text-align:left;margin:0;min-height:56px}#qz .cbl button small{display:block;font-weight:500;opacity:.75}' +
     '#qz .cbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}#qz .cbs button{min-height:60px;margin:0;font-size:1.15em;padding:6px 2px}' +
+    '#qz .cblk{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#6b5a3a;background:rgba(255,255,255,.85);border:1px solid #cfc7b4;border-radius:12px;padding:6px 4px;cursor:pointer;touch-action:manipulation;z-index:2}#qz .cblk input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}#qz .cblk i{display:block;width:22px;height:44px;border-radius:12px;background:#cfc7b4;position:relative;transition:background .15s}#qz .cblk i::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:top .15s}#qz .cblk input:checked+i{background:#e11d48}#qz .cblk input:checked+i::after{top:24px}' +
     '#qz .cbi{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin:0 0 8px;font-size:1.1em}#qz .cbp{height:14px;border-radius:7px;background:#e8e2d2;overflow:hidden;margin:4px 0 8px}#qz .cbp i{display:block;height:100%;background:#2e9d4a;transition:width .4s}#qz .cbp.rb i{background:#d93a2b}' +
     '#qz .cbr{width:100%;border-collapse:collapse}#qz .cbr td{padding:8px 6px;border-bottom:1px solid #e8e2d2}#qz .cbr tr.me td{background:#fff3c8;font-weight:800}#qz .cbbig{font-size:2em;font-weight:800;text-align:center;margin:6px 0}';
 
@@ -258,7 +259,7 @@
     var h = '<div class="qc"><div class="cbi"><span>' + title + ' ・ レベル' + lv + '</span><span id="cbt">0:00</span></div>' +
       '<div class="qm" style="margin:0 0 6px">手数: <b id="cbmv">0</b> <span id="cbhint">・ 色の ところを なぞると、その段が まわります</span></div>';
     if (battle) h += '<div class="qm">あなた</div><div class="cbp"><i id="cbme" style="width:0%"></i></div><div class="qm">ロボット</div><div class="cbp rb"><i id="cbrb" style="width:0%"></i></div>';
-    h += '<canvas id="cbcv" style="width:100%;aspect-ratio:1/1;touch-action:none;display:block;background:radial-gradient(#fffdf4,#efe9d6);border-radius:16px" aria-label="ルービックキューブ(なぞって まわします)"></canvas></div>' +
+    h += '<div style="position:relative"><canvas id="cbcv" style="width:100%;aspect-ratio:1/1;touch-action:none;display:block;background:radial-gradient(#fffdf4,#efe9d6);border-radius:16px" aria-label="ルービックキューブ(なぞって まわします)"></canvas><label class="cblk" title="ロック"><span>Lock</span><input type="checkbox" id="cblock" role="switch" aria-label="キューブの向きを ロック"><i></i></label></div></div>' +
       '<div class="qgrid"><button type="button" class="qb sm" id="cbundo">ひとつ もどす</button><button type="button" class="qb sm" id="cbhelp">' + (canHint ? '🤖攻略補助' : '🤖攻略補助(特訓のみ)') + '</button><button type="button" class="qb sm" id="cbref">展開図・みほん</button><button type="button" class="qb sm" id="cbltr">色を 文字でも</button></div>' +
       '<div id="cbhelpbox"></div><div id="cbrefbox"></div><details class="qc" style="margin-top:10px"><summary style="font-weight:800">ボタンで まわす</summary><div class="cbs">' +
       ['U', 'D', 'L', 'R', 'F', 'B'].map(function (k) { return '<button type="button" class="qb" data-mv="' + k + '" data-d="1">' + FACE[k].nm + ' ↻</button><button type="button" class="qb" data-mv="' + k + '" data-d="-1">' + FACE[k].nm + ' ↺</button>'; }).join('') + '</div><div class="qm">「↻」右まわり、「↺」左まわり(その面を 外から見て)</div></details>' +
@@ -297,13 +298,16 @@
       V.hint = todo[0]; window.HmtCube._cur = V.hint; var m = todo[0], nm = layerName(cube.N, m[0], m[1]);
       bx.innerHTML = '<div class="qc" style="margin-top:10px"><div style="font-weight:800">🤖 つぎは <span style="color:#e11d48">' + nm + '</span> を、赤い矢印の向きに まわします</div><div class="qm">のこり ' + todo.length + '手 ・ 赤いふちの段が まわす段です。矢印が見えないときは、キューブを すこし ななめに 回してください。</div></div>'; render();
     }
-    var drag = null;
+    var drag = null, lockOn = false;
+    try { lockOn = localStorage.getItem('hmt_cube_lock') === '1'; } catch (e) {}
+    var lk = document.getElementById('cblock'); lk.checked = lockOn;
+    lk.onchange = function () { lockOn = lk.checked; drag = null; try { localStorage.setItem('hmt_cube_lock', lockOn ? '1' : '0'); } catch (e) {} A.toast(lockOn ? 'ロック: キューブの向きは 動きません' : 'ロックを はずしました'); };
     function pos(ev) { var r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
     cv.onpointerdown = function (ev) {
       ev.preventDefault(); try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
       var p = pos(ev), hit = null;
       for (var i = last.length - 1; i >= 0; i--) { if (inPoly(p, last[i].body)) { hit = last[i].t; break; } }
-      drag = { x: p[0], y: p[1], t: hit, mode: hit ? 'layer' : 'view', ox: p[0], oy: p[1] };
+      drag = { x: p[0], y: p[1], t: hit, mode: hit ? 'layer' : (lockOn ? 'none' : 'view'), ox: p[0], oy: p[1] };
     };
     cv.onpointermove = function (ev) {
       if (!drag) return; ev.preventDefault(); var p = pos(ev), dx = p[0] - drag.x, dy = p[1] - drag.y;
