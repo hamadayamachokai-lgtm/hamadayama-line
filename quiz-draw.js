@@ -108,21 +108,31 @@
     try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) { /* 保存できなくても遊べる */ }
   }
   function gallery() {
-    tok++; var t = tok, g = galLoad(), awd = {};
+    tok++; var t = tok, g = galLoad(), awd = {}, selMode = false, pick = {}, ask = false;
     function paint() {
-      var h = '<div class="qc"><h2>ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)' + (Object.keys(awd).length ? '<br>入賞した絵には バッジが つきます。バッジを おすと 賞状が 見られます。' : '') + '</p>';
+      var n = Object.keys(pick).length;
+      var h = '<div class="qc"><h2>ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)' + (Object.keys(awd).length ? '<br>入賞した絵には バッジが つきます。バッジの下の ボタンで 賞状が 見られます。' : '') + '</p>';
+      if (g.length) h += selMode ? '<div class="qgrid" style="grid-template-columns:1fr 1fr;margin:0 0 8px"><button class="qb" id="drsx">えらぶのを やめる</button><button class="qb pri" id="drsd"' + (n ? '' : ' disabled') + '>えらんだ ' + n + 'まいを けす</button></div>' + (ask ? '<div class="qfb" style="margin:0 0 8px;text-align:center"><b>' + n + 'まいを けします。もとに もどせません。</b><div class="qgrid" style="grid-template-columns:1fr 1fr;margin-top:6px"><button class="qb" id="drsn">やめる</button><button class="qb pri" id="drsy">けす</button></div></div>' : '') : '<button class="qb" id="drsm" style="margin:0 0 8px">えらんで けす</button>';
       h += g.length ? '<div class="drwall">' + g.map(function (w, k) {
         var a = awd[w.i] || [];
-        return '<div>' + frameHtml(w.s, a.map(function (x) { return x.kind; })) + '<div class="drpl">『' + esc(w.t) + '』' + (w.ok ? ' (せいかい)' : '') + '</div>' + a.map(function (x) { return '<button class="qb sm" data-c="' + esc(x.id) + '" style="margin-top:4px">' + esc(x.kind) + 'の賞状</button>'; }).join('') + '</div>';
+        return '<div' + (selMode ? ' data-p="' + k + '" style="cursor:pointer;' + (pick[k] ? 'outline:4px solid #e0523f;outline-offset:2px;border-radius:6px' : '') + '"' : '') + '>' + frameHtml(w.s, a.map(function (x) { return x.kind; })) + '<div class="drpl">' + (selMode ? (pick[k] ? '【えらんだ】 ' : '') : '') + '『' + esc(w.t) + '』' + (w.ok ? ' (せいかい)' : '') + '</div>' + (selMode ? '' : a.map(function (x) { return '<button class="qb sm" data-c="' + esc(x.id) + '" style="margin-top:4px">' + esc(x.kind) + 'の賞状</button>'; }).join('')) + '</div>';
       }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">まだ さくひんが ありません。<br>1まい かいてみよう!</div>';
       h += '<button class="qb" id="drbk" style="margin-top:10px">もどる</button></div>';
       A.draw(h); $('#drbk').onclick = menu;
       A.bind('[data-c]', function (b) { cert(A, b.dataset.c); });
+      var sm = $('#drsm'); if (sm) sm.onclick = function () { selMode = true; pick = {}; ask = false; paint(); };
+      var sx = $('#drsx'); if (sx) sx.onclick = function () { selMode = false; pick = {}; ask = false; paint(); };
+      var sd = $('#drsd'); if (sd) sd.onclick = function () { ask = true; paint(); };
+      var sn = $('#drsn'); if (sn) sn.onclick = function () { ask = false; paint(); };
+      var sy = $('#drsy'); if (sy) sy.onclick = function () {
+        g = g.filter(function (w, k) { return !pick[k]; }); try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) { /* 保存できなくても進む */ }
+        selMode = false; pick = {}; ask = false; A.toast('けしました'); paint();
+      };
+      A.bind('[data-p]', function (b) { var k = b.dataset.p; if (pick[k]) delete pick[k]; else pick[k] = 1; ask = false; var y = window.pageYOffset; paint(); try { window.scrollTo(0, y); } catch (e) { /* 無視 */ } });
     }
     paint();
-    try { A.call('draw_awards').then(function (r) { if (t !== tok) return; (r.list || []).forEach(function (x) { if (x.gi) (awd[x.gi] = awd[x.gi] || []).push(x); }); if (Object.keys(awd).length) paint(); }).catch(function () { /* バッジなしでOK */ }); } catch (e) { /* 無視 */ }
+    try { A.call('draw_awards').then(function (r) { if (t !== tok) return; (r.list || []).forEach(function (x) { if (x.gi) (awd[x.gi] = awd[x.gi] || []).push(x); }); if (Object.keys(awd).length && !selMode) paint(); }).catch(function () { /* バッジなしでOK */ }); } catch (e) { /* 無視 */ }
   }
-
   /* ===== コンクール(毎年12月) 出品 12/1〜12/14、投票 12/15〜12/25、結果 12/26〜 ===== */
   function contestPhase() {
     var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
