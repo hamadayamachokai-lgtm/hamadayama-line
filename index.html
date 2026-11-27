@@ -1959,13 +1959,9 @@ var TOURS_ = {
     { sel: '#go', say: '最後に「スタート」を押すと、はじまります' } ] },
   gplay: { t: 'ゲームで遊ぶ手順を、教えてもらう', home: 1, nocount: 1, steps: [
     { sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' },
-    { sel: '.gwall', any: 1, say: '好きなゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null; TR.g = { id: b ? b.id : '', card: '', name: (b && GNAME_[b.id]) || 'このゲーム' }; } },
-    { skipif: function () { return TR.g.id !== 'gcards'; }, sel: '.pcmode', any: 1, say: '好きなカードゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null, k = b ? b.getAttribute('data-g') : ''; TR.g.card = k; TR.g.name = CNAME_[k] || 'このゲーム'; } },
-    { skipif: function () { return TR.g.id === 'gcards'; }, ask: function () { return { say: TR.g.name + 'ですね!\n\nあとは、画面の案内にしたがって遊べます。', btns: [['ガイドを終わる', 'no']] }; } },
-    { skipif: function () { return TR.g.card === 'sol'; }, sel: '#sMode', next: 1, say: function () { return TR.g.name + 'ですね!\n\nここを変更して、モードや人数を選びます。\n一人でやるなら、このままでOKです'; } },
-    { skipif: function () { return TR.g.card === 'sol'; }, sel: '#go', say: '「スタート」を押しましょう' },
-    { ask: function () { return { say: 'ゲームのチュートリアルが必要ですか?', btns: [['はい', 'yes'], ['いいえ(ガイドを終わります)', 'no']] }; } } ] },
-  gdoff: { t: 'ガイドをやめる場所を、教えてもらう', home: 1, steps: [{ sel: '#gdbtn', say: 'この「ガイド ON」を押すと、ガイドがOFFになります。(もう一度押すと、またONになります)' }] },
+    { sel: '.gwall', any: 1, say: '好きなゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null, id = b ? b.id : ''; TR.g = { id: id, key: id, card: '', name: GNAME_[id] || 'このゲーム' }; } },
+    { skipif: function () { return TR.g.id !== 'gcards'; }, sel: '.pcmode', any: 1, say: '好きなカードゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null, k = b ? b.getAttribute('data-g') : ''; TR.g.card = k; TR.g.key = k; TR.g.name = CNAME_[k] || 'このゲーム'; } },
+    { expand: function () { return gBuild_(TR.g); } } ] },
   o_gift: { t: '商品券の対象者を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します。商品券の対象の方(●のついた方)が、画面に出ます' }] },
   m_o_sokai: { t: '', home: 1, steps: [{ sel: '.tile[data-k="o_sokai"]', say: 'この「総会」を押します。総会の資料を見たり、当日の出席者数を入れたりできます' }] },
   chat: { t: 'チャットで役員に連絡する場所を、教えてもらう', home: 1, steps: [
@@ -1978,8 +1974,8 @@ var TOURS_ = {
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
     { sel: '[data-ap]', say: '申し込みたいイベントの、この「申し込む」を押します' } ] },
   g_baba: { t: 'ババ抜きのはじめ方を、教えてもらう', home: 1, steps: GSTART_('baba', 'ババ抜き').concat([
-    { sel: '.pcdraw', say: 'あなたの番です。相手のカード(裏向き)の中から、1まい選んで押します', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
-    { sel: '.pcw', say: '引いたカードは、この下のあなたの手札に入ります。同じ数字が2まいそろうと、自動で捨てられます。最後までババ(ジョーカー)を持っていた人の負けです', next: 1, wait: '少し待ちましょう' } ]) },
+    { sel: '.pcdraw', say: 'まずは、相手のカードを選びましょう。裏向きのカードを 1まい 押して、引きます', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
+    { sel: '.pcw', say: '引いたカードは、この下のあなたの手札に入ります。同じ数字が2まいそろうと、自動で捨てられます。ジョーカーを最後まで持った人の負けですよ🤭 あとは、画面の案内どおりに続けましょう', next: 1, wait: '少し待ちましょう' } ]) },
   g_sev: { t: '7並べのはじめ方を、教えてもらう', home: 1, steps: GSTART_('sev', '7並べ').concat([
     { sel: '.pcw .pc[data-p]', say: 'あなたの番です。光っているカードを押すと、上の表に出せます', wait: '相手の番です。あなたの番まで、少し待ちましょう' },
     { sel: '.pcb', say: '出したカードは、この表の、同じマークの列に入ります。7のとなり(6か8)から、つなげていきます。出せるカードがないときは「パスする」を押します', next: 1, wait: '少し待ちましょう' } ]) },
@@ -2051,8 +2047,54 @@ var TOURS_ = {
     { sel: '.tile[data-k="weather"]', say: 'この「天気」を押すと、浜田山の天気が見られます' } ] }
 };
 var GNAME_ = { gox: '○×ゲーム', gatama2: 'あたまおしり', gcards: 'カードゲーム', gcube: 'ルービックキューブ', ghun: '100万円ゲーム', gtrip: '日本一周スゴロク', gmys: '歴史推理' };
+function gOxCell_() { return document.querySelector('.oxc[aria-label="あき"]'); }
+var GCARDPRE_ = [{ sel: '#sMode', next: 1, say: 'ここを変更して、モードや人数を選びます。\n一人でやるなら、このままでOKです' }];
+var GCFG_ = {
+  baba: { pre: GCARDPRE_, go: '#go' }, sev: { pre: GCARDPRE_, go: '#go' }, pk: { pre: GCARDPRE_, go: '#go' }, mem: { pre: GCARDPRE_, go: '#go' }, kar: { pre: GCARDPRE_, go: '#go' }, sol: {},
+  gox: { pre: [{ sel: '#oxMode', next: 1, say: 'ここで、あそびかたを選びます。\n一人モード…ロボットと対戦\n1台で遊ぶ…スマホを貸し借りして2人で\nオンライン…はなれた人と\n一人でやるなら、このままでOKです' }, { sel: '#oxLv', next: 1, say: 'ここで「レベル」を選びます。上がるほど、マスがふえて むずかしくなります。はじめては、このままでOKです' }], go: '#oxgo' },
+  gatama2: { pre: [{ skipif: function () { return !document.querySelector('.apick'); }, sel: '.apick', any: 1, say: 'はじめに、育てたい どうぶつを、1つ押して えらびます' }, { sel: '#adsel', next: 1, say: 'ここで「むずかしさ」を選びます。はじめては「やさしい」がおすすめです。ことばを知っているほど、ポイントがふえます' }], go: '#aplay' },
+  gcube: { pre: [{ sel: '#cbMd', next: 1, say: 'ここで、モードを選びます。\n特訓…ひとりでじっくり(攻略補助も使えます)\n対戦…ロボットと早さくらべ\n大会…ランキングに挑戦\nはじめては「特訓」がおすすめです' }, { sel: '#cbLv', next: 1, say: 'ここで、キューブの大きさ(むずかしさ)を選びます。レベル1は2×2×2、レベル2はふつうの3×3×3です。はじめては「レベル1」がおすすめです' }], go: '#cbgo' },
+  ghun: { pre: [], go: '#hdstart', goSay: '「クイズに不正解だと、10万円ずつ泥棒に盗まれます」。最後に残るお金を、がんばって守りましょう。\n\n「スタート」を押します' },
+  gtrip: { pre: [{ sel: '#trmd', next: 1, say: 'ここで、あそびかたを選びます。一人でやるなら、このままでOKです(ロボットと旅をします)' }], go: '#trgo' },
+  gmys: { pre: [], go: '#mgo', goSay: '幕末の志士や戦国武将の事件を、証言から推理するゲームです。\n\n「事件をはじめる」を押します' }
+};
+var GTUT_ = {
+  gox: [{ sel: gOxCell_, say: 'あなたの番です。あいているマスを 1つ押すと、○が置かれます', wait: '少し待ちましょう' },
+    { sel: '#oxtm', next: 1, say: 'この線が、1手の持ち時間です。時間がすぎると、自動で置かれます', wait: '少し待ちましょう' },
+    { sel: '#oxst', next: 1, say: '決められた数(レベルによって かわります)を たて・よこ・ななめに そろえた人の勝ちです。相手の番のときは、少し待ちましょう', wait: '少し待ちましょう' }],
+  gatama2: [{ sel: '.aq', next: 1, say: 'おだいが 出ます。「さいしょ」の字ではじまって、「さいご」の字で終わることばを つくります', wait: '少し待ちましょう' },
+    { sel: '#atb', next: 1, say: 'この線が のこりの時間です。なくなる前に こたえましょう' },
+    { sel: '#ain', next: 1, say: 'ここに、ひらがなで ことばを 入れます', wait: '少し待ちましょう' },
+    { sel: '#aok', next: 1, say: '入れたら「けってい」を押します。僕が知っている言葉だと ポイントが2倍です' },
+    { sel: '#agive', next: 1, say: 'わからないときは、ここを押すと こたえが見られます' }],
+  gcube: [{ sel: '#cbcv', next: 1, say: 'まわりの余白(うすいベージュのところ)を 指でなぞると、キューブ全体を まわして、いろいろな面を見られます', wait: '少し待ちましょう' },
+    { sel: '#cbcv', next: 1, say: 'キューブの「色のところ」をなぞると、その段が動きます。動かしたい方向に、なぞりましょう' },
+    { sel: '.cblk', next: 1, say: 'ここの「Lock」で、いまの向きを ロックできます。ロックすると、余白をなぞっても キューブの向きが かわりません' },
+    { sel: '#cbfix', next: 1, say: '3×3×3以上のときは、ここから「下の面の色」を決めて、色で固定することもできます' },
+    { sel: '#cbref', next: 1, say: 'わからないときは「展開図・みほん」を押すと、キューブをひらいた図が見られます。見ながら考えられます' },
+    { sel: '#cbhelp', next: 1, say: '「攻略補助」(特訓のとき)を押すと、つぎに動かす場所を 教えてくれます。だれでも 完成できます!' },
+    { sel: '#cbundo', next: 1, say: 'まちがえたら、「ひとつ もどす」で、もどせます' },
+    { sel: '.cbs', next: 1, say: 'なぞるのが むずかしいときは、この「ボタンで まわす」でも 動かせます(押して ひらいてください)' }],
+  ghun: [{ sel: '.hdm', next: 1, say: 'ここが、いま持っているお金です。まちがえるたびに 10万円ずつ へります', wait: '少し待ちましょう' },
+    { sel: '#hdc', next: 1, say: '問題が出ます。画面の文を読んで、画面の案内にしたがって 答えてください。問題の種類は、いろいろです' }],
+  gtrip: [{ skipif: function () { return !document.querySelector('#tgo'); }, sel: '#tgo', say: '最初の出来事が出ました。「旅に出発!」を押します' },
+    { sel: '#troll', say: '「サイコロを ふる」を押します。出た目の数だけ 進みます', wait: '少し待ちましょう' },
+    { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' }],
+  gmys: [{ sel: '#mst', say: '事件の説明を読んだら、「証言を聞く」を押します', wait: '事件を読み込んでいます。少し待ちましょう' },
+    { sel: '#hs', next: 1, say: '容疑者の証言カードです。横にスワイプして、5人の証言を聞きます。つじつまの合わないことを言う人が、あやしいです', wait: '少し待ちましょう' },
+    { sel: '#mvote', next: 1, say: '犯人がわかったら「犯人に投票する」を押します。早く当てるほど 高得点です。わからないときは「次のラウンドへ」で、もっと証言を聞けます' }]
+};
+function gBuild_(g) {
+  var C = GCFG_[g.key] || {}, nm = g.name, out = [], pre = C.pre || [];
+  var ask = { ask: function () { return { say: 'ゲームのチュートリアルが必要ですか?', btns: [['はい', 'yes'], ['いいえ(ガイドを終わります)', 'no']] }; } };
+  if (g.key === 'sol' || (!C.go && !pre.length)) return [ask];
+  pre.forEach(function (st, i) { var c = {}; Object.keys(st).forEach(function (k) { c[k] = st[k]; }); if (i === 0) { var sy = c.say; c.say = nm + 'ですね!\n\n' + sy; } out.push(c); });
+  if (C.go) out.push({ sel: C.go, say: pre.length ? '「スタート」を押しましょう' : nm + 'ですね!\n\n' + (C.goSay || '「スタート」を押しましょう') });
+  out.push(ask); return out;
+}
 var CNAME_ = { baba: 'ババ抜き', sev: '7並べ', pk: 'ポーカー', mem: '神経衰弱', kar: 'カルタ', sol: 'ソリティア' };
-var TUT_ = { baba: TOURS_.g_baba.steps.slice(5), sev: TOURS_.g_sev.steps.slice(5), pk: TOURS_.g_pk.steps.slice(5), mem: TOURS_.g_mem.steps.slice(5), kar: TOURS_.g_kar.steps.slice(5), sol: TOURS_.g_sol.steps.slice(3) };
+var TUT_ = GTUT_;
+['baba', 'sev', 'pk', 'mem', 'kar'].forEach(function (k) { GTUT_[k] = TOURS_['g_' + k].steps.slice(5); }); GTUT_.sol = TOURS_.g_sol.steps.slice(3);
 TOURS_.game = TOURS_.gplay;
 function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
@@ -2108,7 +2150,12 @@ function tourPos() {
 function tourNext() {
   if (!TR.on || !TOURS_[TR.name]) return;
   var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
-  while (TR.i < T.steps.length && T.steps[TR.i].skipif && T.steps[TR.i].skipif()) TR.i++;
+  for (var g = 0; g < 20 && TR.i < T.steps.length; g++) {
+    var st0 = T.steps[TR.i];
+    if (st0.expand) { T.steps = T.steps.slice(0, TR.i).concat(st0.expand(), T.steps.slice(TR.i + 1)); continue; }
+    if (st0.skipif && st0.skipif()) { TR.i++; continue; }
+    break;
+  }
   if (TR.i >= T.steps.length) return tourEnd();
   if (T.steps[TR.i].ask) return tourAsk(T.steps[TR.i]);
   tourWaitUI(TOURS_[TR.name].steps[TR.i].wait || '画面の読み込み中。少し待ちましょう');
@@ -2128,7 +2175,7 @@ function tourAsk(st) {
   Array.prototype.forEach.call(TR.box.querySelectorAll('[data-ta]'), function (bt) {
     bt.onclick = function (ev) {
       ev.stopPropagation(); var T = TOURS_[TR.name], v = bt.getAttribute('data-ta'); TR.hold = false; TR.ws = false;
-      if (v === 'yes') { var tut = TUT_[TR.g.card] || []; T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); tourWaitUI(tut[0].wait || '画面の読み込み中。少し待ちましょう'); return; }
+      if (v === 'yes') { var tut = GTUT_[TR.g.key] || []; T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); TR.i--; tourNext(); return; }
       tourEnd('no');
     };
   });
