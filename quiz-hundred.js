@@ -105,7 +105,7 @@
   };
   TYPES.push({ id: 'trace', cat: '視覚', name: '立体図をなぞる', run: function (tp) {
     var key = pick(Object.keys(SHAPES)), sh = SHAPES[key], W = 320; dbg('shape', key);
-    frame(tp, '点線の <b>' + sh.name + '</b> の ふち(線)を、指で ぜんぶ なぞってね。', '<canvas id="hdcv" class="hdcv" width="' + W * 2 + '" height="' + W * 2 + '"></canvas><div class="qgrid" style="margin-top:8px"><button type="button" class="qb sm" id="hdclr">やりなおし</button><button type="button" class="qb pri sm" id="hdok">できた!(判定)</button></div><p class="hdnote">線の 8わり いじょうを なぞれたら 合格</p>');
+    frame(tp, '点線の <b>' + sh.name + '</b> の ふち(線)を、指で ぜんぶ なぞってね。', '<canvas id="hdcv" class="hdcv" width="' + W * 2 + '" height="' + W * 2 + '"></canvas><div class="qgrid" style="margin-top:8px"><button type="button" class="qb sm" id="hdund">ひとつ もどす</button><button type="button" class="qb sm" id="hdclr">ぜんぶ やりなおし</button></div><div class="qgrid" style="margin-top:8px"><button type="button" class="qb pri sm" id="hdok" style="grid-column:1/-1">できた!(判定)</button></div><p class="hdnote">線の 8わり いじょうを なぞれたら 合格</p>');
     var cv = $('#hdcv'), c = cv.getContext('2d'), pts = [], drawing = false, S2 = 2;
     function paint() {
       c.clearRect(0, 0, cv.width, cv.height); c.lineCap = 'round'; c.lineJoin = 'round';
@@ -117,6 +117,7 @@
     cv.onpointermove = function (ev) { if (!drawing) return; ev.preventDefault(); pts.push(xy(ev)); paint(); };
     cv.onpointerup = cv.onpointercancel = function () { drawing = false; pts.push(null); };
     $('#hdclr').onclick = function () { pts = []; paint(); };
+    $('#hdund').onclick = function () { while (pts.length && pts[pts.length - 1] === null) pts.pop(); while (pts.length && pts[pts.length - 1] !== null) pts.pop(); paint(); };   // 最後の1本(ひと筆)だけ消す
     $('#hdok').onclick = function () {
       var dense = []; var prev = null; pts.forEach(function (p) { if (!p) { prev = null; return; } if (prev) { var n = Math.ceil(Math.hypot(p[0] - prev[0], p[1] - prev[1]) / 4); for (var i = 1; i <= n; i++) dense.push([prev[0] + (p[0] - prev[0]) * i / n, prev[1] + (p[1] - prev[1]) * i / n]); } else dense.push(p); prev = p; });
       var segPts = []; sh.seg.forEach(function (s) { var n = Math.ceil(Math.hypot(s[2] - s[0], s[3] - s[1]) / 6); for (var i = 0; i <= n; i++) segPts.push([s[0] + (s[2] - s[0]) * i / n, s[1] + (s[3] - s[1]) * i / n]); });
