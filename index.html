@@ -855,7 +855,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-16 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-17 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2060,27 +2060,63 @@ var TOURS_ = {
 };
 var GNAME_ = { gox: '○×ゲーム', gatama2: 'あたまおしり', gcards: 'カードゲーム', gcube: 'ルービックキューブ', ghun: '100万円ゲーム', gtrip: '日本一周スゴロク', gmys: '歴史推理', gdraw: 'おえかきを完成させろ' };
 function gOxCell_() { return document.querySelector('.oxc[aria-label="あき"]'); }
-var GCARDPRE_ = [{ sel: '#sMode', next: 1, say: 'ここを変更して、モードや人数を選びます。\n一人でやるなら、このままでOKです' }];
+function gv_(sel) { var e = document.querySelector(sel); return e ? e.value : ''; }
+function gLive_(sel, head, map, tail) { return function () { return head + '\n\n' + (map[gv_(sel)] || '') + (tail ? '\n\n' + tail : ''); }; }
+var GMODE_ = { solo: '【一人モード】いま選んでいます。ロボットと対戦します。お一人で楽しめます。', pass: '【1台で遊ぶ】1台のスマホを、家族やお友だちと貸し借りして、交代で遊びます。人数と名前を入れます。', net: '【オンライン】はなれた人と、べつのスマホで遊びます。「へや」を作って、4けたの番号をお友だちに伝えます。' };
+function gCardPre_(rules, extra) {
+  var p = [{ sel: '.hph', next: 1, say: rules },
+    { sel: '#sMode', next: 1, say: gLive_('#sMode', '遊び方は3種類から選べます。ここを押して、好きなモードに変えてみましょう。変えると、説明も変わります。', GMODE_, 'お一人で遊ぶなら「一人モード」のままでOKです') },
+    { skipif: function () { return !document.querySelector('#sBots'); }, sel: '#sBots', next: 1, say: '一緒に遊ぶロボットの数を選びます。数が多いほど にぎやかで、長く遊べます。はじめては このままでOKです' },
+    { skipif: function () { return !document.querySelector('#sPn'); }, sel: '#sPn', next: 1, say: '遊ぶ人数を選びます。人数にあわせて、下にプレイヤーの名前を入れる欄が出ます(空欄でもOK)' }];
+  return p.concat(extra || []);
+}
 var GCFG_ = {
-  baba: { pre: GCARDPRE_, go: '#go' }, sev: { pre: GCARDPRE_, go: '#go' }, pk: { pre: GCARDPRE_, go: '#go' }, mem: { pre: GCARDPRE_, go: '#go' }, kar: { pre: GCARDPRE_, go: '#go' }, sol: {},
-  gox: { pre: [{ sel: '#oxMode', next: 1, say: 'ここで、あそびかたを選びます。\n一人モード…ロボットと対戦\n1台で遊ぶ…スマホを貸し借りして2人で\nオンライン…はなれた人と\n一人でやるなら、このままでOKです' }, { sel: '#oxLv', next: 1, say: 'ここで「レベル」を選びます。上がるほど、マスがふえて むずかしくなります。はじめては、このままでOKです' }], go: '#oxgo' },
-  gatama2: { pre: [{ skipif: function () { return !document.querySelector('.apick'); }, sel: '.apick', any: 1, say: 'はじめに、育てたい どうぶつを、1つ押して えらびます' }, { sel: '#adsel', next: 1, say: 'ここで「むずかしさ」を選びます。はじめては「やさしい」がおすすめです。ことばを知っているほど、ポイントがふえます' }], go: '#aplay' },
-  gcube: { pre: [{ sel: '#cbMd', next: 1, say: 'ここで、モードを選びます。\n特訓…ひとりでじっくり(攻略補助も使えます)\n対戦…ロボットと早さくらべ\n大会…ランキングに挑戦\nはじめては「特訓」がおすすめです' }, { sel: '#cbLv', next: 1, say: 'ここで、キューブの大きさ(むずかしさ)を選びます。レベル1は2×2×2、レベル2はふつうの3×3×3です。はじめては「レベル1」がおすすめです' }], go: '#cbgo' },
-  ghun: { pre: [], go: '#hdstart', goSay: '「クイズに不正解だと、10万円ずつ泥棒に盗まれます」。最後に残るお金を、がんばって守りましょう。\n\n「スタート」を押します' },
-  gtrip: { pre: [{ sel: '#trmd', next: 1, say: 'ここで、あそびかたを選びます。一人でやるなら、このままでOKです(ロボットと旅をします)' }], go: '#trgo' },
-  gdraw: { pre: [], go: '#drsolo', goSay: 'お題に そって 1人一筆ずつ かいて つなぎ、最後の人が お題を当てるゲームです。\n\nまずは「一人モード」を押します' },
-  gmys: { pre: [], go: '#mgo', goSay: '幕末の志士や戦国武将の事件を、証言から推理するゲームです。\n\n「事件をはじめる」を押します' }
+  baba: { pre: gCardPre_('ババ抜きのルール\nはじめに、同じ数字のカードが2まいそろったら、自動で捨てられます。順番に、となりの人のカードを1まい引いていき、手札が早くなくなった人が勝ち。最後までジョーカーを持っていた人の負けです'), go: '#go' },
+  sev: { pre: gCardPre_('7並べのルール\n真ん中の「7」から、同じマークで 1つ小さい数字・1つ大きい数字を、順番につないで出します。出せるカードがないときは「パス」。手札を早くなくした人の勝ちです'), go: '#go' },
+  pk: { pre: gCardPre_('ポーカーのルール\n5まいの手札から、いらないカードを交換して、強い「役」をめざします。いちばん強い役の人が勝ちです', [{ sel: '#sEx', next: 1, say: '手札を交換できる回数を選びます。多いほど、強い役を作りやすくなります。はじめては「1回」でOKです' }]), go: '#go' },
+  mem: { pre: gCardPre_('神経衰弱のルール\n裏向きのカードを2まいめくって、同じ数字ならもらえます。ちがったら 裏にもどします。どこに何があったか おぼえて、たくさん集めた人の勝ちです', [{ sel: '#sSz', next: 1, say: 'カードの数を選びます。多いほど むずかしく、時間もかかります' }, { skipif: function () { return !document.querySelector('#sLv'); }, sel: '#sLv', next: 1, say: 'ロボットの記憶の よさを選びます。「高い」ほど、ロボットが強くなります' }]), go: '#go' },
+  kar: { pre: gCardPre_('カルタのルール\n問題が読まれます。答えの札を、場にならんだ札の中から、いちばん早く見つけて押した人が、その札をもらえます。たくさん集めた人の勝ちです', [{ sel: '#sGn', next: 1, say: 'カルタの「ジャンル」を選びます。ことわざ・歴史など、好きなものを選べます' }]), go: '#go' },
+  sol: {},
+  gox: { pre: [
+    { sel: '.hph', next: 1, say: '○×ゲーム(○×ならべ)のルール\nマスに、交代で ○ と × を置いていきます。たて・よこ・ななめに、決められた数をそろえた人の勝ちです' },
+    { sel: '#oxMode', next: 1, say: gLive_('#oxMode', '遊び方は3種類から選べます。ここを押して、好きなモードに変えてみましょう。変えると、説明も変わります。', { cpu: '【一人モード】いま選んでいます。ロボットと対戦します。お一人で楽しめます。', pvp: '【1台で遊ぶ】スマホを貸し借りして、2人で交代で遊びます。', net: '【オンライン】はなれた人と、べつのスマホで対戦します。「へや」を作って、4けたの番号を伝えます。' }, 'お一人で遊ぶなら「一人モード」のままでOKです。遊び方を選んだら、つぎはレベルを選びます') },
+    { sel: '#oxLv', next: 1, say: gLive_('#oxLv', 'レベルを選びます。数字が大きいほど、マスがふえて むずかしくなります。', { 0: 'レベル1:3×3のマスで、3つそろえたら勝ち。1手5秒。はじめての方におすすめです', 1: 'レベル2:5×5のマスで、4つそろえたら勝ち。1手7秒', 2: 'レベル3:7×7のマスで、5つそろえたら勝ち。1手9秒。ロボットも強いです' }, '決まったら「つぎへ」') }], go: '#oxgo', goSay: '最後に、この「スタート」を押すと、ゲームが始まります(オンラインのときは「へやへ」です)' },
+  gatama2: { pre: [
+    { sel: '.hph, h2', next: 1, say: 'あたまおしり とは\n「さいしょの字」と「さいごの字」が決まったおだいに、まんなかを つなげて、ながい ことばを つくる ゲームです。ことばが つながるほど、どうぶつが そだちます' },
+    { skipif: function () { return !document.querySelector('.apick'); }, sel: '.apick', any: 1, say: '育てたい どうぶつを 1つ えらびましょう。ポイントがたまると、どうぶつが 大きく そだちます' },
+    { sel: '#adsel', next: 1, say: gLive_('#adsel', 'つぎに、むずかしさを選択してください。', { 0: '【やさしい】1問90秒。じっくり考えられます。はじめてはこれがおすすめ', 1: '【ふつう】1問60秒。ことばも ちょっと むずかしくなります', 2: '【むずかしい】1問45秒。むずかしい ことばが 出ます' }, '知っていることばが多いほど、ポイントがふえます') }], go: '#aplay', goSay: '決まったら「スタート」を押すと、開始です' },
+  gcube: { pre: [
+    { sel: '#cbMd', next: 1, say: gLive_('#cbMd', 'モードを選びます。ここを押して、変えてみましょう。', { train: '【特訓】ひとりで じっくり。「攻略補助」も使えます。はじめてはこれがおすすめ', battle: '【対戦】ロボットと、完成の早さくらべをします', cup: '【大会】みんなで同じ並びに挑戦。いちばん早い記録が ランキングに のります' }) },
+    { sel: '#cbLv', next: 1, say: gLive_('#cbLv', 'つぎに、キューブの大きさ(むずかしさ)を選びます。', { 1: 'レベル1:2×2×2。いちばん小さいキューブ。はじめてはこれがおすすめ', 2: 'レベル2:3×3×3。ふつうの ルービックキューブ', 3: 'レベル3:4×4×4。内側の段も まわります', 4: 'レベル4:5×5×5。大きいキューブ', 5: 'レベル5:6×6×6。いちばん大きいキューブ' }) }], go: '#cbgo', goSay: '決まったら、この「スタート」を押します(大会のときは「大会へ」です)' },
+  ghun: { pre: [
+    { sel: '.qc', next: 1, say: 'これが「100万円を死守しろ!」のトップ画面です。あなたは100万円を持っています' },
+    { sel: '.qc + .qc', next: 1, say: 'ルール\nクイズや ちょっとした ゲームに「まちがえる」と、泥棒に10万円ずつ盗まれます。さいごに残ったお金を、がんばって守りましょう。\n問題は、考える問題・目や耳をつかう問題・記憶の問題など、いろいろです' }], go: '#hdstart', goSay: '準備ができたら「スタート」を押します' },
+  gtrip: { pre: [
+    { sel: '.hph', next: 1, say: '日本一周すごろくとは\nサイコロをふって、日本地図のコースを すすみ、47都道府県を めぐって ゴールをめざす すごろくです。止まった県で、クイズや できごとが おきます' },
+    { sel: '#trmd', next: 1, say: gLive_('#trmd', 'あそびかたを選びます。ここを押して、変えてみましょう。', { battle: '【一人モード】いま選んでいます。ロボットと旅をします。お一人で楽しめます', net: '【オンライン】はなれた人と、べつのスマホで一緒に旅をします' }, 'お一人なら、このままでOKです') }], go: '#trgo', goSay: '決まったら「スタート」を押します' },
+  gdraw: { pre: [
+    { sel: '#drsolo', next: 1, say: '【一人モード】ロボットたちと、お題に そって 1人一筆ずつ かいて 絵を つなぎます' },
+    { sel: '#drvs', next: 1, say: '【みんなでモード】あなたの チームと ロボットの チームで、絵を かいて 3回戦。人数が たりないところは ロボットが 入ります' },
+    { sel: '#drnet', next: 1, say: '【オンラインモード】べつのスマホの お友だちと、チームで あそびます(5人VS5人など)。足りない人は ロボットが 入ります' },
+    { sel: '#drfree', next: 1, say: '【ひとりでかくモード】お題なしで 自由に かきます。色・太さ・ブラシ(ペン・マーカー・クレヨン・えんぴつ・消しゴム)を えらべます' },
+    { sel: '#drgal', next: 1, say: '【ギャラリー】かいた絵が、あなた専用に かざられます。気に入った絵は「投稿する」で、みんなに見てもらえます' },
+    { sel: '#drcon', next: 1, say: '【みんなのコンクール】みんなの投稿や、毎年12月の大賞コンクールが 見られます。気に入った絵には スタンプを おせます' }], go: '#drsolo', goSay: 'まずは「一人モード」を押して、あそんでみましょう' },
+  gmys: { pre: [
+    { sel: '#mgo', next: 1, say: '歴史推理とは\n幕末や戦国の事件を、5人の容疑者の「証言」から推理して、犯人を当てるゲームです。つじつまの合わない証言が ヒントになります' }], go: '#mgo', goSay: '準備ができたら「事件をはじめる」を押します' }
 };
 var GTUT_ = {
-  gox: [{ sel: gOxCell_, say: 'あなたの番です。あいているマスを 1つ押すと、○が置かれます', wait: '少し待ちましょう' },
-    { sel: '#oxtm', next: 1, say: 'この線が、1手の持ち時間です。時間がすぎると、自動で置かれます', wait: '少し待ちましょう' },
-    { sel: '#oxst', next: 1, say: '決められた数(レベルによって かわります)を たて・よこ・ななめに そろえた人の勝ちです。相手の番のときは、少し待ちましょう', wait: '少し待ちましょう' }],
-  gatama2: [{ sel: '.aq', next: 1, say: 'おだいが 出ます。「さいしょ」の字ではじまって、「さいご」の字で終わることばを つくります', wait: '少し待ちましょう' },
+  gox: [{ sel: '#oxst', next: 1, say: 'ここに、いまの状況が出ます。あなたの番か、相手の番かが わかります', wait: '少し待ちましょう' },
+    { sel: gOxCell_, say: 'あなたの番です。あいているマスを 1つ押すと、○が置かれます', wait: '少し待ちましょう' },
+    { sel: '#oxtm', next: 1, say: 'この線が、1手の持ち時間です。時間がすぎると、自動で置かれます。相手の番のときは、少し待ちましょう', wait: '少し待ちましょう' },
+    { sel: '#oxst', next: 1, say: '決められた数を たて・よこ・ななめに そろえた人の勝ちです。勝負がついたら「もう一回」か「もどる」を選びます', wait: '少し待ちましょう' }],
+  gatama2: [{ sel: '.aq', next: 1, say: 'おだいが 出ます。最初の文字と最後の文字が書いてあります', wait: '少し待ちましょう' },
     { sel: '#atb', next: 1, say: 'この線が のこりの時間です。なくなる前に こたえましょう' },
-    { sel: '#ain', next: 1, say: 'ここに、ひらがなで ことばを 入れます', wait: '少し待ちましょう' },
-    { sel: '#aok', next: 1, say: '入れたら「けってい」を押します。僕が知っている言葉だと ポイントが2倍です' },
-    { sel: '#agive', next: 1, say: 'わからないときは、ここを押すと こたえが見られます' }],
-  gcube: [{ sel: '#cbcv', next: 1, say: 'まわりの余白(うすいベージュのところ)を 指でなぞると、キューブ全体を まわして、いろいろな面を見られます', wait: '少し待ちましょう' },
+    { sel: '#ain', next: 1, say: 'この枠に、ひらがなで 入力してください。「さいしょの字」と「さいごの字」の間に入ることばを つくります', wait: '少し待ちましょう' },
+    { sel: '#agive', next: 1, say: 'わからないときは、ここを押すと こたえが見られます' },
+    { sel: '#aok', say: '入力したら「けってい」を押してください。ことばを知っていると ポイントが2倍です' },
+    { sel: '#anext', say: 'つぎのおだいを押すと、次の問題になります。どうぶつが そだつのを たのしみに、つづけましょう', wait: '少し待ちましょう' }],
+  gcube: [{ sel: '#cbt', next: 1, say: 'ここは、かかった時間です。完成するまでの タイムが 記録されます', wait: '少し待ちましょう' },
+    { sel: '#cbcv', next: 1, say: 'まわりの余白(うすいベージュのところ)を 指でなぞると、キューブ全体を まわして、いろいろな面を見られます', wait: '少し待ちましょう' },
     { sel: '#cbcv', next: 1, say: 'キューブの「色のところ」をなぞると、その段が動きます。動かしたい方向に、なぞりましょう' },
     { sel: '.cblk', next: 1, say: 'ここの「Lock」で、いまの向きを ロックできます。ロックすると、余白をなぞっても キューブの向きが かわりません' },
     { sel: '#cbfix', next: 1, say: '3×3×3以上のときは、ここから「下の面の色」を決めて、色で固定することもできます' },
@@ -2089,23 +2125,34 @@ var GTUT_ = {
     { sel: '#cbundo', next: 1, say: 'まちがえたら、「ひとつ もどす」で、もどせます' },
     { sel: '.cbs', next: 1, say: 'なぞるのが むずかしいときは、この「ボタンで まわす」でも 動かせます(押して ひらいてください)' }],
   ghun: [],
-  gdraw: [],
+  gdraw: [{ sel: '#dro', next: 1, say: 'ロボットの人数を選びます(3〜8人)。多いほど、にぎやかな絵になります', wait: '少し待ちましょう' },
+    { sel: '#drgo', say: '決まったら「はじめる」を押します' },
+    { sel: '#drsp', say: 'ルーレットが出ます。「スタート」を押すと、まわって、お題と かく順番が 決まります', wait: '少し待ちましょう' },
+    { sel: '#drsv', next: 1, say: 'あなたの番になりました。この中に、お題に そって、指で「一筆」(指を はなすまで)かきます。ひとりで ぜんぶ かいてしまうと、つぎの人が こまるので、よく考えてね', wait: 'ロボットの番です。少し待ちましょう' },
+    { sel: '#drre', next: 1, say: 'まちがえたら「かきなおし」で、かきなおせます' },
+    { sel: '#drok', say: 'かけたら「これで OK」を押します。つぎの人が、つづきを かきます。最後の人は、お題が何かを 答えます。かいた絵は、あなた専用のギャラリーに かざられます' }],
   gtrip: [{ skipif: function () { return !document.querySelector('#tgo'); }, sel: '#tgo', say: '最初の出来事が出ました。「旅に出発!」を押します' },
     { sel: '#troll', say: '「サイコロを ふる」を押します。出た目の数だけ 進みます', wait: '少し待ちましょう' },
-    { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' }],
+    { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' },
+    { sel: '#pnext', say: '止まった県の 紹介や、クイズが出ます。読んだり 答えたりしたら「つぎへ」を押して、また サイコロを ふります', wait: '少し待ちましょう' }],
   gmys: [{ sel: '#mst', say: '事件の説明を読んだら、「証言を聞く」を押します', wait: '事件を読み込んでいます。少し待ちましょう' },
     { sel: '#hs', next: 1, say: '容疑者の証言カードです。横にスワイプして、5人の証言を聞きます。つじつまの合わないことを言う人が、あやしいです', wait: '少し待ちましょう' },
-    { sel: '#mvote', next: 1, say: '犯人がわかったら「犯人に投票する」を押します。早く当てるほど 高得点です。わからないときは「次のラウンドへ」で、もっと証言を聞けます' }]
+    { skipif: function () { return !document.querySelector('#mnext'); }, sel: '#mnext', next: 1, say: '証言が たりないと思ったら「次のラウンドへ」を押すと、もっと証言が聞けます(最大3ラウンド)' },
+    { sel: '#mvote', next: 1, say: '犯人がわかったら「犯人に投票する」を押します。早く当てるほど 高得点です。まちがえても大丈夫。事件の真相が見られます' }]
 };
 function gBuild_(g) {
   var C = GCFG_[g.key] || {}, pre = C.pre || [], after = [];
   pre.forEach(function (st) { var c = {}; Object.keys(st).forEach(function (k) { c[k] = st[k]; }); after.push(c); });
-  if (C.go && g.key !== 'sol') after.push({ sel: C.go, say: C.goSay && !pre.length ? C.goSay : '「スタート」を押しましょう' });
+  if (C.go && g.key !== 'sol') after.push({ sel: C.go, say: C.goSay || '「スタート」を押しましょう' });
   return [{ after: after, ask: function () { return { say: g.name + 'ですね!\n\nチュートリアル(説明)は必要ですか?', btns: [['はい(チュートリアルに進む)', 'yes'], ['いいえ(ガイドを終わる)', 'no']] }; } }];
 }
 var CNAME_ = { baba: 'ババ抜き', sev: '7並べ', pk: 'ポーカー', mem: '神経衰弱', kar: 'カルタ', sol: 'ソリティア' };
 var TUT_ = GTUT_;
 ['baba', 'sev', 'pk', 'mem', 'kar'].forEach(function (k) { GTUT_[k] = TOURS_['g_' + k].steps.slice(5); }); GTUT_.sol = TOURS_.g_sol.steps.slice(3);
+GTUT_.baba = [{ sel: '.pcw', next: 1, say: 'いちばん下が、あなたの手札です。同じ数字が2まいそろうと、自動で捨てられます', wait: '少し待ちましょう' }].concat(GTUT_.baba);
+GTUT_.sev = [{ sel: '.pcb', next: 1, say: 'これが、カードを出していく表です。真ん中の「7」から、同じマークで 1つずつ数字を つなげていきます', wait: '少し待ちましょう' }].concat(GTUT_.sev);
+GTUT_.pk = [{ sel: '.pcw', next: 1, say: 'これが、あなたの5まいの手札です。同じ数字・同じマーク・数字の連続などで「役」ができます。強い役ほど 勝ちです', wait: '少し待ちましょう' }].concat(GTUT_.pk);
+GTUT_.mem = [{ sel: '.pcg', next: 1, say: 'カードが、裏向きに ならんでいます。どこに どの数字があるか、おぼえながら めくりましょう', wait: '少し待ちましょう' }].concat(GTUT_.mem);
 TOURS_.game = TOURS_.gplay;
 function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
@@ -2145,12 +2192,15 @@ function tourTick() {
   if (TR.el !== e) {
     TR.el = e; var r0 = e.getBoundingClientRect();
     if (r0.top < 70 || r0.bottom > window.innerHeight - 90) { try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
-    var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say;
-    TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
-    var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
-    TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
-  }
+    tourRender(st);
+  } else if (typeof st.say === 'function' && st.say() !== TR.sayc) tourRender(st);   // 選びなおしたとき、説明も かわる
   tourPos();
+}
+function tourRender(st) {
+  var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy;
+  TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
+  var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
+  TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
 }
 function tourPos() {
   if (!TR.on || !TR.el || !TR.hole) return;
@@ -2191,7 +2241,7 @@ function tourCustom(say, btns) {
 function tourHdHold(stage, ctl) {   // 100万円ゲーム: 1問目の前と、1問目が終わったあとで、ゲームを止めて案内する
   if (!TR.on) return false;
   if (stage === 'first') {
-    tourCustom('さあ、問題を解いてみましょう', [
+    tourCustom('これから問題が出ます。\n\n・上の「💴」は、いまの持ち金です。まちがえると10万円ずつ減ります\n・その下の線は、のこりのお金です\n・「第○問」で、何問目かが わかります\n・音の問題は、音量を上げてね(聞こえないときは「音が聞こえない」を押すと ノーカウントです)\n\nさあ、問題を解いてみましょう', [
       ['解く', function () { TR.box.style.display = 'none'; setTimeout(ctl.go, 1000); }],
       ['ゲーム目次に戻る', function () { tourStop(true); ctl.hub(); }, 1],
       ['ガイド終了', function () { tourStop(true); ctl.go(); }, 1]]);
