@@ -858,7 +858,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-25 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-26 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2079,6 +2079,8 @@ var TOURS_ = {
   helprec: { t: '助け合いで募集する場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="help"]', say: 'この「助け合い」を押します(災害モードのときに使えます)' },
     { sel: '[data-hgo="recruit"]', say: '人手がほしいときは、この「みんなに募集する」を押します' } ] },
+  gdoff: { t: 'ガイドの終わらせ方を、教えてもらう', home: 1, steps: [
+    { sel: '#gdbtn', say: 'この「ガイド ON」のボタンを押すと、ガイドが終わります。もう一度押すと、また始められます' } ] },
   card: { t: '会員証を開く場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="card"]', say: 'この「会員証」を押すと、QRコードが出ます' } ] },
   board: { t: '町会のお知らせを見る場所を、教えてもらう', home: 1, steps: [
