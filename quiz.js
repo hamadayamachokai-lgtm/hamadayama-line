@@ -567,7 +567,7 @@
     document.head.appendChild(sc);
   }
   function openAtama() { loadGame('quiz-atama.js?v=5', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
-  function openCards() { loadGame('quiz-cards.js?v=12', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
+  function openCards() { loadGame('quiz-cards.js?v=13', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
   function openCube() { loadGame('quiz-cube.js?v=7', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
   function openHundred() { loadGame('quiz-hundred.js?v=4', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
   function openTrip() { loadGame('quiz-trip.js?v=10', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
