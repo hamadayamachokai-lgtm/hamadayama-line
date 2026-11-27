@@ -855,7 +855,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-18 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-20 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2124,7 +2124,7 @@ var GTUT_ = {
     { sel: '#cbhelp', next: 1, say: '「攻略補助」(特訓のとき)を押すと、つぎに動かす場所を 教えてくれます。だれでも 完成できます!' },
     { sel: '#cbundo', next: 1, say: 'まちがえたら、「ひとつ もどす」で、もどせます' },
     { sel: '.cbs', next: 1, say: 'なぞるのが むずかしいときは、この「ボタンで まわす」でも 動かせます(押して ひらいてください)' }],
-  ghun: [],
+  ghun: [{ sel: '#hdnone', wait: 'じゅんびしています。少し待ちましょう' }],   // 1問目の案内が出るまで、ガイドを終わらせない
   gdraw: [{ sel: '#dro', next: 1, say: 'ロボットの人数を選びます(3〜8人)。多いほど、にぎやかな絵になります', wait: '少し待ちましょう' },
     { sel: '#drgo', say: '決まったら「はじめる」を押します' },
     { sel: '#drsp', say: 'ルーレットが出ます。「スタート」を押すと、まわって、お題と かく順番が 決まります', wait: '少し待ちましょう' },
@@ -2167,8 +2167,8 @@ function gTutStart_(key) {
   TR = { on: false, g: { id: key, key: key, card: '', name: nm } };
   var st = gBuild_(TR.g)[0].after.concat(GTUT_[key] || []);
   T.steps = st; T.steps0 = null;
-  if (GHOOK_[key]) GHOOK_[key]();
   tourStart('gcur');
+  if (GHOOK_[key]) GHOOK_[key]();   // tourStart が前のフックを消すので、そのあとで設定する
   TR.g = { id: key, key: key, card: '', name: nm };
 }
 function gTutInject_() {
@@ -2286,9 +2286,10 @@ function tourHdHold(stage, ctl) {   // 100万円ゲーム: 1問目の前と、1�
     return true;
   }
   if (stage === 'after1') {
-    tourCustom('解けましたか?\n\n聴覚問題は、音量を上げることをおすすめします。聞こえない場合は、「音が 聞こえない」のスキップボタンがあります。\n\n私は、初回の残金は10万円でした🙃\nでは、頑張ってください!', [
+    TR.hold = true; TR.box.style.display = 'none'; TR.hole.style.display = 'none';   // 正解・不正解の画面を 1秒 見せてから、案内にもどる
+    setTimeout(function () { if (!TR.on) return; tourCustom('解けましたか?\n\n聴覚問題は、音量を上げることをおすすめします。聞こえない場合は、「音が 聞こえない」のスキップボタンがあります。\n\n私は、初回の残金は10万円でした🙃\nでは、頑張ってください!', [
       ['ゲームを続ける', function () { tourStop(true); ctl.next(); }],
-      ['ガイド終了', function () { tourStop(true); }, 1]]);
+      ['ガイド終了', function () { tourStop(true); }, 1]]); }, 1000);
     return true;
   }
   return false;
