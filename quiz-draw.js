@@ -77,8 +77,9 @@
   /* ===== メニュー ===== */
   function menu() {
     tok++;
-    A.draw('<div class="qc"><h2>🎨 おえかきを完成させろ</h2><p style="font-size:.92em">お題に そって 1人 <b>一筆(ひとふで)</b>ずつ かいて つないでいき、<b>最後の人</b>が 絵を見て お題を あてます。</p>' +
+    A.draw('<div class="qc"><div style="margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div><h2>🎨 おえかきを完成させろ</h2><p style="font-size:.92em">お題に そって 1人 <b>一筆(ひとふで)</b>ずつ かいて つないでいき、<b>最後の人</b>が 絵を見て お題を あてます。</p>' +
       '<button class="qb pri" id="drsolo">🙂 一人モード(ロボットと)</button><button class="qb pri" id="drvs">⚔️ 対決モード(3回戦)</button><button class="qb" id="drgal">🖼️ ギャラリー</button><button class="qb" id="drhome">もどる</button></div>');
+    try { var tt = tok; A.call('draw_top').then(function (r) { var im = r && r.url ? root.querySelector('img') : null; if (im && tt === tok) { im.onerror = function () { this.style.display = 'none'; }; im.onload = function () { this.style.display = 'block'; }; im.src = r.url; } }).catch(function () { /* 画像なしでOK */ }); } catch (e) { /* 無視 */ }
     $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drgal').onclick = gallery; $('#drhome').onclick = function () { tok++; A.hub(); };
   }
   function opts(name, lo, hi, def, unit) {
