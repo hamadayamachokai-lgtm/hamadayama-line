@@ -15,11 +15,11 @@
     '#qz .drtheme{text-align:center;font-size:1.25em;font-weight:bold;background:#fff3c4;border:2px dashed #e39a1d;border-radius:12px;padding:6px;margin:0 0 8px}' +
     '#qz .drslot{text-align:center;font-size:2em;font-weight:bold;background:#222;color:#ffe27a;border-radius:14px;padding:14px;margin:10px 0;min-height:1.4em;letter-spacing:.05em}' +
     '#qz .drwall{background:#e9dfc8;border-radius:14px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:14px 10px}' +
-    '#qz .drfr{background:#fff;border:7px solid #b8862b;border-image:none;box-shadow:0 0 0 2px #7a5818,0 4px 8px rgba(0,0,0,.3);padding:6px;border-radius:2px}' +
+    '#qz .drfr{position:relative;background:#fff;border:7px solid #b8862b;border-image:none;box-shadow:0 0 0 2px #7a5818,0 4px 8px rgba(0,0,0,.3);padding:6px;border-radius:2px}' +
     '#qz .drfr svg{display:block;width:100%;height:auto;background:#fffdf5}#qz .drpl{margin:8px auto 0;background:#f5efd8;border:1px solid #b8862b;border-radius:4px;padding:2px 6px;text-align:center;font-size:.8em;font-weight:bold}' +
-    '#qz .drch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}';
+    '#qz .drfr .drbg{position:absolute;right:-12px;bottom:-14px;width:46px;height:54px;background:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}#qz .drfr .drbg+.drbg{right:30px}#qz .drch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}';
   function $(s) { return root.querySelector(s); }
-  function esc(s) { return A.esc(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function later(fn, ms) { var t = tok; setTimeout(function () { if (t === tok) fn(); }, ms); }
@@ -58,6 +58,44 @@
     }).join('') + '</div>';
   }
 
+  /* ===== バッジ(入賞) ===== */
+  var BCOL = { '1位': ['#f2b705', '1'], '2位': ['#a9b0bd', '2'], '3位': ['#c8773a', '3'], '役員賞': ['#8e5bd0', '役'], '参加賞': ['#2e9e6a', '参'] };
+  function badgeSvg(kind, cls) {
+    var b = BCOL[kind] || BCOL['1位'];
+    return '<svg class="' + (cls || 'drbg') + '" viewBox="0 0 60 70" aria-label="' + esc(kind) + '"><polygon points="16,38 6,68 18,62 24,70 30,44" fill="' + b[0] + '"/><polygon points="44,38 54,68 42,62 36,70 30,44" fill="' + b[0] + '"/><circle cx="30" cy="28" r="24" fill="' + b[0] + '" stroke="#fff" stroke-width="3"/><circle cx="30" cy="28" r="18.5" fill="none" stroke="#fff" stroke-width="1.5"/><text x="30" y="36" text-anchor="middle" font-size="24" font-weight="bold" fill="#fff" font-family="sans-serif">' + b[1] + '</text></svg>';
+  }
+  function frameHtml(strokes, kinds) { return '<div class="drfr">' + svgOf(strokes) + (kinds || []).map(function (k) { return badgeSvg(k); }).join('') + '</div>'; }
+
+  /* ===== 賞状(チャットの「賞状を見る」から開く) ===== */
+  var CERT_TXT = {
+    '1位': ['第1位', 'もっともすぐれた作品として', '第1位に選ばれました。'],
+    '2位': ['第2位', 'すばらしい作品として', '第2位に選ばれました。'],
+    '3位': ['第3位', 'すばらしい作品として', '第3位に選ばれました。'],
+    '役員賞': ['役員賞', '役員が心をうごかされた作品として', '役員賞に選ばれました。'],
+    '参加賞': ['参加賞', 'ご参加いただきました。', 'そのがんばりをたたえ、']
+  };
+  function certSvg(c) {
+    var t = CERT_TXT[c.kind] || CERT_TXT['参加賞'], y = c.year, lines = c.kind === '参加賞' ? ['右の作品で、', y + '年 おえかきコンクールに', t[1], t[2], 'ここに賞します。'] : ['右の作品は、', y + '年 おえかきコンクールで', t[1], t[2], 'よってここに賞します。'];
+    var b = BCOL[c.kind] || BCOL['1位'], d = String(c.date || '').split('-'), ds = d.length === 3 ? d[0] + '年' + (+d[1]) + '月' + (+d[2]) + '日' : '';
+    var paths = (c.s || []).map(function (s) { return '<path d="M' + s.p.map(function (q) { return q[0] + ' ' + q[1]; }).join('L') + '" fill="none" stroke="' + COLS[s.c % COLS.length] + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'; }).join('');
+    var ff = 'font-family="\'Hiragino Mincho ProN\',\'Yu Mincho\',\'Noto Serif JP\',serif"';
+    return '<svg viewBox="0 0 800 560" style="width:100%;height:auto;display:block;background:#fffaf0;border-radius:6px" ' + ff + '><rect x="14" y="14" width="772" height="532" fill="none" stroke="' + b[0] + '" stroke-width="8"/><rect x="30" y="30" width="740" height="500" fill="none" stroke="' + b[0] + '" stroke-width="2"/>' +
+      '<text x="400" y="104" text-anchor="middle" font-size="54" font-weight="bold" fill="#5a3b0b" letter-spacing="14">' + (c.kind === '参加賞' ? '参加賞' : '賞状') + '</text>' +
+      (c.kind === '参加賞' ? '' : '<text x="400" y="150" text-anchor="middle" font-size="30" font-weight="bold" fill="' + b[0] + '">' + esc(t[0]) + '</text>') +
+      '<g transform="translate(60,176)"><rect x="-8" y="-8" width="296" height="296" fill="#fff" stroke="#b8862b" stroke-width="6"/><g transform="scale(2.8)">' + paths + '</g>' +
+      '<g transform="translate(262,262) scale(1.3)"><polygon points="16,38 6,68 18,62 24,70 30,44" fill="' + b[0] + '"/><polygon points="44,38 54,68 42,62 36,70 30,44" fill="' + b[0] + '"/><circle cx="30" cy="28" r="24" fill="' + b[0] + '" stroke="#fff" stroke-width="3"/><circle cx="30" cy="28" r="18.5" fill="none" stroke="#fff" stroke-width="1.5"/><text x="30" y="36" text-anchor="middle" font-size="24" font-weight="bold" fill="#fff" font-family="sans-serif">' + b[1] + '</text></g></g>' +
+      '<text x="400" y="214" font-size="26" fill="#333" font-weight="bold">' + esc(c.pen) + ' さん</text>' +
+      '<text x="400" y="254" font-size="22" fill="#333">作品名 『' + esc(c.t) + '』</text>' +
+      lines.map(function (l, i) { return '<text x="400" y="' + (292 + i * 32) + '" font-size="19" fill="#333">' + esc(l) + '</text>'; }).join('') +
+      '<text x="400" y="458" font-size="18" fill="#555">' + esc(ds) + '</text><text x="400" y="488" font-size="22" fill="#333" font-weight="bold">浜田山町会</text><text x="400" y="512" font-size="16" fill="#555">おえかきコンクール事務局</text></svg>';
+  }
+  function cert(api, id) {
+    var ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);overflow:auto;padding:14px';
+    ov.innerHTML = '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:12px"><div id="drcm" style="min-height:120px;text-align:center;padding:30px 0">よみこみ中…</div><p style="font-size:.85em;margin:8px 0;text-align:center">画面を スクリーンショットで 保存できます</p><button type="button" id="drcx" style="width:100%;min-height:48px;font-size:1em;border-radius:12px;border:2px solid #cfc7b4;background:#fff">とじる</button></div>';
+    document.body.appendChild(ov); ov.querySelector('#drcx').onclick = function () { ov.remove(); };
+    api.call('draw_cert', { id: id }).then(function (c) { ov.querySelector('#drcm').style.padding = '0'; ov.querySelector('#drcm').innerHTML = certSvg(c); }, function (e) { ov.querySelector('#drcm').textContent = (e && e.message) || '見られませんでした'; });
+  }
+
   /* ===== ギャラリー ===== */
   function galLoad() { try { return JSON.parse(localStorage.getItem(GKEY) || '[]') || []; } catch (e) { return []; } }
   function galSave(w) {
@@ -66,13 +104,19 @@
     try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) { /* 保存できなくても遊べる */ }
   }
   function gallery() {
-    tok++; var g = galLoad();
-    var h = '<div class="qc"><h2>ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)</p>';
-    h += g.length ? '<div class="drwall">' + g.map(function (w) {
-      return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』' + (w.ok ? ' ⭕' : '') + '</div></div>';
-    }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">まだ さくひんが ありません。<br>1まい かいてみよう!</div>';
-    h += '<button class="qb" id="drbk" style="margin-top:10px">もどる</button></div>';
-    A.draw(h); $('#drbk').onclick = menu;
+    tok++; var t = tok, g = galLoad(), awd = {};
+    function paint() {
+      var h = '<div class="qc"><h2>ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)' + (Object.keys(awd).length ? '<br>入賞した絵には バッジが つきます。バッジを おすと 賞状が 見られます。' : '') + '</p>';
+      h += g.length ? '<div class="drwall">' + g.map(function (w, k) {
+        var a = awd[w.i] || [];
+        return '<div>' + frameHtml(w.s, a.map(function (x) { return x.kind; })) + '<div class="drpl">『' + esc(w.t) + '』' + (w.ok ? ' (せいかい)' : '') + '</div>' + a.map(function (x) { return '<button class="qb sm" data-c="' + esc(x.id) + '" style="margin-top:4px">' + esc(x.kind) + 'の賞状</button>'; }).join('') + '</div>';
+      }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">まだ さくひんが ありません。<br>1まい かいてみよう!</div>';
+      h += '<button class="qb" id="drbk" style="margin-top:10px">もどる</button></div>';
+      A.draw(h); $('#drbk').onclick = menu;
+      A.bind('[data-c]', function (b) { cert(A, b.dataset.c); });
+    }
+    paint();
+    try { A.call('draw_awards').then(function (r) { if (t !== tok) return; (r.list || []).forEach(function (x) { if (x.gi) (awd[x.gi] = awd[x.gi] || []).push(x); }); if (Object.keys(awd).length) paint(); }).catch(function () { /* バッジなしでOK */ }); } catch (e) { /* 無視 */ }
   }
 
   /* ===== コンクール(毎年12月) 出品 12/1〜12/14、投票 12/15〜12/25、結果 12/26〜 ===== */
@@ -92,10 +136,10 @@
       A.draw(cback('<div class="qc"><h2>おえかきコンクール</h2><p style="line-height:1.7">毎年12月に開催します。<br>出品: 12月1日〜14日(ペンネームで出品)<br>投票: 12月15日〜25日<br>結果発表: 12月26日〜<br><br>それまで、ギャラリーに お気に入りの絵を ためておいてね。</p></div>')); $('#drbk').onclick = menu; return;
     }
     if (ph === 'submit') return contestSubmit(r, y);
-    var html = '<div class="qc"><h2>' + y + ' おえかきコンクール ' + (ph === 'vote' ? '投票' : '結果') + '</h2>' + (ph === 'vote' ? '<p style="font-size:.9em">いちばん 好きな 絵に 1票。ご自分の作品には 入れられません。(投票は 12月25日まで 変えられます)</p>' : '<p style="font-size:.9em">たくさんの ご参加 ありがとうございました!</p>');
+    var html = '<div class="qc"><h2>' + y + ' おえかきコンクール ' + (ph === 'vote' ? '投票' : '結果') + '</h2>' + (ph === 'vote' ? '<p style="font-size:.9em">いちばん 好きな 絵に 1票。ご自分の作品には 入れられません。(投票は 12月25日まで 変えられます)</p>' : r.fin ? '<p style="font-size:.9em">たくさんの ご参加 ありがとうございました! 入賞した作品です。</p>' : '<p style="font-size:.9em">ただいま 結果を まとめています。しばらく おまちください。</p>');
     html += r.works.length ? '<div class="drwall">' + r.works.map(function (w, k) {
-      return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』<br><span style="font-weight:normal">' + esc(w.pen) + (ph === 'result' ? ' / ' + w.v + '票' : '') + '</span></div>' +
-        (ph === 'vote' ? (w.mine ? '<div class="qm" style="text-align:center">あなたの作品</div>' : '<button class="qb' + (r.voted === w.id ? ' pri' : '') + ' sm" data-v="' + k + '" style="margin-top:6px">' + (r.voted === w.id ? '投票ずみ' : '投票する') + '</button>') : (k < 3 ? '<div style="text-align:center;font-weight:bold">' + (k + 1) + '位</div>' : '')) + '</div>';
+      return '<div>' + frameHtml(w.s, w.aw) + '<div class="drpl">『' + esc(w.t) + '』<br><span style="font-weight:normal">' + esc(w.pen) + (r.showV ? ' / ' + w.v + '票' : '') + '</span></div>' +
+        (ph === 'vote' ? (w.mine ? '<div class="qm" style="text-align:center">あなたの作品</div>' : '<button class="qb' + (r.voted === w.id ? ' pri' : '') + ' sm" data-v="' + k + '" style="margin-top:6px">' + (r.voted === w.id ? '投票ずみ' : '投票する') + '</button>') : (w.aw.length ? '<div style="text-align:center;font-weight:bold">' + esc(w.aw.join('・')) + '</div>' : '')) + '</div>';
     }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">出品された作品は ありませんでした。</div>';
     A.draw(cback(html + '</div>'));
     $('#drbk').onclick = menu;
@@ -106,7 +150,7 @@
   }
   function contestSubmit(r, y) {
     var g = galLoad(), room = 3 - r.mine.length, pen = r.pen || ''; try { pen = pen || localStorage.getItem('hmt_draw_pen') || ''; } catch (e) { /* 無視 */ }
-    var h = '<div class="qc"><h2>' + y + ' おえかきコンクール 出品</h2><p style="font-size:.9em;line-height:1.6">出品は 12月14日まで(1人3点まで)。投票は 12月15日から。<br>名前は <b>ペンネーム</b>で 出ます。</p>';
+    var h = '<div class="qc"><h2>' + y + ' おえかきコンクール 出品</h2><p style="font-size:.9em;line-height:1.6">出品は 12月14日まで(1人3点まで)。投票は 12月15日から。<br>名前は <b>ペンネーム</b>で 出ます。<br><b>みんなでモード・オンラインモードで かいた絵も、出品した人の作品として あつかわれます。受賞も 出品した人のものに なります。</b></p>';
     h += '<div class="qm">ペンネーム(10文字まで)</div><input id="drpen" maxlength="10" value="' + esc(pen) + '" style="width:100%;box-sizing:border-box;min-height:48px;font-size:1.1em;padding:8px;border:2px solid #cfc7b4;border-radius:12px;margin:4px 0 12px">';
     if (r.mine.length) h += '<b>出品ずみ(' + r.mine.length + '点)</b><div class="drwall" style="margin:6px 0 12px">' + r.mine.map(function (w, k) { return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』</div><button class="qb sm" data-w="' + k + '" style="margin-top:6px">取り下げる</button></div>'; }).join('') + '</div>';
     if (room > 0) {
@@ -122,18 +166,29 @@
       if (sel.length > room) return A.toast('あと' + room + '点まで えらべます');
       try { localStorage.setItem('hmt_draw_pen', pn); } catch (e) { /* 無視 */ }
       sb.disabled = true;
-      A.call('draw_submit', { pen: pn, works: sel.map(function (w) { return { t: w.t, s: w.s }; }) }).then(function () { A.toast('出品しました'); contest(); }, function (e) { A.toast(e.message || '出品できませんでした'); sb.disabled = false; });
+      A.call('draw_submit', { pen: pn, works: sel.map(function (w) { return { t: w.t, s: w.s, g: w.i || '' }; }) }).then(function () { A.toast('出品しました'); contest(); }, function (e) { A.toast(e.message || '出品できませんでした'); sb.disabled = false; });
     };
   }
 
+  /* 去年の1位の絵を、トップ画像のイーゼル(右の白い画用紙)の上に重ねる。位置はイーゼルの絵に合わせた割合(left/top/width/height %) */
+  var EASEL = { l: 36.5, t: 49.5, w: 31.5, h: 37 };
+  function topWin(w) {
+    var box = root.querySelector('.drtop'); if (!box || box.querySelector('.drwin')) return;
+    var img = box.querySelector('img'), has = img && img.style.display !== 'none' && img.getAttribute('src');
+    var o = document.createElement('div'); o.className = 'drwin';
+    if (has) { o.style.cssText = 'position:absolute;left:' + EASEL.l + '%;top:' + EASEL.t + '%;width:' + EASEL.w + '%;height:' + EASEL.h + '%;background:#fff'; o.innerHTML = svgOf(w.s).replace('class="drsv"', 'style="width:100%;height:100%;display:block;background:#fff"') + badgeSvg('1位').replace('class="drbg"', 'style="position:absolute;right:-6%;bottom:-6%;width:26%;height:auto"'); }
+    else { o.style.cssText = 'padding:10px'; o.innerHTML = '<div class="drfr" style="margin:0 auto;max-width:240px">' + svgOf(w.s) + badgeSvg('1位') + '</div>'; }
+    box.appendChild(o);
+    var cap = document.createElement('div'); cap.style.cssText = 'text-align:center;font-size:.85em;margin:6px 0 0'; cap.innerHTML = esc(w.year) + '年コンクール 1位『' + esc(w.t) + '』 ' + esc(w.pen); box.parentNode.insertBefore(cap, box.nextSibling);
+  }
   /* ===== メニュー ===== */
   function menu() {
     tok++;
     var pc = contestPhase();
-    A.draw('<div class="qc"><div style="margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div>' +
+    A.draw('<div class="qc"><div class="drtop" style="position:relative;margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div>' +
       '<p style="font-size:.95em;line-height:1.7;margin:0 0 12px"><b>画伯のみんな!</b><br>お題に沿って みんなで絵を完成させよう<br>ひとりで全部書いちゃうと次の人が困るから<br>よ〜く考えてね🤭<br><br>最後のひとはお題は何か答えるんだよ<br><br>描いた絵はあなた専用のギャラリーに飾られるよ<br>1年間で、お気に入りの絵は毎年12月に開催するコンクールに出してみよう!</p>' +
       '<button class="qb pri" id="drsolo">一人モード</button><button class="qb pri" id="drvs">みんなでモード</button><button class="qb pri" id="drnet">オンラインモード</button><button class="qb" id="drgal">🎨ギャラリー</button><button class="qb' + (pc ? ' pri' : '') + '" id="drcon">コンクール' + (pc === 'submit' ? '(出品受付中)' : pc === 'vote' ? '(投票受付中)' : pc === 'result' ? '(結果発表)' : '') + '</button><button class="qb" id="drhome">もどる</button></div>');
-    try { var tt = tok; A.call('draw_top').then(function (r) { var im = r && r.url ? root.querySelector('img') : null; if (im && tt === tok) { im.onerror = function () { this.style.display = 'none'; }; im.onload = function () { this.style.display = 'block'; }; im.src = r.url; } }).catch(function () { /* 画像なしでOK */ }); } catch (e) { /* 無視 */ }
+    try { var tt = tok; A.call('draw_top').then(function (r) { if (tt !== tok) return; var im = root.querySelector('img'), win = r && r.win && r.win.s ? r.win : null; if (r && r.url && im) { im.onerror = function () { this.style.display = 'none'; if (win && tt === tok) topWin(win); }; im.onload = function () { this.style.display = 'block'; if (win && tt === tok) topWin(win); }; im.src = r.url; } else if (win) topWin(win); }).catch(function () { /* 画像なしでOK */ }); } catch (e) { /* 無視 */ }
     $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drnet').onclick = netSetup; $('#drgal').onclick = gallery; $('#drcon').onclick = contest; $('#drhome').onclick = function () { tok++; A.hub(); };
   }
   function opts(name, lo, hi, def, unit) {
@@ -425,5 +480,5 @@
     if (!document.getElementById('drcss')) { var s = document.createElement('style'); s.id = 'drcss'; s.textContent = CSS; document.head.appendChild(s); }
     menu();
   }
-  window.HmtDraw = { start: start, _t: { THEMES: THEMES } };
+  window.HmtDraw = { start: start, cert: cert, _t: { THEMES: THEMES } };
 })();
