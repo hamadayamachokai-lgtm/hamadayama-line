@@ -54,19 +54,20 @@
   }
   function bar(order, cur) {
     return '<div class="drbar">' + order.map(function (p, i) {
-      return '<span class="' + (i === cur ? 'on' : i < cur ? 'dn' : '') + '" style="' + (i === cur ? '' : 'border-color:' + COLS[i % COLS.length]) + '">' + (i + 1) + ' ' + esc(p.name) + (i === order.length - 1 ? ' ✏️→❓' : '') + '</span>';
+      return '<span class="' + (i === cur ? 'on' : i < cur ? 'dn' : '') + '" style="' + (i === cur ? '' : 'border-color:' + COLS[i % COLS.length]) + '">' + (i + 1) + ' ' + esc(p.name) + (i === order.length - 1 ? ' (こたえる)' : '') + '</span>';
     }).join('') + '</div>';
   }
 
   /* ===== ギャラリー ===== */
   function galLoad() { try { return JSON.parse(localStorage.getItem(GKEY) || '[]') || []; } catch (e) { return []; } }
   function galSave(w) {
+    w.i = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); w.d = new Date().toISOString().slice(0, 10);
     var g = galLoad(); g.unshift(w); g = g.slice(0, 40);
     try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) { /* 保存できなくても遊べる */ }
   }
   function gallery() {
     tok++; var g = galLoad();
-    var h = '<div class="qc"><h2>🖼️ ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)</p>';
+    var h = '<div class="qc"><h2>ギャラリー</h2><p style="margin:0 0 8px;font-size:.9em">いままで かいた さくひんが かざられます。(この スマホに さいだい40まい)</p>';
     h += g.length ? '<div class="drwall">' + g.map(function (w) {
       return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』' + (w.ok ? ' ⭕' : '') + '</div></div>';
     }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">まだ さくひんが ありません。<br>1まい かいてみよう!</div>';
@@ -74,13 +75,66 @@
     A.draw(h); $('#drbk').onclick = menu;
   }
 
+  /* ===== コンクール(毎年12月) 出品 12/1〜12/14、投票 12/15〜12/25、結果 12/26〜 ===== */
+  function contestPhase() {
+    var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
+    return md >= 1201 && md <= 1214 ? 'submit' : md >= 1215 && md <= 1225 ? 'vote' : md >= 1226 ? 'result' : '';
+  }
+  function contest() {
+    tok++; var t = tok;
+    A.draw('<div class="qc">よみこみ中…</div>');
+    A.call('draw_contest').then(function (r) { if (t !== tok) return; contestView(r); }, function (e) { if (t !== tok) return; A.toast(e.message || '通信できませんでした'); menu(); });
+  }
+  function cback(h) { return h + '<button class="qb" id="drbk" style="margin-top:10px">もどる</button>'; }
+  function contestView(r) {
+    var ph = r.phase, y = r.year || new Date().getFullYear();
+    if (ph === 'none') {
+      A.draw(cback('<div class="qc"><h2>おえかきコンクール</h2><p style="line-height:1.7">毎年12月に開催します。<br>出品: 12月1日〜14日(ペンネームで出品)<br>投票: 12月15日〜25日<br>結果発表: 12月26日〜<br><br>それまで、ギャラリーに お気に入りの絵を ためておいてね。</p></div>')); $('#drbk').onclick = menu; return;
+    }
+    if (ph === 'submit') return contestSubmit(r, y);
+    var html = '<div class="qc"><h2>' + y + ' おえかきコンクール ' + (ph === 'vote' ? '投票' : '結果') + '</h2>' + (ph === 'vote' ? '<p style="font-size:.9em">いちばん 好きな 絵に 1票。ご自分の作品には 入れられません。(投票は 12月25日まで 変えられます)</p>' : '<p style="font-size:.9em">たくさんの ご参加 ありがとうございました!</p>');
+    html += r.works.length ? '<div class="drwall">' + r.works.map(function (w, k) {
+      return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』<br><span style="font-weight:normal">' + esc(w.pen) + (ph === 'result' ? ' / ' + w.v + '票' : '') + '</span></div>' +
+        (ph === 'vote' ? (w.mine ? '<div class="qm" style="text-align:center">あなたの作品</div>' : '<button class="qb' + (r.voted === w.id ? ' pri' : '') + ' sm" data-v="' + k + '" style="margin-top:6px">' + (r.voted === w.id ? '投票ずみ' : '投票する') + '</button>') : (k < 3 ? '<div style="text-align:center;font-weight:bold">' + (k + 1) + '位</div>' : '')) + '</div>';
+    }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">出品された作品は ありませんでした。</div>';
+    A.draw(cback(html + '</div>'));
+    $('#drbk').onclick = menu;
+    A.bind('[data-v]', function (b) {
+      var w = r.works[+b.dataset.v]; b.disabled = true;
+      A.call('draw_vote', { id: w.id }).then(function () { A.toast('投票しました'); contest(); }, function (e) { A.toast(e.message || '投票できませんでした'); b.disabled = false; });
+    });
+  }
+  function contestSubmit(r, y) {
+    var g = galLoad(), room = 3 - r.mine.length, pen = r.pen || ''; try { pen = pen || localStorage.getItem('hmt_draw_pen') || ''; } catch (e) { /* 無視 */ }
+    var h = '<div class="qc"><h2>' + y + ' おえかきコンクール 出品</h2><p style="font-size:.9em;line-height:1.6">出品は 12月14日まで(1人3点まで)。投票は 12月15日から。<br>名前は <b>ペンネーム</b>で 出ます。</p>';
+    h += '<div class="qm">ペンネーム(10文字まで)</div><input id="drpen" maxlength="10" value="' + esc(pen) + '" style="width:100%;box-sizing:border-box;min-height:48px;font-size:1.1em;padding:8px;border:2px solid #cfc7b4;border-radius:12px;margin:4px 0 12px">';
+    if (r.mine.length) h += '<b>出品ずみ(' + r.mine.length + '点)</b><div class="drwall" style="margin:6px 0 12px">' + r.mine.map(function (w, k) { return '<div><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』</div><button class="qb sm" data-w="' + k + '" style="margin-top:6px">取り下げる</button></div>'; }).join('') + '</div>';
+    if (room > 0) {
+      h += '<b>ギャラリーから えらぶ(あと' + room + '点)</b>' + (g.length ? '<div class="drwall" style="margin:6px 0 12px">' + g.map(function (w, k) { return '<label style="display:block"><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』</div><div style="text-align:center;margin-top:4px"><input type="checkbox" data-g="' + k + '" style="width:22px;height:22px"> えらぶ</div></label>'; }).join('') + '</div>' : '<p>まだ ギャラリーに 絵が ありません。</p>');
+      h += '<button class="qb pri" id="drsub"' + (g.length ? '' : ' disabled') + '>この絵を 出品する</button>';
+    } else h += '<p>3点 出品ずみです。</p>';
+    A.draw(cback(h + '</div>')); $('#drbk').onclick = menu;
+    A.bind('[data-w]', function (b) { b.disabled = true; A.call('draw_withdraw', { id: r.mine[+b.dataset.w].id }).then(function () { A.toast('取り下げました'); contest(); }, function (e) { A.toast(e.message || 'できませんでした'); b.disabled = false; }); });
+    var sb = $('#drsub'); if (sb) sb.onclick = function () {
+      var pn = ($('#drpen').value || '').trim(), sel = Array.prototype.filter.call(root.querySelectorAll('[data-g]'), function (c) { return c.checked; }).map(function (c) { return g[+c.dataset.g]; });
+      if (!pn) return A.toast('ペンネームを いれてね');
+      if (!sel.length) return A.toast('出品する絵に チェックしてね');
+      if (sel.length > room) return A.toast('あと' + room + '点まで えらべます');
+      try { localStorage.setItem('hmt_draw_pen', pn); } catch (e) { /* 無視 */ }
+      sb.disabled = true;
+      A.call('draw_submit', { pen: pn, works: sel.map(function (w) { return { t: w.t, s: w.s }; }) }).then(function () { A.toast('出品しました'); contest(); }, function (e) { A.toast(e.message || '出品できませんでした'); sb.disabled = false; });
+    };
+  }
+
   /* ===== メニュー ===== */
   function menu() {
     tok++;
-    A.draw('<div class="qc"><div style="margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div><h2>🎨 おえかきを完成させろ</h2><p style="font-size:.92em">お題に そって 1人 <b>一筆(ひとふで)</b>ずつ かいて つないでいき、<b>最後の人</b>が 絵を見て お題を あてます。</p>' +
-      '<button class="qb pri" id="drsolo">🙂 一人モード(ロボットと)</button><button class="qb pri" id="drvs">⚔️ 対決モード(3回戦)</button><button class="qb pri" id="drnet">🌐 べつのスマホと 対決(最大5 VS 5)</button><button class="qb" id="drgal">🖼️ ギャラリー</button><button class="qb" id="drhome">もどる</button></div>');
+    var pc = contestPhase();
+    A.draw('<div class="qc"><div style="margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div>' +
+      '<p style="font-size:.95em;line-height:1.7;margin:0 0 12px"><b>画伯のみんな!</b><br>お題に沿って みんなで絵を完成させよう<br>ひとりで全部書いちゃうと次の人が困るから<br>よ〜く考えてね🤭<br><br>最後のひとはお題は何か答えるんだよ<br><br>描いた絵はあなた専用のギャラリーに飾られるよ<br>1年間で、お気に入りの絵は毎年12月に開催するコンクールに出してみよう!</p>' +
+      '<button class="qb pri" id="drsolo">一人モード</button><button class="qb pri" id="drvs">みんなでモード</button><button class="qb pri" id="drnet">オンラインモード</button><button class="qb" id="drgal">🎨ギャラリー</button><button class="qb' + (pc ? ' pri' : '') + '" id="drcon">コンクール' + (pc === 'submit' ? '(出品受付中)' : pc === 'vote' ? '(投票受付中)' : pc === 'result' ? '(結果発表)' : '') + '</button><button class="qb" id="drhome">もどる</button></div>');
     try { var tt = tok; A.call('draw_top').then(function (r) { var im = r && r.url ? root.querySelector('img') : null; if (im && tt === tok) { im.onerror = function () { this.style.display = 'none'; }; im.onload = function () { this.style.display = 'block'; }; im.src = r.url; } }).catch(function () { /* 画像なしでOK */ }); } catch (e) { /* 無視 */ }
-    $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drnet').onclick = netSetup; $('#drgal').onclick = gallery; $('#drhome').onclick = function () { tok++; A.hub(); };
+    $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drnet').onclick = netSetup; $('#drgal').onclick = gallery; $('#drcon').onclick = contest; $('#drhome').onclick = function () { tok++; A.hub(); };
   }
   function opts(name, lo, hi, def, unit) {
     var h = '<div class="drch">';
@@ -89,13 +143,13 @@
   }
   function soloSetup() {
     var n = 3;
-    A.draw('<div class="qc"><h2>🙂 一人モード</h2><p>ロボットの 人数を えらんでね(3〜8)</p><div id="dro">' + opts('r', 3, 8, 3, '人') + '</div><button class="qb pri" id="drgo">はじめる</button><button class="qb" id="drbk">もどる</button></div>');
+    A.draw('<div class="qc"><h2>一人モード</h2><p>ロボットの 人数を えらんでね(3〜8)</p><div id="dro">' + opts('r', 3, 8, 3, '人') + '</div><button class="qb pri" id="drgo">はじめる</button><button class="qb" id="drbk">もどる</button></div>');
     A.bind('[data-n]', function (b) { n = +b.dataset.n; Array.prototype.forEach.call(root.querySelectorAll('[data-n]'), function (x) { x.classList.toggle('pri', x === b); }); });
     $('#drgo').onclick = function () { S = { mode: 'solo', n: n + 1 }; soloRound(); }; $('#drbk').onclick = menu;
   }
   function vsSetup() {
     var n = 3;
-    A.draw('<div class="qc"><h2>⚔️ 対決モード</h2><p>1チームの 人数を えらんでね。あなたの チームと ロボットの チームで 3回戦です。人数が たりない ところは ロボットが はいります。</p><div id="dro">' + opts('t', 2, 5, 3, '').replace(/data-n="(\d)">\d/g, 'data-n="$1">$1 VS $1')+ '</div><button class="qb pri" id="drgo">はじめる</button><button class="qb" id="drbk">もどる</button></div>');
+    A.draw('<div class="qc"><h2>みんなでモード</h2><p>1チームの 人数を えらんでね。あなたの チームと ロボットの チームで 3回戦です。人数が たりない ところは ロボットが はいります。</p><div id="dro">' + opts('t', 2, 5, 3, '').replace(/data-n="(\d)">\d/g, 'data-n="$1">$1 VS $1')+ '</div><button class="qb pri" id="drgo">はじめる</button><button class="qb" id="drbk">もどる</button></div>');
     A.bind('[data-n]', function (b) { n = +b.dataset.n; Array.prototype.forEach.call(root.querySelectorAll('[data-n]'), function (x) { x.classList.toggle('pri', x === b); }); });
     $('#drgo').onclick = function () { S = { mode: 'vs', n: n, round: 1, a: 0, b: 0, used: [] }; vsRound(); }; $('#drbk').onclick = menu;
   }
@@ -110,22 +164,43 @@
     var left = THEMES.filter(function (t) { return !S.recent || S.recent.indexOf(t.n) < 0; });
     var t = pick(left.length ? left : THEMES); S.recent = (S.recent || []).concat(t.n).slice(-6); return t;
   }
-  function roulette(team, done, fixed) {
-    if (fixed) team = fixed;
-    var order = fixed || shuffle(team), want = order.map(function (p) { return p; }), i = 0;
-    var meIdx = order.findIndex(function (p) { return p.me; });
-    A.draw('<div class="qc"><h2>🎰 じゅんばん ルーレット</h2><div class="drslot" id="drsl">…</div><div id="drod" class="drbar"></div></div>');
-    function spinSlot() {
-      if (i >= want.length) { later(function () { done(order); }, 900); return; }
-      var k = 0, steps = 9 + i;
-      (function tick() {
-        if (k++ < steps) { $('#drsl').textContent = pick(team).name; later(tick, 60 + k * 14); return; }
-        $('#drsl').textContent = (i + 1) + 'ばんめ: ' + want[i].name + (want[i].me ? ' 🎉' : '');
-        $('#drod').innerHTML += '<span class="on">' + (i + 1) + ' ' + esc(want[i].name) + '</span>'; i++;
-        later(spinSlot, 650);
-      })();
+  /* ルーレット(円盤): 1ばんめから じゅんに まわして きめる。fixed があれば その順に とまる */
+  var WCOL = ['#e84560', '#f7c843', '#3d7ff5', '#62c46a', '#a56bd8', '#f08a3c', '#2cb5b0', '#d9669b', '#8aa0b5'];
+  function wheelSvg(names) {
+    var n = names.length, R = 100, seg = 360 / n, h = '<svg viewBox="-110 -125 220 235" style="width:100%;max-width:300px;display:block;margin:0 auto"><circle r="106" fill="#fff" filter="none" stroke="#e3e6ec" stroke-width="2"/><g id="drwg">';
+    for (var k = 0; k < n; k++) {
+      var a0 = (k * seg - 90) * Math.PI / 180, a1 = ((k + 1) * seg - 90) * Math.PI / 180, mid = (k + .5) * seg;
+      h += '<path d="M0 0L' + (R * Math.cos(a0)).toFixed(2) + ' ' + (R * Math.sin(a0)).toFixed(2) + 'A' + R + ' ' + R + ' 0 ' + (seg > 180 ? 1 : 0) + ' 1 ' + (R * Math.cos(a1)).toFixed(2) + ' ' + (R * Math.sin(a1)).toFixed(2) + 'Z" fill="' + WCOL[k % WCOL.length] + '"/>' +
+        '<text transform="rotate(' + (mid - 90) + ') translate(' + (n <= 2 ? 40 : 52) + ' 0)" fill="#fff" font-weight="bold" font-size="' + (n > 6 ? 10 : 13) + '" text-anchor="middle" dominant-baseline="middle">' + esc(names[k].length > 6 ? names[k].slice(0, 6) : names[k]) + '</text>';
     }
-    later(spinSlot, 400);
+    return h + '</g><circle r="17" fill="#fff" stroke="#e3e6ec" stroke-width="2"/><circle r="8" fill="#e8e8ee"/><path d="M-9 -118L9 -118L0 -97Z" fill="#f0524f"/></svg>';
+  }
+  function roulette(team, done, fixed) {
+    var order = fixed || shuffle(team), pool = order.slice(), left = order.map(function (p) { return p; }), k = 0, busy = false;
+    function paintBase(msg) {
+      A.draw('<div class="qc" style="text-align:center"><h2>じゅんばん ルーレット</h2><div id="drwh"></div><button class="qb pri" id="drsp" style="max-width:260px;margin:12px auto 4px">スタート</button><div class="qm" id="drst" style="min-height:1.4em">' + (msg || 'じゅんばんを きめます') + '</div><div id="drod" class="drbar" style="justify-content:center"></div></div>');
+    }
+    paintBase();
+    function show() { $('#drwh').innerHTML = wheelSvg(left.map(function (p) { return p.name; })); }
+    show();
+    function spin() {
+      if (busy) return; busy = true; var sp = $('#drsp'); if (sp) sp.style.visibility = 'hidden';
+      var want = order[k], idx = left.indexOf(want), n = left.length, seg = 360 / n;
+      var angle = 360 * 5 - (idx + .5) * seg + (Math.random() - .5) * seg * .6, g = $('#drwg');
+      $('#drst').textContent = (k + 1) + 'ばんめは だれかな…';
+      g.style.transition = 'none'; g.style.transform = 'rotate(0deg)'; g.getBoundingClientRect();
+      g.style.transition = 'transform 3.4s cubic-bezier(.12,.6,.1,1)'; g.style.transform = 'rotate(' + angle + 'deg)';
+      later(function () {
+        $('#drst').textContent = (k + 1) + 'ばんめ: ' + want.name; $('#drod').innerHTML += '<span class="on">' + (k + 1) + ' ' + esc(want.name) + '</span>';
+        left.splice(idx, 1); k++;
+        later(function () {
+          if (!left.length) { later(function () { done(order); }, 500); return; }
+          if (left.length === 1) { $('#drst').textContent = (k + 1) + 'ばんめ: ' + left[0].name; $('#drod').innerHTML += '<span class="on">' + (k + 1) + ' ' + esc(left[0].name) + '</span>'; later(function () { done(order); }, 1100); return; }
+          show(); busy = false; spin();
+        }, 1100);
+      }, 3600);
+    }
+    $('#drsp').onclick = spin;
   }
 
   /* ===== 1つの絵を 描きつなぐ ===== */
@@ -138,7 +213,7 @@
       if (p.me && o.interactive) return human(i);
       var tpl = o.theme.s[i % o.theme.s.length];
       if (o.interactive) {
-        A.draw('<div class="qc">' + bar(order, i) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div><div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">🤖 ' + esc(p.name) + ' が かいています…</p></div>');
+        A.draw('<div class="qc">' + bar(order, i) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div><div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">' + esc(p.name) + ' が かいています…</p></div>');
       }
       later(function () { strokes.push({ p: jit(tpl), c: i }); if (o.interactive) A.draw('<div class="qc">' + bar(order, i + 1) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div><div class="drbk">' + svgOf(strokes) + '</div></div>'); later(function () { turn(i + 1); }, o.interactive ? 700 : 150); }, o.interactive ? 900 : 100);
     }
@@ -155,13 +230,13 @@
       var p = order[last], list = pickList();
       function fin(ans) { o.onDone(strokes, ans === o.theme, ans); }
       if (p.me && o.interactive) {
-        A.draw('<div class="qc">' + bar(order, last) + '<h3 style="margin:0 0 6px;text-align:center">❓ お題は なんでしょう?</h3><div class="drbk">' + svgOf(strokes) + '</div><div class="drch">' +
+        A.draw('<div class="qc">' + bar(order, last) + '<h3 style="margin:0 0 6px;text-align:center">お題は なんでしょう?</h3><div class="drbk">' + svgOf(strokes) + '</div><div class="drch">' +
           list.map(function (t, k) { return '<button class="qb" data-k="' + k + '">' + esc(t.n) + '</button>'; }).join('') + '</div></div>');
         A.bind('[data-k]', function (b) { fin(list[+b.dataset.k]); });
         return;
       }
       var pr = Math.min(.92, .3 + .11 * strokes.length), ok = Math.random() < pr, ans = ok ? o.theme : pick(list.filter(function (t) { return t !== o.theme; }));
-      if (o.interactive) A.draw('<div class="qc">' + bar(order, last) + '<div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">🤖 ' + esc(p.name) + ' が かんがえています…</p></div>');
+      if (o.interactive) A.draw('<div class="qc">' + bar(order, last) + '<div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">' + esc(p.name) + ' が かんがえています…</p></div>');
       later(function () { fin(ans); }, o.interactive ? 1500 : 100);
     }
     turn(0);
@@ -185,7 +260,7 @@
     };
   }
   function save(theme, strokes, ok) {
-    galSave({ t: theme.n, ok: ok ? 1 : 0, s: strokes.map(function (s) { return { p: s.p.map(function (q) { return [Math.round(q[0]), Math.round(q[1])]; }), c: s.c }; }) });
+    galSave({ t: theme.n, ok: ok ? 1 : 0, s: strokes.map(function (s) { return { p: thin(s.p), c: s.c }; }) });
   }
   function xp(n) { try { A.addXp(n); A.Store.save(); } catch (e) { /* 無視 */ } }
 
@@ -195,8 +270,8 @@
     roulette(team, function (order) {
       playPicture({ order: order, theme: theme, interactive: true, onDone: function (strokes, ok, ans) {
         save(theme, strokes, ok); xp(ok ? 6 : 3);
-        A.draw('<div class="qc" style="text-align:center"><div style="font-size:3em">' + (ok ? '⭕' : '❌') + '</div><b class="big">' + (ok ? 'せいかい!' : 'ざんねん…') + '</b><p>こたえ: 『' + esc(theme.n) + '』<br>' + esc(order[order.length - 1].name) + ' の こたえ: ' + esc(ans.n) + '</p><div class="drbk">' + svgOf(strokes) + '</div><p style="font-size:.85em">ギャラリーに かざりました。</p>' +
-          '<button class="qb pri" id="drnx">もう1回</button><button class="qb" id="drgl">🖼️ ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
+        A.draw('<div class="qc" style="text-align:center"><div style="font-size:3em">' + (ok ? '正解' : '不正解') + '</div><b class="big">' + (ok ? 'せいかい!' : 'ざんねん…') + '</b><p>こたえ: 『' + esc(theme.n) + '』<br>' + esc(order[order.length - 1].name) + ' の こたえ: ' + esc(ans.n) + '</p><div class="drbk">' + svgOf(strokes) + '</div><p style="font-size:.85em">ギャラリーに かざりました。</p>' +
+          '<button class="qb pri" id="drnx">もう1回</button><button class="qb" id="drgl">🎨ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
         $('#drnx').onclick = soloRound; $('#drgl').onclick = gallery; $('#drmn').onclick = menu;
       } });
     });
@@ -205,7 +280,7 @@
   /* ===== 対決モード ===== */
   function vsRound() {
     var ta = mkTeam(S.n, true, NAMES), tb = mkTeam(S.n, false, NAMES.map(function (x) { return x + 'B'; })), theme = newTheme();
-    A.draw('<div class="qc" style="text-align:center"><h2>⚔️ 第' + S.round + '回戦</h2><p>あなたの チーム(' + S.n + '人) VS ロボットの チーム(' + S.n + '人)</p><div class="drtheme">お題は 両チーム おなじです</div><button class="qb pri" id="drgo">じゅんばんを きめる</button></div>');
+    A.draw('<div class="qc" style="text-align:center"><h2>第' + S.round + '回戦</h2><p>あなたの チーム(' + S.n + '人) VS ロボットの チーム(' + S.n + '人)</p><div class="drtheme">お題は 両チーム おなじです</div><button class="qb pri" id="drgo">じゅんばんを きめる</button></div>');
     $('#drgo').onclick = function () {
       roulette(ta, function (oa) {
         playPicture({ order: oa, theme: theme, interactive: true, onDone: function (sa, oka, ansa) {
@@ -214,7 +289,7 @@
           playPicture({ order: ob, theme: theme, interactive: false, onDone: function (sb, okb) {
             if (oka) S.a++; if (okb) S.b++; xp(oka ? 5 : 2);
             var last = S.round >= 3;
-            A.draw('<div class="qc" style="text-align:center"><h2>第' + S.round + '回戦 けっか</h2><p>お題: 『' + esc(theme.n) + '』</p><div class="qgrid" style="grid-template-columns:1fr 1fr"><div><b>あなたの チーム</b><div class="drbk">' + svgOf(sa) + '</div>' + (oka ? '⭕ せいかい' : '❌ ' + esc(ansa.n)) + '</div><div><b>ロボット チーム</b><div class="drbk">' + svgOf(sb) + '</div>' + (okb ? '⭕ せいかい' : '❌ はずれ') + '</div></div>' +
+            A.draw('<div class="qc" style="text-align:center"><h2>第' + S.round + '回戦 けっか</h2><p>お題: 『' + esc(theme.n) + '』</p><div class="qgrid" style="grid-template-columns:1fr 1fr"><div><b>あなたの チーム</b><div class="drbk">' + svgOf(sa) + '</div>' + (oka ? 'せいかい' : 'ざんねん: ' + esc(ansa.n)) + '</div><div><b>ロボット チーム</b><div class="drbk">' + svgOf(sb) + '</div>' + (okb ? 'せいかい' : 'ざんねん: はずれ') + '</div></div>' +
               '<p style="font-size:1.1em"><b>' + S.a + ' - ' + S.b + '</b></p><button class="qb pri" id="drnx">' + (last ? 'けっかはっぴょう' : '次の 回戦へ') + '</button></div>');
             $('#drnx').onclick = function () { if (last) vsEnd(); else { S.round++; vsRound(); } };
           } });
@@ -225,7 +300,7 @@
   function vsEnd() {
     var w = S.a > S.b ? 'あなたの チームの かち!' : S.a < S.b ? 'ロボット チームの かち…' : 'ひきぶん!';
     xp(S.a > S.b ? 10 : 4);
-    A.draw('<div class="qc" style="text-align:center"><div style="font-size:3.2em">' + (S.a > S.b ? '🏆' : S.a < S.b ? '🤖' : '🤝') + '</div><h2>' + w + '</h2><p><b class="big">' + S.a + ' - ' + S.b + '</b><br>(3回戦)</p><button class="qb pri" id="drnx">もう一度</button><button class="qb" id="drgl">🖼️ ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
+    A.draw('<div class="qc" style="text-align:center"><div style="font-size:3.2em">' + '' + '</div><h2>' + w + '</h2><p><b class="big">' + S.a + ' - ' + S.b + '</b><br>(3回戦)</p><button class="qb pri" id="drnx">もう一度</button><button class="qb" id="drgl">🎨ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
     $('#drnx').onclick = vsSetup; $('#drgl').onclick = gallery; $('#drmn').onclick = menu;
   }
 
@@ -233,7 +308,7 @@
   /* ===== べつのスマホと 対決(へや) ===== */
   function netSetup() {
     var n = 3;
-    A.draw('<div class="qc"><h2>🌐 べつのスマホと 対決</h2><p style="font-size:.92em">1チームの 人数を えらんで「へやを つくる」(ホスト)。ともだちは「番号を いれて はいる」で さんかします。<b>人数が たりない ところは ロボットが はいります。</b>(2人から あそべます)</p><div id="dro">' + opts('t', 2, 5, 3, '').replace(/data-n="(\d)">\d/g, 'data-n="$1">$1 VS $1') + '</div><button class="qb pri" id="drgo">つぎへ(へやに すすむ)</button><button class="qb" id="drbk">もどる</button></div>');
+    A.draw('<div class="qc"><h2>オンラインモード</h2><p style="font-size:.92em">1チームの 人数を えらんで「へやを つくる」(ホスト)。ともだちは「番号を いれて はいる」で さんかします。<b>人数が たりない ところは ロボットが はいります。</b>(2人から あそべます)</p><div id="dro">' + opts('t', 2, 5, 3, '').replace(/data-n="(\d)">\d/g, 'data-n="$1">$1 VS $1') + '</div><button class="qb pri" id="drgo">つぎへ(へやに すすむ)</button><button class="qb" id="drbk">もどる</button></div>');
     A.bind('[data-n]', function (b) { n = +b.dataset.n; Array.prototype.forEach.call(root.querySelectorAll('[data-n]'), function (x) { x.classList.toggle('pri', x === b); }); });
     $('#drbk').onclick = menu;
     $('#drgo').onclick = function () {
@@ -246,7 +321,7 @@
   function netInitState(R, n) {
     var hs = shuffle(R.players.map(function (x, i) { return i; })), teams = [[], []], rn = shuffle(NAMES);
     hs.forEach(function (h, k) { var t = k % 2; if (teams[t].length < n) teams[t].push({ nm: R.players[h], h: h }); else teams[1 - t].push({ nm: R.players[h], h: h }); });
-    teams.forEach(function (tm) { while (tm.length < n) tm.push({ nm: rn.pop() + '🤖', h: -1 }); });
+    teams.forEach(function (tm) { while (tm.length < n) tm.push({ nm: rn.pop() + 'ロボ', h: -1 }); });
     var S = { phase: 'play', stage: 'draw', n: n, round: 1, score: [0, 0], teams: teams };
     return netNewRound(S);
   }
@@ -315,7 +390,7 @@
         } else A.draw('<div class="qc">' + head(S, t) + bar(op, i) + '<div class="drtheme">お題: ' + esc(th.n) + '</div><div class="drbk">' + svgOf(pic.s) + '</div><p style="text-align:center">' + esc(pl.nm) + ' が かいています…</p></div>');
       } else if (mine) {
         if (acting === key) return; acting = key;
-        A.draw('<div class="qc">' + head(S, t) + bar(op, last) + '<h3 style="margin:0 0 6px;text-align:center">❓ お題は なんでしょう?</h3><div class="drbk">' + svgOf(pic.s) + '</div><div class="drch">' + pic.ch.map(function (x, k) { return '<button class="qb" data-k="' + k + '">' + esc(THEMES[x].n) + '</button>'; }).join('') + '</div></div>');
+        A.draw('<div class="qc">' + head(S, t) + bar(op, last) + '<h3 style="margin:0 0 6px;text-align:center">お題は なんでしょう?</h3><div class="drbk">' + svgOf(pic.s) + '</div><div class="drch">' + pic.ch.map(function (x, k) { return '<button class="qb" data-k="' + k + '">' + esc(THEMES[x].n) + '</button>'; }).join('') + '</div></div>');
         A.bind('[data-k]', function (b) { var ans = pic.ch[+b.dataset.k]; update(function (S2) { var q = S2.p[t]; if (S2.stage !== 'draw' || S2.round !== S.round || q.g !== null) return false; q.g = ans; finalize(S2); return true; }); });
       } else A.draw('<div class="qc">' + head(S, t) + bar(op, last) + '<div class="drbk">' + svgOf(pic.s) + '</div><p style="text-align:center">' + esc(pl.nm) + ' が お題を かんがえています…</p></div>');
     }
@@ -330,14 +405,14 @@
       var t = myTeam(S), th = THEMES[S.th], mine = S.p[t], opp = S.p[1 - t], key = S.round;
       if (!saved[key]) { saved[key] = 1; save(th, mine.s, mine.g === S.th); xp(mine.g === S.th ? 5 : 2); }
       var host = R.my === 0, idle = Date.now() - R._lastChange > 40000, last = S.round >= 3;
-      A.draw('<div class="qc" style="text-align:center"><h2>第' + S.round + '回戦 けっか</h2><p>お題: 『' + esc(th.n) + '』</p><div class="qgrid" style="grid-template-columns:1fr 1fr"><div><b>あなたの チーム</b><div class="drbk">' + svgOf(mine.s) + '</div>' + (mine.g === S.th ? '⭕ せいかい' : '❌ ' + esc(THEMES[mine.g].n)) + '</div><div><b>あいての チーム</b><div class="drbk">' + svgOf(opp.s) + '</div>' + (opp.g === S.th ? '⭕ せいかい' : '❌ ' + esc(THEMES[opp.g].n)) + '</div></div><p style="font-size:1.1em"><b>' + S.score[t] + ' - ' + S.score[1 - t] + '</b></p>' +
+      A.draw('<div class="qc" style="text-align:center"><h2>第' + S.round + '回戦 けっか</h2><p>お題: 『' + esc(th.n) + '』</p><div class="qgrid" style="grid-template-columns:1fr 1fr"><div><b>あなたの チーム</b><div class="drbk">' + svgOf(mine.s) + '</div>' + (mine.g === S.th ? 'せいかい' : 'ざんねん: ' + esc(THEMES[mine.g].n)) + '</div><div><b>あいての チーム</b><div class="drbk">' + svgOf(opp.s) + '</div>' + (opp.g === S.th ? 'せいかい' : 'ざんねん: ' + esc(THEMES[opp.g].n)) + '</div></div><p style="font-size:1.1em"><b>' + S.score[t] + ' - ' + S.score[1 - t] + '</b></p>' +
         (host || idle ? '<button class="qb pri" id="drnx">' + (last ? 'けっかはっぴょう' : '次の 回戦へ') + '</button>' : '<div class="qfb ok">ホストが すすめるのを まっています…</div>') + '</div>');
       var b = $('#drnx'); if (b) b.onclick = function () { b.disabled = true; advance(S); };
     }
     function netEnd(S) {
       var t = myTeam(S), a = S.score[t], b = S.score[1 - t];
       if (!saved.end) { saved.end = 1; xp(a > b ? 10 : 4); R.stop(); if (iv) clearInterval(iv); }
-      A.draw('<div class="qc" style="text-align:center"><div style="font-size:3.2em">' + (a > b ? '🏆' : a < b ? '😢' : '🤝') + '</div><h2>' + (a > b ? 'あなたの チームの かち!' : a < b ? 'あいての チームの かち…' : 'ひきわけ!') + '</h2><p><b class="big">' + a + ' - ' + b + '</b><br>(3回戦)</p><button class="qb pri" id="drgl">🖼️ ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
+      A.draw('<div class="qc" style="text-align:center"><div style="font-size:3.2em">' + '' + '</div><h2>' + (a > b ? 'あなたの チームの かち!' : a < b ? 'あいての チームの かち…' : 'ひきわけ!') + '</h2><p><b class="big">' + a + ' - ' + b + '</b><br>(3回戦)</p><button class="qb pri" id="drgl">🎨ギャラリー</button><button class="qb" id="drmn">メニュー</button></div>');
       $('#drgl').onclick = gallery; $('#drmn').onclick = menu;
     }
     R.watch(function (r, err) { if (!alive()) { r.stop(); return; } if (err) { r.stop(); A.toast('へやが きえました'); return menu(); } pump(); });
