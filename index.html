@@ -858,7 +858,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-26 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-27 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2198,7 +2198,7 @@ function gSetupKey_() {
 function gTutStart_(key) {
   if (TR.on) return;
   var nm = GNAME_[key] || CNAME_[key] || '', cfgKey = key;
-  var T = TOURS_.gcur = { t: '', nocount: 1, steps: [] };
+  var T = TOURS_.gcur = { t: '', nocount: 1, steps: [], fin: GFIN_[key] || null };
   TR = { on: false, g: { id: key, key: key, card: '', name: nm } };
   var st = gBuild_(TR.g)[0].after.concat(GTUT_[key] || []);
   T.steps = st; T.steps0 = null;
@@ -2226,6 +2226,11 @@ GTUT_.baba = [{ sel: '.pcw', next: 1, say: 'いちばん下が、あなたの手
 GTUT_.sev = [{ sel: '.pcb', next: 1, say: 'これが、カードを出していく表です。真ん中の「7」から、同じマークで 1つずつ数字を つなげていきます', wait: '少し待ちましょう' }].concat(GTUT_.sev);
 GTUT_.pk = [{ sel: '.pcw', next: 1, say: 'これが、あなたの5まいの手札です。同じ数字・同じマーク・数字の連続などで「役」ができます。強い役ほど 勝ちです', wait: '少し待ちましょう' }].concat(GTUT_.pk);
 GTUT_.mem = [{ sel: '.pcg', next: 1, say: 'カードが、裏向きに ならんでいます。どこに どの数字があるか、おぼえながら めくりましょう', wait: '少し待ちましょう' }].concat(GTUT_.mem);
+GTUT_.kar = [
+  { sel: '.kyomi', next: 1, say: 'これが、読まれている札です。声でも読み上げます(「よみあげ」でもう一度聞けます)', wait: '少し待ちましょう' },
+  { sel: '.kmat', say: 'その答えの札を、この中から探して、タップしましょう。取った人の名前が、札につきます。多く取った人の勝ちです。試しにやってみましょう', wait: '少し待ちましょう' }];
+var GFIN_ = { kar: { say: 'どうでしたか?\nこれでチュートリアルは終了です。', btn: '次の問題を開始(このガイドは終了)' } };
+TOURS_.g_kar.steps = TOURS_.g_kar.steps.slice(0, 5).concat(GTUT_.kar); TOURS_.g_kar.fin = GFIN_.kar;
 TOURS_.game = TOURS_.gplay;
 function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
@@ -2234,6 +2239,7 @@ function tourEvBtn(name, kind) {
 var TR = { on: false, name: '', i: 0, t: 0, wait: 0, fin: false, ws: false, hole: null, box: null, el: null };
 function tourStart(name) {
   var T = TOURS_[name]; if (!T) return; tourStop(true);
+  window.HMT_TUT = 1;   // ガイドのあいだは、カルタのロボットが札を取らない(説明を読んでいる間に終わらないように)
   if (T.steps0) T.steps = T.steps0; else T.steps0 = T.steps;
   GD_.pick = null;   // ガイドから戻ったときは、メニュー選びの最初から出す
   TR = { on: true, name: name, i: 0, t: 0, wait: 0, fin: false, ws: false, hole: null, box: null, el: null };
@@ -2245,6 +2251,7 @@ function tourStart(name) {
   if (T.home && (location.hash || '#') !== '#' && location.hash !== '#home') go('home');
 }
 function tourStop(quiet, msg) {
+  window.HMT_TUT = 0;
   try { if (window.HmtHundred) window.HmtHundred.hold = null; } catch (e) { /* 無視 */ }
   if (TR.t) clearInterval(TR.t);
   document.removeEventListener('click', tourClick, true); window.removeEventListener('scroll', tourPos, true); window.removeEventListener('resize', tourPos);
@@ -2348,7 +2355,8 @@ function tourEnd(mode) {
     TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
     return;
   }
-  TR.box.innerHTML = 'このガイドは完了です!<br>できました😊<br><br>あとは画面の指示に従ってください<br><span style="font-size:14px">(まだ画面が読み込めていないときは、少しお待ちください)</span><br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span><div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button><button type="button" data-to="1">他も見てみる</button></div>';
+  var CF = (TOURS_[TR.name] || {}).fin || (TR.g && GFIN_[TR.g.key]) || null;   // 「どうでしたか?」のような、ガイドごとの終わりの文
+  TR.box.innerHTML = (CF ? esc(CF.say).replace(/\n/g, '<br>') + '<br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>' : 'このガイドは完了です!<br>できました😊<br><br>あとは画面の指示に従ってください<br><span style="font-size:14px">(まだ画面が読み込めていないときは、少しお待ちください)</span><br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>') + '<div class="tb"><button type="button" class="q" data-tx="1">' + (CF ? esc(CF.btn) : 'ガイドを終わる') + '</button><button type="button" data-to="1">他も見てみる</button></div>';
   TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
   TR.box.querySelector('[data-to]').onclick = function (ev) {
     ev.stopPropagation(); tourStop(true); GD_.on = true; GD_.pick = null; try { localStorage.setItem('hmtGuide', '1'); } catch (e) { /* なくても動く */ }
@@ -4165,7 +4173,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=42'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=43'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
