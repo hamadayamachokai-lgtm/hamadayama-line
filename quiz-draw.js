@@ -17,7 +17,7 @@
     '#qz .drwall{background:#e9dfc8;border-radius:14px;padding:12px 8px;display:grid;grid-template-columns:1fr 1fr;gap:14px 10px}' +
     '#qz .drfr{position:relative;background:#fff;border:7px solid #b8862b;border-image:none;box-shadow:0 0 0 2px #7a5818,0 4px 8px rgba(0,0,0,.3);padding:6px;border-radius:2px}' +
     '#qz .drfr svg{display:block;width:100%;height:auto;background:#fffdf5}#qz .drpl{margin:8px auto 0;background:#f5efd8;border:1px solid #b8862b;border-radius:4px;padding:2px 6px;text-align:center;font-size:.8em;font-weight:bold}' +
-    '#qz .drfr .drbg{position:absolute;right:-12px;bottom:-14px;width:46px;height:54px;background:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}#qz .drfr .drbg+.drbg{right:30px}#qz .drch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}';
+    '#qz .drfr .drbg{position:absolute;right:-12px;bottom:-14px;width:46px;height:54px;background:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}#qz .drfr .drbg+.drbg{right:30px}#qz .drpal{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}#qz .drpal button{width:34px;height:34px;border-radius:50%;border:2px solid #cfc7b2;padding:0}#qz .drpal button.on{border:3px solid #222;transform:scale(1.12)}#qz .drpal input{width:40px;height:36px;padding:0;border:none;background:none}#qz .drrow{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#qz .drrow .qb{width:auto;flex:1 1 0;min-width:0;padding:8px 2px;margin:0;font-size:.78em;white-space:nowrap}#qz .drch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}';
   function $(s) { return root.querySelector(s); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
@@ -48,9 +48,13 @@
   /* ===== 絵の表示 ===== */
   function pathOf(pts) { return 'M' + pts.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L'); }
   function svgOf(strokes, id, extra) {
-    return '<svg ' + (id ? 'id="' + id + '" ' : '') + 'class="drsv" viewBox="0 0 100 100">' + strokes.map(function (s) {
-      return '<path d="' + pathOf(s.p) + '" fill="none" stroke="' + COLS[s.c % COLS.length] + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>';
-    }).join('') + (extra || '') + '</svg>';
+    return '<svg ' + (id ? 'id="' + id + '" ' : '') + 'class="drsv" viewBox="0 0 100 100">' + strokes.map(strokeSvg).join('') + (extra || '') + '</svg>';
+  }
+  /* 1本の線。じゆうがきでは 色(k)・太さ(w)・ブラシ(b)を使う */
+  function strokeSvg(s) {
+    var b = s.b || 'pen', w = +s.w || 1.9, col = b === 'eraser' ? '#fffdf5' : (s.k || COLS[s.c % COLS.length]);
+    var a = { pen: [w, 1, ''], marker: [w * 2, .45, ''], crayon: [w * 1.4, .85, ' stroke-dasharray="' + (w * 2.2).toFixed(1) + ' ' + (w * .5).toFixed(1) + '"', 'butt'], pencil: [w * .5, .7, ''], eraser: [w * 3, 1, ''] }[b] || [w, 1, ''];
+    return '<path d="' + pathOf(s.p) + '" fill="none" stroke="' + col + '" stroke-width="' + a[0].toFixed(1) + '" stroke-opacity="' + a[1] + '"' + a[2] + ' stroke-linecap="' + (a[3] || 'round') + '" stroke-linejoin="round"/>';
   }
   function bar(order, cur) {
     return '<div class="drbar">' + order.map(function (p, i) {
@@ -77,7 +81,7 @@
   function certSvg(c) {
     var t = CERT_TXT[c.kind] || CERT_TXT['参加賞'], y = c.year, lines = c.kind === '参加賞' ? ['右の作品で、', y + '年 おえかきコンクールに', t[1], t[2], 'ここに賞します。'] : ['右の作品は、', y + '年 おえかきコンクールで', t[1], t[2], 'よってここに賞します。'];
     var b = BCOL[c.kind] || BCOL['1位'], d = String(c.date || '').split('-'), ds = d.length === 3 ? d[0] + '年' + (+d[1]) + '月' + (+d[2]) + '日' : '';
-    var paths = (c.s || []).map(function (s) { return '<path d="M' + s.p.map(function (q) { return q[0] + ' ' + q[1]; }).join('L') + '" fill="none" stroke="' + COLS[s.c % COLS.length] + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'; }).join('');
+    var paths = (c.s || []).map(strokeSvg).join('');
     var ff = 'font-family="\'Hiragino Mincho ProN\',\'Yu Mincho\',\'Noto Serif JP\',serif"';
     return '<svg viewBox="0 0 800 560" style="width:100%;height:auto;display:block;background:#fffaf0;border-radius:6px" ' + ff + '><rect x="14" y="14" width="772" height="532" fill="none" stroke="' + b[0] + '" stroke-width="8"/><rect x="30" y="30" width="740" height="500" fill="none" stroke="' + b[0] + '" stroke-width="2"/>' +
       '<text x="400" y="104" text-anchor="middle" font-size="54" font-weight="bold" fill="#5a3b0b" letter-spacing="14">' + (c.kind === '参加賞' ? '参加賞' : '賞状') + '</text>' +
@@ -124,7 +128,98 @@
     var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
     return md >= 1201 && md <= 1214 ? 'submit' : md >= 1215 && md <= 1225 ? 'vote' : md >= 1226 ? 'result' : '';
   }
+  /* コンクールの入口: 毎年12月の大会+イベントごとのおえかき展示 */
+  var EVN = [['oshogatsu', 'お正月', 1], ['setsubun', '節分', 2], ['hinamatsuri', 'ひな祭り', 3], ['kodomo', 'こどもの日', 5], ['haha', '母の日', 5], ['chichi', '父の日', 6], ['keirou', '敬老の日', 9], ['sports', 'スポーツの日', 10], ['xmas', 'クリスマス', 12]];
   function contest() {
+    tok++; var t = tok, pc = contestPhase(), cnt = {}, mon = new Date().getMonth() + 1;
+    function paint() {
+      var h = '<div class="qc"><h2>コンクール</h2><button class="qb' + (pc ? ' pri' : '') + '" id="drye">毎年12月の大会' + (pc === 'submit' ? '(出品受付中)' : pc === 'vote' ? '(投票受付中)' : pc === 'result' ? '(結果発表)' : '') + '</button>' +
+        '<h3 style="margin:14px 0 4px">イベントのおえかき展示</h3><p style="font-size:.88em;line-height:1.6;margin:0 0 8px">イベントの月に 絵を かいて 出品すると、みんなの絵が ここに 貼られます。(投票や 受賞の お知らせは ありません)<br>貼られた絵は、1年たって 次の コンクールが おわると 新しい絵に 張りかわります。</p><div class="drch">';
+      h += EVN.map(function (x) { return '<button class="qb' + (x[2] === mon ? ' pri' : '') + '" data-e="' + x[0] + '">' + esc(x[1]) + '<br><span style="font-size:.75em;font-weight:normal">' + x[2] + '月' + (x[2] === mon ? ' 出品受付中' : cnt[x[0]] ? ' ' + cnt[x[0]] + '点' : '') + '</span></button>'; }).join('');
+      h += '</div><button class="qb" id="drbk" style="margin-top:10px">もどる</button></div>';
+      A.draw(h); $('#drye').onclick = yearContest; $('#drbk').onclick = menu;
+      A.bind('[data-e]', function (b) { evView(b.dataset.e); });
+    }
+    paint();
+    try { A.call('draw_ev_list').then(function (r) { if (t !== tok) return; (r.list || []).forEach(function (x) { cnt[x.k] = x.count; }); paint(); }).catch(function () { /* 件数なしでOK */ }); } catch (e) { /* 無視 */ }
+  }
+  function evView(k) {
+    tok++; var t = tok; A.draw('<div class="qc">よみこみ中…</div>');
+    A.call('draw_ev_get', { k: k }).then(function (r) {
+      if (t !== tok) return;
+      var h = '<div class="qc"><h2>' + esc(r.n) + ' のおえかき</h2>';
+      if (r.open) {
+        h += '<p style="font-size:.9em;line-height:1.6">' + r.m + '月は ' + esc(r.n) + ' の 出品月です。自由に絵を かいて、出品してね。(1つのイベントに 2点まで)</p><button class="qb pri" id="dregen">絵を かく(出品する)</button>';
+        if (r.mine.length) h += '<div style="margin:8px 0"><b>出品ずみ</b>' + r.mine.map(function (w, i) { return '<div style="display:flex;gap:8px;align-items:center;margin:4px 0">『' + esc(w.t) + '』<button class="qb sm" data-w="' + i + '" style="margin-left:auto">取り下げる</button></div>'; }).join('') + '</div>';
+      } else h += '<p style="font-size:.9em;line-height:1.6">出品できるのは ' + r.m + '月です。</p>';
+      h += '<h3 style="margin:12px 0 6px">みんなの絵(' + r.works.length + '点)</h3>' + (r.works.length ? '<div class="drwall">' + r.works.map(function (w) { return '<div>' + frameHtml(w.s) + '<div class="drpl">『' + esc(w.t) + '』<br><span style="font-weight:normal">' + esc(w.pen) + '</span></div></div>'; }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:26px 10px">まだ 絵が 貼られていません。</div>');
+      h += '<button class="qb" id="drbk" style="margin-top:10px">もどる</button></div>';
+      A.draw(h); $('#drbk').onclick = contest;
+      var g = $('#dregen'); if (g) g.onclick = function () { freeDraw({ ev: k, name: r.n, pen: r.pen }); };
+      A.bind('[data-w]', function (b) { b.disabled = true; A.call('draw_ev_withdraw', { id: r.mine[+b.dataset.w].id }).then(function () { A.toast('取り下げました'); evView(k); }, function (e) { A.toast(e.message || 'できませんでした'); b.disabled = false; }); });
+    }, function (e) { if (t !== tok) return; A.toast(e.message || '通信できませんでした'); contest(); });
+  }
+
+  /* ===== ひとりでかくモード(じゆうがき): 色・太さ・ブラシを えらべる ===== */
+  var PAL = ['#222222', '#e0523f', '#f08a3c', '#f7c843', '#62c46a', '#2e9e6a', '#3d7ff5', '#1b3f9a', '#a56bd8', '#d9669b', '#8b5a2b', '#ffffff'];
+  var BRS = [['pen', 'ペン'], ['marker', 'マーカー'], ['crayon', 'クレヨン'], ['pencil', 'えんぴつ'], ['eraser', '消しゴム']];
+  var WS = [['細い', 1], ['ふつう', 2], ['太い', 3.5], ['極太', 6]];
+  function simp(pts, tol) {   // 線の点を へらす(Ramer-Douglas-Peucker)
+    if (pts.length < 3) return pts;
+    var keep = new Array(pts.length), st = [[0, pts.length - 1]]; keep[0] = keep[pts.length - 1] = 1;
+    while (st.length) {
+      var se = st.pop(), a = pts[se[0]], b = pts[se[1]], mx = 0, mi = -1, dx = b[0] - a[0], dy = b[1] - a[1], L = Math.sqrt(dx * dx + dy * dy) || 1e-6;
+      for (var i = se[0] + 1; i < se[1]; i++) { var d = Math.abs(dy * pts[i][0] - dx * pts[i][1] + b[0] * a[1] - b[1] * a[0]) / L; if (d > mx) { mx = d; mi = i; } }
+      if (mx > tol && mi > 0) { keep[mi] = 1; st.push([se[0], mi], [mi, se[1]]); }
+    }
+    return pts.filter(function (p, i) { return keep[i]; });
+  }
+  function freeDraw(ctx) {
+    ctx = ctx || {}; tok++;
+    var strokes = [], brush = 'pen', color = PAL[0], wi = 1, cur = null, drawing = false;
+    A.draw('<div class="qc"><h2>' + (ctx.ev ? esc(ctx.name) + ' の絵' : 'ひとりでかくモード') + '</h2><p style="font-size:.85em;margin:0 0 6px">' + (ctx.ev ? 'お題: ' + esc(ctx.name) + '。' : '') + '自由に かいてね。</p>' +
+      '<div class="drbk"><svg id="drsv" class="drsv" viewBox="0 0 100 100"></svg></div>' +
+      '<div class="drpal" id="drpal">' + PAL.map(function (c, i) { return '<button type="button" data-c="' + c + '" aria-label="色' + (i + 1) + '" style="background:' + c + '"></button>'; }).join('') + '<input type="color" id="drcc" value="#ff0000" aria-label="好きな色"></div>' +
+      '<div class="drrow" id="drbr">' + BRS.map(function (b) { return '<button type="button" class="qb sm' + (b[0] === 'pen' ? ' pri' : '') + '" data-b="' + b[0] + '">' + b[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="drrow" id="drwd">' + WS.map(function (w, i) { return '<button type="button" class="qb sm' + (i === 1 ? ' pri' : '') + '" data-w="' + i + '">' + w[0] + '</button>'; }).join('') + '</div>' +
+      '<div class="qgrid" style="grid-template-columns:1fr 1fr;margin-top:6px"><button class="qb" id="drun">ひとつ もどす</button><button class="qb" id="drall">ぜんぶ けす</button></div>' +
+      '<div class="qm" style="margin-top:10px">題名</div><input id="drtt" maxlength="20" value="' + esc(ctx.ev ? ctx.name : 'じゆうがき') + '" style="width:100%;box-sizing:border-box;min-height:44px;font-size:1em;padding:6px 10px;border:2px solid #cfc7b4;border-radius:12px">' +
+      (ctx.ev ? '<div class="qm" style="margin-top:8px">ペンネーム(10文字まで)</div><input id="drpn" maxlength="10" value="' + esc(ctx.pen || '') + '" style="width:100%;box-sizing:border-box;min-height:44px;font-size:1em;padding:6px 10px;border:2px solid #cfc7b4;border-radius:12px">' : '') +
+      '<button class="qb pri" id="drsv2" style="margin-top:10px">ギャラリーに かざる</button>' + (ctx.ev ? '<button class="qb pri" id="drev">ギャラリーに かざって ' + esc(ctx.name) + ' に出品する</button>' : '') + '<button class="qb" id="drbk">もどる</button></div>');
+    var sv = $('#drsv');
+    function cs() { return { b: brush, k: color, w: WS[wi][1] }; }
+    function paint() { sv.innerHTML = strokes.map(strokeSvg).join('') + (cur ? strokeSvg({ p: cur, c: 0, b: brush, k: color, w: WS[wi][1] }) : ''); }
+    function xy(e) { var r = sv.getBoundingClientRect(); return [Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)), Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100))]; }
+    sv.onpointerdown = function (e) { e.preventDefault(); drawing = true; cur = [xy(e)]; try { sv.setPointerCapture(e.pointerId); } catch (x) { /* 無視 */ } paint(); };
+    sv.onpointermove = function (e) { if (!drawing) return; e.preventDefault(); cur.push(xy(e)); paint(); };
+    sv.onpointerup = sv.onpointercancel = function () {
+      if (!drawing) return; drawing = false;
+      if (cur && cur.length) { var p = simp(cur, .25); if (p.length > 150) { var k = Math.ceil(p.length / 150); p = p.filter(function (q, i) { return i % k === 0 || i === p.length - 1; }); } var s = cs(); s.c = strokes.length; s.p = p.map(function (q) { return [Math.round(q[0] * 10) / 10, Math.round(q[1] * 10) / 10]; }); if (s.p.length === 1) s.p.push([s.p[0][0] + .1, s.p[0][1]]); strokes.push(s); }
+      cur = null; paint();
+    };
+    function sel(box, attr, val) { Array.prototype.forEach.call($(box).querySelectorAll('[' + attr + ']'), function (x) { x.classList.toggle('pri', x.getAttribute(attr) === String(val)); }); }
+    A.bind('#drpal [data-c]', function (b) { color = b.dataset.c; if (brush === 'eraser') { brush = 'pen'; sel('#drbr', 'data-b', 'pen'); } Array.prototype.forEach.call(root.querySelectorAll('#drpal [data-c]'), function (x) { x.classList.toggle('on', x === b); }); });
+    $('#drcc').oninput = function () { color = this.value; if (brush === 'eraser') { brush = 'pen'; sel('#drbr', 'data-b', 'pen'); } };
+    A.bind('#drbr [data-b]', function (b) { brush = b.dataset.b; sel('#drbr', 'data-b', brush); });
+    A.bind('#drwd [data-w]', function (b) { wi = +b.dataset.w; sel('#drwd', 'data-w', wi); });
+    $('#drun').onclick = function () { strokes.pop(); paint(); };
+    $('#drall').onclick = function () { strokes = []; paint(); };
+    $('#drbk').onclick = ctx.ev ? function () { evView(ctx.ev); } : menu;
+    function keep() {
+      if (!strokes.length) { A.toast('まだ なにも かいていません'); return null; }
+      if (JSON.stringify(strokes).length > 36000) { A.toast('絵が こまかすぎます。すこし へらしてね'); return null; }
+      return { t: ($('#drtt').value || '').trim() || 'じゆうがき', s: strokes };
+    }
+    $('#drsv2').onclick = function () { var w = keep(); if (!w) return; galSave({ t: w.t, ok: 0, f: 1, s: w.s }); A.toast('ギャラリーに かざりました'); xp(2); $('#drsv2').disabled = true; };
+    var ev = $('#drev'); if (ev) ev.onclick = function () {
+      var w = keep(), pn = ($('#drpn').value || '').trim(); if (!w) return; if (!pn) return A.toast('ペンネームを いれてね');
+      ev.disabled = true; galSave({ t: w.t, ok: 0, f: 1, s: w.s });
+      A.call('draw_ev_submit', { k: ctx.ev, pen: pn, works: [{ t: w.t, s: w.s }] }).then(function () { try { localStorage.setItem('hmt_draw_pen', pn); } catch (e) { /* 無視 */ } A.toast('出品しました'); xp(3); evView(ctx.ev); }, function (e) { A.toast(e.message || '出品できませんでした'); ev.disabled = false; });
+    };
+    paint();
+  }
+
+  function yearContest() {
     tok++; var t = tok;
     A.draw('<div class="qc">よみこみ中…</div>');
     A.call('draw_contest').then(function (r) { if (t !== tok) return; contestView(r); }, function (e) { if (t !== tok) return; A.toast(e.message || '通信できませんでした'); menu(); });
@@ -133,7 +228,7 @@
   function contestView(r) {
     var ph = r.phase, y = r.year || new Date().getFullYear();
     if (ph === 'none') {
-      A.draw(cback('<div class="qc"><h2>おえかきコンクール</h2><p style="line-height:1.7">毎年12月に開催します。<br>出品: 12月1日〜14日(ペンネームで出品)<br>投票: 12月15日〜25日<br>結果発表: 12月26日〜<br><br>それまで、ギャラリーに お気に入りの絵を ためておいてね。</p></div>')); $('#drbk').onclick = menu; return;
+      A.draw(cback('<div class="qc"><h2>おえかきコンクール</h2><p style="line-height:1.7">毎年12月に開催します。<br>出品: 12月1日〜14日(ペンネームで出品)<br>投票: 12月15日〜25日<br>結果発表: 12月26日〜<br><br>それまで、ギャラリーに お気に入りの絵を ためておいてね。</p></div>')); $('#drbk').onclick = contest; return;
     }
     if (ph === 'submit') return contestSubmit(r, y);
     var html = '<div class="qc"><h2>' + y + ' おえかきコンクール ' + (ph === 'vote' ? '投票' : '結果') + '</h2>' + (ph === 'vote' ? '<p style="font-size:.9em">いちばん 好きな 絵に 1票。ご自分の作品には 入れられません。(投票は 12月25日まで 変えられます)</p>' : r.fin ? '<p style="font-size:.9em">たくさんの ご参加 ありがとうございました! 入賞した作品です。</p>' : '<p style="font-size:.9em">ただいま 結果を まとめています。しばらく おまちください。</p>');
@@ -142,7 +237,7 @@
         (ph === 'vote' ? (w.mine ? '<div class="qm" style="text-align:center">あなたの作品</div>' : '<button class="qb' + (r.voted === w.id ? ' pri' : '') + ' sm" data-v="' + k + '" style="margin-top:6px">' + (r.voted === w.id ? '投票ずみ' : '投票する') + '</button>') : (w.aw.length ? '<div style="text-align:center;font-weight:bold">' + esc(w.aw.join('・')) + '</div>' : '')) + '</div>';
     }).join('') + '</div>' : '<div class="drwall" style="display:block;text-align:center;padding:30px 10px">出品された作品は ありませんでした。</div>';
     A.draw(cback(html + '</div>'));
-    $('#drbk').onclick = menu;
+    $('#drbk').onclick = contest;
     A.bind('[data-v]', function (b) {
       var w = r.works[+b.dataset.v]; b.disabled = true;
       A.call('draw_vote', { id: w.id }).then(function () { A.toast('投票しました'); contest(); }, function (e) { A.toast(e.message || '投票できませんでした'); b.disabled = false; });
@@ -157,7 +252,7 @@
       h += '<b>ギャラリーから えらぶ(あと' + room + '点)</b>' + (g.length ? '<div class="drwall" style="margin:6px 0 12px">' + g.map(function (w, k) { return '<label style="display:block"><div class="drfr">' + svgOf(w.s) + '</div><div class="drpl">『' + esc(w.t) + '』</div><div style="text-align:center;margin-top:4px"><input type="checkbox" data-g="' + k + '" style="width:22px;height:22px"> えらぶ</div></label>'; }).join('') + '</div>' : '<p>まだ ギャラリーに 絵が ありません。</p>');
       h += '<button class="qb pri" id="drsub"' + (g.length ? '' : ' disabled') + '>この絵を 出品する</button>';
     } else h += '<p>3点 出品ずみです。</p>';
-    A.draw(cback(h + '</div>')); $('#drbk').onclick = menu;
+    A.draw(cback(h + '</div>')); $('#drbk').onclick = contest;
     A.bind('[data-w]', function (b) { b.disabled = true; A.call('draw_withdraw', { id: r.mine[+b.dataset.w].id }).then(function () { A.toast('取り下げました'); contest(); }, function (e) { A.toast(e.message || 'できませんでした'); b.disabled = false; }); });
     var sb = $('#drsub'); if (sb) sb.onclick = function () {
       var pn = ($('#drpen').value || '').trim(), sel = Array.prototype.filter.call(root.querySelectorAll('[data-g]'), function (c) { return c.checked; }).map(function (c) { return g[+c.dataset.g]; });
@@ -187,9 +282,9 @@
     var pc = contestPhase();
     A.draw('<div class="qc"><div class="drtop" style="position:relative;margin:-4px -4px 8px"><img src="draw-top.jpg?v=1" alt="" style="display:none;width:100%;height:auto;border-radius:14px"></div>' +
       '<p style="font-size:.95em;line-height:1.7;margin:0 0 12px"><b>画伯のみんな!</b><br>お題に沿って みんなで絵を完成させよう<br>ひとりで全部書いちゃうと次の人が困るから<br>よ〜く考えてね🤭<br><br>最後のひとはお題は何か答えるんだよ<br><br>描いた絵はあなた専用のギャラリーに飾られるよ<br>1年間で、お気に入りの絵は毎年12月に開催するコンクールに出してみよう!</p>' +
-      '<button class="qb pri" id="drsolo">一人モード</button><button class="qb pri" id="drvs">みんなでモード</button><button class="qb pri" id="drnet">オンラインモード</button><button class="qb" id="drgal">🎨ギャラリー</button><button class="qb' + (pc ? ' pri' : '') + '" id="drcon">コンクール' + (pc === 'submit' ? '(出品受付中)' : pc === 'vote' ? '(投票受付中)' : pc === 'result' ? '(結果発表)' : '') + '</button><button class="qb" id="drhome">もどる</button></div>');
+      '<button class="qb pri" id="drsolo">一人モード</button><button class="qb pri" id="drvs">みんなでモード</button><button class="qb pri" id="drnet">オンラインモード</button><button class="qb pri" id="drfree">ひとりでかくモード</button><button class="qb" id="drgal">🎨ギャラリー</button><button class="qb' + (pc ? ' pri' : '') + '" id="drcon">コンクール' + (pc === 'submit' ? '(出品受付中)' : pc === 'vote' ? '(投票受付中)' : pc === 'result' ? '(結果発表)' : '') + '</button><button class="qb" id="drhome">もどる</button></div>');
     try { var tt = tok; A.call('draw_top').then(function (r) { if (tt !== tok) return; var im = root.querySelector('img'), win = r && r.win && r.win.s ? r.win : null; if (r && r.url && im) { im.onerror = function () { this.style.display = 'none'; if (win && tt === tok) topWin(win); }; im.onload = function () { this.style.display = 'block'; if (win && tt === tok) topWin(win); }; im.src = r.url; } else if (win) topWin(win); }).catch(function () { /* 画像なしでOK */ }); } catch (e) { /* 無視 */ }
-    $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drnet').onclick = netSetup; $('#drgal').onclick = gallery; $('#drcon').onclick = contest; $('#drhome').onclick = function () { tok++; A.hub(); };
+    $('#drsolo').onclick = soloSetup; $('#drvs').onclick = vsSetup; $('#drnet').onclick = netSetup; $('#drfree').onclick = function () { freeDraw(); }; $('#drgal').onclick = gallery; $('#drcon').onclick = contest; $('#drhome').onclick = function () { tok++; A.hub(); };
   }
   function opts(name, lo, hi, def, unit) {
     var h = '<div class="drch">';
