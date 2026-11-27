@@ -278,7 +278,7 @@ button.mi{cursor:pointer;min-height:32px}
 .gdp{background:#fffbdc;border:2px solid #ecd35a;border-radius:16px;padding:14px;margin:0 0 14px;color:#2a2400}.gdq{font-size:19px;font-weight:800;line-height:1.5;margin:0 0 10px}.gdg{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
 .gdw{all:unset;cursor:pointer;box-sizing:border-box;width:100%;padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid #e0b400;font-size:17px;font-weight:700;color:#2a2400;min-height:48px}.gdw.ai{background:#fff6b8;margin:0 0 10px}.gdw.back{background:#f1f1f1;border-color:#bbb;color:#444;margin-top:4px}
 .gdo{font-size:14px;line-height:1.6;margin:4px 0 8px}.gdd{margin:0 0 12px}.gdd summary{cursor:pointer;font-weight:800;font-size:16px;padding:10px 0}.gdd .gdw{margin:0 0 8px}.gdh{font-size:15px;font-weight:800;margin:8px 0 8px;padding-top:8px;border-top:1.5px dashed #ecd35a}
-.aiimgs{margin:-4px 0 10px 44px}.aiimgs figure{margin:0 0 10px}.aiimgs img{display:block;width:100%;max-width:300px;border:1.5px solid var(--line);border-radius:14px}.aiimgs figcaption{font-size:12px;opacity:.7;margin-top:4px}
+.gdt{font-size:21px;font-weight:800;margin:0 0 4px}.gdh0{font-size:15px;font-weight:800;margin:14px 0 6px;padding-top:10px;border-top:1.5px dashed #ecd35a}.gdh1{font-size:14px;font-weight:800;margin:0 0 6px;opacity:.8}.gdc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}.gdw.s{width:auto;flex:1 1 auto;min-width:calc(33% - 8px);padding:9px 10px;min-height:44px;font-size:15px;text-align:center;display:flex;align-items:center;justify-content:center}.gdw.s.ai{flex-basis:100%;background:#fff6b8}.gdin{all:unset;box-sizing:border-box;width:100%;padding:11px 12px;border:2px solid #e0b400;border-radius:12px;background:#fff;font-size:17px;color:#2a2400;min-height:46px}#gdres{margin:8px 0 0}#gdres .gdw{margin:0 0 6px;font-size:15px}.gdd .gdc{margin-top:2px}.aiimgs{margin:-4px 0 10px 44px}.aiimgs figure{margin:0 0 10px}.aiimgs img{display:block;width:100%;max-width:300px;border:1.5px solid var(--line);border-radius:14px}.aiimgs figcaption{font-size:12px;opacity:.7;margin-top:4px}
 .aiact button.go.tr{background:#fff7d6;border-color:#e0a800;color:#5a4100;font-size:15px}.aiact button.ask{background:#fff;border-color:#c0392b;color:#c0392b;font-size:15px}
 .tourhole{position:fixed;z-index:99990;pointer-events:none;border:4px solid #ffd43b;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.62);transition:all .25s}
 .tourb{position:fixed;z-index:99991;width:min(320px,calc(100vw - 24px));box-sizing:border-box;background:#fff;color:#1a1a1a;border:3px solid #ffd43b;border-radius:16px;padding:14px 14px 12px;font-size:20px;font-weight:800;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4)}
@@ -547,7 +547,7 @@ function svg(k, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (c
 var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更', supporter: 'サポーター募集', o_supporter: 'サポーター募集',
-  o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会資料', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
+  o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
@@ -781,6 +781,33 @@ function gdMenuTour(k) {
   if (!TOURS_[id]) TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
   return id;
 }
+var GDKW_ = { card: '会員証 カード QR', cardedit: '会員証 編集 直す 変更 登録内容', board: '掲示板 お知らせ', tweetlook: 'ツイート Tweet 投稿 見る', tweetnew: 'ツイート Tweet 投稿 書く つぶやき', chat: 'チャット 連絡 メッセージ 役員 新規', chatai: 'チャット ロボット 質問 使い方', evfest: 'イベント 祭礼 お祭り 申込 申し込み', evfestx: 'イベント 祭礼 キャンセル 取り消し 取消', evengei: 'イベント 演芸会 申込 申し込み', evgeix: 'イベント 演芸会 キャンセル 取り消し 取消', evstat: 'イベント 申し込み状況 申込状況 確認', helplook: '助け合い 見る 災害', helprec: '助け合い 募集 災害', suplook: 'サポーター 募集 見る', supdo: 'サポーター やってみたい 申込 申し込み ボランティア', headchg: '回覧元 変更 組長', bosai: '防災 杉並 災害', weather: '天気 予報 雨', blog: 'ブログ 町会', gplay: 'ゲーム 遊ぶ 遊びたい トランプ 神経衰弱 ババ抜き 7並べ ポーカー カルタ ソリティア', gdoff: 'ガイド 終了 やめる 終わる OFF オフ 消す', o_roster: '会員 検索 名簿 情報', o_circ: '回覧元 検索 見る', o_gift: '商品券 対象 回覧元', o_unpaid: '未納 会費 納入', o_sched: '役員 予定 スケジュール', o_kanban: '捨て看板 依頼 看板', o_report: '事業報告 事業計画 提出', o_supporter: 'サポーター 募集', m_o_sokai: '総会 資料 出席者 出席者数 委任状', o_summary: '集計 結果', o_mama: 'スナック ママ 部屋' };
+function gdIndex() {
+  var has = {}, L = []; S.me.menu.forEach(function (m) { has[m.key] = 1; });
+  GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1]]); }); });
+  L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]);
+  if (isOfficer()) [['o_roster', '会員を検索', 'o_roster'], ['o_circ', '回覧元を検索', 'o_circ'], ['o_gift', '商品券対象者を知りたい', 'o_circ'], ['o_unpaid', '未納者を知りたい', 'o_unpaid'], ['o_sched', '役員の予定', 'o_sched'], ['o_kanban', '捨て看板を依頼したい', 'o_kanban'], ['o_report', '事業報告・計画提出', 'o_report'], ['o_supporter', 'サポーター募集(役員)', 'o_supporter'], ['o_sokai', '総会', 'o_sokai'], ['o_summary', '集計結果', 'o_summary'], ['o_mama', 'スナックママの部屋に行く', 'o_mama']].forEach(function (x) {
+    if (!has[x[2]]) return; var id = x[0] === 'o_gift' ? 'o_gift' : gdMenuTour(x[0]); L.push([x[1] + '(役員)', id, (GDKW_[id === 'm_o_sokai' ? 'm_o_sokai' : x[0]] || '')]);
+  });
+  return L;
+}
+function gdNorm(t) { return String(t || '').normalize('NFKC').toLowerCase().replace(/[\s、。,.・!?!?「」()()]+/g, ''); }
+function gdSearchInit() {
+  var q = $('#gdq'), box = $('#gdres'); if (!q || !box) return;
+  q.oninput = function () {
+    var t = gdNorm(q.value); if (!t) { box.innerHTML = ''; return; }
+    var qs = [], i; if (t.length < 2) qs = [t]; else for (i = 0; i < t.length - 1; i++) qs.push(t.substr(i, 2));
+    var need = Math.max(1, Math.ceil(qs.length * 0.5)), res = [];
+    gdIndex().forEach(function (e) {
+      var hay = gdNorm(e[0] + ' ' + e[2]), sc = 0; qs.forEach(function (g) { if (hay.indexOf(g) >= 0) sc++; });
+      if (sc >= need) res.push([sc, e]);
+    });
+    res.sort(function (a, b) { return b[0] - a[0]; });
+    box.innerHTML = res.length ? '<div class="gdo" style="margin:0 0 4px">これでしょうか?(押すとガイドがはじまります)</div>' + res.slice(0, 6).map(function (r) { var id = r[1][1]; return '<button type="button" class="gdw" ' + (id === '__start' ? 'data-gpick="__start"' : 'data-gtour="' + id + '"') + '>' + esc(r[1][0]) + '</button>'; }).join('') : '<div class="gdo">見つかりませんでした。ことばを変えるか、下のボタンから選んでください。(「チャット」の「操作質問」で、ロボットに質問もできます)</div>';
+    Array.prototype.forEach.call(box.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-gpick]'), function (b) { b.onclick = function () { GD_.pick = b.dataset.gpick || null; tourStop(true); homeView(); }; });
+  };
+}
 function gdPanel() {
   var me = S.me, has = {}; me.menu.forEach(function (m) { has[m.key] = 1; });
   var wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; }, h = '<div class="gdp">';
@@ -789,13 +816,26 @@ function gdPanel() {
   if (M) {
     h += '<div class="gdq">「' + esc(M[1]) + '」で、したいことを選んでください</div><div class="gdg">' + M[2].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div><button type="button" class="gdw back" data-gpick="">メニュー選びにもどる</button>';
   } else {
-    h += '<div class="gdo" style="margin:0 0 8px">ガイドをやめるときは、「ガイド ON」のボタンをもう一度押します(OFFになります)</div><button type="button" class="gdw back" data-gtour="gdoff">ガイドのやめかたを教えてもらう</button><div class="gdq">どれを使いたいですか?</div><button type="button" class="gdw ai" data-gpick="__start">登録したけど、何からやったらいいかわからない</button><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
-    var offs = GOFF_.filter(function (x) { return has[x[0]] && x[0] !== 'headchg'; }), done = {}; GOFF_.forEach(function (x) { done[x[0]] = 1; }); GM_.forEach(function (m) { done[m[0]] = 1; }); done.mystery = 1;
-    var rest = me.menu.filter(function (m) { return !done[m.key] && m.section !== 'common'; });
-    if (offs.length || rest.length) {
-      h += '<div class="gdh">役員メニュー</div><div class="gdg">' + offs.map(function (x) { return wish(x[1], gdMenuTour(x[0])); }).join('') + '</div>';
-      if (rest.length) h += '<details class="gdd"><summary>その他の役員・管理メニュー</summary>' + rest.map(function (m) { return wish(GDESC_[m.key] || ('「' + (LABEL[m.key] || m.key) + '」を開きたい'), gdMenuTour(m.key)); }).join('') + '</details>';
+    var gm = {}; GM_.forEach(function (m) { gm[m[0]] = m; });
+    var ord = ['card', 'dashboard', 'board', 'mail', 'event', 'help', 'supporter', 'headchg', 'suginami', 'weather', 'blog', 'tips'];
+    var chip = function (t, attr) { return '<button type="button" class="gdw s" ' + attr + '>' + esc(t) + '</button>'; };
+    var pickChip = function (k) { return gm[k] && has[k] ? chip(gm[k][1], 'data-gpick="' + k + '"') : ''; };
+    var menus = '<div class="gdc">' + chip('何からやればいいかわからない', 'data-gpick="__start"').replace('gdw s', 'gdw s ai') + chip('ガイドの終了方法', 'data-gtour="gdoff"') + '</div><div class="gdc">' + ord.map(pickChip).join('') + '</div>';
+    var staff = isOfficer();
+    h += '<div class="gdt">🤖 私がガイドします</div><div class="gdo">まずはテキストまたはボタンから、<br>知りたいことを教えてください</div>' +
+      '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + ['card', 'event', 'tips'].map(pickChip).join('') + '</div>' +
+      '<div class="gdh0">テキストで検索</div><input id="gdq" class="gdin" type="search" maxlength="40" placeholder="🔍 ここに知りたいことを入力" autocomplete="off" aria-label="知りたいことを入力"><div class="gdo" style="margin:4px 0 0">例)会員証を編集・イベント申込 など</div><div id="gdres"></div>' +
+      '<div class="gdh0">ボタンから検索</div>' +
+      (staff ? '<details class="gdd" open><summary>ガイドできる内容</summary>' + menus + '</details>' : '<div class="gdh1">ガイドできる内容</div>' + menus);
+    if (staff) {
+      var og = [[['o_roster', '会員を検索'], ['o_circ', '回覧元を検索'], ['headchg', '回覧元を変更したい']], [['o_unpaid', '未納者を知りたい'], ['o_gift', '商品券対象者を知りたい', 'o_circ']], [['o_sched', '役員の予定'], ['o_kanban', '捨て看板を依頼したい']], [['o_report', '事業報告・計画提出'], ['o_supporter', 'サポーター募集']], [['o_sokai', '総会'], ['o_summary', '集計結果'], ['o_mama', 'スナックママの部屋に行く']]];
+      var ohtml = og.map(function (row) {
+        var c = row.filter(function (x) { return has[x[2] || x[0]]; }).map(function (x) { return chip(x[1], 'data-gtour="' + (x[0] === 'o_gift' || x[0] === 'headchg' ? x[0] : gdMenuTour(x[0])) + '"'); }).join('');
+        return c ? '<div class="gdc">' + c + '</div>' : '';
+      }).join('');
+      if (ohtml) h += '<details class="gdd"><summary>役員専用</summary>' + ohtml + '</details>';
     }
+    h += '<div class="gdo" style="margin:10px 0 0">(「チャット」の「操作質問」で、ロボットに質問もできます)</div>';
   }
   return h + '</div>';
 }
@@ -814,6 +854,7 @@ function homeView() {
   $('#hav').onclick = function () { go('icon'); };
   var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; GD_.pick = null; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
+  gdSearchInit();
   Array.prototype.forEach.call(document.querySelectorAll('[data-gpick]'), function (b) { b.onclick = function () { GD_.pick = b.dataset.gpick || null; tourStop(true); homeView(); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.hqy'), function (bt) {
     bt.onclick = function () {
@@ -1925,6 +1966,8 @@ var TOURS_ = {
     { skipif: function () { return TR.g.card === 'sol'; }, sel: '#go', say: '「スタート」を押しましょう' },
     { ask: function () { return { say: 'ゲームのチュートリアルが必要ですか?', btns: [['はい', 'yes'], ['いいえ(ガイドを終わります)', 'no']] }; } } ] },
   gdoff: { t: 'ガイドをやめる場所を、教えてもらう', home: 1, steps: [{ sel: '#gdbtn', say: 'この「ガイド ON」を押すと、ガイドがOFFになります。(もう一度押すと、またONになります)' }] },
+  o_gift: { t: '商品券の対象者を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します。商品券の対象の方(●のついた方)が、画面に出ます' }] },
+  m_o_sokai: { t: '', home: 1, steps: [{ sel: '.tile[data-k="o_sokai"]', say: 'この「総会」を押します。総会の資料を見たり、当日の出席者数を入れたりできます' }] },
   chat: { t: 'チャットで役員に連絡する場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="mail"]', say: 'この「チャット」を押します' },
     { sel: '#mnew', say: '新しく書くときは、この「新規作成」を押します' } ] },
@@ -3590,12 +3633,13 @@ function kanbanDraw() {
 }
 
 function sokaiView() {
-  sub('総会資料', '<div class="skel" style="height:200px"></div>', 'officer');
-  api('o_sokai_list', SK.year ? { year: SK.year } : {}).then(function (d) { SK.data = d; SK.year = d.year; sokaiDraw(); }).catch(function (e) { sub('総会資料', errCard(e), 'officer'); });
+  sub('総会', '<div class="skel" style="height:200px"></div>', 'officer');
+  api('o_sokai_list', SK.year ? { year: SK.year } : {}).then(function (d) { SK.data = d; SK.year = d.year; sokaiDraw(); }).catch(function (e) { sub('総会', errCard(e), 'officer'); });
 }
 function sokaiDraw() {
   var d = SK.data, ys = [d.year - 1, d.year, d.year + 1].filter(function (y, i, a) { return a.indexOf(y) === i; });
   var h = '<div class="card"><label class="muted" style="display:block;margin-bottom:4px">総会を開く年</label><select id="sky" style="width:100%;font:inherit;padding:9px;border-radius:10px;border:1.5px solid var(--line)">' + ys.map(function (y) { return '<option value="' + y + '"' + (y === d.year ? ' selected' : '') + '>' + y + '年(' + reiwaY(y - 2019) + 'の総会)</option>'; }).join('') + '</select></div>' +
+    '<div class="card rpform"><h2>総会当日の出席者数</h2><p class="muted" style="margin:0 0 6px">当日の出席者数と、委任状の出席者数を入れます。管理システムの司会台本にも、同じ数字が入ります。</p><div class="two"><div><label for="sat">本日の出席者数</label><input id="sat" type="number" min="0" max="9999" inputmode="numeric" placeholder="0" value="' + esc(d.attend && d.attend.at !== undefined ? d.attend.at : '') + '"></div><div><label for="spr">委任状の出席者数</label><input id="spr" type="number" min="0" max="9999" inputmode="numeric" placeholder="0" value="' + esc(d.attend && d.attend.pr !== undefined ? d.attend.pr : '') + '"></div></div><p id="ssum" class="small" style="margin:8px 2px 0"></p><button class="btn" id="sgo" style="margin-top:10px">出席者数を保存する</button></div>' +
     '<div class="card"><h2>資料</h2>' + (d.docs.length ? d.docs.map(function (x) {
       return '<div class="skdoc" data-id="' + esc(x.id) + '"><img src="' + esc(x.pages[0].thumb.replace('w1600', 'w200')) + '" alt="" loading="lazy"><div style="flex:1"><b>' + esc(x.title) + '</b><div class="muted">' + x.pages.length + 'ページ ・ ' + esc((x.at || '').slice(5, 10)) + ' ' + esc(x.by || '') + '</div></div><span class="muted">›</span></div>';
     }).join('') : '<p class="muted" style="margin:0">まだ資料がありません。</p>') + '</div>' +
@@ -3603,10 +3647,18 @@ function sokaiDraw() {
     '<label>資料の名前(既にある資料に足すときは、下で選びます)</label><input id="skt" type="text" maxlength="60" placeholder="例: 令和8年度 総会議案書">' +
     (d.docs.length ? '<label>足す先</label><select id="skd"><option value="">新しい資料として入れる</option>' + d.docs.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.title) + ' に足す</option>'; }).join('') + '</select>' : '') +
     '<label>ファイル</label><input id="skf" type="file" accept="application/pdf,image/*" multiple><div id="skp" class="muted" style="margin-top:8px"></div><button class="btn" id="skgo" style="margin-top:10px">アップロードする</button></div>';
-  sub('総会資料', h, 'officer');
+  sub('総会', h, 'officer');
   $('#sky').onchange = function () { SK.year = +this.value; sokaiView(); };
   Array.prototype.forEach.call(document.querySelectorAll('.skdoc'), function (r) { r.onclick = function () { location.hash = '#o_sokai/' + encodeURIComponent(r.dataset.id); }; });
   $('#skgo').onclick = sokaiUpload;
+  var sum = function () { var a = $('#sat').value, b = $('#spr').value; $('#ssum').innerHTML = (a === '' && b === '') ? '' : '合計出席者数: <b>' + ((+a || 0) + (+b || 0)) + '名</b>'; };
+  $('#sat').oninput = sum; $('#spr').oninput = sum; sum();
+  $('#sgo').onclick = function () {
+    var a = $('#sat').value.trim(), b = $('#spr').value.trim(), btn = this;
+    if (a === '' && b === '') return toast('数字を入れてください');
+    btn.disabled = true;
+    api('o_sokai_attend', { year: SK.year, at: a, pr: b }).then(function (r) { SK.data.attend = r.attend; toast('出席者数を保存しました'); btn.disabled = false; }).catch(function (e) { btn.disabled = false; toast(e.message || '保存できませんでした'); });
+  };
 }
 function sokaiUpload() {
   var files = Array.prototype.slice.call($('#skf').files || []), title = $('#skt').value.trim(), docId = $('#skd') ? $('#skd').value : '';
@@ -3615,7 +3667,7 @@ function sokaiUpload() {
   var btn = $('#skgo'), pr = $('#skp'), done = 0; btn.disabled = true;
   function send(data, name) {
     var req = { year: SK.year, name: name, data: data }; if (docId) req.docId = docId; else req.title = title;
-    return api('o_sokai_add', req).then(function (r) { docId = r.docId; SK.data = { year: r.year, docs: r.docs, admin: SK.data.admin }; done++; pr.textContent = done + 'ページ 保存しました…'; });
+    return api('o_sokai_add', req).then(function (r) { docId = r.docId; SK.data = { year: r.year, docs: r.docs, admin: SK.data.admin, attend: SK.data.attend }; done++; pr.textContent = done + 'ページ 保存しました…'; });
   }
   var chain = Promise.resolve();
   files.forEach(function (f) {
@@ -3630,7 +3682,7 @@ function sokaiUpload() {
 function sokaiDocView(id) {
   var run = function () {
     var x = SK.data.docs.filter(function (z) { return z.id === id; })[0];
-    if (!x) return sub('総会資料', '<div class="card"><p class="muted">この資料は見つかりません。</p></div>', 'o_sokai');
+    if (!x) return sub('総会', '<div class="card"><p class="muted">この資料は見つかりません。</p></div>', 'o_sokai');
     sub(x.title, '<div class="pgn" id="pgn">1 / ' + x.pages.length + '</div><div class="pgv" id="pgv">' + x.pages.map(function (p, i) { return '<div class="pgi"><img src="' + esc(p.thumb) + '" alt="' + (i + 1) + 'ページ" ' + (i < 2 ? '' : 'loading="lazy"') + '></div>'; }).join('') + '</div>' +
       '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="sbtn" id="pgz">拡大して見る</button>' + (SK.data.admin ? '<button class="sbtn" id="pgdel" style="color:var(--bad)">このページを削除</button><button class="sbtn" id="pgdelall" style="color:var(--bad)">資料ごと削除</button>' : '') + '</div>' +
       '<p class="muted" style="margin-top:8px">左右にスライドするとページが変わります。</p>', 'o_sokai');
@@ -3643,7 +3695,7 @@ function sokaiDocView(id) {
     }
   };
   if (SK.data) return run();
-  api('o_sokai_list', {}).then(function (d) { SK.data = d; SK.year = d.year; run(); }).catch(function (e) { sub('総会資料', errCard(e), 'o_sokai'); });
+  api('o_sokai_list', {}).then(function (d) { SK.data = d; SK.year = d.year; run(); }).catch(function (e) { sub('総会', errCard(e), 'o_sokai'); });
 }
 /* ---------- 説明書(画面の最後尾の帯。管理システムの「LINE説明書」で入れた資料) ---------- */
 var MN = { docs: null };
