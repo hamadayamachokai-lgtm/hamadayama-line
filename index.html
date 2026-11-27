@@ -689,6 +689,7 @@ function formView(prefill, isEdit) {
 }
 
 /* ---------- 承認待ち・否決・停止 ---------- */
+var REJ_FORM_ = 'https://forms.gle/NMAAiZ631Xxx2Q9z9';   // 否決されたとき、「絶対に会員のはず」という方の問い合わせフォーム
 function profileHtml(p) {
   return '<dl class="kv"><dt>LINE会員氏名</dt><dd>' + esc(p.lineName) + '</dd><dt>納入者</dt><dd>' + esc(p.payerName) + '</dd><dt>住所</dt><dd>' + esc(p.payerAddress) + '</dd><dt>関係</dt><dd>' + esc(p.relation) + (p.relationNote ? '<br><span class="muted">' + esc(p.relationNote) + '</span>' : '') + '</dd></dl>';
 }
@@ -706,7 +707,7 @@ function statusView() {
   if (me.state === 'approved') return route();
   var cfg = {
     pending: { icon: 'hourglass', cls: '', t: '申請を受け付けました', d: '役員が町会費の納入状況を確認しています。承認されると、メニューが使えるようになります。' },
-    rejected: { icon: 'x', cls: 'bad', t: '承認できませんでした', d: '内容をご確認のうえ、必要であれば修正して、もう一度申請してください。' },
+    rejected: { icon: 'x', cls: 'bad', t: '申し訳ございません。', d: '会員状況の確認が取れませんでした。' },
     suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' },
     removed: { icon: 'stop', cls: 'bad', t: 'ご利用を終了しました', d: '詳しくは、町会の役員へお問い合わせください。' }
   }[me.state];
@@ -715,11 +716,11 @@ function statusView() {
   if (me.reason && !me.selfClosed) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : me.state === 'removed' ? '削除の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
   if (me.state !== 'suspended' && me.state !== 'removed') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
   if (me.state === 'pending') html += '<div class="notice-box">承認の連絡は届きません。数日後に、この画面を開き直してご確認ください。</div><div class="btns"><button class="btn" id="rl">承認されたか確認する</button><button class="btn ghost" id="ed">申請内容を修正する</button></div>';
-  if (me.state === 'rejected') html += '<div class="btns"><button class="btn" id="ed">内容を直して再申請する</button></div>';
+  if (me.state === 'rejected') html += '<div class="card" style="border:2px solid #e9b6b6"><p style="margin:0 0 10px;font-size:18px;line-height:1.7;font-weight:700">「絶対に会員になっているはず」などの場合は、フォームから問い合わせをお願いします。</p><button class="btn" id="rjform">問い合わせフォームを開く</button><p class="small" style="margin:8px 0 0;word-break:break-all">フォームリンク: ' + esc(REJ_FORM_) + '</p></div><div class="notice-box">※マンション住まいの方などは、住所にマンション名の記載がないと、判定に影響します。</div><div class="btns"><button class="btn" id="ed">もう一度登録する</button></div>';
   if (me.state === 'removed' && me.selfClosed) html += '<div class="btns"><button class="btn" id="rg">もう一度登録する</button></div>';
   else if (me.state === 'suspended' || me.state === 'removed') html += '<div class="btns"><button class="btn ghost" id="rl">もう一度確認する</button></div>';
   setView('<div class="hero"><div class="brand">HAMADAYAMA</div><h1>浜田山町会</h1><div class="sub">LINE会員</div></div><div class="pad sheet">' + html + '</div>');
-  var rl = $('#rl'), ed = $('#ed'), rg = $('#rg');
+  var rl = $('#rl'), ed = $('#ed'), rg = $('#rg'), rjf = $('#rjform'); if (rjf) rjf.onclick = function () { openExternal(REJ_FORM_); };
   if (rg) rg.onclick = function () { formView(S.me.profile, false); };
   if (rl) rl.onclick = function () { rl.disabled = true; loadMe().then(function () { if (S.me.state === 'approved') route(); else { statusView(); toast('まだ承認待ちです'); } }).catch(function (e) { rl.disabled = false; toast(e.message); }); };
   if (ed) ed.onclick = function () { formView(S.me.profile, true); };
@@ -770,7 +771,7 @@ var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイ�
   ['headchg', '回覧元変更', [['変更したい', 'headchg']]],
   ['suginami', '防災情報', [['情報を見たい', 'bosai']]],
   ['weather', '天気', [['情報を見たい', 'weather']]],
-  ['tips', 'ゲーム', [['ババ抜きで遊びたい', 'g_baba'], ['7並べで遊びたい', 'g_sev'], ['ポーカーで遊びたい', 'g_pk'], ['神経衰弱で遊びたい', 'g_mem'], ['カルタで遊びたい', 'g_kar'], ['ソリティアで遊びたい', 'g_sol'], ['○×ゲームで遊びたい', 'g_ox'], ['あたまおしりで遊びたい', 'g_atama'], ['ルービックキューブで遊びたい', 'g_cube'], ['100万円ゲームで遊びたい', 'g_hun'], ['日本一周スゴロクで遊びたい', 'g_trip'], ['歴史推理で遊びたい', 'g_mys']]],
+  ['tips', 'ゲーム', [['ゲームで遊びたい', 'gplay']]],
   ['blog', '町会ブログ', [['見たい', 'blog']]]
 ];
 var GOFF_ = [['o_sched', '役員の予定を見たい'], ['o_circ', '回覧元を見たい'], ['headchg', '回覧元を変更したい'], ['o_roster', '会員情報を見たい(会員検索)'], ['o_report', '事業報告・計画を記載したい'], ['o_mama', 'スナックママの部屋に行きたい'], ['o_supporter', 'サポーターの募集をしたい'], ['o_summary', '集計結果を見たい'], ['o_kanban', '捨て看板を依頼したい'], ['o_sokai', '総会資料を見たい']];
@@ -788,7 +789,7 @@ function gdPanel() {
   if (M) {
     h += '<div class="gdq">「' + esc(M[1]) + '」で、したいことを選んでください</div><div class="gdg">' + M[2].map(function (w) { return wish(w[0], w[1]); }).join('') + '</div><button type="button" class="gdw back" data-gpick="">メニュー選びにもどる</button>';
   } else {
-    h += '<div class="gdq">どれを使いたいですか?</div><button type="button" class="gdw ai" data-gpick="__start">登録したけど、何からやったらいいかわからない</button><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
+    h += '<div class="gdo" style="margin:0 0 8px">ガイドをやめるときは、「ガイド ON」のボタンをもう一度押します(OFFになります)</div><button type="button" class="gdw back" data-gtour="gdoff">ガイドのやめかたを教えてもらう</button><div class="gdq">どれを使いたいですか?</div><button type="button" class="gdw ai" data-gpick="__start">登録したけど、何からやったらいいかわからない</button><div class="gdo">(「チャット」の「操作質問」で、ロボットに質問もできます)</div><div class="gdg">' + GM_.filter(function (m) { return has[m[0]]; }).map(function (m) { return '<button type="button" class="gdw" data-gpick="' + m[0] + '">' + esc(m[1]) + '</button>'; }).join('') + '</div>';
     var offs = GOFF_.filter(function (x) { return has[x[0]] && x[0] !== 'headchg'; }), done = {}; GOFF_.forEach(function (x) { done[x[0]] = 1; }); GM_.forEach(function (m) { done[m[0]] = 1; }); done.mystery = 1;
     var rest = me.menu.filter(function (m) { return !done[m.key] && m.section !== 'common'; });
     if (offs.length || rest.length) {
@@ -1915,6 +1916,15 @@ var TOURS_ = {
     { sel: '.hmg[data-g="mem"]', say: '遊びたいゲームを押します。ここでは「神経衰弱」' },
     { sel: '#sMode', say: '「ひとり」「1台で遊ぶ」などを、ここで えらびます', next: 1 },
     { sel: '#go', say: '最後に「スタート」を押すと、はじまります' } ] },
+  gplay: { t: 'ゲームで遊ぶ手順を、教えてもらう', home: 1, nocount: 1, steps: [
+    { sel: '.tile[data-k="tips"]', say: 'この「GAME」を押します' },
+    { sel: '.gwall', any: 1, say: '好きなゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null; TR.g = { id: b ? b.id : '', card: '', name: (b && GNAME_[b.id]) || 'このゲーム' }; } },
+    { skipif: function () { return TR.g.id !== 'gcards'; }, sel: '.pcmode', any: 1, say: '好きなカードゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null, k = b ? b.getAttribute('data-g') : ''; TR.g.card = k; TR.g.name = CNAME_[k] || 'このゲーム'; } },
+    { skipif: function () { return TR.g.id === 'gcards'; }, ask: function () { return { say: TR.g.name + 'ですね!\n\nあとは、画面の案内にしたがって遊べます。', btns: [['ガイドを終わる', 'no']] }; } },
+    { skipif: function () { return TR.g.card === 'sol'; }, sel: '#sMode', next: 1, say: function () { return TR.g.name + 'ですね!\n\nここを変更して、モードや人数を選びます。\n一人でやるなら、このままでOKです'; } },
+    { skipif: function () { return TR.g.card === 'sol'; }, sel: '#go', say: '「スタート」を押しましょう' },
+    { ask: function () { return { say: 'ゲームのチュートリアルが必要ですか?', btns: [['はい', 'yes'], ['いいえ(ガイドを終わります)', 'no']] }; } } ] },
+  gdoff: { t: 'ガイドをやめる場所を、教えてもらう', home: 1, steps: [{ sel: '#gdbtn', say: 'この「ガイド ON」を押すと、ガイドがOFFになります。(もう一度押すと、またONになります)' }] },
   chat: { t: 'チャットで役員に連絡する場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="mail"]', say: 'この「チャット」を押します' },
     { sel: '#mnew', say: '新しく書くときは、この「新規作成」を押します' } ] },
@@ -1997,6 +2007,10 @@ var TOURS_ = {
   weather: { t: '天気を見る場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="weather"]', say: 'この「天気」を押すと、浜田山の天気が見られます' } ] }
 };
+var GNAME_ = { gox: '○×ゲーム', gatama2: 'あたまおしり', gcards: 'カードゲーム', gcube: 'ルービックキューブ', ghun: '100万円ゲーム', gtrip: '日本一周スゴロク', gmys: '歴史推理' };
+var CNAME_ = { baba: 'ババ抜き', sev: '7並べ', pk: 'ポーカー', mem: '神経衰弱', kar: 'カルタ', sol: 'ソリティア' };
+var TUT_ = { baba: TOURS_.g_baba.steps.slice(5), sev: TOURS_.g_sev.steps.slice(5), pk: TOURS_.g_pk.steps.slice(5), mem: TOURS_.g_mem.steps.slice(5), kar: TOURS_.g_kar.steps.slice(5), sol: TOURS_.g_sol.steps.slice(3) };
+TOURS_.game = TOURS_.gplay;
 function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
   var row = e.parentNode; return row ? row.querySelector('[data-' + kind + ']') : null;
@@ -2004,6 +2018,7 @@ function tourEvBtn(name, kind) {
 var TR = { on: false, name: '', i: 0, t: 0, wait: 0, fin: false, ws: false, hole: null, box: null, el: null };
 function tourStart(name) {
   var T = TOURS_[name]; if (!T) return; tourStop(true);
+  if (T.steps0) T.steps = T.steps0; else T.steps0 = T.steps;
   TR = { on: true, name: name, i: 0, t: 0, wait: 0, fin: false, ws: false, hole: null, box: null, el: null };
   var h = document.createElement('div'); h.className = 'tourhole tourui'; h.style.display = 'none'; document.body.appendChild(h);
   var b = document.createElement('div'); b.className = 'tourb tourui'; b.setAttribute('role', 'dialog'); document.body.appendChild(b);
@@ -2023,6 +2038,7 @@ function tourStep() { return TR.on ? TOURS_[TR.name].steps[TR.i] : null; }
 function tourVisible(e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
 function tourTick() {
   if (TR.fin) { var hb = document.querySelector('#bnav [data-h="home"]'); if (tourVisible(hb)) { var hr = hb.getBoundingClientRect(); if (hr.left < 0 || hr.right > window.innerWidth) { try { hb.parentNode.scrollLeft = 0; } catch (e) { /* 無視 */ } } TR.el = hb; tourPos(); } else { TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px'; } return; }
+  if (TR.hold) return;
   var st = tourStep(); if (!st) return;
   var e = typeof st.sel === 'function' ? st.sel() : document.querySelector(st.sel);
   if (!tourVisible(e)) { TR.el = null; TR.wait += 150; TR.hole.style.display = 'none'; if (TR.wait > 1000 && !TR.ws) tourWaitUI(st.wait || '画面の読み込み中。少し待ちましょう'); return; }
@@ -2031,8 +2047,8 @@ function tourTick() {
   if (TR.el !== e) {
     TR.el = e; var r0 = e.getBoundingClientRect();
     if (r0.top < 70 || r0.bottom > window.innerHeight - 90) { try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
-    var n = TOURS_[TR.name].steps.length;
-    TR.box.innerHTML = '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>' + esc(st.say) + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
+    var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say;
+    TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
     var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
     TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
   }
@@ -2047,21 +2063,40 @@ function tourPos() {
   b.style.top = top + 'px'; b.style.left = Math.max(12, Math.min(window.innerWidth - bw - 12, r.left + r.width / 2 - bw / 2)) + 'px';
 }
 function tourNext() {
+  if (!TR.on || !TOURS_[TR.name]) return;
   var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
+  while (TR.i < T.steps.length && T.steps[TR.i].skipif && T.steps[TR.i].skipif()) TR.i++;
   if (TR.i >= T.steps.length) return tourEnd();
+  if (T.steps[TR.i].ask) return tourAsk(T.steps[TR.i]);
   tourWaitUI(TOURS_[TR.name].steps[TR.i].wait || '画面の読み込み中。少し待ちましょう');
 }
 function tourClick(ev) {
   if (TR.fin) { if (TR.el && !(ev.target.closest && ev.target.closest('.tourui')) && TR.el.contains(ev.target)) setTimeout(function () { tourStop(true); }, 200); return; }
   var st = tourStep(); if (!st || !TR.el) return;
   if (ev.target.closest && ev.target.closest('.tourui')) return;
-  if (TR.el.contains(ev.target) || ev.target === TR.el) { if (!st.next) setTimeout(tourNext, 250); return; }
+  if (TR.el.contains(ev.target) || ev.target === TR.el) { if (st.pick) st.pick(ev.target); if (!st.next) setTimeout(tourNext, 250); return; }
   if (st.next) return;   // 「つぎへ」の場面は、ほかも自由に触れる
   ev.preventDefault(); ev.stopPropagation();
   TR.box.classList.remove('shake'); void TR.box.offsetWidth; TR.box.classList.add('shake');
 }
-function tourEnd() {
-  TR.fin = true; TR.ws = false; TR.el = null;
+function tourAsk(st) {
+  var a = st.ask(); TR.hold = true; TR.ws = true; TR.el = null; TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px';
+  TR.box.innerHTML = esc(a.say).replace(/\n/g, '<br>') + '<div class="tb">' + a.btns.map(function (b) { return '<button type="button" data-ta="' + b[1] + '"' + (b[1] === 'no' ? ' class="q"' : '') + '>' + esc(b[0]) + '</button>'; }).join('') + '</div>';
+  Array.prototype.forEach.call(TR.box.querySelectorAll('[data-ta]'), function (bt) {
+    bt.onclick = function (ev) {
+      ev.stopPropagation(); var T = TOURS_[TR.name], v = bt.getAttribute('data-ta'); TR.hold = false; TR.ws = false;
+      if (v === 'yes') { var tut = TUT_[TR.g.card] || []; T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); tourWaitUI(tut[0].wait || '画面の読み込み中。少し待ちましょう'); return; }
+      tourEnd('no');
+    };
+  });
+}
+function tourEnd(mode) {
+  TR.fin = true; TR.ws = false; TR.hold = false; TR.el = null;
+  if (mode === 'no') {
+    TR.box.innerHTML = '戻るときには、光っている「ホーム」からお戻りください!<br><br>またガイドでお待ちしてます。<div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button></div>';
+    TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
+    return;
+  }
   TR.box.innerHTML = 'このガイドは完了です!<br>ちゃんとできましたね😊<br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span><div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button><button type="button" data-to="1">他も見てみる</button></div>';
   TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
   TR.box.querySelector('[data-to]').onclick = function (ev) {
@@ -2077,7 +2112,7 @@ function tourWaitUI(txt) {
 /* ---------- AIに聞く(使い方案内) ---------- */
 var AI = { msgs: [], faq: null, busy: false, last: '' };
 var AIF_ = [
-  { i: '🔰', t: 'はじめての方', q: ['登録したけど何からやったらいいかわからない'] },
+  { i: '🔰', t: 'はじめての方', q: ['登録したけど何からやったらいいかわからない', 'ガイドのON・OFFのやり方'] },
   { i: '🪪', t: '会員証', q: ['会員証を見たい', '会員証が出てこない', '会員証を家族に見せたい'] },
   { i: '📌', t: '掲示板', q: ['掲示板を見たい', '掲示板に書き込みたい', '写真を載せたい'] },
   { i: '💬', t: 'チャット', q: ['役員にメッセージを送りたい', 'チャットで写真を送りたい', '送ったチャットを消したい', '返信が来たか知りたい'] },
@@ -2106,7 +2141,7 @@ function aiDraw() {
     var rec = /\[\[rec\]\]/.test(m.t || ''), imgs = [], tours = [], tx = String(m.t || '').replace(/\[\[rec\]\]/g, '').replace(/\[\[img:([a-z0-9_]+)\]\]/g, function (a, n) { imgs.push(n); return ''; }).replace(/\[\[tour:([a-z0-9_]+)\]\]/g, function (a, n) { if (TOURS_[n] && tours.indexOf(n) < 0) tours.push(n); return ''; }).replace(/\n{3,}/g, '\n\n').trim();
     h += mBubble({ mine: false, icon: '🤖', name: 'AIの案内', date: '', body: tx });
     if (!m.wait && rec) h += '<div class="aiimgs" style="margin-left:44px">' + recHtml('data-atour') + '</div>';
-    if (!m.wait && imgs.length) h += '<div class="aiimgs">' + imgs.map(function (n) { return '<figure><img src="guide/' + n + '.jpg?v=1" alt="画面の見本" loading="lazy" onerror="this.parentNode.style.display=\'none\'"><figcaption>画面の見本です。赤い丸の数字が、押すところです</figcaption></figure>'; }).join('') + '</div>';
+    if (!m.wait && imgs.length) h += '<div class="aiimgs">' + imgs.map(function (n) { return '<figure><img src="guide/' + n + '.jpg?v=2" alt="画面の見本" loading="lazy" onerror="this.parentNode.style.display=\'none\'"><figcaption>画面の見本です。赤い丸の数字が、押すところです</figcaption></figure>'; }).join('') + '</div>';
     if (!m.wait && i === AI.msgs.length - 1) h += '<div class="aiact"><button type="button" data-afr="1">他の質問をえらぶ</button></div>';
     if (!m.wait) h += '<div class="aiact">' + tours.map(function (n) { return '<button type="button" class="go tr" data-atour="' + n + '">' + esc(TOURS_[n].t) + '</button>'; }).join('') + (m.go && GOL_[m.go] ? '<button type="button" class="go" data-ago="' + m.go + '">「' + GOL_[m.go] + '」を開く</button>' : '') + '<button type="button" class="ask" data-aask="' + i + '">それでもわからないときは、役員に聞く</button></div>';
   });
