@@ -853,7 +853,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-7 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-8 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2084,8 +2084,7 @@ var GTUT_ = {
     { sel: '#cbhelp', next: 1, say: '「攻略補助」(特訓のとき)を押すと、つぎに動かす場所を 教えてくれます。だれでも 完成できます!' },
     { sel: '#cbundo', next: 1, say: 'まちがえたら、「ひとつ もどす」で、もどせます' },
     { sel: '.cbs', next: 1, say: 'なぞるのが むずかしいときは、この「ボタンで まわす」でも 動かせます(押して ひらいてください)' }],
-  ghun: [{ sel: '.hdm', next: 1, say: 'ここが、いま持っているお金です。まちがえるたびに 10万円ずつ へります', wait: '少し待ちましょう' },
-    { sel: '#hdc', next: 1, say: '問題が出ます。画面の文を読んで、画面の案内にしたがって 答えてください。問題の種類は、いろいろです' }],
+  ghun: [],
   gtrip: [{ skipif: function () { return !document.querySelector('#tgo'); }, sel: '#tgo', say: '最初の出来事が出ました。「旅に出発!」を押します' },
     { sel: '#troll', say: '「サイコロを ふる」を押します。出た目の数だけ 進みます', wait: '少し待ちましょう' },
     { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' }],
@@ -2121,6 +2120,7 @@ function tourStart(name) {
   if (T.home && (location.hash || '#') !== '#' && location.hash !== '#home') go('home');
 }
 function tourStop(quiet, msg) {
+  try { if (window.HmtHundred) window.HmtHundred.hold = null; } catch (e) { /* 無視 */ }
   if (TR.t) clearInterval(TR.t);
   document.removeEventListener('click', tourClick, true); window.removeEventListener('scroll', tourPos, true); window.removeEventListener('resize', tourPos);
   Array.prototype.forEach.call(document.querySelectorAll('.tourui'), function (x) { x.parentNode && x.parentNode.removeChild(x); });
@@ -2156,7 +2156,7 @@ function tourPos() {
   b.style.top = top + 'px'; b.style.left = Math.max(12, Math.min(window.innerWidth - bw - 12, r.left + r.width / 2 - bw / 2)) + 'px';
 }
 function tourNext() {
-  if (!TR.on || !TOURS_[TR.name]) return;
+  if (!TR.on || !TOURS_[TR.name] || TR.hold) return;
   var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
   for (var g = 0; g < 20 && TR.i < T.steps.length; g++) {
     var st0 = T.steps[TR.i];
@@ -2169,6 +2169,7 @@ function tourNext() {
   tourWaitUI(TOURS_[TR.name].steps[TR.i].wait || '画面の読み込み中。少し待ちましょう');
 }
 function tourClick(ev) {
+  if (TR.hold) return;
   if (TR.fin) { if (TR.el && !(ev.target.closest && ev.target.closest('.tourui')) && TR.el.contains(ev.target)) setTimeout(function () { tourStop(true); }, 200); return; }
   var st = tourStep(); if (!st || !TR.el) return;
   if (ev.target.closest && ev.target.closest('.tourui')) return;
@@ -2177,13 +2178,36 @@ function tourClick(ev) {
   ev.preventDefault(); ev.stopPropagation();
   TR.box.classList.remove('shake'); void TR.box.offsetWidth; TR.box.classList.add('shake');
 }
+function tourCustom(say, btns) {
+  TR.hold = true; TR.ws = true; TR.el = null; TR.hole.style.display = 'none'; TR.box.style.display = 'block'; TR.box.style.top = '26%'; TR.box.style.left = '12px';
+  TR.box.innerHTML = esc(say).replace(/\n/g, '<br>') + '<div class="tb">' + btns.map(function (b, i) { return '<button type="button" data-tc="' + i + '"' + (b[2] ? ' class="q"' : '') + '>' + esc(b[0]) + '</button>'; }).join('') + '</div>';
+  Array.prototype.forEach.call(TR.box.querySelectorAll('[data-tc]'), function (bt) { bt.onclick = function (ev) { ev.stopPropagation(); btns[+bt.getAttribute('data-tc')][1](); }; });
+}
+function tourHdHold(stage, ctl) {   // 100万円ゲーム: 1問目の前と、1問目が終わったあとで、ゲームを止めて案内する
+  if (!TR.on) return false;
+  if (stage === 'first') {
+    tourCustom('さあ、問題を解いてみましょう', [
+      ['解く', function () { TR.box.style.display = 'none'; setTimeout(ctl.go, 1000); }],
+      ['ゲーム目次に戻る', function () { tourStop(true); ctl.hub(); }, 1],
+      ['ガイド終了', function () { tourStop(true); ctl.go(); }, 1]]);
+    return true;
+  }
+  if (stage === 'after1') {
+    tourCustom('解けましたか?\n\n聴覚問題は、音量を上げることをおすすめします。聞こえない場合は、「音が 聞こえない」のスキップボタンがあります。\n\n私は、初回の残金は10万円でした🙃\nでは、頑張ってください!', [
+      ['ゲームを続ける', function () { tourStop(true); ctl.next(); }],
+      ['ガイド終了', function () { tourStop(true); }, 1]]);
+    return true;
+  }
+  return false;
+}
+var GHOOK_ = { ghun: function () { try { window.HmtHundred.hold = tourHdHold; } catch (e) { /* 無視 */ } } };
 function tourAsk(st) {
   var a = st.ask(); TR.hold = true; TR.ws = true; TR.el = null; TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px';
   TR.box.innerHTML = esc(a.say).replace(/\n/g, '<br>') + '<div class="tb">' + a.btns.map(function (b) { return '<button type="button" data-ta="' + b[1] + '"' + (b[1] === 'no' ? ' class="q"' : '') + '>' + esc(b[0]) + '</button>'; }).join('') + '</div>';
   Array.prototype.forEach.call(TR.box.querySelectorAll('[data-ta]'), function (bt) {
     bt.onclick = function (ev) {
       ev.stopPropagation(); var T = TOURS_[TR.name], v = bt.getAttribute('data-ta'); TR.hold = false; TR.ws = false;
-      if (v === 'yes') { var tut = (st.after || []).concat(GTUT_[TR.g.key] || []); T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); TR.i--; tourNext(); return; }
+      if (v === 'yes') { if (GHOOK_[TR.g.key]) GHOOK_[TR.g.key](); var tut = (st.after || []).concat(GTUT_[TR.g.key] || []); T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); TR.i--; tourNext(); return; }
       tourEnd('no');
     };
   });
@@ -4012,7 +4036,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=30'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=31'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
