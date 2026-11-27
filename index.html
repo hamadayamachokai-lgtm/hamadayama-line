@@ -2085,12 +2085,10 @@ var GTUT_ = {
     { sel: '#mvote', next: 1, say: '犯人がわかったら「犯人に投票する」を押します。早く当てるほど 高得点です。わからないときは「次のラウンドへ」で、もっと証言を聞けます' }]
 };
 function gBuild_(g) {
-  var C = GCFG_[g.key] || {}, nm = g.name, out = [], pre = C.pre || [];
-  var ask = { ask: function () { return { say: 'ゲームのチュートリアルが必要ですか?', btns: [['はい', 'yes'], ['いいえ(ガイドを終わります)', 'no']] }; } };
-  if (g.key === 'sol' || (!C.go && !pre.length)) return [ask];
-  pre.forEach(function (st, i) { var c = {}; Object.keys(st).forEach(function (k) { c[k] = st[k]; }); if (i === 0) { var sy = c.say; c.say = nm + 'ですね!\n\n' + sy; } out.push(c); });
-  if (C.go) out.push({ sel: C.go, say: pre.length ? '「スタート」を押しましょう' : nm + 'ですね!\n\n' + (C.goSay || '「スタート」を押しましょう') });
-  out.push(ask); return out;
+  var C = GCFG_[g.key] || {}, pre = C.pre || [], after = [];
+  pre.forEach(function (st) { var c = {}; Object.keys(st).forEach(function (k) { c[k] = st[k]; }); after.push(c); });
+  if (C.go && g.key !== 'sol') after.push({ sel: C.go, say: C.goSay && !pre.length ? C.goSay : '「スタート」を押しましょう' });
+  return [{ after: after, ask: function () { return { say: g.name + 'ですね!\n\nチュートリアル(説明)は必要ですか?', btns: [['はい(チュートリアルに進む)', 'yes'], ['いいえ(ガイドを終わる)', 'no']] }; } }];
 }
 var CNAME_ = { baba: 'ババ抜き', sev: '7並べ', pk: 'ポーカー', mem: '神経衰弱', kar: 'カルタ', sol: 'ソリティア' };
 var TUT_ = GTUT_;
@@ -2104,6 +2102,7 @@ var TR = { on: false, name: '', i: 0, t: 0, wait: 0, fin: false, ws: false, hole
 function tourStart(name) {
   var T = TOURS_[name]; if (!T) return; tourStop(true);
   if (T.steps0) T.steps = T.steps0; else T.steps0 = T.steps;
+  GD_.pick = null;   // ガイドから戻ったときは、メニュー選びの最初から出す
   TR = { on: true, name: name, i: 0, t: 0, wait: 0, fin: false, ws: false, hole: null, box: null, el: null };
   var h = document.createElement('div'); h.className = 'tourhole tourui'; h.style.display = 'none'; document.body.appendChild(h);
   var b = document.createElement('div'); b.className = 'tourb tourui'; b.setAttribute('role', 'dialog'); document.body.appendChild(b);
@@ -2175,7 +2174,7 @@ function tourAsk(st) {
   Array.prototype.forEach.call(TR.box.querySelectorAll('[data-ta]'), function (bt) {
     bt.onclick = function (ev) {
       ev.stopPropagation(); var T = TOURS_[TR.name], v = bt.getAttribute('data-ta'); TR.hold = false; TR.ws = false;
-      if (v === 'yes') { var tut = GTUT_[TR.g.key] || []; T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); TR.i--; tourNext(); return; }
+      if (v === 'yes') { var tut = (st.after || []).concat(GTUT_[TR.g.key] || []); T.steps = T.steps.slice(0, TR.i).concat(tut); TR.el = null; TR.wait = 0; if (!tut.length) return tourEnd(); TR.i--; tourNext(); return; }
       tourEnd('no');
     };
   });
@@ -2183,7 +2182,7 @@ function tourAsk(st) {
 function tourEnd(mode) {
   TR.fin = true; TR.ws = false; TR.hold = false; TR.el = null;
   if (mode === 'no') {
-    TR.box.innerHTML = '戻るときには、光っている「ホーム」からお戻りください!<br><br>またガイドでお待ちしてます。<div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button></div>';
+    TR.box.innerHTML = 'ガイドを終わります。<br><br>戻るときは、光っている「ホーム」からお戻りください!<br><br>またガイドでお待ちしてます。<div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button></div>';
     TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
     return;
   }
