@@ -711,7 +711,7 @@ function statusView() {
     suspended: { icon: 'stop', cls: 'warn', t: 'ご利用を一時停止しています', d: '詳しくは、町会の役員へお問い合わせください。' },
     removed: { icon: 'stop', cls: 'bad', t: 'ご利用を終了しました', d: '詳しくは、町会の役員へお問い合わせください。' }
   }[me.state];
-  if (me.state === 'removed' && me.selfClosed) cfg = { icon: 'stop', cls: 'warn', t: 'LINE会員登録を解除しました', d: 'もう一度使うときは、登録しなおしてください(役員の承認が必要です)。' };
+  if (me.state === 'removed' && me.selfClosed) cfg = { icon: 'stop', cls: 'warn', t: 'LINE会員登録を解除しました', d: 'LINE会員の削除であり、町会退会ではありません。再登録も可能です。もう一度使うときは、登録しなおしてください(役員の承認が必要です)。' };
   var html = '<div class="card"><div class="center" style="padding:12px 0 4px"><div class="bigicon ' + cfg.cls + '">' + svg(cfg.icon) + '</div><h2 style="justify-content:center;margin-bottom:6px">' + cfg.t + '</h2><p class="muted" style="margin:0">' + cfg.d + '</p></div></div>';
   if (me.reason && !me.selfClosed) html += '<div class="card"><h2>' + (me.state === 'rejected' ? '否決の理由' : me.state === 'removed' ? '削除の理由' : '停止の理由') + '</h2><p style="margin:0;white-space:pre-wrap">' + esc(me.reason) + '</p></div>';
   if (me.state !== 'suspended' && me.state !== 'removed') html += '<div class="card"><h2>申請した内容</h2>' + profileHtml(me.profile) + '</div>';
@@ -761,7 +761,7 @@ function recHtml(attr) {
   return b ? '<div class="gdh" style="border:0;padding-top:0">あなたにおすすめ</div><div class="gdg">' + b + '</div>' : '';
 }
 var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイドスタート
-  ['card', '会員証', [['見たい(QRコードを出す)', 'card'], ['編集したい', 'cardedit']]],
+  ['card', '会員証', [['見たい(QRコードを出す)', 'card'], ['編集したい', 'cardedit'], ['削除(LINE会員登録の解除)', 'carddel']]],
   ['dashboard', '掲示板', [['情報を見たい', 'board']]],
   ['board', 'ツイート', [['見たい', 'tweetlook'], ['投稿したい', 'tweetnew']]],
   ['mail', 'チャット', [['役員に連絡したい(新規作成)', 'chat'], ['使い方を質問したい(ロボット)', 'chatai']]],
@@ -781,7 +781,7 @@ function gdMenuTour(k) {
   if (!TOURS_[id]) TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
   return id;
 }
-var GDKW_ = { card: '会員証 カード QR', cardedit: '会員証 編集 直す 変更 登録内容', board: '掲示板 お知らせ', tweetlook: 'ツイート Tweet 投稿 見る', tweetnew: 'ツイート Tweet 投稿 書く つぶやき', chat: 'チャット 連絡 メッセージ 役員 新規', chatai: 'チャット ロボット 質問 使い方', evfest: 'イベント 祭礼 お祭り 申込 申し込み', evfestx: 'イベント 祭礼 キャンセル 取り消し 取消', evengei: 'イベント 演芸会 申込 申し込み', evgeix: 'イベント 演芸会 キャンセル 取り消し 取消', evstat: 'イベント 申し込み状況 申込状況 確認', helplook: '助け合い 見る 災害', helprec: '助け合い 募集 災害', suplook: 'サポーター 募集 見る', supdo: 'サポーター やってみたい 申込 申し込み ボランティア', headchg: '回覧元 変更 組長', bosai: '防災 杉並 災害', weather: '天気 予報 雨', blog: 'ブログ 町会', gplay: 'ゲーム 遊ぶ 遊びたい トランプ 神経衰弱 ババ抜き 7並べ ポーカー カルタ ソリティア', gdoff: 'ガイド 終了 やめる 終わる OFF オフ 消す', o_roster: '会員 検索 名簿 情報', o_circ: '回覧元 検索 見る', o_gift: '商品券 対象 回覧元', o_unpaid: '未納 会費 納入', o_sched: '役員 予定 スケジュール', o_kanban: '捨て看板 依頼 看板', o_report: '事業報告 事業計画 提出', o_supporter: 'サポーター 募集', m_o_sokai: '総会 資料 出席者 出席者数 委任状', o_summary: '集計 結果', o_mama: 'スナック ママ 部屋' };
+var GDKW_ = { card: '会員証 カード QR', cardedit: '会員証 編集 直す 変更 登録内容', carddel: '会員証 削除 解除 登録解除 やめる 退会', board: '掲示板 お知らせ', tweetlook: 'ツイート Tweet 投稿 見る', tweetnew: 'ツイート Tweet 投稿 書く つぶやき', chat: 'チャット 連絡 メッセージ 役員 新規', chatai: 'チャット ロボット 質問 使い方', evfest: 'イベント 祭礼 お祭り 申込 申し込み', evfestx: 'イベント 祭礼 キャンセル 取り消し 取消', evengei: 'イベント 演芸会 申込 申し込み', evgeix: 'イベント 演芸会 キャンセル 取り消し 取消', evstat: 'イベント 申し込み状況 申込状況 確認', helplook: '助け合い 見る 災害', helprec: '助け合い 募集 災害', suplook: 'サポーター 募集 見る', supdo: 'サポーター やってみたい 申込 申し込み ボランティア', headchg: '回覧元 変更 組長', bosai: '防災 杉並 災害', weather: '天気 予報 雨', blog: 'ブログ 町会', gplay: 'ゲーム 遊ぶ 遊びたい トランプ 神経衰弱 ババ抜き 7並べ ポーカー カルタ ソリティア', gdoff: 'ガイド 終了 やめる 終わる OFF オフ 消す', o_roster: '会員 検索 名簿 情報', o_circ: '回覧元 検索 見る', o_gift: '商品券 対象 回覧元', o_unpaid: '未納 会費 納入', o_sched: '役員 予定 スケジュール', o_kanban: '捨て看板 依頼 看板', o_report: '事業報告 事業計画 提出', o_supporter: 'サポーター 募集', m_o_sokai: '総会 資料 出席者 出席者数 委任状', o_summary: '集計 結果', o_mama: 'スナック ママ 部屋' };
 function gdIndex() {
   var has = {}, L = []; S.me.menu.forEach(function (m) { has[m.key] = 1; });
   GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1]]); }); });
@@ -853,7 +853,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-6 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-7 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -911,8 +911,8 @@ function cardView() {
     };
     $('#cdel').onclick = function () {
       if (isOfficer()) return toast('役員・管理者の方は、先に管理者に役割を外してもらってから解除してください。');
-      cf('LINEの会員登録を解除します。会員証・申込などが使えなくなります(もう一度登録することはできます)。よろしいですか?', function () {
-        cf('本当に解除しますか?この操作は、役員に連絡しないと元に戻せません。', function () {
+      cf('LINE会員の削除であり、町会退会ではありません。\n再登録も可能です。\n\nLINEの会員登録を解除します。会員証・申込などが使えなくなります。よろしいですか?', function () {
+        cf('本当に解除しますか?\n(LINE会員の削除であり、町会退会ではありません。再登録も可能です)', function () {
           api('account_close').then(function () { return loadMe(); }).then(function () { toast('登録を解除しました'); statusView(); }).catch(function (e) { toast(e.message); });
         }, '解除する');
       }, '次へ');
@@ -2015,6 +2015,9 @@ var TOURS_ = {
   evreg: { t: 'イベント申込者の登録場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
     { sel: '[data-pn="祭礼"]', say: 'お子さんを祭礼に申し込むときは、この「祭礼対象者登録」を押して、先に登録します' } ] },
+  carddel: { t: 'LINE会員登録の解除を、教えてもらう', home: 1, steps: [
+    { sel: '.tile[data-k="card"]', say: 'この「会員証」を押します' },
+    { sel: '#cdel', say: 'この「削除」を押すと、LINE会員の登録を解除できます。\n\nLINE会員の削除であり、町会の退会ではありません。再登録も可能です。' } ] },
   cardedit: { t: '会員証の内容を直す場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="card"]', say: 'この「会員証」を押します' },
     { sel: '#cedit', say: '「編集」を押すと、登録の内容を直せます' } ] },
