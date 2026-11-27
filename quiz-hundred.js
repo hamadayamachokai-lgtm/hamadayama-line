@@ -268,7 +268,7 @@
   // 体感: 風船を 割りまくれ
   TYPES.push({ id: 'balloon', cat: '体感', name: '風船を 割りまくれ', run: function (tp) {
     var cnt = 0, over = false, cols = ['#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa', '#ec407a'];
-    frame(tp, '風船を <b>できるだけ たくさん 割ろう!</b>(10秒)<br><span style="font-size:.85em;font-weight:600">あとで 何こ 割ったか 聞きます</span>', '<div class="hdbl" id="hdbl"></div><div class="hdbar"><i id="hdtm" style="width:100%;background:#e0a300"></i></div>');
+    frame(tp, '風船を <b>できるだけ たくさん 割ろう!</b>(10秒)', '<div class="hdbl" id="hdbl"></div><div class="hdbar"><i id="hdtm" style="width:100%;background:#e0a300"></i></div>');
     var box = $('#hdbl'), t0 = performance.now();
     function spawn() {
       if (over) return; var b = document.createElement('button'); b.type = 'button'; b.className = 'hdb'; b.setAttribute('aria-label', '風船');
@@ -286,6 +286,57 @@
         $('#hdc').insertAdjacentHTML('beforeend', '<div class="hdt" style="margin-top:12px">何こ 割ったかな?</div>' + ch.html); ch.bind();
       }
     }, 100);
+  } });
+  // 記憶: 鏡に映った僕(ロボ)
+  var RC = [['赤', '#e53935'], ['青', '#1e88e5'], ['黄', '#fdd835'], ['緑', '#43a047'], ['紫', '#8e24aa'], ['ピンク', '#ec407a']];
+  function roboSvg(list) {
+    var W = 300, step = W / list.length, o = '<svg viewBox="0 0 300 150" style="width:100%;display:block"><rect width="300" height="150" fill="#eaf6ff"/><rect x="0" y="128" width="300" height="22" fill="#cfd8dc"/>';
+    list.forEach(function (c, i) {
+      var cx = step * i + step / 2, k = Math.min(1, step / 74);
+      o += '<g transform="translate(' + cx + ' 0) scale(' + k + ') translate(-30 0)"><line x1="30" y1="14" x2="30" y2="30" stroke="#455a64" stroke-width="3"/><circle cx="30" cy="12" r="5" fill="#455a64"/><rect x="8" y="30" width="44" height="34" rx="8" fill="' + c[1] + '" stroke="#37474f" stroke-width="3"/><circle cx="21" cy="46" r="5" fill="#fff" stroke="#37474f" stroke-width="2"/><circle cx="39" cy="46" r="5" fill="#fff" stroke="#37474f" stroke-width="2"/><circle cx="21" cy="46" r="2" fill="#263238"/><circle cx="39" cy="46" r="2" fill="#263238"/><rect x="12" y="66" width="36" height="42" rx="6" fill="' + c[1] + '" stroke="#37474f" stroke-width="3"/><rect x="0" y="70" width="10" height="26" rx="4" fill="' + c[1] + '" stroke="#37474f" stroke-width="2"/><rect x="50" y="70" width="10" height="26" rx="4" fill="' + c[1] + '" stroke="#37474f" stroke-width="2"/><rect x="16" y="108" width="10" height="20" fill="#455a64"/><rect x="34" y="108" width="10" height="20" fill="#455a64"/></g>';
+    });
+    return o + '</svg>';
+  }
+  TYPES.push({ id: 'robo', cat: '記憶', name: '鏡に映った ロボ', run: function (tp) {
+    var n = 2 + rnd(4), cs = shuf(RC).slice(0, n), kind = ['count', 'right', 'left'][rnd(3)];
+    dbg('robo', { n: n, cs: cs.map(function (c) { return c[0]; }), kind: kind });
+    frame(tp, '鏡に映った 僕(ロボ)。<br>今から <b>3秒間</b> 映像を 映します。<br>よ〜く 見ていてね', '<div style="border:6px solid #b0bec5;border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 3px #eceff1">' + roboSvg(cs) + '</div><div class="hdbar"><i id="hdtm" style="width:100%;background:#e0a300"></i></div>');
+    var t0 = performance.now();
+    IV(function () { var p = 1 - (performance.now() - t0) / 3000; var el = $('#hdtm'); if (el) el.style.width = Math.max(0, p * 100) + '%'; }, 80);
+    T(function () {
+      var q, ans, opts;
+      if (kind === 'count') { q = 'ロボは <b>何体</b> いましたか?'; ans = n; var set = [n]; [-2, -1, 1, 2].sort(function () { return Math.random() - .5; }).forEach(function (d) { if (set.length < 4 && n + d >= 1 && n + d <= 6) set.push(n + d); }); opts = set.sort(function (a, b) { return a - b; }).map(function (v) { return [v + ' 体', v]; }); }
+      else { var c = kind === 'right' ? cs[n - 1][0] : cs[0][0]; q = (kind === 'right' ? '<b>右がわ</b>' : '<b>左がわ') + 'の ロボは、<b>何色</b> でしたか?'; if (kind === 'left') q = '<b>左がわ</b>の ロボは、<b>何色</b> でしたか?'; ans = c; var o = [c]; shuf(RC.map(function (x) { return x[0]; })).forEach(function (x) { if (o.length < 4 && o.indexOf(x) < 0) o.push(x); }); opts = shuf(o).map(function (v) { return [v, v]; }); }
+      var ch = choices(opts, function (v) { done(v === ans, '正解は <b>' + (kind === 'count' ? ans + '体' : ans) + '</b> でした'); });
+      $('#hdc').innerHTML = '<div class="hdt">' + q + '</div>' + ch.html; ch.bind();
+    }, 3000);
+  } });
+  // 聴覚: 言葉を よく聞いて
+  var WF = ['すいか', 'メロン', 'いちご', 'さくらんぼ', 'りんご', 'ぶどう', 'バナナ', 'キウイ', 'もも', 'レモン'], WO = [['みかん', ['みかん', '蜜柑']], ['オレンジ', ['オレンジ']], ['かき', ['かき', '柿']]];
+  function kana(x) { return String(x || '').replace(/[\s　]/g, '').replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }); }
+  function speakSeq(words, onEnd) {
+    var ss = window.speechSynthesis; if (!ss || typeof SpeechSynthesisUtterance === 'undefined') return false;
+    try { ss.cancel(); } catch (e) { /* 無視 */ }
+    var i = 0; (function one() { if (i >= words.length) return onEnd && onEnd(); var u = new SpeechSynthesisUtterance(words[i++]); u.lang = 'ja-JP'; u.rate = 0.85; u.onend = function () { setTimeout(one, 450); }; u.onerror = function () { setTimeout(one, 450); }; try { ss.speak(u); } catch (e) { setTimeout(one, 450); } })();
+    return true;
+  }
+  TYPES.push({ id: 'words', cat: '聴覚', name: '言葉を よく聞いて', run: function (tp) {
+    var kind = rnd(2) ? 'dup' : 'orange', list, ans, accept, q;
+    if (kind === 'dup') { var f = shuf(WF).slice(0, 5); var d = f[rnd(5)]; list = shuf(f.concat([d])); while (list.some(function (x, i) { return i && list[i - 1] === x; })) list = shuf(f.concat([d])); ans = d; accept = [d]; q = '<b>2回</b> 言った 言葉は、何でしょうか?'; }
+    else { var o = WO[rnd(WO.length)]; list = shuf(shuf(WF).slice(0, 5).concat([o[0]])); ans = o[0]; accept = o[1]; q = '<b>オレンジ色</b>の くだものは、何でしたか?'; }
+    dbg('words', { list: list, ans: ans, kind: kind });
+    frame(tp, '今から 言う言葉を <b>よく聞いてね</b>。(1回だけ)', '<button type="button" class="qb pri" id="hdplay">🔊 きく(1回だけ)</button><div id="hdch"></div><button type="button" class="qb sm" id="hdskip">音が 聞こえない(ノーカウント)</button><p class="hdnote">スマホの 音を 出してね</p>');
+    $('#hdskip').onclick = function () { done('skip', '音が 出ない ときは ノーカウントです'); };
+    var played = false;
+    $('#hdplay').onclick = function () {
+      if (played) return; played = true; this.disabled = true; this.textContent = '聞いています…';
+      var ok = speakSeq(list, function () {
+        if (!alive()) return;
+        $('#hdc').innerHTML = '<div class="hdt">' + q + '</div><div class="hdt" style="font-size:.85em;font-weight:600">ひらがな・カタカナ どちらでも OK</div><input id="hdtx" class="pcin" maxlength="12" autocomplete="off" placeholder="こたえ" style="width:100%;box-sizing:border-box;min-height:52px;font-size:1.3em;text-align:center"><button type="button" class="qb pri" id="hdok" style="margin-top:10px">これで 決定</button>';
+        $('#hdok').onclick = function () { var v = kana($('#hdtx').value); if (!v) return A.toast('こたえを いれてね'); done(accept.some(function (a) { return kana(a) === v; }), '正解は <b>' + ans + '</b> でした(' + list.join('・') + ')'); };
+      });
+      if (!ok) { A.toast('この端末では 声が 出せません'); done('skip', '声が 出ない ときは ノーカウントです'); }
+    };
   } });
   // 常識: 人体模型 → その 内ぞうを タップ
   var ORG = [['brain', '脳'], ['lung', '肺'], ['heart', '心臓'], ['liver', '肝臓'], ['stomach', '胃'], ['kidney', '腎臓'], ['sint', '小腸'], ['lint', '大腸'], ['bladder', 'ぼうこう']];
