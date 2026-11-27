@@ -419,17 +419,18 @@
 
   /* ===== 1つの絵を 描きつなぐ ===== */
   // opt: {order, theme, interactive(bool), onDone(strokes, correct)}
+  function themeBox(n, hide) { return hide ? '<div class="drtheme">お題は ひみつ!(さいごの人が あてます)</div>' : '<div class="drtheme">お題: ' + esc(n) + '</div>'; }
   function playPicture(o) {
-    var strokes = [], order = o.order, last = order.length - 1, ti = THEMES.indexOf(o.theme);
+    var strokes = [], order = o.order, last = order.length - 1, ti = THEMES.indexOf(o.theme), hideT = !!(o.interactive && order[last].me);   // 自分が さいごの人なら、お題は 見せない
     function turn(i) {
       if (i === last) return guess();
       var p = order[i];
       if (p.me && o.interactive) return human(i);
       var tpl = o.theme.s[i % o.theme.s.length];
       if (o.interactive) {
-        A.draw('<div class="qc">' + bar(order, i) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div><div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">' + esc(p.name) + ' が かいています…</p></div>');
+        A.draw('<div class="qc">' + bar(order, i) + themeBox(o.theme.n, hideT) + '<div class="drbk">' + svgOf(strokes) + '</div><p style="text-align:center">' + esc(p.name) + ' が かいています…</p></div>');
       }
-      later(function () { strokes.push({ p: jit(tpl), c: i }); if (o.interactive) A.draw('<div class="qc">' + bar(order, i + 1) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div><div class="drbk">' + svgOf(strokes) + '</div></div>'); later(function () { turn(i + 1); }, o.interactive ? 700 : 150); }, o.interactive ? 900 : 100);
+      later(function () { strokes.push({ p: jit(tpl), c: i }); if (o.interactive) A.draw('<div class="qc">' + bar(order, i + 1) + themeBox(o.theme.n, hideT) + '<div class="drbk">' + svgOf(strokes) + '</div></div>'); later(function () { turn(i + 1); }, o.interactive ? 700 : 150); }, o.interactive ? 900 : 100);
     }
     function human(i) {
       drawUI(bar(order, i) + '<div class="drtheme">お題: ' + esc(o.theme.n) + '</div>', strokes, i, function (st) {
@@ -591,7 +592,7 @@
       } else if (S.stage === 'result') netResult(S); else netEnd(S);
     }
     function netBoard(S) {
-      var t = myTeam(S), pic = S.p[t], tm = S.teams[t], ord = S.ord[t], i = pic.s.length, last = S.n - 1, th = THEMES[S.th];
+      var t = myTeam(S), pic = S.p[t], tm = S.teams[t], ord = S.ord[t], i = pic.s.length, last = S.n - 1, th = THEMES[S.th], hideT = tm[ord[last]].h === R.my;
       var op = ord.map(function (k) { return { name: tm[k].nm }; });
       if (pic.g !== null) { A.draw('<div class="qc">' + head(S, t) + bar(op, last) + '<div class="drbk">' + svgOf(pic.s) + '</div><p style="text-align:center">こたえました。あいてチームを まっています…</p></div>'); return; }
       var pl = tm[ord[i]], mine = pl.h === R.my, key = S.round + ':' + t + ':' + i;
@@ -601,7 +602,7 @@
           drawUI(bar(op, i) + '<div class="drtheme">お題: ' + esc(th.n) + '</div>', pic.s, i, function (st) {
             update(function (S2) { var q = S2.p[t]; if (S2.stage !== 'draw' || S2.round !== S.round || q.g !== null || q.s.length !== i) return false; q.s.push({ p: thin(st), c: i }); return true; });
           }, head(S, t));
-        } else A.draw('<div class="qc">' + head(S, t) + bar(op, i) + '<div class="drtheme">お題: ' + esc(th.n) + '</div><div class="drbk">' + svgOf(pic.s) + '</div><p style="text-align:center">' + esc(pl.nm) + ' が かいています…</p></div>');
+        } else A.draw('<div class="qc">' + head(S, t) + bar(op, i) + themeBox(th.n, hideT) + '<div class="drbk">' + svgOf(pic.s) + '</div><p style="text-align:center">' + esc(pl.nm) + ' が かいています…</p></div>');
       } else if (mine) {
         if (acting === key) return; acting = key;
         A.draw('<div class="qc">' + head(S, t) + bar(op, last) + '<h3 style="margin:0 0 6px;text-align:center">お題は なんでしょう?</h3><div class="drbk">' + svgOf(pic.s) + '</div><div class="drch">' + pic.ch.map(function (x, k) { return '<button class="qb" data-k="' + k + '">' + esc(THEMES[x].n) + '</button>'; }).join('') + '</div></div>');
