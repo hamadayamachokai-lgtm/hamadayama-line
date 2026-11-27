@@ -9,7 +9,7 @@
     '#qz .hdbar{height:8px;border-radius:99px;background:#d6e6dc;overflow:hidden;margin:0 0 10px}#qz .hdbar i{display:block;height:100%;background:#2d9a5f;transition:width .4s}#qz .hdcat{display:inline-block;padding:2px 12px;border-radius:99px;background:#6a4bd6;color:#fff;font-weight:800;font-size:.85em;margin-right:6px}' +
     '#qz .hdt{font-size:1.15em;font-weight:800;line-height:1.5;margin:6px 0 10px}#qz .hdbig{font-size:3.6em;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.04em;margin:10px 0}#qz .hdres{text-align:center;padding:16px 10px;animation:hdup .45s}#qz .hdres b.big{display:block;font-size:2.2em;font-weight:900;margin:4px 0}' +
     '#qz .hdopt{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}#qz .hdopt button{margin:0;min-height:56px;font-size:1.2em}#qz .hdkp{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}#qz .hdkp button{margin:0;min-height:52px;font-size:1.3em;padding:0}' +
-    '#qz .hdcv{display:block;width:100%;aspect-ratio:1/1;touch-action:none;background:#fffdf4;border:3px solid #cfc7b4;border-radius:16px}#qz .hdrul{position:relative;height:64px;margin:16px 0 10px;background:linear-gradient(#f3e3a9,#e8d58a);border:2px solid #b69a45;border-radius:6px;touch-action:manipulation;cursor:crosshair}' +
+    '#qz .hdcv{display:block;width:100%;aspect-ratio:1/1;touch-action:none;background:#fffdf4;border:3px solid #cfc7b4;border-radius:16px}#qz .hdrul{position:relative;height:64px;margin:16px 0 10px;background:linear-gradient(#f3e3a9,#e8d58a);border:2px solid #b69a45;border-radius:6px;touch-action:none;cursor:ew-resize;user-select:none;-webkit-user-select:none;overflow:visible}#qz .hdrul b.hdfill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(225,29,72,.35);border-right:3px solid #e11d48;border-radius:4px 0 0 4px;pointer-events:none}' +
     '#qz .hdrul i{position:absolute;top:-2px;bottom:-2px;width:3px;background:#e11d48;transform:translateX(-50%)}#qz .hdrul i.g{background:#1f7a4d}#qz .hdgrid{display:grid;gap:4px;margin:8px 0}#qz .hdgrid button{all:unset;box-sizing:border-box;aspect-ratio:1/1;border-radius:8px;cursor:pointer}' +
     '#qz .hd9{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}#qz .hd9 button{all:unset;box-sizing:border-box;aspect-ratio:1/1;border-radius:14px;background:#e4ddcf;cursor:pointer;transition:background .15s}#qz .hd9 button.on{background:#f2b705;box-shadow:0 0 14px #f2b705}#qz .hd9 button.ok{background:#8fd19e}' +
     '#qz .hdcol{display:flex;justify-content:center;gap:10px;margin:12px 0;flex-wrap:wrap}#qz .hdcol i{width:54px;height:54px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);display:block}#qz .hdcol button{all:unset;cursor:pointer;width:54px;height:54px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}' +
@@ -89,13 +89,18 @@
   // 体感/視覚: 目盛りのない定規
   TYPES.push({ id: 'ruler', cat: '体感', name: '目盛りのない定規', run: function (tp) {
     var len = 15, tg = pick([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
-    dbg('tg', tg); frame(tp, 'この 定規は <b>' + len + 'cm</b> の長さです(目盛りは ありません)。左はしが 0。<br><b>' + tg + 'cm</b> の ところを タップ!', '<div class="hdrul" id="hdr"></div><p class="hdnote">±0.4cmいないで 合格</p>');
-    var bar = $('#hdr'), fin = false;
-    bar.onclick = function (ev) {
-      if (fin) return; fin = true; var r = bar.getBoundingClientRect(), x = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), cm = x * len;
-      bar.insertAdjacentHTML('beforeend', '<i style="left:' + (x * 100) + '%"></i><i class="g" style="left:' + (tg / len * 100) + '%"></i>');
+    dbg('tg', tg); frame(tp, 'この 定規は <b>' + len + 'cm</b> の長さです(目盛りは ありません)。左はしが 0。<br><b>' + tg + 'cm</b> の ところまで、<b>指を 左から 右へ スライド</b>して、はなしてね', '<div class="hdrul" id="hdr"><b class="hdfill" id="hdfill"></b></div><p class="hdnote">指を はなした ところが こたえ(±0.4cmいないで 合格)。はなす前なら 何度でも 動かせます</p>');
+    var bar = $('#hdr'), fill = $('#hdfill'), fin = false, drag = false, xx = 0;
+    function posOf(ev) { var r = bar.getBoundingClientRect(); return Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); }
+    function show(x) { xx = x; fill.style.width = (x * 100) + '%'; }
+    bar.onpointerdown = function (ev) { if (fin) return; ev.preventDefault(); drag = true; try { bar.setPointerCapture(ev.pointerId); } catch (e) { /* 無視 */ } show(posOf(ev)); };
+    bar.onpointermove = function (ev) { if (drag && !fin) { ev.preventDefault(); show(posOf(ev)); } };
+    function release(ev) {
+      if (!drag || fin) return; drag = false; if (ev && ev.type === 'pointerup') show(posOf(ev)); fin = true;
+      var cm = xx * len; bar.insertAdjacentHTML('beforeend', '<i class="g" style="left:' + (tg / len * 100) + '%"></i>');
       T(function () { done(Math.abs(cm - tg) <= 0.4, 'あなたは <b>' + cm.toFixed(1) + 'cm</b> の ところ(正解は 緑の線: ' + tg + 'cm)'); }, 1200);
-    };
+    }
+    bar.onpointerup = release; bar.onpointercancel = release;
   } });
   // 視覚: 立体図をなぞる
   var SHAPES = {
