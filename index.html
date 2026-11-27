@@ -858,7 +858,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-24 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-25 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2346,7 +2346,7 @@ function tourEnd(mode) {
     TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
     return;
   }
-  TR.box.innerHTML = 'このガイドは完了です!<br>ちゃんとできましたね😊<br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span><div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button><button type="button" data-to="1">他も見てみる</button></div>';
+  TR.box.innerHTML = 'このガイドは完了です!<br>できました😊<br><br>あとは画面の指示に従ってください<br><span style="font-size:14px">(まだ画面が読み込めていないときは、少しお待ちください)</span><br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span><div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button><button type="button" data-to="1">他も見てみる</button></div>';
   TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
   TR.box.querySelector('[data-to]').onclick = function (ev) {
     ev.stopPropagation(); tourStop(true); GD_.on = true; GD_.pick = null; try { localStorage.setItem('hmtGuide', '1'); } catch (e) { /* なくても動く */ }
