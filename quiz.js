@@ -369,8 +369,8 @@
       '#qz .gcd::before{content:"\\2605";position:absolute;left:50%;top:-13px;margin-left:-13px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a80,#d32f2f 62%,#a31515);color:#ffe9a8;font-size:14px;line-height:26px;text-align:center;box-shadow:0 3px 3px rgba(0,0,0,.28)}' +
       '#qz .gcd.wd{grid-column:1/-1}'; document.head.appendChild(st); }
     var bt = function (id, ico, t, r, wd) { return '<button type="button" class="gcd' + (wd ? ' wd' : '') + '" id="' + id + '" style="--r:' + r + 'deg"><i>' + ico + '</i>' + t + '</button>'; };
-    draw('<h2 class="hph">GAME</h2><div class="gwall">' + bt('gox', '⭕', '○×ゲーム', -1.5) + bt('gatama2', '🐾', 'あたまおしり', 1.2) + bt('gcards', '🃏', 'カードゲーム', 1) + bt('gcube', '🧊', 'ルービックキューブ', -1.2) + bt('ghun', '💴', '100万円を<br>死守しろ!', -.8) + bt('gtrip', '🗾', '日本一周<br>スゴロク', 1.4) + bt('gmys', '🏯', '歴史推理', -1, true) + '</div>');
-    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred; $('#gmys').onclick = function () { location.hash = 'mystery'; };
+    draw('<h2 class="hph">GAME</h2><div class="gwall">' + bt('gox', '⭕', '○×ゲーム', -1.5) + bt('gatama2', '🐾', 'あたまおしり', 1.2) + bt('gcards', '🃏', 'カードゲーム', 1) + bt('gcube', '🧊', 'ルービックキューブ', -1.2) + bt('ghun', '💴', '100万円を<br>死守しろ!', -.8) + bt('gtrip', '🗾', '日本一周<br>スゴロク', 1.4) + bt('gdraw', '🎨', 'おえかきを<br>完成させろ', 1.1) + bt('gmys', '🏯', '歴史推理', -1, true) + '</div>');
+    $('#gox').onclick = ox; $('#gatama2').onclick = openAtama; $('#gcards').onclick = openCards; $('#gtrip').onclick = openTrip; $('#gcube').onclick = openCube; $('#ghun').onclick = openHundred; $('#gdraw').onclick = openDraw; $('#gmys').onclick = function () { location.hash = 'mystery'; };
   }
 
   /* --- ○×ゲーム(ひとりプレイ / 2人以上プレイ。レベル1〜3 = 3×3・5×5・7×7、1手の時間つき) --- */
@@ -569,7 +569,8 @@
   function openAtama() { loadGame('quiz-atama.js?v=5', 'HmtAtama', 'あたまおしり', function (M) { M.start(api()); }); }
   function openCards() { loadGame('quiz-cards.js?v=13', 'HmtCards', 'カードゲーム', function (M) { M.start(api()); }); }
   function openCube() { loadGame('quiz-cube.js?v=7', 'HmtCube', 'ルービックキューブ', function (M) { M.start(api()); }); }
-  function openHundred() { loadGame('quiz-hundred.js?v=5', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
+  function openDraw() { loadGame('quiz-draw.js?v=1', 'HmtDraw', 'おえかきを完成させろ', function (M) { M.start(api()); }); }
+  function openHundred() { loadGame('quiz-hundred.js?v=6', 'HmtHundred', '100万円を死守しろ!', function (M) { M.start(api()); }); }
   function openTrip() { loadGame('quiz-trip.js?v=10', 'HmtQuizTrip', '日本一周すごろく', function (M) { M.start(api()); }); }
   function toastMsg(t) { var d = document.createElement('div'); d.textContent = t; d.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:99'; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2500); }
   function api() {
