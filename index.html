@@ -855,7 +855,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-22 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-23 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2128,9 +2128,10 @@ var GTUT_ = {
   gdraw: [{ sel: '#dro', next: 1, say: 'ロボットの人数を選びます(3〜8人)。多いほど、にぎやかな絵になります', wait: '少し待ちましょう' },
     { sel: '#drgo', say: '決まったら「はじめる」を押します' },
     { sel: '#drsp', say: 'ルーレットが出ます。「スタート」を押すと、まわって、お題と かく順番が 決まります', wait: '少し待ちましょう' },
-    { sel: '#drsv', next: 1, say: 'あなたの番になりました。この中に、お題に そって、指で「一筆」(指を はなすまで)かきます。ひとりで ぜんぶ かいてしまうと、つぎの人が こまるので、よく考えてね', wait: 'ロボットの番です。少し待ちましょう' },
-    { sel: '#drre', next: 1, say: 'まちがえたら「かきなおし」で、かきなおせます' },
-    { sel: '#drok', say: 'かけたら「これで OK」を押します。つぎの人が、つづきを かきます。最後の人は、お題が何かを 答えます。かいた絵は、あなた専用のギャラリーに かざられます' }],
+    { sel: function () { return document.querySelector('#drsv') || document.querySelector('.drch'); }, next: 1, wait: 'ロボットの番です。少し待ちましょう', say: function () { return document.querySelector('#drsv') ? 'あなたの番になりました。この中に、お題に そって、指で「一筆」(指を はなすまで)かきます。ひとりで ぜんぶ かいてしまうと、つぎの人が こまるので、よく考えてね' : 'あなたは、さいごの人です。お題は 見えません。ここまでの絵を見て、お題が何かを、下から選びます'; } },
+    { skipif: function () { return !document.querySelector('#drre'); }, sel: '#drre', next: 1, say: 'まちがえたら「かきなおし」で、かきなおせます' },
+    { skipif: function () { return !document.querySelector('#drok'); }, sel: '#drok', say: 'かけたら「これで OK」を押します。つぎの人が、つづきを かきます。最後の人は、お題が何かを 答えます。かいた絵は、あなた専用のギャラリーに かざられます。ここで チュートリアルは おわりです' },
+    { skipif: function () { return !document.querySelector('.drch'); }, sel: '.drch', say: 'お題だと思うものを 1つ 押します。答えが出たら、チュートリアルは おわりです。かいた絵は、あなた専用のギャラリーに かざられます' }],
   gtrip: [{ skipif: function () { return !document.querySelector('#tgo'); }, sel: '#tgo', say: '最初の出来事が出ました。「旅に出発!」を押します' },
     { sel: '#troll', say: '「サイコロを ふる」を押します。出た目の数だけ 進みます', wait: '少し待ちましょう' },
     { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' },
@@ -4130,7 +4131,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=41'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=42'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
@@ -4232,7 +4233,7 @@ function bdBind(items, par, kind, list, redraw, opt) {
 function showCert(id) {
   var run = function () { window.HmtDraw.cert({ call: function (a, b) { return api(a, b); } }, id); };
   if (window.HmtDraw) return run();
-  var sc = document.createElement('script'); sc.src = 'quiz-draw.js?v=9'; sc.onload = run; sc.onerror = function () { toast('よみこめませんでした。通信を たしかめてください'); }; document.head.appendChild(sc);
+  var sc = document.createElement('script'); sc.src = 'quiz-draw.js?v=10'; sc.onload = run; sc.onerror = function () { toast('よみこめませんでした。通信を たしかめてください'); }; document.head.appendChild(sc);
 }
 document.addEventListener('click', function (e) { var b = e.target && e.target.closest ? e.target.closest('[data-cert]') : null; if (b) { e.preventDefault(); showCert(b.getAttribute('data-cert')); } });
 function phUrl(id, w) { return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (w || 800); }
