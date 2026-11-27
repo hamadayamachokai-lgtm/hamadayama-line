@@ -62,6 +62,7 @@
     A.draw(h + '<div class="qc hdres"><div style="font-size:3em">' + (ok === true ? '⭕' : ok === false ? '💸' : '🔇') + '</div><b class="big" style="color:' + (ok === true ? '#1f7a4d' : ok === false ? '#c0392b' : '#667085') + '">' + (ok === true ? 'せいかい!' : ok === false ? '−10万円' : 'ノーカウント') + '</b><div style="line-height:1.7">' + (msg || '') + '</div>' + (extra || '') + '</div><button type="button" class="qb pri" id="hdnext">' + (last ? '結果を見る' : 'つぎの もんだい') + '</button>');
     root.setAttribute('data-hd', tok);
     $('#hdnext').onclick = function () { if (last) finish(); else next(); };
+    if (G.n === 1) hold('after1', { next: function () { if (last) finish(); else next(); } });   // ガイド(チュートリアル)用: 1問目が終わったところで止める
   }
   function choices(opts, cb) {   // opts: [[label,value]...]
     var h = '<div class="hdopt">' + opts.map(function (o, i) { return '<button type="button" class="qb" data-o="' + i + '">' + o[0] + '</button>'; }).join('') + '</div>';
@@ -375,6 +376,7 @@
   } });
 
   /* ===== しんこう ===== */
+  function hold(stage, ctl) { var h = window.HmtHundred && window.HmtHundred.hold; try { return typeof h === 'function' ? !!h(stage, ctl) : false; } catch (e) { return false; } }
   function next() {
     var tp = G.list[G.n]; tp.run(tp);
   }
@@ -394,6 +396,7 @@
     cats.forEach(function (c) { var l = shuf(TYPES.filter(function (t) { return t.cat === c; })); list.push(l[0]); });
     var rest = shuf(TYPES.filter(function (t) { return list.indexOf(t) < 0; })); while (list.length < 10 && rest.length) list.push(rest.shift());
     G = { n: 0, total: Math.min(10, list.length), money: 100, right: 0, list: shuf(list) };
+    if (hold('first', { go: next, hub: function () { tok = ''; A.hub(); } })) return;   // ガイド用: 1問目の前で止める
     next();
   }
   function start(api) {
