@@ -853,7 +853,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-8 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-9 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2003,6 +2003,7 @@ var TOURS_ = {
   g_cube: { t: 'ルービックキューブの場所を、教えてもらう', home: 1, steps: GTOP_('#gcube', 'ルービックキューブ') },
   g_hun: { t: '100万円ゲームの場所を、教えてもらう', home: 1, steps: GTOP_('#ghun', '100万円を死守しろ!') },
   g_trip: { t: '日本一周スゴロクの場所を、教えてもらう', home: 1, steps: GTOP_('#gtrip', '日本一周スゴロク') },
+  g_draw: { t: 'おえかきゲームの場所を、教えてもらう', home: 1, steps: GTOP_('#gdraw', 'おえかきを完成させろ') },
   g_mys: { t: '歴史推理の場所を、教えてもらう', home: 1, steps: GTOP_('#gmys', '歴史推理') },
   tweetlook: { t: 'Tweetを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="board"]', say: 'この「Tweet」を押すと、みんなの投稿が見られます' }] },
   tweetnew: { t: 'Tweetを書く場所を、教えてもらう', home: 1, steps: [
@@ -2055,7 +2056,7 @@ var TOURS_ = {
   weather: { t: '天気を見る場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="weather"]', say: 'この「天気」を押すと、浜田山の天気が見られます' } ] }
 };
-var GNAME_ = { gox: '○×ゲーム', gatama2: 'あたまおしり', gcards: 'カードゲーム', gcube: 'ルービックキューブ', ghun: '100万円ゲーム', gtrip: '日本一周スゴロク', gmys: '歴史推理' };
+var GNAME_ = { gox: '○×ゲーム', gatama2: 'あたまおしり', gcards: 'カードゲーム', gcube: 'ルービックキューブ', ghun: '100万円ゲーム', gtrip: '日本一周スゴロク', gmys: '歴史推理', gdraw: 'おえかきを完成させろ' };
 function gOxCell_() { return document.querySelector('.oxc[aria-label="あき"]'); }
 var GCARDPRE_ = [{ sel: '#sMode', next: 1, say: 'ここを変更して、モードや人数を選びます。\n一人でやるなら、このままでOKです' }];
 var GCFG_ = {
@@ -2065,6 +2066,7 @@ var GCFG_ = {
   gcube: { pre: [{ sel: '#cbMd', next: 1, say: 'ここで、モードを選びます。\n特訓…ひとりでじっくり(攻略補助も使えます)\n対戦…ロボットと早さくらべ\n大会…ランキングに挑戦\nはじめては「特訓」がおすすめです' }, { sel: '#cbLv', next: 1, say: 'ここで、キューブの大きさ(むずかしさ)を選びます。レベル1は2×2×2、レベル2はふつうの3×3×3です。はじめては「レベル1」がおすすめです' }], go: '#cbgo' },
   ghun: { pre: [], go: '#hdstart', goSay: '「クイズに不正解だと、10万円ずつ泥棒に盗まれます」。最後に残るお金を、がんばって守りましょう。\n\n「スタート」を押します' },
   gtrip: { pre: [{ sel: '#trmd', next: 1, say: 'ここで、あそびかたを選びます。一人でやるなら、このままでOKです(ロボットと旅をします)' }], go: '#trgo' },
+  gdraw: { pre: [], go: '#drsolo', goSay: 'お題に そって 1人一筆ずつ かいて つなぎ、最後の人が お題を当てるゲームです。\n\nまずは「一人モード」を押します' },
   gmys: { pre: [], go: '#mgo', goSay: '幕末の志士や戦国武将の事件を、証言から推理するゲームです。\n\n「事件をはじめる」を押します' }
 };
 var GTUT_ = {
@@ -2085,6 +2087,7 @@ var GTUT_ = {
     { sel: '#cbundo', next: 1, say: 'まちがえたら、「ひとつ もどす」で、もどせます' },
     { sel: '.cbs', next: 1, say: 'なぞるのが むずかしいときは、この「ボタンで まわす」でも 動かせます(押して ひらいてください)' }],
   ghun: [],
+  gdraw: [],
   gtrip: [{ skipif: function () { return !document.querySelector('#tgo'); }, sel: '#tgo', say: '最初の出来事が出ました。「旅に出発!」を押します' },
     { sel: '#troll', say: '「サイコロを ふる」を押します。出た目の数だけ 進みます', wait: '少し待ちましょう' },
     { sel: '.tbd', next: 1, say: 'これが日本地図のコースです。止まったマスで、クイズや出来事が起きます。日本一周を めざしましょう', wait: '少し待ちましょう' }],
@@ -4036,7 +4039,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=31'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=32'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
