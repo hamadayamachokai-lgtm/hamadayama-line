@@ -287,7 +287,7 @@
     botMs: function () { return 2200 + Math.random() * 2600; },
     bot: function (S) {
       var p = 1 + Math.floor(Math.random() * (S.n - 1)), left = []; S.own.forEach(function (o, k) { if (o === -1) left.push(k); });
-      if (Math.random() < 0.3) return null;
+      if (window.HMT_TUT || Math.random() < 0.3) return null;   // チュートリアル中は、ロボットは取らない
       return { p: p, take: Math.random() < 0.88 ? S.q[S.qi] : left[Math.floor(Math.random() * left.length)] };
     },
     html: function (S, v, sel) {
