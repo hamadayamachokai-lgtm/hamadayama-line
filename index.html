@@ -1010,7 +1010,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-9 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-10 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2498,7 +2498,7 @@ function tourTick() {
 }
 function tourRender(st) {
   var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy; TR.box.classList.toggle('sm', !!TOURS_[TR.name].compact);
-  TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
+  TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next && tourCanPrev_() ? '<button type="button" class="q" data-tb="1">前へ</button>' : '') + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
   var TT = TOURS_[TR.name];
   if (TT.auto) {   // 自動で進む説明: 「ストップ」で止まる/「つづける」で再開/「倍速」で速さを変える
     clearTimeout(TR.at); if (!TR.spd) TR.spd = 1;
@@ -2506,13 +2506,14 @@ function tourRender(st) {
     TR.box.innerHTML = '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>' + (st.title ? '<div style="font-size:18px;font-weight:800;margin-bottom:2px">' + esc(st.title) + '</div>' : '') + '<div style="font-weight:600">' + esc(sy).replace(/\n/g, '<br>') + '</div>' +
       (st.more ? '<div class="tb"><button type="button" data-tm="1" style="background:#1b6fe0">詳しいガイドを見たい</button></div>' : '') +
       (tgs ? '<div style="font-size:12.5px;font-weight:600;margin-top:6px;color:#444"><b>検索タグ</b><br>' + tgs + '</div>' : '') +
-      '<div class="tb"><button type="button" data-tp="1">' + (TR.pause ? 'つづける' : 'ストップ') + '</button><button type="button" data-tn="1">次へ</button><button type="button" data-ts="1" style="background:#6b7280">' + TR.spd + '倍速</button><button type="button" class="q" data-tq="1">説明を終わる</button></div>';
+      '<div class="tb"><button type="button" data-tp="1">' + (TR.pause ? 'つづける' : 'ストップ') + '</button>' + (tourCanPrev_() ? '<button type="button" class="q" data-tb="1">前へ</button>' : '') + '<button type="button" data-tn="1">次へ</button><button type="button" data-ts="1" style="background:#6b7280">' + TR.spd + '倍速</button><button type="button" class="q" data-tq="1">説明を終わる</button></div>';
     var tp = TR.box.querySelector('[data-tp]'); tp.onclick = function (ev) { ev.stopPropagation(); TR.pause = !TR.pause; clearTimeout(TR.at); tp.textContent = TR.pause ? 'つづける' : 'ストップ'; if (!TR.pause) TR.at = setTimeout(tourNext, 1500 / TR.spd); };
     var ts = TR.box.querySelector('[data-ts]'); ts.onclick = function (ev) { ev.stopPropagation(); TR.spd = ALLSPD_[(ALLSPD_.indexOf(TR.spd) + 1) % ALLSPD_.length]; ts.textContent = TR.spd + '倍速'; if (!TR.pause) { clearTimeout(TR.at); TR.at = setTimeout(tourNext, (st.ms || 6000) / TR.spd); } };
     var tm = TR.box.querySelector('[data-tm]'); if (tm) tm.onclick = function (ev) { ev.stopPropagation(); gdAllMore_(st.more); };
     if (!TR.pause) TR.at = setTimeout(tourNext, (st.ms || 6000) / TR.spd);
   }
   var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
+  var pb = TR.box.querySelector('[data-tb]'); if (pb) pb.onclick = function (ev) { ev.stopPropagation(); tourPrev(); };
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
   var ob = TR.box.querySelector('[data-to]'); if (ob) ob.onclick = function (ev) { ev.stopPropagation(); tourOther_(); };
 }
@@ -2521,10 +2522,27 @@ function tourPos() {
   if (!tourVisible(TR.el)) return;
   var r = TR.el.getBoundingClientRect(), p = 6, h = TR.hole, b = TR.box;
   h.style.display = 'block'; h.style.left = (r.left - p) + 'px'; h.style.top = (r.top - p) + 'px'; h.style.width = (r.width + p * 2) + 'px'; h.style.height = (r.height + p * 2) + 'px';
-  var stp = tourStep();
-  if (stp && stp.dock === 'top') { b.style.top = '8px'; b.style.left = Math.max(12, (window.innerWidth - b.offsetWidth) / 2) + 'px'; return; }
-  var bh = b.offsetHeight, bw = b.offsetWidth, vh = window.innerHeight, below = vh - r.bottom, top = below > bh + 24 ? r.bottom + p + 12 : Math.max(8, r.top - p - bh - 12);
-  b.style.top = top + 'px'; b.style.left = Math.max(12, Math.min(window.innerWidth - bw - 12, r.left + r.width / 2 - bw / 2)) + 'px';
+  var stp = tourStep(), gap = 10;
+  b.style.maxHeight = ''; b.style.overflow = '';
+  var bh = b.offsetHeight, bw = b.offsetWidth, vh = window.innerHeight, above = r.top - p - 8, below = vh - (r.bottom + p) - 8, top;
+  // 光っている場所と、説明の枠が、かさならないように置く(上→下→せまいほうの順にさがす)
+  if (stp && stp.dock === 'top' && bh + gap <= above) top = 8;
+  else if (bh + gap <= below) top = r.bottom + p + gap;
+  else if (bh + gap <= above) top = Math.max(8, r.top - p - gap - bh);
+  else { var useBelow = below >= above, room = Math.max(90, (useBelow ? below : above) - gap); b.style.maxHeight = room + 'px'; b.style.overflow = 'auto'; bh = Math.min(bh, room); top = useBelow ? r.bottom + p + gap : Math.max(8, r.top - p - gap - bh); }
+  b.style.top = top + 'px'; b.style.left = (stp && stp.dock === 'top' && top === 8) ? Math.max(12, (window.innerWidth - bw) / 2) + 'px' : Math.max(12, Math.min(window.innerWidth - bw - 12, r.left + r.width / 2 - bw / 2)) + 'px';
+}
+/** 前の説明にもどれるのは、ひとつ前が「説明だけの場面(次へ)」のとき(ボタンを押して画面が変わった場面には、もどれない) */
+function tourCanPrev_() {
+  var T = TOURS_[TR.name]; if (!T || !TR.on || TR.i <= 0) return false;
+  var j = TR.i - 1; while (j > 0 && T.steps[j].skipif && T.steps[j].skipif()) j--;
+  var pr = T.steps[j]; return !!(pr && pr.next && !pr.ask && !pr.expand && !(pr.skipif && pr.skipif()));
+}
+function tourPrev() {
+  if (!TR.on || !TOURS_[TR.name] || TR.hold || !tourCanPrev_()) return;
+  var T = TOURS_[TR.name]; clearTimeout(TR.at); var j = TR.i - 1; while (j > 0 && T.steps[j].skipif && T.steps[j].skipif()) j--;
+  TR.i = j; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
+  tourWaitUI(T.steps[TR.i].wait || '画面の読み込み中。少し待ちましょう');
 }
 function tourNext() {
   if (!TR.on || !TOURS_[TR.name] || TR.hold) return;
