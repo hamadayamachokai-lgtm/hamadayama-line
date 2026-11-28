@@ -756,7 +756,7 @@ function renderNav(h) {
   var el = $('#bnav');
   if (!S.me || S.me.state !== 'approved') { if (el) el.parentNode.removeChild(el); document.body.classList.remove('hasnav'); return; }
   var items = [['home', 'ホーム', 'home', true]];
-  S.me.menu.forEach(function (m) { if (m.key === 'mystery') return; if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
+  S.me.menu.forEach(function (m) { if (m.key === 'mystery' || !LABEL[m.key]) return; if (m.section === 'common') items.push([m.key, NAVLABEL[m.key] || LABEL[m.key], m.key, m.ready]); });
   if (isOfficer()) items.push(['officer', '役員', 'officer', true]);
   items.push(['manual', '説明書', 'manual', true]);
   var cur = !h || h === 'home' ? 'home' : (/^(o_|a_)/.test(h) ? 'officer' : (h === 'dash' ? 'dashboard' : (h === 'mailnew' ? 'mail' : (/^(bosai|profile)/.test(h) ? 'card' : /^ev/.test(h) ? 'event' : ((h === 'boardnew' ? 'board' : (h === 'helpnew' ? 'help' : h)))))));
@@ -1115,7 +1115,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-24 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-25 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1368,7 +1368,7 @@ function mapBtn(q) { return '<button class="sbtn" data-map="' + esc(q) + '">' + 
 function bindMaps(root) { Array.prototype.forEach.call((root || document).querySelectorAll('[data-map]'), function (b) { b.onclick = function () { openExternal(mapUrl(b.dataset.map)); }; }); }
 function offErr(title, e, back) { sub(title, '<div class="banner advisory"><div><b>表示できませんでした</b><br>' + esc(e.message) + '</div></div>', back); }
 function officerView() {
-  var tiles = S.me.menu.filter(function (m) { return m.section === 'officer' || m.section === 'admin'; });
+  var tiles = S.me.menu.filter(function (m) { return (m.section === 'officer' || m.section === 'admin') && LABEL[m.key]; });
   sub('役員専用', '<div class="grid" style="grid-template-columns:repeat(2,1fr)">' + tiles.map(function (m) {
     return '<button class="tile officer' + (m.ready ? '' : ' soon') + '" data-k="' + m.key + '">' + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
   }).join('') + '</div><p class="muted" style="margin:14px 4px">このメニューは、役員の方だけに表示されます。</p>');
