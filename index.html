@@ -977,7 +977,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-6 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-7 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -990,7 +990,12 @@ function homeView() {
     tx.style.display = ws.length ? '' : 'none';
     $('#tgm').textContent = !ws.length ? '' : n ? '「' + tq.value.trim() + '」に合うボタン ' + n + '個だけ、出しています(ほかは かくしています)' : '「' + tq.value.trim() + '」に合うボタンは ありません。別のことばで、ためしてください';
   };
-  tq.oninput = tgFilter; tx.onclick = function () { tq.value = ''; tgFilter(); tq.blur(); };
+  var tgHero = function (focus) {   // 入力中・検索中は、あいさつ(上の部分)をかくして、ボタンを広く見せる
+    var hero = document.querySelector('.hero'), on = focus || !!tq.value.trim(); if (hero) hero.style.display = on ? 'none' : '';
+    if (on && focus) setTimeout(function () { try { tq.scrollIntoView({ block: 'start' }); } catch (e) { /* 無視 */ } }, 150);
+  };
+  tq.onfocus = function () { tgHero(true); }; tq.onblur = function () { tgHero(false); };
+  tq.oninput = function () { tgFilter(); tgHero(true); }; tx.onclick = function () { tq.value = ''; tgFilter(); tq.blur(); tgHero(false); };
   var gl = $('#gdlast'); if (gl) gl.onclick = function () { var l = lastScr_(); if (l) location.hash = '#' + l; else toast('まだ前の画面がありません。ボタンを押して画面を開くと、次から使えます'); };
   var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; GD_.pick = null; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
