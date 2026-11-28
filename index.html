@@ -681,7 +681,7 @@ function navHtml_() {
     else if (x.kind === 'key') part[i] = '<button type="button" class="pl' + c + (x.auto ? ' au' : '') + '" data-nv="slot" data-i="' + i + '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
     else part[i] = '<button type="button" class="pl add' + c + '" data-nv="slot" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
   });
-  part.h = '<button type="button" class="pe' + (ed ? ' on' : '') + '" data-nv="edit" aria-label="ボタンの入れかえ">' + (ed ? '完了' : '✎') + '</button>' + '<button type="button" class="hm' + (S.navSel === 'h' ? ' sel' : '') + '" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button>';
+  part.h = '<button type="button" class="pe' + (ed ? ' on' : '') + '" data-nv="edit" aria-label="ボタンの入れかえ">' + (ed ? '完了' : '✏️') + '</button>' + '<button type="button" class="hm' + (S.navSel === 'h' ? ' sel' : '') + '" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button>';
   navOrd_().forEach(function (k) { h += part[k]; });
   return h + '</span>';
 }
@@ -998,7 +998,7 @@ var GDKW_ = { flyer: 'イベントチラシ チラシ ちらし イベント 行
 function gdIndex() {
   var has = {}, L = []; S.me.menu.forEach(function (m) { has[m.key] = 1; });
   GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1] + ' ' + tagList_(m[0]).join(' ')]); }); });
-  L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]); L.push(['ショートカット(上のボタン)の登録・削除', 'scut', 'ショートカット 簡易ボタン 上のボタン 他の画面 お好みボタン お気に入り 前回 ホーム 登録 削除 ＋ ✎']);
+  L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]); L.push(['ショートカット(上のボタン)の登録・削除', 'scut', 'ショートカット 簡易ボタン 上のボタン 他の画面 お好みボタン お気に入り 前回 ホーム 登録 削除 ＋ ✏️']);
   if (isOfficer()) [['o_roster', '会員を検索', 'o_roster'], ['o_circ', '回覧元を検索', 'o_circ'], ['o_gift', '商品券対象者を知りたい', 'o_circ'], ['o_unpaid', '未納者を知りたい', 'o_unpaid'], ['o_sched', '役員の予定', 'o_sched'], ['o_kanban', '捨て看板を依頼したい', 'o_kanban'], ['o_report', '事業報告・計画提出', 'o_report'], ['o_supporter', 'サポーター募集(役員)', 'o_supporter'], ['o_sokai', '総会', 'o_sokai'], ['o_summary', '集計結果', 'o_summary'], ['o_mama', 'スナックママの部屋に行く', 'o_mama']].forEach(function (x) {
     if (!has[x[2]]) return; var id = x[0] === 'o_gift' ? 'o_gift' : gdMenuTour(x[0]); L.push([x[1] + '(役員)', id, (GDKW_[id === 'm_o_sokai' ? 'm_o_sokai' : x[0]] || '') + ' ' + tagList_(x[0] === 'o_gift' ? 'o_circ' : x[0]).join(' ')]);
   });
@@ -1066,7 +1066,7 @@ function gdAllMore_(k) {
 function gdAllStart_() {
   var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')).filter(function (t) { return t.style.display !== 'none' && !/^a_/.test(t.dataset.k); }), last = '';
   var steps = [{ sel: '.gsec', next: 1, ms: 9000, dock: 'top', title: '画面ボタンの説明', say: 'ホームのボタンを、ひとつずつ ご説明します。\n自動で動きますが、動きが早ければ「ストップ」してください。\n遅いと感じたら、手動で「次へ」を押してください。\n「倍速」のボタンで、速さを変えられます。' }];
-  var NAVSAY_ = 'ホーム以外の画面では、上にこのボタンが出ます。\n・「前回」: ひとつ前に見ていた画面にもどります\n・「＋」: よく使うボタンを置けます(アクセスの多い順に自動で置くこともできます)\n・「✎」: 前回やボタンの入れかえ・削除ができます\n・「ホーム」: いつでもホームにもどります';
+  var NAVSAY_ = 'ホーム以外の画面では、上にこのボタンが出ます。\n・「前回」: ひとつ前に見ていた画面にもどります\n・「＋」: よく使うボタンを置けます(アクセスの多い順に自動で置くこともできます)\n・「✏️」: 前回やボタンの入れかえ・削除ができます\n・「ホーム」: いつでもホームにもどります';
   steps.push({ sel: '.hero', next: 1, ms: 8000, title: 'いちばん上', say: 'あなたのお名前と、ステータス(会員・役員など)です。\n名前の横のアイコンを押すと、アイコンを変えられます。' });
   if (document.querySelector('.hnotes')) steps.push({ sel: '.hnotes', next: 1, ms: 8000, title: 'お知らせの枠', say: '災害・チャットの通知・役員予定・タスクなど、今のお知らせが出ます。\n押すと、その画面が開きます。' });
   steps.push({ sel: function () { var d = document.getElementById('navdemo'); if (!d) { d = document.createElement('div'); d.id = 'navdemo'; d.style.cssText = 'margin:10px 16px;padding:8px 10px;border-radius:12px;background:#fff;border:1.5px solid var(--line);display:flex;justify-content:flex-end;pointer-events:none'; d.innerHTML = navHtml_().replace('id="hnav"', ''); var hr = document.querySelector('.hero'); if (hr && hr.parentNode) hr.parentNode.insertBefore(d, hr.nextSibling); } return d; }, next: 1, ms: 14000, title: '上のボタン(ほかの画面)', say: NAVSAY_ });
@@ -1120,7 +1120,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-27 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-28 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2398,11 +2398,11 @@ var TOURS_ = {
     { sel: '[data-hgo="recruit"]', say: '人手がほしいときは、この「みんなに募集する」を押します' } ] },
   scut: { t: 'ショートカット(上のボタン)を、登録・削除してみる', home: 1, nocount: 0, fin: { say: 'このガイドを終了します。\n好きなショートカットを設定してみてください', btn: 'ガイドを終了する', other: '別のガイドをする' }, steps: [
     { sel: function () { var k = ['weather', 'dashboard', 'card', 'suginami', 'blog', 'board'], i, e; for (i = 0; i < k.length; i++) { e = document.querySelector('.tile[data-k="' + k[i] + '"]'); if (tourVisible(e)) return e; } return document.querySelector('.tile[data-k]'); }, say: 'ショートカットは、ホーム以外の画面の上に出ます。\nまず、この光っているボタンを押して、画面を開いてください' },
-    { skipif: function () { return !!document.querySelector('#hnav .pl.add'); }, sel: '#hnav .pe', say: '3つの場所が、すでに使われています。\nまず「✎」を押してください(入れかえモードになります)', pick: function () { S.navEdit = false; } },
+    { skipif: function () { return !!document.querySelector('#hnav .pl.add'); }, sel: '#hnav .pe', say: '3つの場所が、すでに使われています。\nまず「✏️」を押してください(入れかえモードになります)', pick: function () { S.navEdit = false; } },
     { sel: function () { return document.querySelector('#hnav .pl.add') || [].slice.call(document.querySelectorAll('#hnav .pl')).pop(); }, say: 'ショートカットを登録してみましょう。\nまずはこの「＋」ボタンを押してください', pick: function (t) { var b = t.closest ? t.closest('.pl') : null; TR.sci = b ? b.getAttribute('data-i') : '1'; } },
     { sel: '.npk .npg.cat', need: '.np', say: 'このカテゴリから、好きなものを選んでください' },
     { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav'); }, next: 1, noact: '#hnav .pl', noactMsg: '説明中は押せません。「次へ」を押してください', say: '完了です!\nこのとおり、上にボタンが置かれました' },
-    { sel: '#hnav .pe', say: '削除もやってみましょう。\nまず「✎」を押してください', pick: function () { S.navEdit = false; } },
+    { sel: '#hnav .pe', say: '削除もやってみましょう。\nまず「✏️」を押してください', pick: function () { S.navEdit = false; } },
     { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav .pl'); }, say: '削除したいボタン(いま置いたボタン)を押してください' },
     { sel: '.npk .np.del', say: '「このボタンを削除」を押してください', pick: function () { S.navEdit = false; } } ] },
   gdoff: { t: 'ガイドの終わらせ方を、教えてもらう', home: 1, steps: [
@@ -3684,7 +3684,7 @@ function repRowHtml(i, k, rep, ro, edit) {
     var nv = String(v || '').replace(i.unit, '').trim();
     return '<div class="fr" data-k="count"><label>数</label><input type="text" class="fi fu" data-k="count" data-unit="' + esc(i.unit) + '" inputmode="numeric" maxlength="12" placeholder="数字だけ入れてください" value="' + esc(nv) + '"' + dis + '><span class="u">' + esc(i.unit) + '</span>' + ok + '</div>';
   }
-  return '<div class="fr" data-k="' + k + '"><label>' + name + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : k === 'count' ? 120 : 40) + '"' + (k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + dis + '>' + (lab[2] && (k !== 'count' || !v || /^\d+$/.test(String(v).trim())) ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'count' && !lock ? '<button type="button" class="cal ccb" title="年◯回×場所の数 などを組み立てる">✎</button>' : '') + (k === 'date' && !lock ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + ok + '</div>';
+  return '<div class="fr" data-k="' + k + '"><label>' + name + '</label><input type="text" class="fi" data-k="' + k + '" maxlength="' + (k === 'note' ? 300 : k === 'date' ? 200 : k === 'count' ? 120 : 40) + '"' + (k === 'people' ? ' inputmode="numeric"' : '') + ' placeholder="' + esc(lab[1]) + '" value="' + esc(v) + '"' + dis + '>' + (lab[2] && (k !== 'count' || !v || /^\d+$/.test(String(v).trim())) ? '<span class="u">' + lab[2] + '</span>' : '') + (k === 'count' && !lock ? '<button type="button" class="cal ccb" title="年◯回×場所の数 などを組み立てる">✏️</button>' : '') + (k === 'date' && !lock ? '<button type="button" class="cal" title="カレンダーから選ぶ(複数可)">📅</button>' : '') + ok + '</div>';
 }
 /** 報告・計画の、1つの活動=1枚のカード。管理者がONにした欄(開催日・開催回数・参加人数・備考)だけを、穴埋め式で聞く */
 function repFillCard(dep, d, list, sums, rep) {
