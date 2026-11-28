@@ -946,7 +946,7 @@ function heroNotes(me) {
   if (sa && sa.n) n.push({ k: 'o_sched', t: '役員予定が' + (sa.days <= 0 ? '今日' : sa.days === 1 ? '明日' : sa.days + '日後') + 'にあります。<br>参加の表明ご協力お願いします。', l: '役員予定表' });
   var tq = (b.sched_tag || []).map(function (e) {
     var md = parseInt(e.date.slice(5, 7), 10) + '/' + parseInt(e.date.slice(8, 10), 10) + '(' + e.dow + ')';
-    return '<div class="hq" data-sid="' + esc(e.id) + '"><div class="hqt">' + md + ' ' + esc(e.title) + 'は、出席可能ですか?</div><div class="hqb"><button type="button" class="hqy" data-sans="参加">はい</button><button type="button" class="hqy" data-sans="不参加">いいえ</button></div></div>';
+    return '<div class="hq" data-sid="' + esc(e.id) + '"><div class="hqt">' + md + ' ' + esc(e.title) + 'は、出席可能ですか?<small style="display:block;font-weight:600;font-size:12px;opacity:.7">(役員・管理者の確認です。対象外もえらべます)</small></div><div class="hqb"><button type="button" class="hqy" data-sans="参加">参加</button><button type="button" class="hqy" data-sans="不参加">不参加</button><button type="button" class="hqy" data-sans="対象外">対象外</button></div></div>';
   }).join('');
   var cmd = new Date(), cmv = (cmd.getMonth() + 1) * 100 + cmd.getDate();
   if (cmv >= 1201 && cmv <= 1231) n.push({ k: 'tips', t: cmv <= 1214 ? 'おえかきコンクール 出品受付中!<br>ゲームの「おえかき」から出品できます。' : cmv <= 1225 ? 'おえかきコンクール 投票受付中!<br>ゲームの「おえかき」から投票できます。' : 'おえかきコンクール 結果発表!<br>ゲームの「おえかき」で見られます。', l: 'ゲーム' });
@@ -1112,7 +1112,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-21 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-22 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1143,7 +1143,7 @@ function homeView() {
       Array.prototype.forEach.call(box.querySelectorAll('.hqy'), function (x) { x.disabled = true; });
       api('o_sched_answer', { id: id, answer: ans }).then(function () {
         var st = (S.me.badges && S.me.badges.sched_tag) || []; S.me.badges.sched_tag = st.filter(function (e) { return e.id !== id; });
-        toast(ans === '参加' ? '「出席」で登録しました' : '「欠席」で登録しました'); homeView();
+        toast('「' + ans + '」で登録しました'); homeView();
       }).catch(function (e) { Array.prototype.forEach.call(box.querySelectorAll('.hqy'), function (x) { x.disabled = false; }); toast(e.message); });
     };
   });
