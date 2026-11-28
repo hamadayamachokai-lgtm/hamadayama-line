@@ -464,11 +464,23 @@
     });
     return sols;
   }
+  function ticketSVG(nums) {   // 昔ながらの 硬い切符(うす茶色)。右がわに 4けたの数字が たてに 入っている
+    var f = 'font-family="Hiragino Mincho ProN,Yu Mincho,serif"';
+    return '<svg viewBox="0 0 560 330" class="hdtk" role="img" aria-label="切符 ' + nums.join('') + '"><rect x="4" y="4" width="552" height="322" rx="14" fill="#edd59b" stroke="#c9a85a" stroke-width="4"/>' +
+      '<g font-weight="900" fill="#111"><text transform="translate(60,262) rotate(-90)" font-size="36" font-family="Arial,sans-serif">XX.-XX.XX</text>' +
+      '<rect x="78" y="34" width="22" height="22" fill="none" stroke="#111" stroke-width="3"/>' +
+      '<rect x="120" y="60" width="26" height="26"/><rect x="152" y="60" width="26" height="26"/><rect x="184" y="60" width="26" height="26"/><rect x="216" y="60" width="26" height="26"/><rect x="248" y="60" width="26" height="26"/>' +
+      '<rect x="114" y="104" width="78" height="150" fill="none" stroke="#111" stroke-width="4"/>' +
+      '<text x="153" y="148" font-size="44" text-anchor="middle" ' + f + '>浜</text><text x="153" y="196" font-size="44" text-anchor="middle" ' + f + '>田</text><text x="153" y="244" font-size="44" text-anchor="middle" ' + f + '>山</text>' +
+      '<path d="M226 150l44 24-44 24z"/>' +
+      '<text x="290" y="130" font-size="22" font-weight="600" ' + f + '>浜田山町会線</text>' +
+      '<text x="288" y="205" font-size="76" font-family="Arial,sans-serif">250</text><text transform="translate(418,160)" font-size="18" font-weight="600" ' + f + '><tspan x="0" dy="0">円</tspan><tspan x="0" dy="22">区</tspan><tspan x="0" dy="22">間</tspan></text>' +
+      '<text x="290" y="238" font-size="22" font-weight="600" ' + f + '>小児 120 円</text>' +
+      '<text x="36" y="298" font-size="17" font-weight="600" ' + f + '>000　発券当日限り有効　下車前途無効</text></g>' +
+      '<g class="hdtkn" fill="#111" font-family="Arial,sans-serif" font-weight="900"><text transform="translate(534,30) rotate(90)" font-size="54" letter-spacing="3" dominant-baseline="central"><tspan fill="#b3141e" style="filter:drop-shadow(0 0 2px #fff)">' + nums.join('') + '</tspan><tspan font-size="40" dx="14" fill="#111">00:00</tspan></text></g></svg>';
+  }
   CSS += '@keyframes hdtkin{0%{transform:translateX(120%) rotate(12deg);opacity:0}70%{transform:translateX(-6%) rotate(-3deg);opacity:1}100%{transform:none;opacity:1}}@keyframes hdtrn{from{transform:translateX(-120%)}to{transform:translateX(420%)}}' +
-    '#qz .hdtkw{position:relative;height:132px;margin:4px 0 6px;overflow:hidden}#qz .hdtrn{position:absolute;top:0;left:0;font-size:2.2em;animation:hdtrn 1.5s ease-in forwards;white-space:nowrap}' +
-    '#qz .hdtk{position:absolute;left:6%;right:6%;top:30px;height:96px;border-radius:12px;background:linear-gradient(135deg,#fff7d6,#ffe9a8);border:2px solid #d2a93a;box-shadow:0 3px 8px rgba(0,0,0,.2);animation:hdtkin .9s .6s cubic-bezier(.2,.9,.3,1) both;display:flex;flex-direction:column;align-items:center;justify-content:center}' +
-    '#qz .hdtk:before,#qz .hdtk:after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#f6f3ec;border:2px solid #d2a93a}#qz .hdtk:before{left:-9px}#qz .hdtk:after{right:-9px}' +
-    '#qz .hdtk1{font-size:.78em;font-weight:800;color:#8a6a10;letter-spacing:.3em}#qz .hdtkn{font-size:2.3em;font-weight:900;letter-spacing:.35em;color:#2a2a2a;font-variant-numeric:tabular-nums;text-indent:.35em}#qz .hdtk2{font-size:.72em;color:#8a6a10}' +
+    '#qz .hdtkw{position:relative;margin:4px 0 6px;overflow:hidden;padding-top:6px}#qz .hdtrn{position:absolute;top:-2px;left:0;font-size:2em;animation:hdtrn 1.5s ease-in forwards;white-space:nowrap;z-index:2}#qz .hdtk{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 6px rgba(0,0,0,.25));animation:hdtkin .9s .6s cubic-bezier(.2,.9,.3,1) both}' +
     '#qz .hdex button.pp{animation:hdup .4s both}';
   TYPES.push({ id: 'ten', cat: '頭脳', name: '切符で 10に しよう', run: function (tp) {
     var nums, sols, toks = [], used = {}, tries = 0, fin = false, n0 = 0;
@@ -478,7 +490,7 @@
     dbg('ten', { nums: nums, ans: ans.replace(/-/g, '−'), sols: sols });
     var keys = ['+', '-', '×', '÷', '(', ')'];
     frame(tp, '切符の 4けたの 数字を ぜんぶ つかって <b>10</b> に しよう<br><span class="hdnote">数字は ならびかえて OK。たす ひく かける わる は なんど でも OK。<b>( ) は 1回だけ</b>(3回まで ちょうせん)</span>',
-      '<div class="hdtkw"><span class="hdtrn">🚃💨</span><div class="hdtk"><div class="hdtk1">きっぷ</div><div class="hdtkn">' + nums.join('') + '</div><div class="hdtk2">浜田山 ゆき</div></div></div>' +
+      '<div class="hdtkw"><span class="hdtrn">🚃💨</span>' + ticketSVG(nums) + '</div><div class="hdnote" style="margin-top:0">切符の <b>右がわの たて長の 4けた</b>が 使う数字です</div>' +
       '<div class="hdexp" id="hdexp">&nbsp;</div><div class="hdex" id="hdnk">' + nums.map(function (n, i) { return '<button type="button" class="pp" style="animation-delay:' + (1.5 + i * 0.18) + 's" data-n="' + i + '">' + n + '</button>'; }).join('') + '</div><div class="hdex">' + keys.map(function (k) { return '<button type="button" data-k="' + k + '">' + (k === '-' ? '−' : k) + '</button>'; }).join('') + '</div>' +
       '<div class="hdex"><button type="button" id="hdbk" style="min-width:90px;font-size:1em">1つ もどす</button><button type="button" id="hdcl" style="min-width:90px;font-size:1em">ぜんぶ 消す</button></div><div class="hdex"><button type="button" id="hdok" style="min-width:130px;font-size:1.05em;background:#2d9a5f;color:#fff;border-color:#2d9a5f">これで 10!</button><button type="button" id="hdgv" style="min-width:110px;font-size:1em">わからない</button></div><div class="hdnote" id="hdmsg"></div>');
     function cnt(v) { return toks.filter(function (k) { return k.t === 'o' && k.v === v; }).length; }
