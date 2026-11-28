@@ -449,28 +449,59 @@
     function expr() { var v = term(); while (peek() && (peek().v === '+' || peek().v === '-')) { var o = toks[p++].v, w = term(); v = o === '+' ? v + w : v - w; } return v; }
     var r = expr(); if (p !== toks.length) throw 0; return r;
   }
-  TYPES.push({ id: 'ten', cat: '頭脳', name: '10に しよう', run: function (tp) {
-    var nums, ans, toks = [], used = {}, tries = 0, fin = false;
-    do { nums = [1, 2, 3, 4].map(function () { return 1 + rnd(9); }); ans = solve10(nums); } while (!ans);
-    dbg('ten', { nums: nums, ans: ans });
+  /* 切符の4けた → 10: 数字は ならびかえOK。+ − × ÷ は なんど でもOK。( ) は 1くみ(1回)だけ */
+  function solveTen(nums) {
+    var ops = ['+', '-', '×', '÷'], sols = [];
+    function perms(a) { if (a.length <= 1) return [a]; var r = []; a.forEach(function (x, i) { perms(a.slice(0, i).concat(a.slice(i + 1))).forEach(function (p) { r.push([x].concat(p)); }); }); return r; }
+    var spans = [null, [0, 1], [1, 2], [2, 3], [0, 2], [1, 3]], seen = {};
+    perms(nums).forEach(function (p) {
+      for (var a = 0; a < 4; a++) for (var b = 0; b < 4; b++) for (var c = 0; c < 4; c++) spans.forEach(function (sp) {
+        var o = [ops[a], ops[b], ops[c]], toks = [];
+        for (var i = 0; i < 4; i++) { if (sp && sp[0] === i) toks.push({ t: 'o', v: '(' }); toks.push({ t: 'n', v: p[i] }); if (sp && sp[1] === i) toks.push({ t: 'o', v: ')' }); if (i < 3) toks.push({ t: 'o', v: o[i] }); }
+        var v; try { v = evalTok(toks); } catch (er) { return; }
+        if (Math.abs(v - 10) < 1e-9) { var str = toks.map(function (k) { return k.v; }).join(' '); if (!seen[str]) { seen[str] = 1; sols.push(str); } }
+      });
+    });
+    return sols;
+  }
+  CSS += '@keyframes hdtkin{0%{transform:translateX(120%) rotate(12deg);opacity:0}70%{transform:translateX(-6%) rotate(-3deg);opacity:1}100%{transform:none;opacity:1}}@keyframes hdtrn{from{transform:translateX(-120%)}to{transform:translateX(420%)}}' +
+    '#qz .hdtkw{position:relative;height:132px;margin:4px 0 6px;overflow:hidden}#qz .hdtrn{position:absolute;top:0;left:0;font-size:2.2em;animation:hdtrn 1.5s ease-in forwards;white-space:nowrap}' +
+    '#qz .hdtk{position:absolute;left:6%;right:6%;top:30px;height:96px;border-radius:12px;background:linear-gradient(135deg,#fff7d6,#ffe9a8);border:2px solid #d2a93a;box-shadow:0 3px 8px rgba(0,0,0,.2);animation:hdtkin .9s .6s cubic-bezier(.2,.9,.3,1) both;display:flex;flex-direction:column;align-items:center;justify-content:center}' +
+    '#qz .hdtk:before,#qz .hdtk:after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#f6f3ec;border:2px solid #d2a93a}#qz .hdtk:before{left:-9px}#qz .hdtk:after{right:-9px}' +
+    '#qz .hdtk1{font-size:.78em;font-weight:800;color:#8a6a10;letter-spacing:.3em}#qz .hdtkn{font-size:2.3em;font-weight:900;letter-spacing:.35em;color:#2a2a2a;font-variant-numeric:tabular-nums;text-indent:.35em}#qz .hdtk2{font-size:.72em;color:#8a6a10}' +
+    '#qz .hdex button.pp{animation:hdup .4s both}';
+  TYPES.push({ id: 'ten', cat: '頭脳', name: '切符で 10に しよう', run: function (tp) {
+    var nums, sols, toks = [], used = {}, tries = 0, fin = false, n0 = 0;
+    do { nums = [1, 2, 3, 4].map(function () { return 1 + rnd(9); }); sols = solveTen(nums); n0++; } while (!sols.length && n0 < 400);
+    if (!sols.length) { nums = [1, 2, 3, 4]; sols = solveTen(nums); }
+    var ans = pick(sols);
+    dbg('ten', { nums: nums, ans: ans.replace(/-/g, '−'), sols: sols });
     var keys = ['+', '-', '×', '÷', '(', ')'];
-    frame(tp, '<b>' + nums.join(' ') + '</b> を ぜんぶ 1回ずつ つかって <b>10</b> に してください<br><span class="hdnote">たす ひく かける わる ( ) が つかえます(3回まで ちょうせん)</span>',
-      '<div class="hdexp" id="hdexp">&nbsp;</div><div class="hdex" id="hdnk">' + nums.map(function (n, i) { return '<button type="button" data-n="' + i + '">' + n + '</button>'; }).join('') + '</div><div class="hdex">' + keys.map(function (k) { return '<button type="button" data-k="' + k + '">' + (k === '-' ? '−' : k) + '</button>'; }).join('') + '</div>' +
+    frame(tp, '切符の 4けたの 数字を ぜんぶ つかって <b>10</b> に しよう<br><span class="hdnote">数字は ならびかえて OK。たす ひく かける わる は なんど でも OK。<b>( ) は 1回だけ</b>(3回まで ちょうせん)</span>',
+      '<div class="hdtkw"><span class="hdtrn">🚃💨</span><div class="hdtk"><div class="hdtk1">きっぷ</div><div class="hdtkn">' + nums.join('') + '</div><div class="hdtk2">浜田山 ゆき</div></div></div>' +
+      '<div class="hdexp" id="hdexp">&nbsp;</div><div class="hdex" id="hdnk">' + nums.map(function (n, i) { return '<button type="button" class="pp" style="animation-delay:' + (1.5 + i * 0.18) + 's" data-n="' + i + '">' + n + '</button>'; }).join('') + '</div><div class="hdex">' + keys.map(function (k) { return '<button type="button" data-k="' + k + '">' + (k === '-' ? '−' : k) + '</button>'; }).join('') + '</div>' +
       '<div class="hdex"><button type="button" id="hdbk" style="min-width:90px;font-size:1em">1つ もどす</button><button type="button" id="hdcl" style="min-width:90px;font-size:1em">ぜんぶ 消す</button></div><div class="hdex"><button type="button" id="hdok" style="min-width:130px;font-size:1.05em;background:#2d9a5f;color:#fff;border-color:#2d9a5f">これで 10!</button><button type="button" id="hdgv" style="min-width:110px;font-size:1em">わからない</button></div><div class="hdnote" id="hdmsg"></div>');
-    function draw() { $('#hdexp').textContent = toks.map(function (t) { return t.t === 'n' ? t.v : t.v === '-' ? '−' : t.v; }).join(' ') || ' '; root.querySelectorAll('[data-n]').forEach(function (b) { b.disabled = !!used[b.dataset.n]; }); }
+    function cnt(v) { return toks.filter(function (k) { return k.t === 'o' && k.v === v; }).length; }
+    function draw() {
+      $('#hdexp').textContent = toks.map(function (k) { return k.t === 'n' ? k.v : k.v === '-' ? '−' : k.v; }).join(' ') || ' ';
+      root.querySelectorAll('[data-n]').forEach(function (b) { b.disabled = !!used[b.dataset.n]; });
+      root.querySelectorAll('[data-k="("]').forEach(function (b) { b.disabled = cnt('(') >= 1; });
+      root.querySelectorAll('[data-k=")"]').forEach(function (b) { b.disabled = cnt(')') >= 1 || cnt('(') < 1; });
+    }
     root.querySelectorAll('[data-n]').forEach(function (b) { b.onclick = function () { var i = +b.dataset.n; if (used[i] || fin) return; used[i] = 1; toks.push({ t: 'n', v: nums[i], i: i }); draw(); }; });
-    root.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { if (fin) return; toks.push({ t: 'o', v: b.dataset.k }); draw(); }; });
-    $('#hdbk').onclick = function () { var t = toks.pop(); if (t && t.t === 'n') delete used[t.i]; draw(); };
+    root.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { if (fin) return; if (b.dataset.k === '(' && cnt('(') >= 1) return; if (b.dataset.k === ')' && (cnt(')') >= 1 || cnt('(') < 1)) return; toks.push({ t: 'o', v: b.dataset.k }); draw(); }; });
+    $('#hdbk').onclick = function () { var k = toks.pop(); if (k && k.t === 'n') delete used[k.i]; draw(); };
     $('#hdcl').onclick = function () { toks = []; used = {}; draw(); };
     $('#hdgv').onclick = function () { if (fin) return; fin = true; done(false, 'こたえの れい: <b>' + ans.replace(/-/g, '−') + ' = 10</b>'); };
     $('#hdok').onclick = function () {
       if (fin) return; var m = $('#hdmsg');
-      if (Object.keys(used).length < 4) { m.textContent = '4つの数字を ぜんぶ つかってください'; return; }
+      if (Object.keys(used).length < 4) { m.textContent = '切符の 4つの数字を ぜんぶ つかってください'; return; }
       var v; try { v = evalTok(toks); } catch (e) { m.textContent = '式が おかしいです。( ) や 記号を 見なおしてください'; return; }
       if (Math.abs(v - 10) < 1e-9) { fin = true; done(true, '10に なりました!'); return; }
       tries++; if (tries >= 3) { fin = true; done(false, '3回 まちがえました。こたえの れい: <b>' + ans.replace(/-/g, '−') + ' = 10</b>'); return; }
       m.textContent = (Math.round(v * 100) / 100) + ' になりました。10では ありません(あと ' + (3 - tries) + '回)';
     };
+    draw();
   } });
   var BWORDS = ['さいれい', 'えんげい', 'ぼうさい', 'はまだやま', 'ひなんじょ', 'おみこし', 'もちつき', 'ぼんおどり', 'やたい', 'おまつり', 'ふうりん', 'かいらんばん', 'ちょうないかい', 'はなびたいかい', 'きんぎょすくい', 'ぎんなんひろい', 'しょうがつ', 'せんべい'];
   TYPES.push({ id: 'bword', cat: '体感', name: '風船を うって 文字を 見やぶれ', run: function (tp) {
@@ -614,6 +645,129 @@
       }; });
     }
     s1();
+  } });
+
+  /* ===== 仲間分け(スワイプ) ===== */
+  var SORTS = [
+    { a: ['くだもの', '🍎'], b: ['やさい', '🥕'], A: [['りんご', '🍎'], ['みかん', '🍊'], ['ぶどう', '🍇'], ['いちご', '🍓'], ['バナナ', '🍌'], ['もも', '🍑']], B: [['にんじん', '🥕'], ['キャベツ', '🥬'], ['なす', '🍆'], ['きゅうり', '🥒'], ['ブロッコリー', '🥦'], ['たまねぎ', '🧅']] },
+    { a: ['夏', '🌻'], b: ['冬', '⛄'], A: [['スイカ', '🍉'], ['かき氷', '🍧'], ['花火', '🎆'], ['風鈴', '🎐'], ['ひまわり', '🌻'], ['うきわ', '🛟']], B: [['雪だるま', '⛄'], ['マフラー', '🧣'], ['てぶくろ', '🧤'], ['ストーブ', '🔥'], ['クリスマスツリー', '🎄'], ['なべ料理', '🍲']] },
+    { a: ['防災グッズ', '🧯'], b: ['お祭り', '🏮'], A: [['消火器', '🧯'], ['懐中電灯', '🔦'], ['ヘルメット', '⛑️'], ['非常食', '🥫'], ['ラジオ', '📻'], ['救急セット', '🩹']], B: [['ちょうちん', '🏮'], ['たいこ', '🥁'], ['おみこし', '⛩️'], ['金魚すくい', '🐟'], ['わたあめ', '🍭'], ['うちわ', '🪭']] },
+    { a: ['鳥', '🐦'], b: ['さかな', '🐟'], A: [['すずめ', '🐦'], ['あひる', '🦆'], ['ペンギン', '🐧'], ['ふくろう', '🦉'], ['にわとり', '🐔'], ['はくちょう', '🦢']], B: [['さんま', '🐟'], ['ふぐ', '🐡'], ['サメ', '🦈'], ['きんぎょ', '🐠'], ['たこ(足は8本)', '🐙'], ['くじら', '🐳']] },
+    { a: ['海を いく', '🌊'], b: ['りくを いく', '🛤️'], A: [['ふね', '🚢'], ['ヨット', '⛵'], ['カヌー', '🛶'], ['フェリー', '⛴️'], ['ボート', '🚤']], B: [['でんしゃ', '🚃'], ['バス', '🚌'], ['じてんしゃ', '🚲'], ['くるま', '🚗'], ['バイク', '🏍️']] }
+  ];
+  CSS += '#qz .hdsw{position:relative;height:230px;margin:6px 0;touch-action:pan-y;user-select:none}#qz .hdsc2{position:absolute;left:50%;top:14px;width:170px;margin-left:-85px;height:190px;border-radius:18px;background:#fff;border:3px solid #cfc7b4;box-shadow:0 6px 14px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;touch-action:none}' +
+    '#qz .hdsc2 b{font-size:4.2em;line-height:1.1}#qz .hdsc2 span{font-size:1.25em;font-weight:900;margin-top:6px;text-align:center}' +
+    '#qz .hdzn{display:flex;justify-content:space-between;gap:8px;margin:2px 0}#qz .hdzn div{flex:1;text-align:center;border-radius:12px;padding:8px 4px;font-weight:900;font-size:1.05em}#qz .hdzn .l{background:#dcebff;color:#12407a;border:2px solid #5b9be6}#qz .hdzn .r{background:#ffe9d2;color:#7a3d00;border:2px solid #e8963c}' +
+    '#qz .hdsw.l:before,#qz .hdsw.r:before{content:"";position:absolute;top:0;bottom:0;width:34%;border-radius:14px;opacity:.5}#qz .hdsw.l:before{left:0;background:#dcebff}#qz .hdsw.r:before{right:0;background:#ffe9d2}' +
+    '@keyframes hdok{0%{transform:scale(.6);opacity:0}30%{opacity:1}100%{transform:scale(1.5);opacity:0}}#qz .hdfb{position:absolute;left:50%;top:70px;margin-left:-.5em;font-size:3.4em;animation:hdok .7s both;pointer-events:none}';
+  TYPES.push({ id: 'sort', cat: '常識', name: '仲間分け', run: function (tp) {
+    var S = pick(SORTS), swap = rnd(2) === 1, L = swap ? S.b : S.a, R = swap ? S.a : S.b;
+    var cards = shuf(S.A.slice(0, 4).map(function (c) { return { n: c[0], e: c[1], side: swap ? 'R' : 'L' }; }).concat(S.B.slice(0, 4).map(function (c) { return { n: c[0], e: c[1], side: swap ? 'L' : 'R' }; })));
+    var i = 0, mis = 0, fin = false, busy = false;
+    dbg('sort', { cards: cards, L: L[0], R: R[0] });
+    frame(tp, 'カードを <b>ひだり</b> か <b>みぎ</b> に <b>スワイプ</b> して 仲間分け!<br><span class="hdnote">(ゆびで よこに ずらす / 下の ボタンでも OK。まちがい 2回までOK)</span>',
+      '<div class="hdzn"><div class="l">ひだり: ' + esc(L[0]) + ' ' + L[1] + '</div><div class="r">みぎ: ' + esc(R[0]) + ' ' + R[1] + '</div></div><div class="hdsw" id="hdsw"></div><div class="hdex"><button type="button" data-sb="L" style="min-width:42%;font-size:1em">ひだり ' + esc(L[0]) + '</button><button type="button" data-sb="R" style="min-width:42%;font-size:1em">みぎ ' + esc(R[0]) + '</button></div><div class="hdnote" id="hdmsg"></div>');
+    var box = $('#hdsw');
+    function show() {
+      if (i >= cards.length) { fin = true; done(mis <= 2, mis <= 2 ? 'ぜんぶ 分けました!(まちがい ' + mis + '回)' : 'まちがいが 多すぎました(' + mis + '回)。' + esc(L[0]) + ' と ' + esc(R[0]) + ' でした'); return; }
+      var c = cards[i]; box.className = 'hdsw'; box.innerHTML = '<div class="hdsc2" id="hdcd"><b>' + c.e + '</b><span>' + esc(c.n) + '</span></div>';
+      $('#hdmsg').textContent = 'のこり ' + (cards.length - i) + ' まい'; bind();
+    }
+    function judge(side) {
+      if (busy || fin || i >= cards.length) return; busy = true; var c = cards[i], ok = side === c.side, cd = $('#hdcd');
+      if (!ok) mis++;
+      var fb = document.createElement('div'); fb.className = 'hdfb'; fb.textContent = ok ? '⭕' : '❌'; box.appendChild(fb);
+      if (cd) { cd.style.transition = 'transform .28s,opacity .28s'; cd.style.transform = 'translateX(' + (side === 'L' ? -260 : 260) + 'px) rotate(' + (side === 'L' ? -25 : 25) + 'deg)'; cd.style.opacity = '0'; }
+      if (!ok) $('#hdmsg').innerHTML = '<span style="color:#c0392b;font-weight:800">' + esc(c.n) + ' は ' + esc((c.side === 'L' ? L : R)[0]) + ' でした(まちがい ' + mis + '回)</span>';
+      T(function () { busy = false; i++; show(); }, 520);
+    }
+    function bind() {
+      var cd = $('#hdcd'); if (!cd) return; var x0 = null, dx = 0;
+      cd.onpointerdown = function (e) { if (busy) return; x0 = e.clientX; dx = 0; try { cd.setPointerCapture(e.pointerId); } catch (er) { /* 無視 */ } cd.style.transition = 'none'; };
+      cd.onpointermove = function (e) { if (x0 === null) return; dx = e.clientX - x0; cd.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 12) + 'deg)'; box.className = 'hdsw ' + (dx < -20 ? 'l' : dx > 20 ? 'r' : ''); };
+      cd.onpointerup = cd.onpointercancel = function () { if (x0 === null) return; var d = dx; x0 = null; box.className = 'hdsw'; if (Math.abs(d) > 60) judge(d < 0 ? 'L' : 'R'); else { cd.style.transition = 'transform .2s'; cd.style.transform = ''; } };
+    }
+    root.querySelectorAll('[data-sb]').forEach(function (b) { b.onclick = function () { judge(b.dataset.sb); }; });
+    show();
+  } });
+
+  /* ===== 電話の言い回し(プルルルル → 電話に出る → まちがった 言い回しを 直す) ===== */
+  var PHONES = [
+    { caller: 'もしもし、山田さんは おられますか?', reply: [
+      ['はい、', 0], ['ご苦労さまです。', 1, 'お電話ありがとうございます。', ['お疲れさまです。', 'どうも、いつも。']],
+      ['山田は ただいま ', 0], ['席を はずして いらっしゃいます。', 1, '席を はずして おります。', ['席を はずして おられます。', '席を はずして くださいます。']] ] },
+    { caller: 'もしもし、会計の 佐藤さんは おられますか?', reply: [
+      ['お電話ありがとうございます。', 0], ['佐藤さんは ', 1, '佐藤は ', ['佐藤様は ', '佐藤さまが ']],
+      ['ただいま 外出して おります。', 0], ['帰ったら 電話するように 言っときます。', 1, '戻りましたら お電話を差し上げるよう 申し伝えます。', ['戻ったら お電話するよう おっしゃいます。', '帰ったら 電話を くださるよう 伝えます。']] ] },
+    { caller: 'もしもし、回覧板の ことで おたずねしたいのですが。', reply: [
+      ['はい、', 0], ['ちょっと 待ってください。', 1, '少々 お待ちください。', ['少し 待って くださいませ。', 'ちょっと お待ち なさいませ。']],
+      ['お名前を ', 0], ['おっしゃって いただけますか?', 0], ['あなたの 住所は どこですか?', 1, 'ご住所を お聞かせ ください。', ['ご住所は どこで いらっしゃいますか?', 'お住まいを 言って ください。']] ] },
+    { caller: 'もしもし、会長さんは おられますか?', reply: [
+      ['お電話ありがとうございます。', 0], ['会長は いま 会議中です。', 0],
+      ['ご用件を ', 0], ['伺いましょうか?', 1, '承りましょうか?', ['お聞きに なりましょうか?', 'うけたまわられますか?']],
+      ['のちほど ', 0], ['電話して ください。', 1, 'こちらから お電話いたします。', ['お電話して いただけませんか。', 'お電話 なさいます。']] ] }
+  ];
+  CSS += '@keyframes hdring{0%,100%{transform:rotate(0)}10%,30%,50%{transform:rotate(-12deg)}20%,40%,60%{transform:rotate(12deg)}70%{transform:rotate(0)}}@keyframes hdbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@keyframes hdmo{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1.2)}}@keyframes hdwave{0%{opacity:0;transform:scale(.6)}50%{opacity:1}100%{opacity:0;transform:scale(1.4)}}@keyframes hdnod{0%,100%{transform:rotate(0)}50%{transform:rotate(4deg)}}' +
+    '#qz .hdph{display:block;width:100%;border-radius:14px;margin:4px 0;background:#eef3fb}#qz .hdph .ring{transform-origin:260px 150px;animation:hdring 1.2s infinite}#qz .hdph.talk .mo{animation:hdmo .28s infinite;transform-origin:160px 98px}#qz .hdph .body{animation:hdbob 2.2s infinite}#qz .hdph.talk .head{animation:hdnod .6s infinite;transform-origin:160px 120px}#qz .hdph .wv{animation:hdwave 1s infinite;transform-origin:260px 140px}#qz .hdph .wv2{animation-delay:.35s}' +
+    '#qz .hdbub{border-radius:14px;padding:8px 12px;margin:6px 0;line-height:1.9;font-weight:700}#qz .hdbub.c{background:#fff;border:2px solid #cfc7b4}#qz .hdbub.w{background:#e4f3ea;border:2px solid #9bd2b0}#qz .hdbub small{display:block;color:#667085;font-weight:600;line-height:1.3}' +
+    '#qz .hdbub button.ck{all:unset;cursor:pointer;display:inline;padding:0 2px;border-radius:6px;border-bottom:2px dashed #9bd2b0}#qz .hdbub button.ck:active{background:#ffe8a6}#qz .hdbub button.ck.on{background:#ffe8a6;border-bottom-color:#e0a800}#qz .hdbub .fx{background:#d6f0dd;color:#14603a;border-radius:6px;padding:0 3px;border-bottom:2px solid #2d9a5f}';
+  function phoneSVG() {
+    return '<svg viewBox="0 0 320 210" class="hdph" id="hdph"><rect width="320" height="210" fill="#eef3fb"/><rect x="0" y="150" width="320" height="60" fill="#c9a97a"/><rect x="0" y="146" width="320" height="8" fill="#b18f60"/>' +
+      '<g class="body"><path d="M95 210c0-48 28-70 65-70s65 22 65 70z" fill="#2f4f7f"/><path d="M142 142l18 26 18-26z" fill="#fff"/><path d="M150 142l10 14 10-14z" fill="#d6455d"/></g>' +
+      '<g class="head"><path d="M123 84c-6-34 14-56 37-56s43 22 37 56c-3 22-3 36-10 44l-54 0c-7-8-7-22-10-44z" fill="#3b2a24"/><rect x="150" y="118" width="20" height="26" rx="8" fill="#f2c9a0"/><ellipse cx="160" cy="86" rx="33" ry="38" fill="#f6d2ae"/>' +
+      '<path d="M127 78c4-24 20-34 33-34s30 10 34 34c-12-12-22-16-34-16s-22 4-33 16z" fill="#3b2a24"/>' +
+      '<ellipse cx="147" cy="86" rx="3.2" ry="4.2" fill="#2a2a2a"/><ellipse cx="173" cy="86" rx="3.2" ry="4.2" fill="#2a2a2a"/><circle cx="140" cy="98" r="6" fill="#f4a6a6" opacity=".55"/><circle cx="180" cy="98" r="6" fill="#f4a6a6" opacity=".55"/>' +
+      '<ellipse class="mo" cx="160" cy="105" rx="7" ry="4.5" fill="#b3314a"/>' +
+      '<path d="M124 82a36 36 0 0 1 72 0" fill="none" stroke="#444" stroke-width="5"/><rect x="118" y="78" width="10" height="22" rx="5" fill="#444"/><rect x="192" y="78" width="10" height="22" rx="5" fill="#444"/><path d="M122 98c-2 14 8 24 24 26" fill="none" stroke="#444" stroke-width="3"/><circle cx="148" cy="124" r="4" fill="#444"/></g>' +
+      '<rect x="205" y="150" width="90" height="12" rx="4" fill="#555"/><g class="ring"><rect x="240" y="116" width="40" height="36" rx="6" fill="#2a2a2a"/><rect x="244" y="120" width="32" height="20" rx="3" fill="#bfe3ff"/><text x="260" y="136" font-size="13" text-anchor="middle">📱</text></g>' +
+      '<g id="hdwv"><text class="wv" x="290" y="116" font-size="16">)))</text><text class="wv wv2" x="296" y="102" font-size="14">)))</text></g></svg>';
+  }
+  TYPES.push({ id: 'phone', cat: '常識', name: '電話の 言い回し', run: function (tp) {
+    var P = JSON.parse(JSON.stringify(pick(PHONES))), fixed = 0, need = P.reply.filter(function (r) { return r[1]; }).length, mis = 0, fin = false, sel = -1, talk = false;
+    dbg('phone', P);
+    var replyText = P.reply.map(function (r) { return r[0]; }).join('');
+    frame(tp, '電話が かかってきた!', phoneSVG() + '<div class="hdnote" id="hdmsg" style="font-size:1.1em;font-weight:800;color:#c0392b">プルルルル 📱</div><div id="hdst2"><button type="button" class="qb pri" id="hdans">📞 電話に出る</button></div>');
+    function mouth(on) { var s = $('#hdph'); if (s) s.classList.toggle('talk', !!on); }
+    var ringT = IV(function () { tone(880, 0, 0.18, 0.18); tone(660, 0.22, 0.18, 0.18); }, 1600);
+    tone(880, 0, 0.18, 0.18); tone(660, 0.22, 0.18, 0.18);
+    function bubbles() {
+      var h = '<div class="hdbub c"><small>電話の 相手</small>' + esc(P.caller) + '</div><div class="hdbub w"><small>電話に出た 女性(あなた)</small>' + P.reply.map(function (r, i) { return '<button type="button" class="ck" data-ck="' + i + '">' + esc(r[0]) + '</button>'; }).join('') + '</div>';
+      return h;
+    }
+    function render() {
+      $('#hdst2').innerHTML = '<div class="hdt" style="font-size:1em">いまの 電話の中の <b>まちがった 言い回し</b>が <b>' + need + 'か所</b> あります。<br>気づいた ところを タップして、正しく 直してください(まちがい 3回まで)</div>' + bubbles() + '<div id="hdfx"></div><button type="button" class="qb sm" id="hdagain2">🔊 もう一度 きく</button>';
+      root.querySelectorAll('[data-ck]').forEach(function (b) { b.onclick = function () { pickChunk(+b.dataset.ck, b); }; });
+      $('#hdagain2').onclick = function () { if (talk) return; talk = true; say(P.caller, 9000, function () { say(replyText, 14000, function () { talk = false; }); }); };
+    }
+    function mistake(msg) { mis++; $('#hdmsg').innerHTML = '<span style="color:#c0392b;font-weight:800">' + msg + '(まちがい ' + mis + '回)</span>'; if (mis >= 3 && !fin) { fin = true; var ans = P.reply.filter(function (r) { return r[1]; }).map(function (r) { return '「' + r[0].trim() + '」→「' + r[2].trim() + '」'; }).join('<br>'); done(false, '3回 まちがえました。<br>' + ans); } }
+    function pickChunk(i, btn) {
+      if (fin) return; var r = P.reply[i];
+      if (!r[1]) { mistake('「' + r[0].trim() + '」は 正しい 言い方です'); return; }
+      if (r[4]) return; sel = i; root.querySelectorAll('.ck.on').forEach(function (b) { b.classList.remove('on'); }); btn.classList.add('on');
+      var opts = shuf([[r[2], 1]].concat(r[3].map(function (w) { return [w, 0]; })));
+      $('#hdfx').innerHTML = '<div class="hdt" style="font-size:1em">「<b>' + esc(r[0].trim()) + '</b>」を 正しく 直すと?</div><div class="hdopt one">' + opts.map(function (o, k) { return '<button type="button" class="qb" data-fx="' + k + '">' + esc(o[0].trim()) + '</button>'; }).join('') + '</div>';
+      root.querySelectorAll('[data-fx]').forEach(function (b) { b.onclick = function () {
+        if (fin) return; var o = opts[+b.dataset.fx];
+        if (!o[1]) { mistake('それは ちがいます'); return; }
+        r[4] = 1; fixed++; $('#hdfx').innerHTML = ''; $('#hdmsg').innerHTML = '<span style="color:#1f7a4d;font-weight:800">正解! 「' + esc(r[2].trim()) + '」</span>';
+        var bt = root.querySelector('[data-ck="' + i + '"]'); if (bt) { var sp = document.createElement('span'); sp.className = 'fx'; sp.textContent = r[2]; bt.parentNode.replaceChild(sp, bt); }
+        if (fixed >= need && !fin) { fin = true; T(function () { done(true, '電話の 言い回しを ぜんぶ 直しました。<br>' + P.reply.filter(function (x) { return x[1]; }).map(function (x) { return '「' + x[2].trim() + '」'; }).join(' ')); }, 900); }
+      }; });
+    }
+    function say(text, ms, cb) {   // 声で 読む。声が 出ない / 終わらない ときは、時間で 先へ すすむ
+      var fired = false, fin = function () { if (fired) return; fired = true; mouth(false); cb && cb(); };
+      mouth(true); var ok = speakSeq([text.replace(/[?]/g, '')], fin);
+      T(fin, ok ? ms : Math.min(ms, 2600));
+    }
+    $('#hdans').onclick = function () {
+      clearAll(); $('#hdmsg').textContent = ''; var s = $('#hdph'); if (s) { var rg = s.querySelector('.ring'); if (rg) rg.style.animation = 'none'; var wv = s.querySelector('#hdwv'); if (wv) wv.style.display = 'none'; }
+      $('#hdst2').innerHTML = '<div class="hdbub c"><small>電話の 相手</small>' + esc(P.caller) + '</div><div class="hdnote">(声が 出ない ときは 文字を 読んでください)</div>';
+      talk = true;
+      say(P.caller, 9000, function () { T(function () {
+        $('#hdst2').innerHTML += '<div class="hdbub w"><small>電話に出た 女性(あなた)</small>' + esc(replyText) + '</div>';
+        say(replyText, 14000, function () { talk = false; T(render, 500); });
+      }, 400); });
+    };
   } });
 
   /* ===== しんこう ===== */
