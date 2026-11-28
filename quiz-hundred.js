@@ -432,6 +432,156 @@
     root.querySelectorAll('.hdz').forEach(function (g) { g.onclick = function () { if (fin) return; fin = true; var z = g.getAttribute('data-z'); dbg('fire', z); done(z === 'low', z === 'low' ? '煙は 上に たまります。<b>低い姿勢</b>で、ハンカチなどで 口を おおって にげます' : '煙は 上に たまります。<b>床の ちかく</b>の 空気を 吸います。低い姿勢で、ハンカチで 口を おおって にげましょう'); }; });
   } });
 
+  /* ===== 追加のチャレンジ(頭脳・風船文字・射撃・折り紙順・フラッシュカード・救助) ===== */
+  CSS += '#qz .hdex{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}#qz .hdex button{margin:0;min-width:48px;min-height:48px;font-size:1.25em;font-weight:900;border-radius:12px;border:2px solid #cfc7b4;background:#fff;cursor:pointer}#qz .hdex button:disabled{opacity:.3}#qz .hdexp{min-height:2.2em;text-align:center;font-size:1.6em;font-weight:900;letter-spacing:.06em;background:#fffdf4;border:2px dashed #cfc7b4;border-radius:12px;padding:8px;margin:8px 0;word-break:break-all}' +
+    '#qz .hdwd{display:flex;gap:6px;justify-content:center;margin:12px 0}#qz .hdwd span{position:relative;width:48px;height:60px;border-radius:10px;background:#fff;border:2px solid #cfc7b4;display:flex;align-items:center;justify-content:center;font-size:1.7em;font-weight:900}#qz .hdwd button{position:absolute;inset:-6px;border:none;border-radius:50% 50% 46% 46%;font-size:1.3em;cursor:pointer;color:#fff;font-weight:900}' +
+    '#qz .hdst{display:flex;flex-direction:column;gap:8px;margin:10px 0}#qz .hdst button{margin:0;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid #cfc7b4;background:#fff;font-size:1em;line-height:1.5;cursor:pointer}#qz .hdst button.on{background:#d9efe0;border-color:#2d9a5f}#qz .hdst button.bad{background:#fde3e0;border-color:#c0392b}' +
+    '#qz .hdfc{font-size:5em;text-align:center;height:1.4em;line-height:1.4em;position:relative}#qz .hdfc i{position:absolute;right:20%;top:0;font-size:.3em;font-style:normal;background:#6a4bd6;color:#fff;border-radius:99px;padding:0 .5em;line-height:1.7}';
+  function solve10(nums) {
+    function go(a) {
+      if (a.length === 1) return Math.abs(a[0].v - 10) < 1e-9 ? a[0].e : null;
+      for (var i = 0; i < a.length; i++) for (var j = 0; j < a.length; j++) {
+        if (i === j) continue; var x = a[i], y = a[j], rest = a.filter(function (_, k) { return k !== i && k !== j; }), c = [{ v: x.v + y.v, e: '(' + x.e + '+' + y.e + ')' }, { v: x.v - y.v, e: '(' + x.e + '-' + y.e + ')' }, { v: x.v * y.v, e: '(' + x.e + '×' + y.e + ')' }];
+        if (Math.abs(y.v) > 1e-9) c.push({ v: x.v / y.v, e: '(' + x.e + '÷' + y.e + ')' });
+        for (var k = 0; k < c.length; k++) { var r = go(rest.concat([c[k]])); if (r) return r; }
+      }
+      return null;
+    }
+    return go(nums.map(function (n) { return { v: n, e: String(n) }; }));
+  }
+  function evalTok(toks) {   // 数字と + - × ÷ ( ) の列を計算する(失敗は例外)
+    var p = 0;
+    function peek() { return toks[p]; }
+    function factor() { var t = peek(); if (!t) throw 0; if (t.t === 'n') { p++; return t.v; } if (t.v === '(') { p++; var v = expr(); if (!peek() || peek().v !== ')') throw 0; p++; return v; } throw 0; }
+    function term() { var v = factor(); while (peek() && (peek().v === '×' || peek().v === '÷')) { var o = toks[p++].v, w = factor(); if (o === '÷') { if (Math.abs(w) < 1e-9) throw 0; v = v / w; } else v = v * w; } return v; }
+    function expr() { var v = term(); while (peek() && (peek().v === '+' || peek().v === '-')) { var o = toks[p++].v, w = term(); v = o === '+' ? v + w : v - w; } return v; }
+    var r = expr(); if (p !== toks.length) throw 0; return r;
+  }
+  TYPES.push({ id: 'ten', cat: '頭脳', name: '10に しよう', run: function (tp) {
+    var nums, ans, toks = [], used = {}, tries = 0, fin = false;
+    do { nums = [1, 2, 3, 4].map(function () { return 1 + rnd(9); }); ans = solve10(nums); } while (!ans);
+    dbg('ten', { nums: nums, ans: ans });
+    var keys = ['+', '-', '×', '÷', '(', ')'];
+    frame(tp, '<b>' + nums.join(' ') + '</b> を ぜんぶ 1回ずつ つかって <b>10</b> に してください<br><span class="hdnote">たす ひく かける わる ( ) が つかえます(3回まで ちょうせん)</span>',
+      '<div class="hdexp" id="hdexp">&nbsp;</div><div class="hdex" id="hdnk">' + nums.map(function (n, i) { return '<button type="button" data-n="' + i + '">' + n + '</button>'; }).join('') + '</div><div class="hdex">' + keys.map(function (k) { return '<button type="button" data-k="' + k + '">' + (k === '-' ? '−' : k) + '</button>'; }).join('') + '</div>' +
+      '<div class="hdex"><button type="button" id="hdbk" style="min-width:90px;font-size:1em">1つ もどす</button><button type="button" id="hdcl" style="min-width:90px;font-size:1em">ぜんぶ 消す</button></div><div class="hdex"><button type="button" id="hdok" style="min-width:130px;font-size:1.05em;background:#2d9a5f;color:#fff;border-color:#2d9a5f">これで 10!</button><button type="button" id="hdgv" style="min-width:110px;font-size:1em">わからない</button></div><div class="hdnote" id="hdmsg"></div>');
+    function draw() { $('#hdexp').textContent = toks.map(function (t) { return t.t === 'n' ? t.v : t.v === '-' ? '−' : t.v; }).join(' ') || ' '; root.querySelectorAll('[data-n]').forEach(function (b) { b.disabled = !!used[b.dataset.n]; }); }
+    root.querySelectorAll('[data-n]').forEach(function (b) { b.onclick = function () { var i = +b.dataset.n; if (used[i] || fin) return; used[i] = 1; toks.push({ t: 'n', v: nums[i], i: i }); draw(); }; });
+    root.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { if (fin) return; toks.push({ t: 'o', v: b.dataset.k }); draw(); }; });
+    $('#hdbk').onclick = function () { var t = toks.pop(); if (t && t.t === 'n') delete used[t.i]; draw(); };
+    $('#hdcl').onclick = function () { toks = []; used = {}; draw(); };
+    $('#hdgv').onclick = function () { if (fin) return; fin = true; done(false, 'こたえの れい: <b>' + ans.replace(/-/g, '−') + ' = 10</b>'); };
+    $('#hdok').onclick = function () {
+      if (fin) return; var m = $('#hdmsg');
+      if (Object.keys(used).length < 4) { m.textContent = '4つの数字を ぜんぶ つかってください'; return; }
+      var v; try { v = evalTok(toks); } catch (e) { m.textContent = '式が おかしいです。( ) や 記号を 見なおしてください'; return; }
+      if (Math.abs(v - 10) < 1e-9) { fin = true; done(true, '10に なりました!'); return; }
+      tries++; if (tries >= 3) { fin = true; done(false, '3回 まちがえました。こたえの れい: <b>' + ans.replace(/-/g, '−') + ' = 10</b>'); return; }
+      m.textContent = (Math.round(v * 100) / 100) + ' になりました。10では ありません(あと ' + (3 - tries) + '回)';
+    };
+  } });
+  var BWORDS = ['さいれい', 'えんげい', 'ぼうさい', 'はまだやま', 'ひなんじょ', 'おみこし', 'もちつき', 'ぼんおどり', 'やたい', 'おまつり', 'ふうりん', 'かいらんばん', 'ちょうないかい', 'はなびたいかい', 'きんぎょすくい', 'ぎんなんひろい', 'しょうがつ', 'せんべい'];
+  TYPES.push({ id: 'bword', cat: '体感', name: '風船を うって 文字を 見やぶれ', run: function (tp) {
+    var w = pick(BWORDS), ch = w.split(''), cols = ['#e53935', '#fb8c00', '#43a047', '#1e88e5', '#8e24aa', '#ec407a', '#00acc1'], shots = 0, fin = false, t0 = performance.now(), LIM = 25000;
+    dbg('bword', w);
+    var same = shuf(BWORDS.filter(function (x) { return x !== w && x.length === w.length; })), other = shuf(BWORDS.filter(function (x) { return x !== w && x.length !== w.length; })), ds = same.concat(other).slice(0, 3);
+    frame(tp, '風船の 下に 文字が かくれています。<b>風船を うって</b>(タップ) 言葉を 見やぶれ!<br><span class="hdnote">25秒いないに 正しい言葉を えらべばOK(うつ数は 少なくても おおくても かまいません)</span>',
+      '<div class="hdwd" id="hdwd">' + ch.map(function (c, i) { return '<span>' + c + '<button type="button" data-b="' + i + '" style="background:' + cols[i % cols.length] + '" aria-label="風船">🎈</button></span>'; }).join('') + '</div><div class="hdbar"><i id="hdtm" style="width:100%;background:#e0a300"></i></div><div class="hdnote" id="hdsh">うった 数: 0</div><div id="hdch"></div>');
+    root.querySelectorAll('[data-b]').forEach(function (b) { b.onclick = function () { if (fin || b.dataset.p) return; b.dataset.p = 1; shots++; b.textContent = '💥'; b.style.background = 'transparent'; T(function () { b.remove(); }, 250); $('#hdsh').textContent = 'うった 数: ' + shots; }; });
+    var c = choices(shuf([w].concat(ds)).map(function (x) { return [x, x]; }), function (v) {
+      if (fin) return; fin = true; var ms = performance.now() - t0, sec = Math.round(ms / 100) / 10;
+      if (ms > LIM) done(false, '時間オーバーでした(' + sec + '秒)。こたえは <b>' + w + '</b>'); else done(v === w, v === w ? '<b>' + w + '</b>!  ' + sec + '秒・風船 ' + shots + 'こ で 見やぶりました' : 'ざんねん。こたえは <b>' + w + '</b>');
+    });
+    $('#hdch').innerHTML = c.html; c.bind();
+    IV(function () { if (fin) return; var p = 1 - (performance.now() - t0) / LIM, el = $('#hdtm'); if (el) el.style.width = Math.max(0, p * 100) + '%'; if (p <= 0) { fin = true; root.querySelectorAll('[data-o]').forEach(function (b) { b.disabled = true; }); done(false, '時間オーバーでした。こたえは <b>' + w + '</b>'); } }, 100);
+  } });
+  TYPES.push({ id: 'shoot', cat: '体感', name: '射撃', run: function (tp) {
+    var shots = 0, pts = 0, fin = false, N = 5, NEED = 25, tg = [{ x: 60, y: 45, r: 30, vx: 55, ph: 0 }, { x: 150, y: 110, r: 26, vx: -80, ph: 0 }, { x: 240, y: 60, r: 22, vx: 105, ph: 0 }];
+    dbg('shoot', tg);
+    frame(tp, '動く まとを <b>' + N + '発</b> で うて! 合計 <b>' + NEED + '点</b>いじょうで OK<br><span class="hdnote">まん中ほど 高得点(10・6・3点)</span>',
+      '<svg viewBox="0 0 300 170" class="hdsc" id="hdsvg" style="background:#dff0ff;touch-action:manipulation;cursor:crosshair"></svg><div class="hdnote" id="hdsc2">のこり ' + N + '発 ・ 0点</div>');
+    var svg = $('#hdsvg'), last = performance.now(), marks = [];
+    function render() { svg.innerHTML = '<rect y="150" width="300" height="20" fill="#9bc27a"/>' + tg.map(function (t) { return '<g><circle cx="' + t.x + '" cy="' + t.y + '" r="' + t.r + '" fill="#fff" stroke="#c62828" stroke-width="2"/><circle cx="' + t.x + '" cy="' + t.y + '" r="' + (t.r * .55) + '" fill="#e53935"/><circle cx="' + t.x + '" cy="' + t.y + '" r="' + (t.r * .25) + '" fill="#fff"/></g>'; }).join('') + marks.map(function (m) { return '<text x="' + m.x + '" y="' + m.y + '" font-size="12" text-anchor="middle" fill="#222" font-weight="900">' + m.s + '</text><circle cx="' + m.x + '" cy="' + m.y + '" r="2.5" fill="#222"/>'; }).join(''); }
+    IV(function () { var n = performance.now(), dt = Math.min(.1, (n - last) / 1000); last = n; tg.forEach(function (t) { t.x += t.vx * dt; if (t.x < t.r) { t.x = t.r; t.vx = Math.abs(t.vx); } if (t.x > 300 - t.r) { t.x = 300 - t.r; t.vx = -Math.abs(t.vx); } }); render(); }, 33);
+    function shot(ev) {
+      if (fin) return; var rc = svg.getBoundingClientRect(), pt = ev.touches ? ev.touches[0] : ev, x = (pt.clientX - rc.left) / rc.width * 300, y = (pt.clientY - rc.top) / rc.height * 170, best = 0;
+      tg.forEach(function (t) { var d = Math.sqrt((x - t.x) * (x - t.x) + (y - t.y) * (y - t.y)), s = d <= t.r * .25 ? 10 : d <= t.r * .55 ? 6 : d <= t.r ? 3 : 0; if (s > best) best = s; });
+      shots++; pts += best; marks.push({ x: x, y: y, s: best }); $('#hdsc2').textContent = 'のこり ' + (N - shots) + '発 ・ ' + pts + '点'; dbg('shootpts', pts);
+      if (shots >= N) { fin = true; clearAll(); render(); T(function () { done(pts >= NEED, pts + '点 でした(' + NEED + '点いじょうで OK)'); }, 700); }
+    }
+    svg.addEventListener('click', shot);
+  } });
+  var FOLDS = [
+    { id: 'plane', name: '紙ヒコーキを 折ろう', q: '紙ヒコーキを 折ります。<b>正しい 順番</b>に タップしてください', steps: ['たてに 半分に 折って、すじを つけて ひらく', '上の 2つの 角を、まん中の すじに 合わせて 折る', '斜めになった 辺を、もう一度 まん中の すじに 合わせて 折る', 'まん中の すじで、うしろへ 半分に 折る', '左右の 羽を 折り下げて、ひろげる'] },
+    { id: 'crane', name: '鶴を 折ってみよう', q: '折り鶴を 折ります。<b>正しい 順番</b>に タップしてください', steps: ['色の ついた 面を 上にして、三角に 半分に 折って すじを つけ ひらく(両方の 向き)', '四角に 半分に 折って すじを つけ、ひらく', 'すじを つかって 小さな 四角(ざぶとん)の 形に たたむ', '上の 1まいを、左右の 辺を まん中に 合わせて 折る(うらも 同じ)', '下の 角を 折り上げ、細長く たたむ(両がわ)', '先を 折って 頭と しっぽに し、羽を ひろげる'] }];
+  FOLDS.forEach(function (f) {
+    TYPES.push({ id: f.id, cat: '常識', name: f.name, run: function (tp) {
+      var order = shuf(f.steps.map(function (_, i) { return i; })), nxt = 0, bad = 0, fin = false; dbg(f.id, order);
+      frame(tp, f.q + '<br><span class="hdnote">まちがえて タップすると ミスです(2回で 失敗)</span>', '<div class="hdst" id="hdst">' + order.map(function (i) { return '<button type="button" data-s="' + i + '">' + esc(f.steps[i]) + '</button>'; }).join('') + '</div><div class="hdnote" id="hdmsg">1番目は どれ?</div>');
+      root.querySelectorAll('[data-s]').forEach(function (b) { b.onclick = function () {
+        if (fin || b.classList.contains('on')) return; var i = +b.dataset.s;
+        if (i === nxt) { b.classList.add('on'); b.insertAdjacentHTML('afterbegin', '<b>' + (nxt + 1) + '. </b>'); nxt++; if (nxt >= f.steps.length) { fin = true; done(bad < 2, bad < 2 ? 'じょうずに 折れました!' : 'まちがいが おおかったです'); } else $('#hdmsg').textContent = (nxt + 1) + '番目は どれ?'; }
+        else { bad++; b.classList.add('bad'); T(function () { b.classList.remove('bad'); }, 500); if (bad >= 2) { fin = true; done(false, '正しい 順番は:<br>' + f.steps.map(function (s, k) { return (k + 1) + '. ' + esc(s); }).join('<br>')); } else $('#hdmsg').textContent = 'ちがいます。もういちど(' + (nxt + 1) + '番目)'; }
+      }; });
+    } });
+  });
+  TYPES.push({ id: 'flash', cat: '記憶', name: 'フラッシュカード', run: function (tp) {
+    var POOL = ['🐶', '🐱', '🍎', '🚗', '🌸', '🐟', '🍙', '⚽', '🐘', '🍌'], K = 5, cards = [], k, i, kid;
+    var pics = shuf(POOL).slice(0, K); kid = rnd(K); pics[kid] = pick(['👧', '👦']);
+    for (i = 0; i < K; i++) cards.push({ p: pics[i], n: 1 + rnd(9) });
+    var sum = cards.reduce(function (a, c) { return a + c.n; }, 0), qtype = rnd(2); dbg('flash', { cards: cards, kid: kid, sum: sum });
+    frame(tp, 'カードが <b>1まいずつ</b> 出ます。<b>絵</b>と <b>数字</b>を おぼえてください', '<div class="hdfc" id="hdfc">🃏</div><div class="hdnote" id="hdmsg">じゅんびは いいですか?</div><div class="hdex"><button type="button" id="hdgo" style="min-width:140px;font-size:1.05em;background:#2d9a5f;color:#fff;border-color:#2d9a5f">スタート</button></div>');
+    $('#hdgo').onclick = function () {
+      $('#hdgo').parentNode.style.display = 'none'; k = 0;
+      function showCard() { if (k >= K) { $('#hdfc').innerHTML = '🃏'; T(ask1, 300); return; } var c = cards[k]; $('#hdfc').innerHTML = c.p + '<i>' + c.n + '</i>'; $('#hdmsg').textContent = (k + 1) + ' / ' + K; k++; T(function () { $('#hdfc').innerHTML = ''; T(showCard, 250); }, 1300); }
+      showCard();
+    };
+    function ask1() {
+      var pos = qtype === 0 ? rnd(K) : kid, q, opts, right;
+      if (qtype === 0) { q = '<b>' + (pos + 1) + '枚目</b>の 絵は 何でしたか?'; right = cards[pos].p; opts = shuf([right].concat(shuf(POOL.concat(['👧', '👦']).filter(function (x) { return pics.indexOf(x) < 0; })).slice(0, 3))); }
+      else { q = '<b>' + (kid + 1) + '枚目</b>の 絵は 女の子? 男の子?'; right = cards[kid].p; opts = ['👧', '👦']; }
+      $('#hdfc').innerHTML = ''; $('#hdmsg').textContent = '';
+      var c = choices(opts.map(function (x) { return [qtype === 1 ? (x === '👧' ? '👧 女の子' : '👦 男の子') : x, x]; }), function (v) { if (v !== right) { done(false, 'こたえは <b>' + right + '</b> でした'); return; } ask2(); });
+      $('#hdc').innerHTML = '<div class="hdt">' + q + '</div>' + c.html; c.bind();
+    }
+    function ask2() {
+      var set = [sum]; [-3, -2, -1, 1, 2, 3, 4].sort(function () { return Math.random() - .5; }).forEach(function (d) { if (set.length < 4 && sum + d > 0) set.push(sum + d); });
+      var c = choices(set.sort(function (a, b) { return a - b; }).map(function (v) { return [String(v), v]; }), function (v) { done(v === sum, '数字は ' + cards.map(function (x) { return x.n; }).join(' + ') + ' = <b>' + sum + '</b>'); });
+      $('#hdc').innerHTML = '<div class="hdt">1問 せいかい! つぎは、出てきた <b>全部の 数字を たすと</b> いくつ?</div>' + c.html; c.bind();
+    }
+  } });
+  TYPES.push({ id: 'rescue', cat: '常識', name: '救助問題', run: function (tp) {
+    var bad = 0, found = {}, nf = 0, fin = false;
+    frame(tp, '<b>わああ! 人が たおれている!</b><br>どう 対応したら いいかな?', '<div id="hdst2"></div><div class="hdnote" id="hdmsg"></div>');
+    function mis(msg) { bad++; $('#hdmsg').innerHTML = '<span style="color:#c0392b;font-weight:800">' + msg + '</span>'; if (bad >= 2 && !fin) { fin = true; done(false, 'まちがいが 2回に なりました。<br>「声をかけて 反応を見る → 119番(救急)で 場所を 伝える → 住所が わからなければ まわりの 表示を さがす」が 大事です'); return true; } return false; }
+    function stage(q, opts, rightIdx, why, nextFn) {
+      var idx = shuf(opts.map(function (_, i) { return i; }));
+      $('#hdst2').innerHTML = '<div class="hdt">' + q + '</div><div class="hdopt one">' + idx.map(function (i) { return '<button type="button" class="qb" data-r="' + i + '">' + opts[i] + '</button>'; }).join('') + '</div>';
+      root.querySelectorAll('[data-r]').forEach(function (b) { b.onclick = function () { if (fin) return; if (+b.dataset.r === rightIdx) { $('#hdmsg').innerHTML = '<span style="color:#1f7a4d;font-weight:800">せいかい! ' + why + '</span>'; nextFn(); } else { if (mis('ちがいます。' + (b.dataset.r == 99 ? '' : '')) ) return; b.disabled = true; } }; });
+    }
+    function s1() { stage('まず なにを しますか?', ['近づいて 大きな 声で 「大丈夫ですか?」と 呼びかけ、肩を 軽く たたいて 反応を 見る', 'ゆすって 大きな 声で 起こす', '見なかった ことに して 立ち去る', 'お水を かける'], 0, '周りの 安全を 見て、声かけと 反応の 確認が 最初です。', function () { T(s2, 900); }); }
+    function s2() { $('#hdst2').innerHTML = ''; stage('反応が ありません。どこに 電話しますか?', ['119番(救急車)。「救急です」と 伝える', '110番(警察)だけ', '町会長に 電話', '電話は せず 様子を 見る'], 0, 'けが人・急病は 119番です。「火事ですか? 救急ですか?」と 聞かれたら「救急です」。「事件ですか? 事故ですか?」も 聞かれるので、わかる 範囲で 答えます(事件で 危険が あれば 110番も)。', function () { T(s3, 900); }); }
+    function s3() {
+      $('#hdst2').innerHTML = '<div class="hdt">「場所は どこですか?」…住所が わからない!<br><b>この絵の中に、住所と おなじように 救急の人に 伝えられる 表示が 5つ あります。見つけて タップしてください</b></div>' +
+        '<svg viewBox="0 0 320 200" class="hdsc" id="hdrs"><rect width="320" height="200" fill="#e6f3ff"/><rect y="150" width="320" height="50" fill="#8d8d93"/><path d="M0 175H320" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/>' +
+        '<g data-h="1" data-n="お店の 看板(店の名前)"><rect x="6" y="40" width="96" height="110" fill="#f5deb3"/><rect x="12" y="46" width="84" height="22" fill="#b71c1c"/><text x="54" y="62" font-size="12" text-anchor="middle" fill="#fff" font-weight="800">はまだ食堂</text><rect x="6" y="40" width="96" height="110" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="電柱の 住所表示"><rect x="120" y="30" width="9" height="125" fill="#8d6e63"/><rect x="108" y="48" width="34" height="24" fill="#fff" stroke="#1565c0" stroke-width="2"/><text x="125" y="58" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">杉並区</text><text x="125" y="67" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">浜田山3</text><rect x="104" y="40" width="42" height="36" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="ブロック塀の 住所表示板(○丁目○番)"><rect x="150" y="105" width="52" height="46" fill="#cfd8dc"/><rect x="156" y="112" width="40" height="22" fill="#fff" stroke="#2e7d32" stroke-width="2"/><text x="176" y="127" font-size="10" text-anchor="middle" fill="#2e7d32" font-weight="900">3-1-8</text><rect x="150" y="105" width="52" height="46" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="交差点の 名前の 標識"><rect x="224" y="20" width="6" height="132" fill="#607d8b"/><rect x="196" y="22" width="62" height="18" fill="#1565c0"/><text x="227" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="800">浜田山駅前</text><rect x="194" y="18" width="66" height="26" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="バス停の 名前"><rect x="266" y="70" width="5" height="82" fill="#455a64"/><circle cx="268" cy="64" r="16" fill="#fff" stroke="#e65100" stroke-width="3"/><text x="268" y="68" font-size="9" text-anchor="middle" fill="#e65100" font-weight="900">バス</text><circle cx="268" cy="64" r="20" fill="transparent"/></g>' +
+        '<g data-h="0" data-n="木"><text x="150" y="98" font-size="30">🌳</text><rect x="148" y="70" width="36" height="34" fill="transparent"/></g><g data-h="0" data-n="雲"><text x="20" y="30" font-size="26">☁️</text><rect x="16" y="8" width="36" height="28" fill="transparent"/></g><g data-h="0" data-n="いぬ"><text x="262" y="146" font-size="22">🐕</text><rect x="258" y="124" width="30" height="26" fill="transparent"/></g>' +
+        '<text x="108" y="196" font-size="24">🧍</text></svg><div class="hdnote" id="hdfd">見つけた 数: 0 / 5</div>';
+      var done5 = false;
+      root.querySelectorAll('#hdrs g[data-h]').forEach(function (g) { g.style.cursor = 'pointer'; g.onclick = function () {
+        if (fin || done5) return; var nm = g.getAttribute('data-n');
+        if (g.getAttribute('data-h') === '1') { if (found[nm]) return; found[nm] = 1; nf++; g.style.filter = 'drop-shadow(0 0 4px #f2b705)'; g.insertAdjacentHTML('beforeend', '<circle cx="0" cy="0" r="0"/>'); $('#hdfd').textContent = '見つけた 数: ' + nf + ' / 5 (' + Object.keys(found).join('・') + ')'; dbg('rescue', nf);
+          if (nf >= 5) { done5 = true; fin = true; done(bad < 2, '電柱・ブロック塀の 住所表示、交差点名、バス停、お店の 看板は、場所を 伝える 手がかりに なります。<br>住所が 言えなくても 「○○のお店の 前です」と 伝えられます。'); } }
+        else { if (mis('それは ちがいます(' + nm + ')。住所や 場所の 名前が 書いてある ものを さがそう')) return; }
+      }; });
+    }
+    s1();
+  } });
+
   /* ===== しんこう ===== */
   function hold(stage, ctl) { var h = window.HmtHundred && window.HmtHundred.hold; try { return typeof h === 'function' ? !!h(stage, ctl) : false; } catch (e) { return false; } }
   function next() {
@@ -449,7 +599,7 @@
   function begin() {
     tok = 'hd' + Date.now(); clearAll();
     // 体感・視覚・聴覚・記憶が、かたよらないように
-    var cats = ['体感', '視覚', '聴覚', '記憶', '常識'], list = [];
+    var cats = ['体感', '視覚', '聴覚', '記憶', '常識', '頭脳'], list = [];
     cats.forEach(function (c) { var l = shuf(TYPES.filter(function (t) { return t.cat === c; })); list.push(l[0]); });
     var rest = shuf(TYPES.filter(function (t) { return list.indexOf(t) < 0; })); while (list.length < 10 && rest.length) list.push(rest.shift());
     G = { n: 0, total: Math.min(10, list.length), money: 100, right: 0, list: shuf(list) };
