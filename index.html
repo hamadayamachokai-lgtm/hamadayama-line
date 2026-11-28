@@ -31,6 +31,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .top .back:active{background:var(--mute-bg)}
 .top h1{font-size:18px;font-weight:700;flex:1}
 .top .pad-r{width:12px}
+.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hnav{display:flex;align-items:center;gap:4px;flex:none}.hnav .pl{all:unset;box-sizing:border-box;cursor:pointer;height:28px;max-width:62px;padding:0 9px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hnav .pl.add{color:#8a8f98;border-style:dashed;min-width:30px;padding:0 6px}.hnav .pl.off{opacity:.4}.hnav .pl:active{background:var(--mute-bg)}.hnav .hm{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--navy);background:#fff;border:1.5px solid var(--line);margin-left:2px}.hnav .hm svg{display:block}.hnav .hm span{display:block;font-size:9px;font-weight:700;line-height:1;margin-top:-2px}.mdl .box{max-height:86vh;overflow:auto}
 
 /* ヒーロー */
 .hero{margin:0;padding:28px 20px 56px;color:#fff;position:relative;overflow:hidden;
@@ -619,7 +620,44 @@ function prefetchLists() {
 function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
 
 /* ---------- 画面の骨組み ---------- */
-function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); document.body.classList.remove('bchat'); $('#app').innerHTML = html; $('#toast').className = ''; window.scrollTo(0, 0); }
+function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); document.body.classList.remove('bchat'); $('#app').innerHTML = html; try { var pr = document.querySelector('#app .top .pad-r'); if (pr && S.me && S.me.state === 'approved') { pr.outerHTML = navHtml_(); navBind_(); } } catch (e) { /* 無くても動く */ } $('#toast').className = ''; window.scrollTo(0, 0); }
+/* ---------- 上のバー右側: 前回・よく使うボタン(最大3つ)・ホーム ---------- */
+function lsGet_(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function lsSet_(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* なくても動く */ } }
+function navFav_() { var has = {}; ((S.me && S.me.menu) || []).forEach(function (m) { if (m.ready) has[m.key] = 1; }); return (lsGet_('hmtFav', []) || []).slice(0, 2).map(function (k) { return has[k] ? k : ''; }); }
+function navHtml_() {
+  var fav = navFav_(), h = '<span class="hnav" id="hnav">';
+  var pv = S.prevH || lsGet_('hmtPrev', '');
+  h += '<button type="button" class="pl' + (pv && pv !== (location.hash || '').replace('#', '') ? '' : ' off') + '" data-nv="prev" aria-label="前回の画面にもどる">前回</button>';
+  for (var i = 0; i < 2; i++) h += fav[i] ? '<button type="button" class="pl" data-nv="fav" data-i="' + i + '" aria-label="' + esc(LABEL[fav[i]] || fav[i]) + '">' + esc(LABEL[fav[i]] || fav[i]) + '</button>' : '<button type="button" class="pl add" data-nv="add" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
+  return h + '<button type="button" class="hm" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button></span>';
+}
+function navPick_(i) {
+  var cnt = lsGet_('hmtUse', {}), list = ((S.me && S.me.menu) || []).filter(function (m) { return m.ready && m.key !== 'a_admin' && LABEL[m.key]; });
+  list.sort(function (a, b) { return (cnt[b.key] || 0) - (cnt[a.key] || 0); });
+  var cur = navFav_()[i], labs = list.map(function (m, j) { return (j < 3 && cnt[m.key] ? '★よく使う ' : '') + LABEL[m.key]; });
+  var opts = labs.slice(); if (cur) opts.push('このボタンをはずす');
+  askChoice('よく使うボタンを置く', opts, 'ここに置いたボタンは、画面の上から、ワンタップで開けます(長押しで入れかえ)').then(function (v) {
+    if (v == null) return; var fav = navFav_().map(function (x) { return x || ''; });
+    fav[i] = v === 'このボタンをはずす' ? '' : list[opts.indexOf(v)].key;
+    var keep = fav.filter(function (x, j) { return x && fav.indexOf(x) === j; }); while (keep.length < 2) keep.push('');
+    lsSet_('hmtFav', keep); var n = $('#hnav'); if (n) n.outerHTML = navHtml_(); navBind_();
+  });
+}
+function navBind_() {
+  var n = $('#hnav'); if (!n) return;
+  Array.prototype.forEach.call(n.querySelectorAll('[data-nv]'), function (b) {
+    var t = null, long_ = false, k = b.dataset.nv, i = +b.dataset.i;
+    if (k === 'fav') { b.addEventListener('touchstart', function () { long_ = false; t = setTimeout(function () { long_ = true; navPick_(i); }, 550); }, { passive: true }); b.addEventListener('touchend', function () { clearTimeout(t); }); b.addEventListener('touchmove', function () { clearTimeout(t); }, { passive: true }); b.addEventListener('contextmenu', function (e) { e.preventDefault(); }); }
+    b.onclick = function () {
+      if (long_) { long_ = false; return; }
+      if (k === 'home') return go('home');
+      if (k === 'prev') { var pv = S.prevH || lsGet_('hmtPrev', ''); if (pv && /^[A-Za-z0-9_\-\/%]+$/.test(pv)) go(pv); else toast('前回の画面は、まだありません'); return; }
+      if (k === 'add') return navPick_(i);
+      if (k === 'fav') { var f = navFav_()[i]; if (f) openTile(f); }
+    };
+  });
+}
 function sub(title, body, backTo) {
   setView('<div class="top"><button class="back" id="bk" aria-label="戻る">' + svg('back').replace('<svg', '<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"') + '</button><h1>' + esc(title) + '</h1><span class="pad-r"></span></div><div class="pad">' + body + '</div>');
   $('#bk').onclick = function () { go(backTo || 'home'); };
@@ -939,7 +977,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-5 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-6 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -974,6 +1012,7 @@ function homeView() {
 }
 function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
+  try { var uc = lsGet_('hmtUse', {}); uc[k] = (uc[k] || 0) + 1; lsSet_('hmtUse', uc); } catch (e) { /* 数えられなくても動く */ }
   if (!m || !m.ready) return toast(m && m.note ? '「' + LABEL[k] + '」は、' + m.note + 'です(災害モードがONのときに使えます)' : '「' + LABEL[k] + '」は準備中です。もうしばらくお待ちください');
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
@@ -5274,7 +5313,7 @@ function route() {
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
-  if (h && h !== 'home' && h !== 'o_chg') { S.lastH = full; try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
+  if (h && h !== 'home' && h !== 'o_chg') { if (S.lastH && S.lastH !== full && S.lastH.split('/')[0] !== h) { S.prevH = S.lastH; lsSet_('hmtPrev', S.prevH); } S.lastH = full; try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
