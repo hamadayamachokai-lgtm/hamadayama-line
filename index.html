@@ -47,7 +47,9 @@ h1,h2,h3{margin:0;line-height:1.35}
 .chip.bad{background:var(--bad-bg);color:var(--bad)} .chip.mute{background:var(--mute-bg);color:var(--sub)}
 .sheet{margin:-36px 12px 0;position:relative}
 .sheet.flat{margin-top:0}
-.hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hq{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);color:#fff}.hqt{font-size:15px;line-height:1.5;font-weight:700}.hqb{display:flex;gap:10px;margin-top:8px}.hqy{all:unset;box-sizing:border-box;flex:1;text-align:center;cursor:pointer;padding:11px 8px;border-radius:12px;background:#fde4e4;border:2px solid #f0aaaa;color:#8a1c1c;font-weight:800;font-size:17px}.hqy:active{background:#f8cccc}.hqy[disabled]{opacity:.55}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
+.hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hq{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);color:#fff}.hqt{font-size:15px;line-height:1.5;font-weight:700}.hqb{display:flex;gap:10px;margin-top:8px}.hqy{all:unset;box-sizing:border-box;flex:1;text-align:center;cursor:pointer;padding:11px 8px;border-radius:12px;background:#fde4e4;border:2px solid #f0aaaa;color:#8a1c1c;font-weight:800;font-size:17px}.hqy:active{background:#f8cccc}.hqy[disabled]{opacity:.55}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hn.ntred{background:#fde6e6;border-color:#f0a3a3;color:#8a1313}.hn.ntred .hni svg{stroke:#c62828}.hn.ntred .hni small{opacity:1;color:#a31515}
+.ntc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:var(--card,#fff)}.ntc.red{background:#fde6e6;border-color:#f0a3a3}.ntc h3{margin:0 0 6px;font-size:15px}
+.hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
 
 /* カード・ボタン */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px}
@@ -557,6 +559,7 @@ var IC = {
   a_notice: '<path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 01-3.4 0"/>',
   a_mama: '<path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
   a_event: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15l3 3 5-5"/>',
+  a_notif: '<path d="M6 17V11a6 6 0 0112 0v6l1.5 2h-15z"/><path d="M10 21h4"/>',
   a_approve: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6M16 14l2 2 3-3"/>',
   a_store: '<path d="M3 7h7l2 2h9v11H3z"/><path d="M12 12v5M9.5 14.5L12 12l2.5 2.5"/>',
   a_flyer: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>',
@@ -573,7 +576,7 @@ var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', flyer: 'イベントチラシ', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更', supporter: 'サポーター募集', o_supporter: 'サポーター募集',
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
-  a_admin: '管理システム', a_disaster: '災害モード', a_image: '画像アップ', a_notice: '掲示板更新', a_mama: 'ママLINE', a_approve: '承認申請', a_store: '書類の格納', a_flyer: 'イベントチラシ', a_event: 'イベントの設定'
+  a_admin: '管理システム', a_disaster: '災害モード', a_image: '画像アップ', a_notice: '掲示板更新', a_mama: 'ママLINE', a_notif: '通知', a_approve: '承認申請', a_store: '書類の格納', a_flyer: 'イベントチラシ', a_event: 'イベントの設定'
 };
 /* ---- ボタンのハッシュタグ(検索ワード)。管理システム「LINE管理」→「ハッシュタグ」で変えられます。サーバーの値があれば、そちらを使います ---- */
 var TAGS_ = {
@@ -940,6 +943,7 @@ function heroNotes(me) {
   if (me.disaster && me.drill) n.push({ k: 'help', t: '防災訓練中です。<br>助け合いがデモモードで使えます。', l: '助け合い' });
   else if (me.disaster) n.push({ k: 'help', t: (disKindText(me.disasterKind) ? esc(disKindText(me.disasterKind)) + '<br>' : '') + '災害モードが発動しています。<br>身の安全を第一にしてください。', l: '助け合い' });
   (me.tasks || []).forEach(function (x) { n.unshift({ k: x.key, t: 'あなたにタスクがあります<br>(' + esc(x.title) + ')', l: x.title }); });
+  if (me.notifN > 0) n.push({ k: 'a_notif', red: 1, t: '承認待ちの通知が ' + me.notifN + '件 あります。<br>確認してください。', l: '通知' });
   if (+b.mail > 0) n.push({ k: 'mail', t: 'チャットに通知がきてます。<br>確認してください。', l: 'チャット' });
   if (+b.dashboard > 0) n.push({ k: 'dashboard', t: '掲示板に新しいお知らせがあります。', l: '掲示板' });
   if (+b.helpTask > 0) n.push({ k: 'help', tab: 'task', t: '助け合いの「あなたへのタスク」が ' + (+b.helpTask) + '件 あります。<br>終わったら「完了」を押してください。', l: '助け合い' });
@@ -953,7 +957,7 @@ function heroNotes(me) {
   }).join('');
   var cmd = new Date(), cmv = (cmd.getMonth() + 1) * 100 + cmd.getDate();
   if (cmv >= 1201 && cmv <= 1231) n.push({ k: 'tips', t: cmv <= 1214 ? 'おえかきコンクール 出品受付中!<br>ゲームの「おえかき」から出品できます。' : cmv <= 1225 ? 'おえかきコンクール 投票受付中!<br>ゲームの「おえかき」から投票できます。' : 'おえかきコンクール 結果発表!<br>ゲームの「おえかき」で見られます。', l: 'ゲーム' });
-  return n.length || tq ? '<div class="hnotes">' + tq + n.map(function (x) { return '<button class="hn" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
+  return n.length || tq ? '<div class="hnotes">' + tq + n.map(function (x) { return '<button class="hn' + (x.red ? ' ntred' : '') + '" data-hk="' + x.k + '"' + (x.tab ? ' data-ht="' + x.tab + '"' : '') + ' aria-label="' + esc(x.l) + 'を開く"><span class="hnt">' + x.t + '</span><span class="hni">' + svg(x.k) + '<small>' + esc(x.l) + '</small></span></button>'; }).join('') + '</div>' : '';
 }
 var GD_ = { on: false, pick: null };
 try { GD_.on = localStorage.getItem('hmtGuide') === '1'; } catch (e) { /* 保存できなくても動く */ }
@@ -983,7 +987,7 @@ var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイ�
   ['o_sched', '予定', [['役員の予定を見たい', 'm_o_sched']]]
 ];
 var GOFF_ = [['o_sched', '役員の予定を見たい'], ['o_circ', '回覧元を見たい'], ['headchg', '回覧元を変更したい'], ['o_roster', '会員情報を見たい(会員検索)'], ['o_report', '事業報告・計画を記載したい'], ['o_mama', 'スナックママの部屋に行きたい'], ['o_supporter', 'サポーターの募集をしたい'], ['o_summary', '集計結果を見たい'], ['o_kanban', '捨て看板を依頼したい'], ['o_sokai', '総会資料を見たい']];
-var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '画像をアップしたい', a_disaster: '災害モードを切りかえたい', a_notice: '掲示板を更新したい', a_mama: 'ママLINEを設定したい', a_approve: '登録申請を承認したい', a_store: '書類を格納したい', a_flyer: 'イベントチラシを登録したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
+var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '画像をアップしたい', a_disaster: '災害モードを切りかえたい', a_notice: '掲示板を更新したい', a_mama: 'ママLINEを設定したい', a_notif: '承認待ちを確認したい', a_approve: '登録申請を承認したい', a_store: '書類を格納したい', a_flyer: 'イベントチラシを登録したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
 function gdMenuTour(k) {
   var id = 'm_' + k, lab = LABEL[k] || k;
   if (!TOURS_[id]) TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
@@ -1048,7 +1052,7 @@ var ALLDESC_ = {
   o_roster: '会員を名前・住所などで探して、情報を見るところです',
   o_checkin: '会員証のQRを読み取って、受付や来場を記録するところです',
   o_desk: '大きな画面で受付を進める「QR受付画面」です',
-  a_admin: '管理システムを開きます', a_disaster: '災害モードを切りかえます', a_image: '画像をアップします(歴史推理など)', a_notice: '掲示板に載せるお知らせを更新します', a_mama: 'ママLINEの設定・通知です', a_approve: 'LINE会員の登録申請を承認します', a_store: '書類を回覧元別・会員別に格納します', a_flyer: 'イベントチラシを登録します', a_event: 'イベントの設定です', a_sched: '予定を登録します'
+  a_admin: '管理システムを開きます', a_disaster: '災害モードを切りかえます', a_image: '画像をアップします(歴史推理など)', a_notice: '掲示板に載せるお知らせを更新します', a_mama: 'ママLINEの設定・通知です', a_notif: '承認待ち(LINE登録・再連携・ママ入店)を確認します', a_approve: 'LINE会員の登録申請を承認します', a_store: '書類を回覧元別・会員別に格納します', a_flyer: 'イベントチラシを登録します', a_event: 'イベントの設定です', a_sched: '予定を登録します'
 };
 var ALLSPD_ = [0.5, 1, 1.5, 2, 3];
 /** 「詳しいガイドを見たい」: そのメニューの、くわしいガイドへ */
@@ -1115,7 +1119,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-25 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-26 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1161,7 +1165,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
   if (k === 'a_admin') return openLink(k);
-  go({ flyer: 'flyer', supporter: 'supporter', o_supporter: 'o_supporter', card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_approve: 'a_approve', a_store: 'a_store', a_flyer: 'a_flyer', a_disaster: 'a_disaster', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ flyer: 'flyer', supporter: 'supporter', o_supporter: 'o_supporter', card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_notif: 'a_notif', a_approve: 'a_approve', a_store: 'a_store', a_flyer: 'a_flyer', a_disaster: 'a_disaster', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -5600,6 +5604,24 @@ function faEdit(f) {
   if (!n) $('#fdl').onclick = function () { askChoice('このチラシを削除します', ['削除する'], '写真も消えます。元に戻せません。').then(function (v) { if (!v) return; api('a_flyer_delete', { id: f.id }).then(function (r) { toast(r.message); FA.d = r; faDraw(); }).catch(function (e) { toast(e.message); }); }); };
 }
 
+/* ---------- 通知(管理者): 承認待ち(LINE登録・再連携・ママ入店) ---------- */
+var NT = { d: null };
+function notifView() {
+  sub('通知', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_notif_list').then(function (d) { NT.d = d; if (S.me) S.me.notifN = d.n || 0; ntDraw(); }).catch(function (e) { offErr('通知', e, 'officer'); });
+}
+function ntDraw() {
+  var d = NT.d, h = '';
+  h += '<p class="small" style="margin:0 4px 10px">' + (d.n ? '承認待ちが <b>' + d.n + '件</b> あります。(管理システムの「承認待ち」と同じです)' : '承認待ちは、ありません。') + '</p>';
+  h += '<div class="ntc' + (d.line.length ? ' red' : '') + '"><h3>LINE公式の登録承認 ' + d.line.length + '件</h3>' + (d.line.length ? d.line.map(function (x) { return '<div class="ml"><div class="sj">' + esc(x.name) + ' さん</div><div class="mt">' + esc(x.payer) + (x.rel ? ' ・ ' + esc(x.rel) : '') + ' ・ ' + esc(String(x.at || '').slice(0, 16)) + '</div></div>'; }).join('') + '<button class="btn" id="ntap" style="margin-top:6px">承認申請の画面で承認する</button>' : '<p class="small" style="margin:0">ありません。</p>') + '</div>';
+  h += '<div class="ntc' + (d.relink.length || d.other.length ? ' red' : '') + '"><h3>再連携 ' + (d.relink.length + d.other.length) + '件</h3>' + (d.relink.length ? '<p class="small" style="margin:0 0 6px">新しいLINEで開いた方を、以前の登録に結びつけます。お名前が一致した方です。</p>' + d.relink.map(function (x, i) { return '<div class="ml"><div class="sj">' + esc(x.name) + ' → ' + esc(x.oldName) + (x.no ? '(' + esc(x.no) + ')' : '') + '</div><div class="mt">最後に開いた ' + esc(String(x.last || '').slice(0, 16)) + '</div><div class="chips" style="margin-top:6px"><button class="sbtn ntrl" data-i="' + i + '">結びつける</button><button class="sbtn ntrd" data-n="' + esc(x.newId) + '">一覧から外す</button></div></div>'; }).join('') : '') + (d.other.length ? '<p class="small" style="margin:8px 0 4px">以前の登録が1人に絞れなかった方(' + d.other.length + '件)。管理システムの「再連携」で結びつけてください。</p>' + d.other.map(function (x) { return '<div class="ml"><div class="sj">' + esc(x.name) + '</div><div class="mt">最後に開いた ' + esc(String(x.last || '').slice(0, 16)) + '</div><div class="chips" style="margin-top:6px"><button class="sbtn ntrd" data-n="' + esc(x.newId) + '">一覧から外す</button></div></div>'; }).join('') : '') + (!d.relink.length && !d.other.length ? '<p class="small" style="margin:0">ありません。</p>' : '') + '</div>';
+  h += '<div class="ntc' + (d.mama.length ? ' red' : '') + '"><h3>ママLINEの入店 ' + d.mama.length + '件</h3>' + (d.mamaErr ? '<p class="small" style="margin:0">ママに聞けませんでした(' + esc(d.mamaErr) + ')</p>' : d.mama.length ? d.mama.map(function (x, i) { return '<div class="ml"><div class="sj">' + esc(x.name) + ' さん</div><div class="mt">' + esc(x.status) + ' ・ ' + esc(String(x.at || '').slice(0, 16)) + '</div><div class="chips" style="margin-top:6px"><button class="sbtn ntm" data-a="approve" data-i="' + i + '">承認する</button><button class="sbtn ntm" data-a="reject" data-i="' + i + '">却下する</button></div></div>'; }).join('') : '<p class="small" style="margin:0">ありません。</p>') + '</div>';
+  sub('通知', h, 'officer');
+  if ($('#ntap')) $('#ntap').onclick = function () { go('a_approve'); };
+  Array.prototype.forEach.call(document.querySelectorAll('.ntrl'), function (b) { b.onclick = function () { var x = d.relink[+b.dataset.i]; cf(x.name + ' さんを、以前の登録(' + x.oldName + ')に結びつけます。よろしいですか?', function () { b.disabled = true; api('a_notif_relink', { act: 'apply', newId: x.newId, oldId: x.oldId }).then(function (r) { toast(r.message || '結びつけました'); notifView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); }); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.ntrd'), function (b) { b.onclick = function () { cf('この方を、再連携の一覧から外します。よろしいですか?', function () { api('a_notif_relink', { act: 'dismiss', newId: b.dataset.n }).then(function (r) { toast(r.message || '外しました'); notifView(); }).catch(function (e) { toast(e.message); }); }); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.ntm'), function (b) { b.onclick = function () { var x = d.mama[+b.dataset.i], ap = b.dataset.a === 'approve'; cf(x.name + ' さんを、ママLINEに' + (ap ? '入店させます' : '入れません(却下)') + '。よろしいですか?', function () { b.disabled = true; api('a_notif_mama', { id: x.id, act: b.dataset.a }).then(function (r) { toast(r.message || '処理しました'); notifView(); }).catch(function (e) { b.disabled = false; toast(e.message); }); }); }; });
+}
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
@@ -5607,7 +5629,7 @@ function route() {
   if (me.state !== 'approved') return me.state === 'none' ? noneView() : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched|a_approve|a_store|a_flyer)$/.test(h) && !isAdmin())) h = '';
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched|a_approve|a_notif|a_store|a_flyer)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   if (h && h !== 'home' && h !== 'o_chg') { if (S.lastH && S.lastH !== full && S.lastH.split('/')[0] !== h) { S.prevH = S.lastH; lsSet_('hmtPrev', S.prevH); } S.lastH = full; try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
   var seg = full.split('/')[1];
@@ -5623,7 +5645,7 @@ function route() {
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
   if (h === 'manual' && seg) return manualView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ flyer: flyerView, supporter: supView, o_supporter: supView, manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_approve: approveView, a_store: storeView, a_flyer: flyerAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ flyer: flyerView, supporter: supView, o_supporter: supView, manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notif: notifView, a_approve: approveView, a_store: storeView, a_flyer: flyerAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
