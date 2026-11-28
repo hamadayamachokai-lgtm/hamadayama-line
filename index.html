@@ -275,7 +275,7 @@ button.mi{cursor:pointer;min-height:32px}
 .msheet{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:flex;align-items:flex-end;justify-content:center}.msheet>div{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:80vh;overflow:auto}.msheet button.o{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:12px;margin-top:6px;border:1px solid var(--line);border-radius:12px;font-weight:700;cursor:pointer}.msheet button.o[aria-pressed=true]{background:#e3f4e0}
 @media(min-width:700px){.cbar{flex-basis:190px}.cbar button{font-size:14px}}
 .aibar{display:block}.aiin{display:flex;gap:8px;align-items:center}.aiin .inp{flex:1;min-width:0}
-.gsec{display:flex;align-items:center;justify-content:space-between;gap:8px}.gdb{all:unset;cursor:pointer;box-sizing:border-box;padding:7px 14px;border-radius:999px;border:2px solid var(--line);background:#fff;font-size:14px;font-weight:800;color:var(--sub);min-height:38px}.gdb.on{background:#fff6b8;border-color:#e0b400;color:#5a4100}
+.gsec{display:flex;align-items:center;justify-content:space-between;gap:6px 8px;flex-wrap:wrap}.gdb{all:unset;white-space:nowrap;cursor:pointer;box-sizing:border-box;padding:7px 12px;border-radius:999px;border:2px solid var(--line);background:#fff;font-size:14px;font-weight:800;color:var(--sub);min-height:38px}.gdb.on{background:#fff6b8;border-color:#e0b400;color:#5a4100}
 .gdp{background:#fffbdc;border:2px solid #ecd35a;border-radius:16px;padding:14px;margin:0 0 14px;color:#2a2400}.gdq{font-size:19px;font-weight:800;line-height:1.5;margin:0 0 10px}.gdg{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
 .gdw{all:unset;cursor:pointer;box-sizing:border-box;width:100%;padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid #e0b400;font-size:17px;font-weight:700;color:#2a2400;min-height:48px}.gdw.ai{background:#fff6b8;margin:0 0 10px}.gdw.back{background:#f1f1f1;border-color:#bbb;color:#444;margin-top:4px}
 .gdo{font-size:14px;line-height:1.6;margin:4px 0 8px}.gdd{margin:0 0 12px}.gdd summary{cursor:pointer;font-weight:800;font-size:16px;padding:10px 0}.gdd .gdw{margin:0 0 8px}.gdh{font-size:15px;font-weight:800;margin:8px 0 8px;padding-top:8px;border-top:1.5px dashed #ecd35a}
@@ -821,6 +821,47 @@ function gdSearchInit() {
     Array.prototype.forEach.call(box.querySelectorAll('[data-gpick]'), function (b) { b.onclick = function () { GD_.pick = b.dataset.gpick || null; tourStop(true); homeView(); }; });
   };
 }
+/* ---- 画面チュートリアル: ホームのボタンを、1つずつ 自動で説明する(「ストップ」で止められる) ---- */
+var ALLDESC_ = {
+  card: '自分の会員証(QRコード)を出すところです。\nこんな時はこちらから:イベントの受付で見せる/登録内容を直す/LINE会員登録をやめる',
+  dashboard: '町会からのお知らせ・掲示板です。\nこんな時はこちらから:町会の最新情報を見たい',
+  mail: '役員とのチャットです。\nこんな時はこちらから:役員に連絡・相談したい/使い方をロボットに質問したい',
+  event: '祭礼・演芸会などの申し込みをするところです。\nこんな時はこちらから:申し込みたい/キャンセルしたい/申し込み状況を見たい',
+  flyer: 'イベントのチラシを見るところです。新しいチラシがあると、ボタンが薄い赤になります。\nこんな時はこちらから:開催するイベントを知りたい',
+  help: '町会の助け合いの掲示です。\nこんな時はこちらから:手伝ってほしい/手伝える人を探したい・募集したい',
+  suginami: '杉並区の防災情報です。\nこんな時はこちらから:災害に備えたい/避難情報を見たい',
+  weather: '天気の情報です。\nこんな時はこちらから:今日や週間の天気を見たい',
+  tips: 'クイズ・カード・パズルなどで遊べるゲームです(歴史推理もここ)。\nこんな時はこちらから:すきま時間に遊びたい',
+  blog: '町会ブログです。\nこんな時はこちらから:町会の活動の様子を読みたい',
+  board: 'Tweet(ひとこと投稿)です。\nこんな時はこちらから:会員どうしの投稿を見たい・書きたい',
+  headchg: '回覧元が替わったことを知らせるところです。\nこんな時はこちらから:班の回覧元が交代した',
+  supporter: 'サポーター募集です。\nこんな時はこちらから:町会のお手伝いを探したい・やってみたい',
+  o_supporter: 'お手伝い(サポーター)の募集を出す・応募者を見るところです。\nこんな時はこちらから:お手伝いを募集したい',
+  o_mama: '役員用の、スナックママの部屋です。\nこんな時はこちらから:ママの部屋の画面を開きたい',
+  o_sched: '役員の予定を見るところです。\nこんな時はこちらから:役員会などの日程を確認したい',
+  o_report: '事業報告・計画を記載するところです。\nこんな時はこちらから:事業報告・計画を出したい',
+  o_sokai: '総会の資料を見たり、当日の出席者数を入れたりするところです。\nこんな時はこちらから:総会の資料・出席数',
+  o_kanban: '捨て看板の依頼を出すところです。\nこんな時はこちらから:捨て看板を依頼したい',
+  o_summary: '会員人数・回覧元・商品券などの集計です。\nこんな時はこちらから:全体の数字を知りたい',
+  o_unpaid: '未納の方を確認するところです。\nこんな時はこちらから:未納者を知りたい',
+  o_circ: '今の回覧元を見たり、検索・変更したりするところです。商品券の対象も分かります。\nこんな時はこちらから:回覧元を知りたい/変更したい',
+  o_roster: '会員を名前・住所などで探して、情報を見るところです。\nこんな時はこちらから:会員を検索したい',
+  o_checkin: '会員証のQRを読み取って、受付や来場を記録するところです。\nこんな時はこちらから:イベントの受付をしたい',
+  o_desk: '大きな画面で受付を進める「QR受付画面」です。\nこんな時はこちらから:受付の順番待ちを進めたい',
+  a_admin: '管理システムを開きます。', a_disaster: '災害モードを切りかえます。', a_image: '歴史推理の画像を変えます。', a_docs: '書類を更新します。', a_notice: 'お知らせを更新します。', a_mama: 'ママの設定です。', a_event: 'イベントの設定です。', a_sched: '予定を登録します。'
+};
+function gdAllStart_() {
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')), steps = [{ sel: '.gsec', next: 1, ms: 6000, say: 'ホームのボタンを、ひとつずつ ご説明します。\n自動で進みます。止めたいときは「ストップ」を押してください。' }], last = '';
+  var heads = { officer: 'ここからは「役員専用」のメニューです。', admin: 'ここからは「管理者専用」のメニューです。' };
+  tiles.forEach(function (t) {
+    var k = t.dataset.k, sec = t.classList.contains('officer') ? 'officer' : /^a_/.test(k) ? 'admin' : 'common', say = '【' + (LABEL[k] || k) + '】\n' + (ALLDESC_[k] || 'ここから「' + (LABEL[k] || k) + '」の画面が開きます。');
+    if (sec !== last && heads[sec]) say = heads[sec] + '\n\n' + say;
+    last = sec; steps.push({ sel: '.tile[data-k="' + k + '"]', next: 1, ms: Math.min(14000, 3500 + say.length * 120), noact: '.tile', noactMsg: '説明中は、ボタンは押せません。「ストップ」か「ガイドを終わる」を押してください', say: say });
+  });
+  TOURS_.allmenu = { t: '', home: 1, auto: 1, nocount: 0, fin: { say: 'ボタンの説明は以上です。\n気になるボタンを押して、使ってみてください', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: steps };
+  tourStart('allmenu');
+}
+function lastScr_() { var l = ''; try { l = localStorage.getItem('hmtLast') || ''; } catch (e) { l = ''; } return /^[A-Za-z0-9_\-\/%]+$/.test(l) ? l : ''; }
 function gdPanel() {
   var me = S.me, has = {}; me.menu.forEach(function (m) { has[m.key] = 1; });
   var wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; }, h = '<div class="gdp">';
@@ -835,7 +876,7 @@ function gdPanel() {
     var pickChip = function (k) { return gm[k] && has[k] ? chip(gm[k][1], 'data-gpick="' + k + '"') : ''; };
     var menus = '<div class="gdc">' + chip('何からやればいいかわからない', 'data-gpick="__start"').replace('gdw s', 'gdw s ai') + chip('ガイドの終了方法', 'data-gtour="gdoff"').replace('gdw s', 'gdw s rd') + '</div><div class="gdc">' + ord.map(pickChip).join('') + '</div>';
     var staff = isOfficer();
-    h += '<div class="gdt">🤖 私がガイドします</div><div class="gdo">まずはテキストまたはボタンから、<br>知りたいことを教えてください</div>' +
+    h += '<div class="gdt">🤖 私がガイドします</div><div style="margin:6px 0 8px"><button type="button" id="gdall" class="gdb on">画面チュートリアル</button></div><div class="gdo">あなたが聞きたいことは、<br>テキスト または ボタンから<br>知りたいことを私に教えてください</div>' +
       '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + (isOfficer() ? ['o_roster', 'o_circ', 'o_sched'] : ['card', 'event', 'tips']).map(pickChip).join('') + '</div>' +
       '<div class="gdh0">テキストで検索</div><input id="gdq" class="gdin" type="search" maxlength="40" placeholder="🔍 ここに知りたいことを入力" autocomplete="off" aria-label="知りたいことを入力"><div class="gdo" style="margin:4px 0 0">例)会員証を編集・イベント申込 など</div><div id="gdres"></div>' +
       '<div class="gdh0">ボタンから検索</div>' +
@@ -857,17 +898,19 @@ function homeView() {
   me.menu.forEach(function (m) { if (m.key === 'mystery') return; /* 歴史推理は GAME の中にあります */ if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
   var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
   order.forEach(function (sec) {
-    html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
+    html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<span style="display:flex;gap:6px;align-items:center">' + (lastScr_() ? '<button type="button" id="gdlast" class="gdb" aria-label="前に開いていた画面にもどる">前回画面</button>' : '') + '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button></span>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-1 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-2 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
   var hr = $('#hrfr'); if (hr) hr.onclick = hardRefresh;
+  var gl = $('#gdlast'); if (gl) gl.onclick = function () { var l = lastScr_(); if (l) location.hash = '#' + l; };
   var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; GD_.pick = null; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
+  var ga = $('#gdall'); if (ga) ga.onclick = gdAllStart_;
   gdSearchInit();
   Array.prototype.forEach.call(document.querySelectorAll('[data-gpick]'), function (b) { b.onclick = function () { GD_.pick = b.dataset.gpick || null; tourStop(true); homeView(); }; });
   Array.prototype.forEach.call(document.querySelectorAll('.hqy'), function (bt) {
@@ -2271,7 +2314,7 @@ function tourStart(name) {
   if (T.home && (location.hash || '#') !== '#' && location.hash !== '#home') go('home');
 }
 function tourStop(quiet, msg) {
-  window.HMT_TUT = 0;
+  window.HMT_TUT = 0; try { clearTimeout(TR.at); } catch (e) { /* 無視 */ }
   try { if (window.HmtHundred) window.HmtHundred.hold = null; } catch (e) { /* 無視 */ }
   if (TR.t) clearInterval(TR.t);
   document.removeEventListener('click', tourClick, true); window.removeEventListener('scroll', tourPos, true); window.removeEventListener('resize', tourPos);
@@ -2299,6 +2342,12 @@ function tourTick() {
 function tourRender(st) {
   var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy;
   TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
+  var TT = TOURS_[TR.name];
+  if (TT.auto) {   // 自動で進む説明: 「ストップ」で止まる/「つづける」で再開
+    clearTimeout(TR.at); TR.box.querySelector('.tb').innerHTML = '<button type="button" data-tp="1">' + (TR.pause ? 'つづける' : 'ストップ') + '</button><button type="button" data-tn="1">次へ</button><button type="button" class="q" data-tq="1">ガイドを終わる</button>';
+    var tp = TR.box.querySelector('[data-tp]'); tp.onclick = function (ev) { ev.stopPropagation(); TR.pause = !TR.pause; clearTimeout(TR.at); tp.textContent = TR.pause ? 'つづける' : 'ストップ'; if (!TR.pause) TR.at = setTimeout(tourNext, 1500); };
+    if (!TR.pause) TR.at = setTimeout(tourNext, st.ms || 6000);
+  }
   var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
   var ob = TR.box.querySelector('[data-to]'); if (ob) ob.onclick = function (ev) { ev.stopPropagation(); tourOther_(); };
@@ -2313,7 +2362,7 @@ function tourPos() {
 }
 function tourNext() {
   if (!TR.on || !TOURS_[TR.name] || TR.hold) return;
-  var T = TOURS_[TR.name]; TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
+  var T = TOURS_[TR.name]; clearTimeout(TR.at); TR.i++; TR.el = null; TR.wait = 0; TR.hole.style.display = 'none';
   for (var g = 0; g < 20 && TR.i < T.steps.length; g++) {
     var st0 = T.steps[TR.i];
     if (st0.expand) { T.steps = T.steps.slice(0, TR.i).concat(st0.expand(), T.steps.slice(TR.i + 1)); continue; }
@@ -2329,7 +2378,7 @@ function tourClick(ev) {
   if (TR.fin) { if (TR.el && !(ev.target.closest && ev.target.closest('.tourui')) && TR.el.contains(ev.target)) setTimeout(function () { tourStop(true); }, 200); return; }
   var st = tourStep(); if (!st || !TR.el) return;
   if (ev.target.closest && ev.target.closest('.tourui')) return;
-  if (st.noact && ev.target.closest && ev.target.closest(st.noact)) { ev.preventDefault(); ev.stopPropagation(); toast('ガイドの練習なので、ここは押せません。「次へ」を押してください'); return; }
+  if (st.noact && ev.target.closest && ev.target.closest(st.noact)) { ev.preventDefault(); ev.stopPropagation(); toast(st.noactMsg || 'ガイドの練習なので、ここは押せません。「次へ」を押してください'); return; }
   if (st.need && TR.el.contains(ev.target) && !(ev.target.closest && ev.target.closest(st.need))) return;   // 枠の中でも、指定の場所以外を押したときは、進まない
   if (TR.el.contains(ev.target) || ev.target === TR.el) { if (st.pick) st.pick(ev.target); if (!st.next) setTimeout(tourNext, 250); return; }
   if (st.next) return;   // 「つぎへ」の場面は、ほかも自由に触れる
@@ -5155,6 +5204,7 @@ function route() {
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
+  if (h && h !== 'home' && h !== 'o_chg') { try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
