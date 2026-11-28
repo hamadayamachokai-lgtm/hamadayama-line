@@ -968,7 +968,7 @@ var GDKW_ = { flyer: 'イベントチラシ チラシ ちらし イベント 行
 function gdIndex() {
   var has = {}, L = []; S.me.menu.forEach(function (m) { has[m.key] = 1; });
   GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1] + ' ' + tagList_(m[0]).join(' ')]); }); });
-  L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]);
+  L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]); L.push(['ショートカット(上のボタン)の登録・削除', 'scut', 'ショートカット 簡易ボタン 上のボタン 他の画面 お好みボタン お気に入り 前回 ホーム 登録 削除 ＋ ✎']);
   if (isOfficer()) [['o_roster', '会員を検索', 'o_roster'], ['o_circ', '回覧元を検索', 'o_circ'], ['o_gift', '商品券対象者を知りたい', 'o_circ'], ['o_unpaid', '未納者を知りたい', 'o_unpaid'], ['o_sched', '役員の予定', 'o_sched'], ['o_kanban', '捨て看板を依頼したい', 'o_kanban'], ['o_report', '事業報告・計画提出', 'o_report'], ['o_supporter', 'サポーター募集(役員)', 'o_supporter'], ['o_sokai', '総会', 'o_sokai'], ['o_summary', '集計結果', 'o_summary'], ['o_mama', 'スナックママの部屋に行く', 'o_mama']].forEach(function (x) {
     if (!has[x[2]]) return; var id = x[0] === 'o_gift' ? 'o_gift' : gdMenuTour(x[0]); L.push([x[1] + '(役員)', id, (GDKW_[id === 'm_o_sokai' ? 'm_o_sokai' : x[0]] || '') + ' ' + tagList_(x[0] === 'o_gift' ? 'o_circ' : x[0]).join(' ')]);
   });
@@ -1090,7 +1090,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-17 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-18 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2366,6 +2366,15 @@ var TOURS_ = {
   helprec: { t: '助け合いで募集する場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="help"]', say: 'この「助け合い」を押します(災害モードのときに使えます)' },
     { sel: '[data-hgo="recruit"]', say: '人手がほしいときは、この「みんなに募集する」を押します' } ] },
+  scut: { t: 'ショートカット(上のボタン)を、登録・削除してみる', home: 1, nocount: 0, fin: { say: 'このガイドを終了します。\n好きなショートカットを設定してみてください', btn: 'ガイドを終了する', other: '別のガイドをする' }, steps: [
+    { sel: function () { var k = ['weather', 'dashboard', 'card', 'suginami', 'blog', 'board'], i, e; for (i = 0; i < k.length; i++) { e = document.querySelector('.tile[data-k="' + k[i] + '"]'); if (tourVisible(e)) return e; } return document.querySelector('.tile[data-k]'); }, say: 'ショートカットは、ホーム以外の画面の上に出ます。\nまず、この光っているボタンを押して、画面を開いてください' },
+    { skipif: function () { return !!document.querySelector('#hnav .pl.add'); }, sel: '#hnav .pe', say: '3つの場所が、すでに使われています。\nまず「✎」を押してください(入れかえモードになります)', pick: function () { S.navEdit = false; } },
+    { sel: function () { return document.querySelector('#hnav .pl.add') || [].slice.call(document.querySelectorAll('#hnav .pl')).pop(); }, say: 'ショートカットを登録してみましょう。\nまずはこの「＋」ボタンを押してください', pick: function (t) { var b = t.closest ? t.closest('.pl') : null; TR.sci = b ? b.getAttribute('data-i') : '1'; } },
+    { sel: '.npk .npg:not(.two)', need: '.np', say: 'このカテゴリから、好きなものを選んでください' },
+    { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav'); }, next: 1, noact: '#hnav .pl', noactMsg: '説明中は押せません。「次へ」を押してください', say: '完了です!\nこのとおり、上にボタンが置かれました' },
+    { sel: '#hnav .pe', say: '削除もやってみましょう。\nまず「✎」を押してください', pick: function () { S.navEdit = false; } },
+    { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav .pl'); }, say: '削除したいボタン(いま置いたボタン)を押してください' },
+    { sel: '.npk .np.del', say: '「このボタンを削除」を押してください', pick: function () { S.navEdit = false; } } ] },
   gdoff: { t: 'ガイドの終わらせ方を、教えてもらう', home: 1, steps: [
     { sel: '#gdbtn', say: 'この「ガイド ON」のボタンを押すと、ガイドが終わります。もう一度押すと、また始められます' } ] },
   card: { t: '会員証を開く場所を、教えてもらう', home: 1, steps: [
