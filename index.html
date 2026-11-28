@@ -836,8 +836,8 @@ function hardRefresh() {
 function gdSearchInit() {
   var q = $('#gdq'), box = $('#gdres'); if (!q || !box) return;
   q.oninput = function () {
-    var t = gdNorm(String(q.value).replace(/[#＃]/g, ' ')); if (!t) { box.innerHTML = ''; return; }
-    t = t.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }); var qs = [], i; if (t.length < 2) qs = [t]; else for (i = 0; i < t.length - 1; i++) qs.push(t.substr(i, 2));
+    var parts = String(q.value).replace(/[#＃、,]/g, ' ').split(/[\s\u3000]+/).map(gdNorm).filter(Boolean); if (!parts.length) { box.innerHTML = ''; return; }
+    var qs = [], i; parts.forEach(function (w) { w = w.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }); if (w.length < 2) qs.push(w); else for (i = 0; i < w.length - 1; i++) qs.push(w.substr(i, 2)); });
     var need = Math.max(1, Math.ceil(qs.length * 0.5)), res = [];
     gdIndex().forEach(function (e) {
       var hay = gdNorm(String(e[0] + ' ' + e[2]).replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); })), sc = 0; qs.forEach(function (g) { if (hay.indexOf(g) >= 0) sc++; });
@@ -913,7 +913,7 @@ function gdPanel() {
     var pickChip = function (k) { return gm[k] && has[k] ? chip(gm[k][1], 'data-gpick="' + k + '"') : ''; };
     var menus = '<div class="gdc">' + chip('何からやればいいかわからない', 'data-gpick="__start"').replace('gdw s', 'gdw s ai') + chip('ガイドの終了方法', 'data-gtour="gdoff"').replace('gdw s', 'gdw s rd') + '</div><div class="gdc">' + ord.map(pickChip).join('') + '</div>';
     var staff = isOfficer();
-    h += '<div class="gdt">🤖 私がガイドします</div><div style="margin:6px 0 8px"><button type="button" id="gdall" class="gdb on">画面ボタンの説明</button></div><div class="gdo">あなたが聞きたいことは、<br>テキスト または ボタンから<br>知りたいことを私に教えてください</div>' +
+    h += '<div class="gdt">🤖 私がガイドします</div><div class="gdo" style="margin:6px 0 6px">全体の説明は［画面ボタンの説明］から</div><div style="margin:0 0 8px"><button type="button" id="gdall" class="gdb on">画面ボタンの説明</button></div><div class="gdo">下のボタンまたは検索窓からでもガイドします<br>さあ一緒にやってみましょう！</div>' +
       '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + (isOfficer() ? ['o_roster', 'o_circ', 'o_sched'] : ['card', 'event', 'tips']).map(pickChip).join('') + '</div>' +
       '<div class="gdh0">テキストで検索</div><input id="gdq" class="gdin" type="search" maxlength="40" placeholder="🔍 ここに知りたいことを入力" autocomplete="off" aria-label="知りたいことを入力"><div class="gdo" style="margin:4px 0 0">例)会員証を編集・イベント申込 など</div><div id="gdres"></div>' +
       '<div class="gdh0">ボタンから検索</div>' +
@@ -939,7 +939,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-4 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-5 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -4316,7 +4316,7 @@ function tipsView() {
   sub('GAME', '<div id="qzbox"><div class="skel" style="height:260px"></div></div>');
   var go2 = function () { var el = document.getElementById('qzbox'); if (el && window.HmtQuiz) HmtQuiz.mount(el, { call: api }); };
   if (window.HmtQuiz) return go2();
-  var sc = document.createElement('script'); sc.src = 'quiz.js?v=43'; sc.onload = go2;
+  var sc = document.createElement('script'); sc.src = 'quiz.js?v=44'; sc.onload = go2;
   sc.onerror = function () { var el = document.getElementById('qzbox'); if (el) el.innerHTML = '<div class="card"><p class="muted" style="margin:0">クイズを よみこめませんでした。通信を確かめて、もう一度ひらいてください。</p></div>'; };
   document.head.appendChild(sc);
 }
