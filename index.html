@@ -31,7 +31,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .top .back:active{background:var(--mute-bg)}
 .top h1{font-size:18px;font-weight:700;flex:1}
 .top .pad-r{width:12px}
-.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hnav{display:flex;align-items:center;gap:4px;flex:none}.hnav .pl{all:unset;box-sizing:border-box;cursor:pointer;height:28px;max-width:62px;padding:0 9px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hnav .pl.add{color:#8a8f98;border-style:dashed;min-width:30px;padding:0 6px}.hnav .pl.off{opacity:.4}.hnav .pl:active{background:var(--mute-bg)}.hnav .hm{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--navy);background:#fff;border:1.5px solid var(--line);margin-left:2px}.hnav .hm svg{display:block}.hnav .hm span{display:block;font-size:9px;font-weight:700;line-height:1;margin-top:-2px}.mdl .box{max-height:86vh;overflow:auto}.hnav .pe{all:unset;box-sizing:border-box;cursor:pointer;min-width:26px;height:26px;padding:0 5px;border-radius:99px;font-size:13px;font-weight:700;color:#6b7280;display:inline-flex;align-items:center;justify-content:center}.hnav .pe.on{background:var(--navy);color:#fff;font-size:11px;padding:0 9px}.hnav.ed .pl{border-style:dashed;border-color:var(--navy);box-shadow:0 0 0 2px rgba(37,58,92,.15)}.hnav .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.npk .npl{font-size:12.5px;font-weight:700;color:#6b7280;margin:12px 0 4px}.npg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.npg.two{grid-template-columns:repeat(2,1fr)}.np{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:4px 2px;border-radius:12px;background:#fff;border:1.5px solid var(--line);font-size:13.5px;font-weight:700;color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.25}.np small{font-size:10px;font-weight:600;color:#6b7280}.np.on{background:var(--navy);color:#fff;border-color:var(--navy)}.np.on small{color:#dfe6f2}.np.del{width:100%;margin:2px 0 0;color:#b3261e;border-color:#e9a3a0;background:#fff5f4}
+.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hnav{display:flex;align-items:center;gap:4px;flex:none}.hnav .pl{all:unset;box-sizing:border-box;cursor:pointer;height:28px;max-width:62px;padding:0 9px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hnav .pl.add{color:#8a8f98;border-style:dashed;min-width:30px;padding:0 6px}.hnav .pl.off{opacity:.4}.hnav .pl.cb{background:#dbeafe;border-color:#93c5fd}.hnav .pl.cr{background:#fee2e2;border-color:#fca5a5}.hnav .pl.cg{background:#dcfce7;border-color:#86efac}.npg.q4{grid-template-columns:repeat(4,1fr)}.hnav .pl:active{background:var(--mute-bg)}.hnav .hm{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--navy);background:#fff;border:1.5px solid var(--line);margin-left:2px}.hnav .hm svg{display:block}.hnav .hm span{display:block;font-size:9px;font-weight:700;line-height:1;margin-top:-2px}.mdl .box{max-height:86vh;overflow:auto}.hnav .pe{all:unset;box-sizing:border-box;cursor:pointer;min-width:26px;height:26px;padding:0 5px;border-radius:99px;font-size:13px;font-weight:700;color:#6b7280;display:inline-flex;align-items:center;justify-content:center}.hnav .pe.on{background:var(--navy);color:#fff;font-size:11px;padding:0 9px}.hnav.ed .pl{border-style:dashed;border-color:var(--navy);box-shadow:0 0 0 2px rgba(37,58,92,.15)}.hnav .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.npk .npl{font-size:12.5px;font-weight:700;color:#6b7280;margin:12px 0 4px}.npg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.npg.two{grid-template-columns:repeat(2,1fr)}.np{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:4px 2px;border-radius:12px;background:#fff;border:1.5px solid var(--line);font-size:13.5px;font-weight:700;color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.25}.np small{font-size:10px;font-weight:600;color:#6b7280}.np.on{background:var(--navy);color:#fff;border-color:var(--navy)}.np.on small{color:#dfe6f2}.np.del{width:100%;margin:2px 0 0;color:#b3261e;border-color:#e9a3a0;background:#fff5f4}
 
 /* ヒーロー */
 .hero{margin:0;padding:28px 20px 56px;color:#fff;position:relative;overflow:hidden;
@@ -662,27 +662,47 @@ function navSlots_() {
     return { v: '', kind: 'empty', label: '＋' };
   });
 }
+var NAV_COLS = [['', 'なし'], ['b', '薄い青'], ['r', '薄い赤'], ['g', '薄い緑']];
+function navOrd_() { var o = lsGet_('hmtNavOrd', null), d = ['0', '1', '2', 'h']; if (!o || o.length !== 4 || d.some(function (x) { return o.indexOf(x) < 0; })) return d; return o; }
+function navCol_() { var c = lsGet_('hmtNavCol', null) || []; return [0, 1, 2].map(function (i) { return /^[brg]$/.test(c[i]) ? c[i] : ''; }); }
+function navMove_(id, d) { var o = navOrd_(), i = o.indexOf(id), j = i + d; if (i < 0 || j < 0 || j > 3) return; var t = o[i]; o[i] = o[j]; o[j] = t; lsSet_('hmtNavOrd', o); }
 function navHtml_() {
-  var sl = navSlots_(), ed = !!S.navEdit, pv = S.prevH || lsGet_('hmtPrev', ''), h = '<span class="hnav' + (ed ? ' ed' : '') + '" id="hnav">';
+  var sl = navSlots_(), ed = !!S.navEdit, pv = S.prevH || lsGet_('hmtPrev', ''), cl = navCol_(), part = {}, h = '<span class="hnav' + (ed ? ' ed' : '') + '" id="hnav">';
   sl.forEach(function (x, i) {
-    if (x.kind === 'prev') h += '<button type="button" class="pl' + (pv && pv !== (location.hash || '').replace('#', '') ? '' : ' off') + '" data-nv="slot" data-i="' + i + '" aria-label="前回の画面にもどる">前回</button>';
-    else if (x.kind === 'key') h += '<button type="button" class="pl' + (x.auto ? ' au' : '') + '" data-nv="slot" data-i="' + i + '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
-    else h += '<button type="button" class="pl add" data-nv="slot" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
+    var c = x.kind !== 'empty' && cl[i] ? ' c' + cl[i] : '';
+    if (x.kind === 'prev') part[i] = '<button type="button" class="pl' + c + (pv && pv !== (location.hash || '').replace('#', '') ? '' : ' off') + '" data-nv="slot" data-i="' + i + '" aria-label="前回の画面にもどる">前回</button>';
+    else if (x.kind === 'key') part[i] = '<button type="button" class="pl' + c + (x.auto ? ' au' : '') + '" data-nv="slot" data-i="' + i + '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
+    else part[i] = '<button type="button" class="pl add" data-nv="slot" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
   });
-  return h + '<button type="button" class="pe' + (ed ? ' on' : '') + '" data-nv="edit" aria-label="ボタンの入れかえ">' + (ed ? '完了' : '✎') + '</button><button type="button" class="hm" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button></span>';
+  part.h = '<button type="button" class="pe' + (ed ? ' on' : '') + '" data-nv="edit" aria-label="ボタンの入れかえ">' + (ed ? '完了' : '✎') + '</button>' + '<button type="button" class="hm" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button>';
+  navOrd_().forEach(function (k) { h += part[k]; });
+  return h + '</span>';
 }
 function navRefresh_() { var n = $('#hnav'); if (n) { n.outerHTML = navHtml_(); navBind_(); } }
 function navPick_(i) {
   var cur = navRaw_()[i], el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-  var grid = function (keys) { var l = keys.filter(navHas_); return l.length ? '<div class="npg">' + l.map(function (k) { return '<button type="button" class="np' + (cur === k ? ' on' : '') + '" data-v="' + k + '">' + esc(navShort_(k)) + '</button>'; }).join('') + '</div>' : ''; };
+  var grid = function (keys) { var l = keys.filter(navHas_); return l.length ? '<div class="npg cat">' + l.map(function (k) { return '<button type="button" class="np' + (cur === k ? ' on' : '') + '" data-v="' + k + '">' + esc(navShort_(k)) + '</button>'; }).join('') + '</div>' : ''; };
   var off = grid(NAV_OFFICER);
   el.innerHTML = '<div class="box npk"><h3>この場所に置くボタン</h3>' + (cur ? '<button type="button" class="np del" data-v="">このボタンを削除</button>' : '') +
+    (cur ? '<div class="npl">色(任意)</div><div class="npg q4">' + NAV_COLS.map(function (c) { var on = (navCol_()[i] || '') === c[0], bg = { b: '#dbeafe', r: '#fee2e2', g: '#dcfce7' }[c[0]] || '#fff'; return '<button type="button" class="np" style="background:' + bg + '" data-c="' + c[0] + '">' + (on ? '✓ ' : '') + c[1] + '</button>'; }).join('') + '</div>' : '') +
+    '<div class="npl">並び順(ホームも動かせます)</div><div class="npg two"><button type="button" class="np" data-mv="-1">左へ</button><button type="button" class="np" data-mv="1">右へ</button></div>' +
     '<div class="npl">入れ替え</div><div class="npg two"><button type="button" class="np' + (cur === 'prev' ? ' on' : '') + '" data-v="prev">前回</button><button type="button" class="np' + (cur === 'top' ? ' on' : '') + '" data-v="top">よく使う<small>アクセスの多い順</small></button></div>' +
     '<div class="npl">みんなのメニュー</div>' + grid(NAV_COMMON) + (off ? '<div class="npl">役員専用メニュー</div>' + off : '') + '<button type="button" class="sbtn" data-v="__x" style="margin-top:12px">やめる</button></div>';
   document.body.appendChild(el);
-  var done = function (v) { document.body.removeChild(el); if (v == null || v === '__x') return; var a = navRaw_(); a[i] = v; if (v && v !== 'top') a = a.map(function (x, j) { return j !== i && x === v ? '' : x; }); lsSet_('hmtNav', a); navRefresh_(); };
+  var done = function (v) { document.body.removeChild(el); if (v == null || v === '__x') return; if (v === '') { var cc = navCol_(); cc[i] = ''; lsSet_('hmtNavCol', cc); } var a = navRaw_(); a[i] = v; if (v && v !== 'top') a = a.map(function (x, j) { return j !== i && x === v ? '' : x; }); lsSet_('hmtNav', a); navRefresh_(); };
   el.onclick = function (e) { if (e.target === el) done(null); };
   Array.prototype.forEach.call(el.querySelectorAll('[data-v]'), function (b) { b.onclick = function () { done(b.dataset.v); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-c]'), function (b) { b.onclick = function () { var c = navCol_(); c[i] = b.dataset.c; lsSet_('hmtNavCol', c); done(null); navRefresh_(); }; });
+  Array.prototype.forEach.call(el.querySelectorAll('[data-mv]'), function (b) { b.onclick = function () { navMove_(String(i), +b.dataset.mv); done(null); navRefresh_(); }; });
+}
+function navPickHome_() {
+  var el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+  el.innerHTML = '<div class="box npk"><h3>ホームボタンの並び順</h3><div class="npg two"><button type="button" class="np" data-mv="-1">左へ</button><button type="button" class="np" data-mv="1">右へ</button></div><button type="button" class="sbtn" data-x="1" style="margin-top:12px">閉じる</button></div>';
+  document.body.appendChild(el);
+  var done = function () { try { document.body.removeChild(el); } catch (e) { /* 無視 */ } navRefresh_(); };
+  el.onclick = function (e) { if (e.target === el) done(); };
+  el.querySelector('[data-x]').onclick = done;
+  Array.prototype.forEach.call(el.querySelectorAll('[data-mv]'), function (b) { b.onclick = function () { navMove_('h', +b.dataset.mv); done(); }; });
 }
 function navBind_() {
   var n = $('#hnav'); if (!n) return;
@@ -695,7 +715,7 @@ function navBind_() {
     }
     b.onclick = function () {
       if (lp) { lp = false; return; }
-      if (k === 'home') return go('home');
+      if (k === 'home') { if (S.navEdit) return navPickHome_(); return go('home'); }
       if (k === 'edit') { S.navEdit = !S.navEdit; navRefresh_(); return; }
       var x = navSlots_()[i];
       if (S.navEdit || x.kind === 'empty') return navPick_(i);
@@ -1090,7 +1110,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-18 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-19 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2370,7 +2390,7 @@ var TOURS_ = {
     { sel: function () { var k = ['weather', 'dashboard', 'card', 'suginami', 'blog', 'board'], i, e; for (i = 0; i < k.length; i++) { e = document.querySelector('.tile[data-k="' + k[i] + '"]'); if (tourVisible(e)) return e; } return document.querySelector('.tile[data-k]'); }, say: 'ショートカットは、ホーム以外の画面の上に出ます。\nまず、この光っているボタンを押して、画面を開いてください' },
     { skipif: function () { return !!document.querySelector('#hnav .pl.add'); }, sel: '#hnav .pe', say: '3つの場所が、すでに使われています。\nまず「✎」を押してください(入れかえモードになります)', pick: function () { S.navEdit = false; } },
     { sel: function () { return document.querySelector('#hnav .pl.add') || [].slice.call(document.querySelectorAll('#hnav .pl')).pop(); }, say: 'ショートカットを登録してみましょう。\nまずはこの「＋」ボタンを押してください', pick: function (t) { var b = t.closest ? t.closest('.pl') : null; TR.sci = b ? b.getAttribute('data-i') : '1'; } },
-    { sel: '.npk .npg:not(.two)', need: '.np', say: 'このカテゴリから、好きなものを選んでください' },
+    { sel: '.npk .npg.cat', need: '.np', say: 'このカテゴリから、好きなものを選んでください' },
     { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav'); }, next: 1, noact: '#hnav .pl', noactMsg: '説明中は押せません。「次へ」を押してください', say: '完了です!\nこのとおり、上にボタンが置かれました' },
     { sel: '#hnav .pe', say: '削除もやってみましょう。\nまず「✎」を押してください', pick: function () { S.navEdit = false; } },
     { sel: function () { return document.querySelector('#hnav .pl[data-i="' + (TR.sci || '1') + '"]') || document.querySelector('#hnav .pl'); }, say: '削除したいボタン(いま置いたボタン)を押してください' },
