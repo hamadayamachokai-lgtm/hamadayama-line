@@ -467,6 +467,23 @@ i.pin{position:absolute;top:-9px;left:50%;margin-left:-10px;width:20px;height:20
 .pgv{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:10px;margin:0 -4px;padding:0 4px}.pgv .pgi{flex:0 0 100%;scroll-snap-align:center;overflow:auto;max-height:calc(100vh - 170px)}.pgv .pgi img{width:100%;display:block;border-radius:6px;background:#eee}
 .pgv.zm{scroll-snap-type:none}.pgv.zm .pgi img{width:220%;max-width:none}
 .pgn{text-align:center;font-weight:700;margin:8px 0;color:var(--sub)}
+
+/* ---- 登録後はじめて開いたときの案内(30秒で自動で閉じる) ---- */
+#wel{position:fixed;left:0;right:0;top:0;z-index:9000;pointer-events:none;display:flex;justify-content:center;padding:max(8px,env(safe-area-inset-top,0px)) 10px 0}
+#wel .wb{pointer-events:auto;background:#fff;border-radius:18px;max-width:420px;width:100%;padding:12px 16px 10px;box-shadow:0 8px 30px rgba(0,0,0,.38);font-size:15.5px;line-height:1.55;color:#1f2a37;border:2px solid #cfd8e6}
+#wel h2{margin:0 0 2px;font-size:21px;color:var(--navy)}#wel p{margin:5px 0}
+#wel .btn{min-height:44px;padding:8px 14px}
+#welsp{position:fixed;z-index:8990;pointer-events:none;border-radius:16px;box-shadow:0 0 0 100vmax rgba(52,58,68,.62);transition:opacity .2s}
+#wel .wchip{display:inline-block;border-radius:999px;padding:1px 12px;font-weight:800;transition:background .2s}
+#wel .ca{background:#fff3cf;color:#6b4a00;box-shadow:0 0 0 2px #e0b45a inset}#wel .cb{background:#dcebff;color:#12407a;box-shadow:0 0 0 2px #5b9be6 inset}#wel .cc{background:#d9f3e4;color:#14603a;box-shadow:0 0 0 2px #46b27a inset}
+/* 光らせる(文の中の言葉 と 画面の本物のボタン。ガイド=黄色 / 検索窓=青 / 説明書=緑) */
+.welhi{animation:welglow 1.3s ease-in-out infinite;position:relative;z-index:3}
+.welhi.wa{--gc:224,160,20}.welhi.wb2{--gc:50,125,230}.welhi.wc{--gc:40,170,100}
+@keyframes welglow{0%,100%{box-shadow:0 0 0 2px rgba(var(--gc),.55),0 0 6px 1px rgba(var(--gc),.4)}50%{box-shadow:0 0 0 4px rgba(var(--gc),.95),0 0 20px 8px rgba(var(--gc),.75)}}
+.bnav button.welhi{animation:welnav 1.3s ease-in-out infinite;border-radius:12px;box-shadow:inset 0 0 0 3px rgba(var(--gc),.8)}
+@keyframes welnav{0%,100%{box-shadow:inset 0 0 0 2px rgba(var(--gc),.5),inset 0 0 6px 1px rgba(var(--gc),.3)}50%{box-shadow:inset 0 0 0 4px rgba(var(--gc),.95),inset 0 0 18px 5px rgba(var(--gc),.7)}}
+@media (prefers-reduced-motion:reduce){.bnav button.welhi{animation:none}.welhi{animation:none;box-shadow:0 0 0 4px rgba(var(--gc),.95),0 0 14px 5px rgba(var(--gc),.7)}}
+#wel .wt{font-size:12.5px;color:#6b7785;text-align:center;margin:6px 0 0}
 </style>
 </head>
 <body>
@@ -746,6 +763,7 @@ function fatal(e) {
 /* ---------- 登録フォーム ---------- */
 var FI = { v: '' };
 function formView(prefill, isEdit) {
+  welMark_();
   var me = S.me, f = prefill || {}, rel = f.relation || '';
   var relHtml = me.relations.map(function (r) {
     return '<label class="opt"><input type="radio" name="rel" value="' + esc(r) + '"' + (rel === r ? ' checked' : '') + '><span>' + esc(r) + '</span></label>';
@@ -791,6 +809,67 @@ function profileHtml(p) {
   return '<dl class="kv"><dt>LINE会員氏名</dt><dd>' + esc(p.lineName) + '</dd><dt>納入者</dt><dd>' + esc(p.payerName) + '</dd><dt>住所</dt><dd>' + esc(p.payerAddress) + '</dd><dt>関係</dt><dd>' + esc(p.relation) + (p.relationNote ? '<br><span class="muted">' + esc(p.relationNote) + '</span>' : '') + '</dd></dl>';
 }
 /** 登録のないIDで開いたとき。LINEの更新(チャネルの作り直し)のあいだは、「再認証を申請中」の画面を出す(管理者に自動で知らせ、管理者が以前の登録に結びつける)。はじめての方は、登録フォームへ */
+/* ---------- 登録後はじめて開いた人にだけ出す案内(30秒で自動で閉じる / 閉じるボタン) ---------- */
+var WEL_T_ = 0;
+function welKey_() { return 'hmtWel_' + (meSub() || 'x'); }
+/** 登録の画面(申請前・承認待ち)を見た端末に印をつける。承認後に初めてホームを開いたとき、案内を出す */
+function welMark_() { try { if (localStorage.getItem(welKey_()) !== 'd') localStorage.setItem(welKey_(), '1'); } catch (e) { /* なくても動く */ } }
+/** 案内の窓: 文の中の[ガイドボタン]→[検索窓]→[説明書]の順に光らせ、同時に、画面の本物のボタンも同じ色で光らせる(くり返し) */
+var WEL_ST_ = 0, WEL_I_ = 0, WEL_PAD_ = 0;
+function welTargets_() { return [document.getElementById('gdbtn'), document.getElementById('tgq'), document.querySelector('#bnav [data-h="manual"]')]; }
+function welStep_(i) {
+  var cl = ['wa', 'wb2', 'wc'], chips = ['welc0', 'welc1', 'welc2'], tg = welTargets_();
+  for (var k = 0; k < 3; k++) {
+    var c = document.getElementById(chips[k]), el = tg[k];
+    if (c) { c.classList.remove('welhi', cl[k]); if (k === i) c.classList.add('welhi', cl[k]); }
+    if (el) { el.classList.remove('welhi', cl[k]); if (k === i) el.classList.add('welhi', cl[k]); }
+  }
+  var el2 = tg[i]; if (!el2) return;
+  var card = document.querySelector('#wel .wb');
+  if (i === 2) { var n = document.getElementById('bnav'); if (n && n.scrollTo) { try { n.scrollTo({ left: n.scrollWidth, behavior: 'smooth' }); } catch (e) { n.scrollLeft = n.scrollWidth; } } }
+  else if (card) {   // 窓の下に、そのボタンが見えるように、画面を少しずらす(上に余白を足す/スクロール)
+    var app = document.getElementById('app'), need = el2.getBoundingClientRect().top - (card.getBoundingClientRect().bottom + 14), pad = WEL_PAD_;
+    if (need < 0) { WEL_PAD_ = pad - need; } else if (need > 0 && pad > 0) { WEL_PAD_ = Math.max(0, pad - need); need -= (pad - WEL_PAD_); }
+    if (app) app.style.paddingTop = WEL_PAD_ ? WEL_PAD_ + 'px' : '';
+    if (need > 4) window.scrollBy(0, need);
+  }
+}
+/** 光っているボタン以外を、グレーにする(丸いくり抜きが、いまの本物のボタンに付いて動く) */
+function welSpot_() {
+  var sp = document.getElementById('welsp'); if (!sp) return;
+  var el = welTargets_()[WEL_I_]; if (!el || !document.getElementById('wel')) { sp.style.opacity = '0'; return; }
+  var r = el.getBoundingClientRect(), p = 8; sp.style.opacity = '1';
+  sp.style.left = (r.left - p) + 'px'; sp.style.top = (r.top - p) + 'px'; sp.style.width = (r.width + p * 2) + 'px'; sp.style.height = (r.height + p * 2) + 'px';
+}
+var WEL_RAF_ = 0;
+function welSpotLoop_() { if (!document.getElementById('welsp')) { WEL_RAF_ = 0; return; } welSpot_(); WEL_RAF_ = requestAnimationFrame(welSpotLoop_); }
+function welClose_() {
+  if (WEL_T_) { clearInterval(WEL_T_); WEL_T_ = 0; } if (WEL_ST_) { clearInterval(WEL_ST_); WEL_ST_ = 0; }
+  var w = document.getElementById('wel'); if (w && w.parentNode) w.parentNode.removeChild(w);
+  var spx = document.getElementById('welsp'); if (spx && spx.parentNode) spx.parentNode.removeChild(spx);
+  if (WEL_PAD_) { WEL_PAD_ = 0; var ap = document.getElementById('app'); if (ap) ap.style.paddingTop = ''; }
+  Array.prototype.forEach.call(document.querySelectorAll('.welhi'), function (x) { x.classList.remove('welhi', 'wa', 'wb2', 'wc'); });
+}
+function welShow_() {
+  if (!S.me || S.me.state !== 'approved' || document.getElementById('wel')) return;
+  var v = ''; try { v = localStorage.getItem(welKey_()) || ''; } catch (e) { return; } if (v !== '1') return;
+  try { localStorage.setItem(welKey_(), 'd'); } catch (e) { return; }
+  var w = document.createElement('div'); w.id = 'wel'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', 'はじめての方へ');
+  w.innerHTML = '<div class="wb"><h2>🤖 こんにちは</h2><p><b>登録ありがとうございます</b></p>' +
+    '<p>使い方のガイドが必要な方は、<br><span class="wchip ca" id="welc0">ガイドボタン</span> を押すとガイドモードになります</p>' +
+    '<p><span class="wchip cb" id="welc1">検索窓</span> からはワードを入力で該当ボタンを出します</p>' +
+    '<p>その他詳しい説明は帯ボタンの <span class="wchip cc" id="welc2">説明書</span> をお読みください</p>' +
+    '<p>不具合の際には<br>ホームまたは一旦終了してください</p><p>それではお楽しみください</p>' +
+    '<button type="button" class="btn" id="welx">閉じる</button><div class="wt" id="welt">30秒で自動で閉じます</div></div>';
+  var spd = document.createElement('div'); spd.id = 'welsp'; spd.style.opacity = '0'; document.body.appendChild(spd);
+  document.body.appendChild(w); if (!WEL_RAF_) WEL_RAF_ = requestAnimationFrame(welSpotLoop_);
+  var left = 30; WEL_T_ = setInterval(function () { left--; var e = document.getElementById('welt'); if (e) e.textContent = left > 0 ? 'あと ' + left + ' 秒で自動で閉じます' : ''; if (left <= 0) welClose_(); }, 1000);
+  WEL_I_ = 0; setTimeout(function () { welStep_(0); }, 300);
+  WEL_ST_ = setInterval(function () { WEL_I_ = (WEL_I_ + 1) % 3; welStep_(WEL_I_); }, 4000);
+  document.getElementById('welx').onclick = welClose_;
+  welTargets_().forEach(function (el) { if (el) el.addEventListener('click', welClose_, { once: true }); });
+}
+window.addEventListener('hashchange', function () { if (document.getElementById('wel')) welClose_(); });
 function noneView() {
   var me = S.me;
   if (!me.relinkWait) return formView(null, false);
@@ -800,6 +879,7 @@ function noneView() {
 }
 function statusView() {
   var me = S.me;
+  if (me.state === 'pending') welMark_();
   if (me.state === 'none') return noneView();
   if (me.state === 'approved') return route();
   var cfg = {
@@ -1010,7 +1090,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-10 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-15 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1047,6 +1127,7 @@ function homeView() {
   });
   Array.prototype.forEach.call(document.querySelectorAll('.hn'), function (b) { b.onclick = function () { window.HP_OPEN = b.dataset.ht || ''; openTile(b.dataset.hk); }; });
   prefetchLists();
+  welShow_();
 }
 function openTile(k) {
   var m = S.me.menu.filter(function (x) { return x.key === k; })[0];
