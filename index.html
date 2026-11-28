@@ -557,6 +557,9 @@ var IC = {
   a_notice: '<path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 20a2 2 0 01-3.4 0"/>',
   a_mama: '<path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
   a_event: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15l3 3 5-5"/>',
+  a_approve: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6M16 14l2 2 3-3"/>',
+  a_store: '<path d="M3 7h7l2 2h9v11H3z"/><path d="M12 12v5M9.5 14.5L12 12l2.5 2.5"/>',
+  a_flyer: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>',
   a_docs: '<path d="M14 3H6a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>',
   home: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>',
   officer: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
@@ -570,7 +573,7 @@ var LABEL = {
   card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', flyer: 'イベントチラシ', help: '助け合い', suginami: '杉並(防災)', weather: '天気',
   tips: 'GAME', mystery: '歴史推理', blog: '町会ブログ', board: 'Tweet', headchg: '回覧元変更', supporter: 'サポーター募集', o_supporter: 'サポーター募集',
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
-  a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
+  a_admin: '管理システム', a_disaster: '災害モード', a_image: '画像アップ', a_notice: '掲示板更新', a_mama: 'ママLINE', a_approve: '承認申請', a_store: '書類の格納', a_flyer: 'イベントチラシ', a_event: 'イベントの設定'
 };
 /* ---- ボタンのハッシュタグ(検索ワード)。管理システム「LINE管理」→「ハッシュタグ」で変えられます。サーバーの値があれば、そちらを使います ---- */
 var TAGS_ = {
@@ -980,7 +983,7 @@ var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイ�
   ['o_sched', '予定', [['役員の予定を見たい', 'm_o_sched']]]
 ];
 var GOFF_ = [['o_sched', '役員の予定を見たい'], ['o_circ', '回覧元を見たい'], ['headchg', '回覧元を変更したい'], ['o_roster', '会員情報を見たい(会員検索)'], ['o_report', '事業報告・計画を記載したい'], ['o_mama', 'スナックママの部屋に行きたい'], ['o_supporter', 'サポーターの募集をしたい'], ['o_summary', '集計結果を見たい'], ['o_kanban', '捨て看板を依頼したい'], ['o_sokai', '総会資料を見たい']];
-var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '推理の画像を変えたい', a_disaster: '災害モードを切りかえたい', a_docs: '書類を更新したい', a_notice: 'お知らせを更新したい', a_mama: 'ママを設定したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
+var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '画像をアップしたい', a_disaster: '災害モードを切りかえたい', a_notice: '掲示板を更新したい', a_mama: 'ママLINEを設定したい', a_approve: '登録申請を承認したい', a_store: '書類を格納したい', a_flyer: 'イベントチラシを登録したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
 function gdMenuTour(k) {
   var id = 'm_' + k, lab = LABEL[k] || k;
   if (!TOURS_[id]) TOURS_[id] = { t: '', home: 1, steps: [{ sel: '.tile[data-k="' + k + '"]', say: 'この「' + lab + '」を押します' }] };
@@ -1045,7 +1048,7 @@ var ALLDESC_ = {
   o_roster: '会員を名前・住所などで探して、情報を見るところです',
   o_checkin: '会員証のQRを読み取って、受付や来場を記録するところです',
   o_desk: '大きな画面で受付を進める「QR受付画面」です',
-  a_admin: '管理システムを開きます', a_disaster: '災害モードを切りかえます', a_image: '歴史推理の画像を変えます', a_docs: '書類を更新します', a_notice: 'お知らせを更新します', a_mama: 'ママの設定です', a_event: 'イベントの設定です', a_sched: '予定を登録します'
+  a_admin: '管理システムを開きます', a_disaster: '災害モードを切りかえます', a_image: '画像をアップします(歴史推理など)', a_notice: '掲示板に載せるお知らせを更新します', a_mama: 'ママLINEの設定・通知です', a_approve: 'LINE会員の登録申請を承認します', a_store: '書類を回覧元別・会員別に格納します', a_flyer: 'イベントチラシを登録します', a_event: 'イベントの設定です', a_sched: '予定を登録します'
 };
 var ALLSPD_ = [0.5, 1, 1.5, 2, 3];
 /** 「詳しいガイドを見たい」: そのメニューの、くわしいガイドへ */
@@ -1112,7 +1115,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-23 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-24 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -1158,7 +1161,7 @@ function openTile(k) {
   if (k === 'blog') { openExternal(CFG.BLOG_URL); return; }
   if (k === 'headchg') return headchgEntry();
   if (k === 'a_admin') return openLink(k);
-  go({ flyer: 'flyer', supporter: 'supporter', o_supporter: 'o_supporter', card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_disaster: 'a_disaster', a_docs: 'a_docs', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
+  go({ flyer: 'flyer', supporter: 'supporter', o_supporter: 'o_supporter', card: 'card', dashboard: 'dash', suginami: 'suginami', weather: 'weather', o_summary: 'o_sum', o_unpaid: 'o_unpaid', o_circ: 'o_circ', o_roster: 'o_roster', o_checkin: 'o_scan', o_mama: 'o_mama', o_desk: 'o_desk', o_sched: 'o_sched', o_report: 'o_report', o_sokai: 'o_sokai', o_kanban: 'o_kanban', a_sched: 'a_sched', mail: 'mail', mystery: 'mystery', a_image: 'a_img', a_approve: 'a_approve', a_store: 'a_store', a_flyer: 'a_flyer', a_disaster: 'a_disaster', a_notice: 'a_notice', a_mama: 'a_mama', a_event: 'a_event', event: 'event', tips: 'tips', board: 'board', help: 'help' }[k]);
 }
 function openLink(k) {
   api('o_links').then(function (d) { var u = d.admin; if (!u) return toast('リンク先が未設定です'); openExternal(u); }).catch(function (e) { toast(e.message); });
@@ -3264,7 +3267,7 @@ function mysResult(r) {
 
 /* ---------- 推理の画像(管理者) ---------- */
 function imgAdminView() {
-  sub('推理の画像', '<div class="skel" style="height:300px"></div>', 'officer');
+  sub('画像アップ', '<div class="skel" style="height:300px"></div>', 'officer');
   api('a_img_list').then(function (d) {
     var h = '<p class="muted" style="margin:0 4px 12px">登録した画像は、ゲーム中にランダムで表示されます。何も登録していないときは、標準の画像を使います。画像をタップすると、有効/無効を切り替えます。</p>';
     var hl = d.hundred || [];
@@ -3277,7 +3280,7 @@ function imgAdminView() {
       }
       h += '<div class="card"><h2>' + esc(p.name) + (p.rare ? ' <span class="tg">レア編</span>' : '') + '</h2>' + sec('証言のときの画像', 'witness', '証言') + sec('犯人のときの画像', 'culprit', '犯人') + '</div>';
     });
-    sub('推理の画像', h, 'officer');
+    sub('画像アップ', h, 'officer');
     Array.prototype.forEach.call(document.querySelectorAll('.thumbs button'), function (b) { b.onclick = function () { cf('この画像を無効にします(ゲームで表示されなくなります)。よろしいですか?', function () { api('a_img_toggle', { id: b.dataset.id, enabled: false }).then(function () { toast('無効にしました'); imgAdminView(); }).catch(function (e) { toast(e.message); }); }); }; });
     Array.prototype.forEach.call(document.querySelectorAll('input[type=file]'), function (inp) {
       inp.onchange = function () {
@@ -3287,7 +3290,7 @@ function imgAdminView() {
           .then(function () { toast('追加しました'); imgAdminView(); }).catch(function (e) { toast(e.message || '追加できませんでした'); });
       };
     });
-  }).catch(function (e) { offErr('推理の画像', e, 'officer'); });
+  }).catch(function (e) { offErr('画像アップ', e, 'officer'); });
 }
 function shrinkImage(file, max) {
   return new Promise(function (ok, ng) {
@@ -5430,8 +5433,9 @@ function mamaEnterView() {
   }).catch(function (e) { offErr('スナックママ', e, 'officer'); });
 }
 var MM_DEMOS = [['kanban', '捨て看板の発注'], ['pending', '承認待ちが溜まった'], ['circ', '回覧元の変更'], ['chat', '会員からのチャット'], ['pendold', '承認待ち2日以上(管理者宛)'], ['noticeAll', '役員全員宛の連絡'], ['noticeMe', '個人宛の連絡'], ['test', 'テスト']];
+var MM_NOTIF = ['承認', '問い合わせ', '祭礼', '演芸会'];
 function mamaAdminView() {
-  sub('ママ', '<div class="skel" style="height:240px"></div>', 'officer');
+  sub('ママLINE', '<div class="skel" style="height:240px"></div>', 'officer');
   api('a_mama_list').then(function (d) {
     if (document.getElementById('mmk')) MM.kind = $('#mmk').value;
     var act = d.users.filter(function (u) { return u.status === '有効'; }).length;
@@ -5439,9 +5443,10 @@ function mamaAdminView() {
       var b = (u.status === '申請中' || u.status === '名前待ち') ? '<button class="btn" data-i="' + i + '" data-v="approve">承認する</button><div style="height:6px"></div><button class="btn ghost" data-i="' + i + '" data-v="reject">却下</button>'
         : u.status === '有効' ? '<button class="btn ghost" data-i="' + i + '" data-v="demo">この人にデモ送信</button><div style="height:6px"></div><button class="btn ghost" data-i="' + i + '" data-v="stop">停止</button>'
         : '<button class="btn ghost" data-i="' + i + '" data-v="resume">有効にする</button>';
-      return '<div class="card"><div class="sj">' + esc(u.name || '(名前未入力)') + ' <span class="small">' + esc(u.status) + '</span></div><div class="small" style="margin:4px 0 10px">役員名簿: ' + (u.officer ? '○' : 'なし(LINE会員の役員・管理者に、お名前が見つかりません)') + (u.used ? ' ・ 最終 ' + esc(String(u.used).slice(0, 16)) : '') + '</div>' + (u.status === '有効' ? '<div class="small" style="margin:0 0 6px">担当丁(何も選ばない=全丁): ' + MM_AREAS.map(function (a) { return '<label style="white-space:nowrap;margin-right:8px"><input type="checkbox" class="mmar" data-i="' + i + '" value="' + a + '"' + ((u.areas || []).indexOf(a) >= 0 ? ' checked' : '') + '> ' + a + '</label>'; }).join('') + ' <button class="btn ghost" data-i="' + i + '" data-v="areas" style="margin-top:6px">担当丁を保存</button></div>' : '') + b + '</div>';
+      return '<div class="card"><div class="sj">' + esc(u.name || '(名前未入力)') + ' <span class="small">' + esc(u.status) + '</span></div><div class="small" style="margin:4px 0 10px">役員名簿: ' + (u.officer ? '○' : 'なし(LINE会員の役員・管理者に、お名前が見つかりません)') + (u.used ? ' ・ 最終 ' + esc(String(u.used).slice(0, 16)) : '') + '</div>' + (u.status === '有効' ? '<div class="small" style="margin:0 0 6px">担当丁(何も選ばない=全丁): ' + MM_AREAS.map(function (a) { return '<label style="white-space:nowrap;margin-right:8px"><input type="checkbox" class="mmar" data-i="' + i + '" value="' + a + '"' + ((u.areas || []).indexOf(a) >= 0 ? ' checked' : '') + '> ' + a + '</label>'; }).join('') + ' <button class="btn ghost" data-i="' + i + '" data-v="areas" style="margin-top:6px">担当丁を保存</button></div>' + '<div class="small" style="margin:0 0 6px">呼び方(あだ名): <input class="inp mmnk" data-i="' + i + '" maxlength="12" value="' + esc(u.nick || '') + '" placeholder="空=ふつうの呼び方" style="width:9em;display:inline-block;min-height:36px"> <select class="inp mmsf" data-i="' + i + '" style="width:5.5em;display:inline-block;min-height:36px">' + ['さん', 'ちゃん', 'くん', '様', 'なし'].map(function (x) { return '<option' + (x === (u.suf || 'さん') ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select> <button class="btn ghost" data-i="' + i + '" data-v="nick" style="margin-top:6px">呼び方を保存</button></div>' +
+        '<div class="small" style="margin:0 0 6px">ママLINEで受け取る通知: ' + MM_NOTIF.map(function (k) { return '<label style="white-space:nowrap;margin-right:8px"><input type="checkbox" class="mmnt" data-i="' + i + '" value="' + k + '"' + ((u.notif || []).indexOf(k) >= 0 ? ' checked' : '') + '> ' + k + '</label>'; }).join('') + ' <button class="btn ghost" data-i="' + i + '" data-v="notif" style="margin-top:6px">通知を保存</button></div>' : '') + b + '</div>';
     }).join('');
-    sub('ママ', '<div class="card"><p style="margin:0">使える人 <b>' + act + ' / ' + d.max + '</b>名<br>今月のプッシュ通知 <b>' + d.pushUsed + ' / ' + d.pushLimit + '</b>通</p><p class="small" style="margin:6px 0 0">LINE無料枠は月200通(1人に送ると1通)</p></div>' + (rows || '<div class="card"><p class="muted" style="margin:0">まだ誰も申し込んでいません。LINEで「ママ」に話しかけてもらってください。</p></div>') +
+    sub('ママLINE', '<div class="card"><p style="margin:0">使える人 <b>' + act + ' / ' + d.max + '</b>名<br>今月のプッシュ通知 <b>' + d.pushUsed + ' / ' + d.pushLimit + '</b>通</p><p class="small" style="margin:6px 0 0">LINE無料枠は月200通(1人に送ると1通)</p></div>' + (rows || '<div class="card"><p class="muted" style="margin:0">まだ誰も申し込んでいません。LINEで「ママ」に話しかけてもらってください。</p></div>') +
       '<div class="card"><div class="sj">ママから送る(本番)</div><p class="small" style="margin:4px 0 10px">未クローズのタスクを選んで送る/メッセージを添える/文章だけ送る、のどれもできます。<b>本当に届きます</b>(通数を使います)。</p><select class="inp" id="mmtk"><option value="">(選ばない = 文章だけ送る)</option>' + (d.tasks || []).map(function (t) { return '<option value="' + esc(t.id) + '">【' + esc(t.label) + '】' + esc(String(t.title).slice(0, 36)) + '</option>'; }).join('') + '</select><div style="height:8px"></div><textarea class="inp" id="mmt" maxlength="1000" style="min-height:90px" placeholder="メッセージ(タスクを選んだときは、空でもそのまま送れます)"></textarea><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="mms" checked> ママの口調の前置きをつける</label>' +
       '<div class="chips" id="mmw"><button data-w="all" aria-pressed="true">使える人全員</button><button data-w="pick" aria-pressed="false">指定する</button></div><div id="mmp" style="display:none;margin:8px 0">' + d.users.filter(function (u) { return u.status === '有効'; }).map(function (u) { return '<label class="small" style="display:block;margin:4px 0"><input type="checkbox" class="mmpk" value="' + esc(u.id) + '"> ' + esc(u.name) + '</label>'; }).join('') + '</div><div style="height:10px"></div><button class="btn" id="mmsend">この内容で送る</button></div>' +
       '<div class="card"><div class="sj">デモ送信(プッシュ通知)</div><p class="small" style="margin:4px 0 10px">文頭に【デモです】が付きます。全員に送ると、人数ぶん通数を使います。</p><select class="inp" id="mmk">' + MM_DEMOS.map(function (k) { return '<option value="' + k[0] + '"' + (MM.kind === k[0] ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select><div style="height:10px"></div><button class="btn" id="mmall">全員にデモ送信</button></div>', 'officer');
@@ -5450,6 +5455,8 @@ function mamaAdminView() {
       b.onclick = function () {
         var u = d.users[+b.dataset.i], v = b.dataset.v; MM.kind = $('#mmk').value;
         if (v === 'areas') return done(api('a_mama_areas', { uid: u.id, areas: [].slice.call(document.querySelectorAll('.mmar')).filter(function (x) { return +x.dataset.i === +b.dataset.i && x.checked; }).map(function (x) { return x.value; }) }));
+        if (v === 'nick') return done(api('a_mama_nick', { uid: u.id, nick: document.querySelector('.mmnk[data-i="' + b.dataset.i + '"]').value, suf: document.querySelector('.mmsf[data-i="' + b.dataset.i + '"]').value }));
+        if (v === 'notif') return done(api('a_mama_notif', { uid: u.id, kinds: [].slice.call(document.querySelectorAll('.mmnt')).filter(function (x) { return +x.dataset.i === +b.dataset.i && x.checked; }).map(function (x) { return x.value; }) }));
         if (v === 'demo') return done(api('a_mama_demo', { kind: MM.kind, uid: u.id }));
         if (v === 'stop' || v === 'reject') return askChoice(v === 'stop' ? u.name + ' さんを停止します' : '申請を却下します', [v === 'stop' ? '停止する' : '却下する'], v === 'stop' ? 'ママのプッシュ通知も止まります。' : '').then(function (x) { if (x) done(api('a_mama_decide', { uid: u.id, act: v })); });
         done(api('a_mama_decide', { uid: u.id, act: v }));
@@ -5463,19 +5470,19 @@ function mamaAdminView() {
       askChoice((mmWho === 'pick' ? '選んだ' + ids.length + '名' : '使える人全員') + 'に、本当に送ります', ['送る'], tx.slice(0, 120)).then(function (x) { if (x) done(api('a_mama_send', { text: tx, taskId: tk, to: ids, style: $('#mms').checked })); });
     };
     $('#mmall').onclick = function () { MM.kind = $('#mmk').value; askChoice('使える人全員に、デモの通知を送ります', ['送る'], '通数を使います。').then(function (x) { if (x) done(api('a_mama_demo', { kind: MM.kind, uid: '' })); }); };
-  }).catch(function (e) { offErr('ママ', e, 'officer'); });
+  }).catch(function (e) { offErr('ママLINE', e, 'officer'); });
 }
 var NA = { list: [] };
 function noticeAdminView() {
-  sub('お知らせの更新', '<div class="skel" style="height:240px"></div>', 'officer');
+  sub('掲示板更新', '<div class="skel" style="height:240px"></div>', 'officer');
   api('a_notice_list').then(function (d) {
     NA.today = d.today; NA.list = d.notices;
-    sub('お知らせの更新', '<button class="btn" id="nnew">＋ 新しいお知らせ</button><div style="height:12px"></div>' + (d.notices.length ? d.notices.map(function (n) {
+    sub('掲示板更新', '<button class="btn" id="nnew">＋ 新しいお知らせ</button><div style="height:12px"></div>' + (d.notices.length ? d.notices.map(function (n) {
       return '<button class="ml" data-id="' + esc(n.id) + '"><div class="sj">' + esc(n.title) + '</div><div class="mt">' + esc(n.from || '') + (n.to ? ' 〜 ' + esc(n.to) : ' 〜') + ' ・ ' + esc(n.audience) + '</div>' + (n.published ? '' : '<span class="tg warn">非公開</span>') + (n.to && n.to < d.today ? '<span class="tg">終了</span>' : '') + '</button>';
-    }).join('') : '<div class="card"><p class="muted" style="margin:0">お知らせはまだありません。</p></div>') + '<p class="small" style="margin:8px 4px">ここで作ったお知らせは、会員のダッシュボード「町会からのお知らせ」に出ます(新しいものは赤バッジ)。</p>', 'officer');
+    }).join('') : '<div class="card"><p class="muted" style="margin:0">お知らせはまだありません。</p></div>') + '<p class="small" style="margin:8px 4px">ここで作ったお知らせは、みんなのメニューの「掲示板」(町会からのお知らせ」に出ます(新しいものは赤バッジ)。</p>', 'officer');
     $('#nnew').onclick = function () { noticeEditView(null); };
     Array.prototype.forEach.call(document.querySelectorAll('.ml[data-id]'), function (b) { b.onclick = function () { noticeEditView(NA.list.filter(function (x) { return x.id === b.dataset.id; })[0]); }; });
-  }).catch(function (e) { offErr('お知らせの更新', e, 'officer'); });
+  }).catch(function (e) { offErr('掲示板更新', e, 'officer'); });
 }
 function noticeEditView(n) {
   n = n || { id: '', title: '', body: '', audience: 'すべて', from: NA.today, to: '', published: true };
@@ -5493,6 +5500,106 @@ function noticeEditView(n) {
   if (n.id) $('#ndl').onclick = function () { askChoice('このお知らせを削除します', ['削除する'], '元に戻せません。').then(function (v) { if (!v) return; api('a_notice_delete', { id: n.id }).then(function () { toast('削除しました'); go('a_notice'); noticeAdminView(); }).catch(function (e) { toast(e.message); }); }); };
 }
 
+
+/* ---------- 管理者メニュー: 承認申請 / 書類の格納 / イベントチラシ(管理システムと同じ機能) ---------- */
+var AP = { d: null, sel: {} };
+function apSel_(it) { return AP.sel[it.id] || (AP.sel[it.id] = { no: it.preNo || '', roles: String(it.role || '会員(一般)').split('+'), jobs: [] }); }
+function approveView() {
+  sub('承認申請', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_approve_list').then(function (d) { AP.d = d; apDraw(); }).catch(function (e) { offErr('承認申請', e, 'officer'); });
+}
+function apDraw() {
+  var d = AP.d, h = d.items.length ? d.items.map(function (it, i) {
+    var st = apSel_(it), off = st.roles.indexOf('役員') >= 0 || st.roles.indexOf('管理者') >= 0;
+    return '<div class="card" data-i="' + i + '"><h2 style="margin:0 0 4px">' + esc(it.name) + ' さん</h2><p class="small" style="margin:0 0 8px">LINE名: ' + esc(it.disp || '') + ' ・ 申請 ' + esc(String(it.at || '').slice(0, 16)) + '</p>' +
+      '<dl class="kv"><dt>納入者名</dt><dd>' + esc(it.payer) + '</dd><dt>住所</dt><dd>' + esc(it.address) + '</dd><dt>関係</dt><dd>' + esc(it.rel) + (it.relFree ? '(' + esc(it.relFree) + ')' : '') + '</dd></dl>' +
+      '<div class="small" style="font-weight:700;margin:8px 0 4px">名簿の会員と紐づけ(町会費の状況を本人の画面に出します)</div>' +
+      it.cands.map(function (c) { return '<label class="ml" style="display:block;cursor:pointer"><input type="radio" name="c' + i + '" class="apc" value="' + esc(c.no) + '"' + (st.no === c.no ? ' checked' : '') + '> <b>' + esc(c.name) + '</b>(' + esc(c.no) + ') <span class="small">' + esc(c.district) + ' ' + esc(c.group) + '班 ' + esc(c.address) + (c.status === '退会' ? ' ・退会' : '') + '</span></label>'; }).join('') +
+      '<label class="ml" style="display:block;cursor:pointer"><input type="radio" name="c' + i + '" class="apc" value=""' + (st.no === '' ? ' checked' : '') + '> 紐づけない / 後で決める</label>' +
+      '<div class="small" style="font-weight:700;margin:10px 0 4px">ステータス(複数選べます。会員(一般)・会員(家族)は単独)</div><div class="chips">' + d.roles.map(function (r) { return '<button type="button" class="apr" data-r="' + esc(r) + '" aria-pressed="' + (st.roles.indexOf(r) >= 0) + '">' + esc(r) + '</button>'; }).join('') + '</div>' +
+      (off ? '<div class="small" style="font-weight:700;margin:10px 0 4px">職務(役員は必須・兼部は複数)</div><div class="chips">' + d.jobs.map(function (j) { return '<button type="button" class="apj" data-j="' + esc(j) + '" aria-pressed="' + (st.jobs.indexOf(j) >= 0) + '">' + esc(j) + '</button>'; }).join('') + '</div>' : '') +
+      '<div style="height:12px"></div><button class="btn apok" type="button">承認する</button><div style="height:8px"></div><button class="btn ghost aprj" type="button">否決する</button></div>';
+  }).join('') : '<div class="card"><p class="muted" style="margin:0">承認待ちの申請は、ありません。</p></div>';
+  sub('承認申請', h + '<p class="small" style="margin:8px 4px">管理システムの「LINE管理 → 登録申請」と同じ承認・否決です。</p>', 'officer');
+  Array.prototype.forEach.call(document.querySelectorAll('.card[data-i]'), function (box) {
+    var it = d.items[+box.dataset.i], st = apSel_(it);
+    Array.prototype.forEach.call(box.querySelectorAll('.apc'), function (r) { r.onchange = function () { st.no = r.value; }; });
+    Array.prototype.forEach.call(box.querySelectorAll('.apr'), function (b) { b.onclick = function () {
+      var r = b.dataset.r, on = st.roles.indexOf(r) < 0;
+      if (on) { if (r === '会員(一般)' || r === '会員(家族)') st.roles = [r]; else { st.roles = st.roles.filter(function (x) { return x !== '会員(一般)' && x !== '会員(家族)' && !(r === '管理者' && x === '役員') && !(r === '役員' && x === '管理者'); }); st.roles.push(r); } }
+      else st.roles = st.roles.filter(function (x) { return x !== r; });
+      apDraw(); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('.apj'), function (b) { b.onclick = function () { var j = b.dataset.j, k = st.jobs.indexOf(j); if (k >= 0) st.jobs.splice(k, 1); else st.jobs.push(j); apDraw(); }; });
+    box.querySelector('.apok').onclick = function (ev) {
+      if (!st.roles.length) return toast('ステータスを選んでください');
+      var b = ev.currentTarget; b.disabled = true;
+      api('a_approve_do', { id: it.id, act: 'approve', memberNo: st.no, role: d.roles.filter(function (r) { return st.roles.indexOf(r) >= 0; }).join('+'), job: st.jobs.join(',') }).then(function (r) { toast(r.message); approveView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+    box.querySelector('.aprj').onclick = function () { askText('否決の理由(申請者の画面に表示されます)', '例: 名簿に見つかりません').then(function (v) { if (!v || !v.trim()) return; api('a_approve_do', { id: it.id, act: 'reject', reason: v.trim() }).then(function (r) { toast(r.message); approveView(); }).catch(function (e) { toast(e.message); }); }); };
+  });
+}
+var ST = { d: null, mode: 'group', gi: -1, nos: [], q: '' };
+function storeView() {
+  sub('書類の格納', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_store_info').then(function (d) { ST.d = d; ST.gi = -1; ST.nos = []; ST.q = ''; stDraw(); }).catch(function (e) { offErr('書類の格納', e, 'officer'); });
+}
+function stDraw() {
+  var d = ST.d, byNo = {}; d.members.forEach(function (m) { byNo[m.no] = m; });
+  var pick = ST.mode === 'group' ? '<div class="small" style="margin:6px 0">格納する回覧元(班)を選んでください</div>' + d.groups.map(function (g, i) { return '<button type="button" class="ml stg" data-i="' + i + '" style="' + (ST.gi === i ? 'border:2px solid var(--navy)' : '') + '"><div class="sj">' + esc(g.dist) + ' ' + esc(g.group) + '班 ' + (ST.gi === i ? '✓' : '') + '</div><div class="mt">回覧元: ' + esc(g.head || '(未設定)') + ' ・ ' + g.nos.length + '人</div></button>'; }).join('') :
+    '<div class="field"><label class="l" for="stq">会員を探す(名前・住所・会員番号)</label><input class="inp" id="stq" value="' + esc(ST.q) + '" autocomplete="off"></div><div id="strs">' + (ST.q ? stFind_().map(function (m) { return '<button type="button" class="ml stm" data-n="' + esc(m.no) + '"><div class="sj">' + esc(m.name) + '(' + esc(m.no) + ')</div><div class="mt">' + esc(m.dist) + ' ' + esc(m.group) + '班 ' + esc(m.addr) + '</div></button>'; }).join('') : '') + '</div>' +
+    '<div class="small" style="margin:8px 0 4px">選んだ会員(40人まで・同じ書類を一緒に格納します)</div><div class="chips">' + (ST.nos.length ? ST.nos.map(function (n) { return '<button type="button" class="stx" data-n="' + esc(n) + '">' + esc((byNo[n] || {}).name || n) + ' ×</button>'; }).join('') : '<span class="small">まだ選んでいません</span>') + '</div>';
+  var nos = ST.mode === 'group' ? (ST.gi >= 0 ? d.groups[ST.gi].nos : []) : ST.nos;
+  sub('書類の格納', '<div class="card"><div class="chips" id="stm"><button type="button" data-m="group" aria-pressed="' + (ST.mode === 'group') + '">回覧元別</button><button type="button" data-m="member" aria-pressed="' + (ST.mode === 'member') + '">会員別</button></div>' + pick +
+    '<div class="field" style="margin-top:12px"><label class="l" for="sty">年</label><input class="inp" id="sty" inputmode="numeric" maxlength="4" value="' + esc(d.year) + '"></div>' +
+    '<div class="field"><label class="l" for="stf">書類(画像かPDF・9MBまで)</label><input type="file" id="stf" accept="image/*,application/pdf"></div>' +
+    '<button class="btn" id="stgo" type="button"' + (nos.length ? '' : ' disabled') + '>格納する(' + nos.length + '人分)</button></div>' +
+    '<p class="small" style="margin:8px 4px">管理システムの「書類の格納」と同じ名前・フォルダに保存され、会員の「格納書類」に出ます。</p>', 'officer');
+  Array.prototype.forEach.call(document.querySelectorAll('#stm button'), function (b) { b.onclick = function () { ST.mode = b.dataset.m; stDraw(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.stg'), function (b) { b.onclick = function () { ST.gi = +b.dataset.i; stDraw(); }; });
+  var q = $('#stq'); if (q) { q.oninput = function () { ST.q = q.value; var box = $('#strs'); box.innerHTML = ST.q ? stFind_().map(function (m) { return '<button type="button" class="ml stm" data-n="' + esc(m.no) + '"><div class="sj">' + esc(m.name) + '(' + esc(m.no) + ')</div><div class="mt">' + esc(m.dist) + ' ' + esc(m.group) + '班 ' + esc(m.addr) + '</div></button>'; }).join('') : ''; stBind_(); }; stBind_(); }
+  Array.prototype.forEach.call(document.querySelectorAll('.stx'), function (b) { b.onclick = function () { ST.nos = ST.nos.filter(function (n) { return n !== b.dataset.n; }); stDraw(); }; });
+  $('#stgo').onclick = function () {
+    var f = $('#stf').files[0], y = $('#sty').value.trim(); if (!f) return toast('書類を選んでください'); if (!/^\d{4}$/.test(y)) return toast('年は4けたで入れてください');
+    var b = $('#stgo'); b.disabled = true; b.textContent = '送っています…';
+    var rd = /^image\//.test(f.type) ? shrinkImage(f, 2000) : new Promise(function (ok, ng) { if (f.size > 9000000) return ng(new Error('大きすぎます(9MBまで)')); var r = new FileReader(); r.onload = function () { ok(r.result); }; r.onerror = function () { ng(new Error('読めませんでした')); }; r.readAsDataURL(f); });
+    rd.then(function (data) { return api('a_store_upload', { nos: nos, year: y, name: /^image\//.test(f.type) ? f.name.replace(/\.[^.]+$/, '') + '.jpg' : f.name, data: data }); })
+      .then(function (r) { toast('格納しました: ' + r.head + ' ' + r.seq + '枚目(' + r.count + '人分)'); ST.nos = []; ST.gi = -1; stDraw(); }).catch(function (e) { b.disabled = false; b.textContent = '格納する'; toast(e.message); });
+  };
+}
+function stFind_() { var k = ST.q.normalize('NFKC').replace(/\s+/g, '').toLowerCase(); return ST.d.members.filter(function (m) { return (m.name + m.no + m.addr + m.group).normalize('NFKC').replace(/\s+/g, '').toLowerCase().indexOf(k) >= 0; }).slice(0, 8); }
+function stBind_() { Array.prototype.forEach.call(document.querySelectorAll('.stm'), function (b) { b.onclick = function () { if (ST.nos.indexOf(b.dataset.n) < 0 && ST.nos.length < 40) ST.nos.push(b.dataset.n); ST.q = ''; stDraw(); }; }); }
+var FA = { d: null };
+function flyerAdminView() {
+  sub('イベントチラシ', '<div class="skel" style="height:240px"></div>', 'officer');
+  api('a_flyer_list').then(function (d) { FA.d = d; faDraw(); }).catch(function (e) { offErr('イベントチラシ', e, 'officer'); });
+}
+function faDraw() {
+  var l = FA.d.list;
+  sub('イベントチラシ', '<button class="btn" id="fnew" type="button">＋ 新しいチラシ</button><div style="height:12px"></div>' + (l.length ? l.map(function (f) {
+    return '<button class="ml fal" data-id="' + esc(f.id) + '" type="button" style="display:flex;gap:10px;align-items:center;text-align:left">' + (f.thumb ? '<img src="' + esc(f.thumb) + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none">' : '') + '<span><span class="sj">' + esc(f.title) + '</span><br><span class="mt">' + esc(f.date) + (f.time ? ' ' + esc(f.time) : '') + (f.place ? ' ・ ' + esc(f.place) : '') + '</span>' + (f.sched ? ' <span class="tg w">公開予定 ' + esc(f.pub) + '</span>' : f.past ? ' <span class="tg">過去</span>' : '') + '</span></button>';
+  }).join('') : '<div class="card"><p class="muted" style="margin:0">チラシは、まだありません。</p></div>') + '<p class="small" style="margin:8px 4px">管理システムの「LINE管理 → イベントチラシ」と同じです。登録すると、会員の「イベントチラシ」ボタンが薄い赤になります。</p>', 'officer');
+  $('#fnew').onclick = function () { faEdit(null); };
+  Array.prototype.forEach.call(document.querySelectorAll('.fal'), function (b) { b.onclick = function () { faEdit(l.filter(function (x) { return x.id === b.dataset.id; })[0]); }; });
+}
+function faEdit(f) {
+  var n = !f; f = f || { id: '', title: '', date: '', time: '', place: '', note: '', pub: '' }; var mode = f.sched ? 'at' : 'now';
+  sub(n ? '新しいチラシ' : 'チラシを直す', '<div class="card"><div class="field"><label class="l" for="ft">タイトル<span class="req">必須</span></label><input class="inp" id="ft" maxlength="60" value="' + esc(f.title) + '"></div>' +
+    '<div class="field"><label class="l" for="fd">開催日<span class="req">必須</span>(すぎると「過去投稿」へ)</label><input class="inp" type="date" id="fd" value="' + esc(f.date) + '"></div>' +
+    '<div class="field"><label class="l" for="ftm">時間</label><input class="inp" id="ftm" maxlength="40" value="' + esc(f.time) + '"></div>' +
+    '<div class="field"><label class="l" for="fp">場所</label><input class="inp" id="fp" maxlength="80" value="' + esc(f.place) + '"></div>' +
+    '<div class="field"><label class="l" for="fn">備考</label><textarea class="inp" id="fn" maxlength="600" style="min-height:90px">' + esc(f.note) + '</textarea></div>' +
+    (n ? '<div class="field"><label class="l" for="ff">チラシの写真(なしでもOK)</label><input type="file" id="ff" accept="image/*"></div>' : '') +
+    '<div class="field"><span class="l" style="display:block;font-weight:700;margin-bottom:6px">公開</span><div class="chips" id="fm"><button type="button" data-m="now" aria-pressed="' + (mode === 'now') + '">すぐ公開</button><button type="button" data-m="at" aria-pressed="' + (mode === 'at') + '">日時を決める</button></div><input class="inp" type="datetime-local" id="fa" style="margin-top:8px;' + (mode === 'at' ? '' : 'display:none') + '" value="' + esc(String(f.pub || '').replace(' ', 'T')) + '"></div>' +
+    '<button class="btn" id="fsv" type="button">' + (n ? '登録する' : '保存する') + '</button>' + (n ? '' : '<div style="height:10px"></div><button class="btn ghost" id="fdl" type="button">このチラシを削除する</button>') + '</div>', 'a_flyer');
+  Array.prototype.forEach.call(document.querySelectorAll('#fm button'), function (b) { b.onclick = function () { mode = b.dataset.m; Array.prototype.forEach.call(document.querySelectorAll('#fm button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); $('#fa').style.display = mode === 'at' ? '' : 'none'; }; });
+  $('#fsv').onclick = function () {
+    var b = $('#fsv'), req = { id: f.id, title: $('#ft').value, date: $('#fd').value, time: $('#ftm').value, place: $('#fp').value, note: $('#fn').value, mode: mode, pubAt: $('#fa').value }, file = n && $('#ff').files[0];
+    b.disabled = true;
+    (file ? shrinkImage(file, 1600) : Promise.resolve('')).then(function (data) { if (data) req.data = data; return api('a_flyer_save', req); }).then(function (r) { toast(r.message); FA.d = r; faDraw(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+  };
+  if (!n) $('#fdl').onclick = function () { askChoice('このチラシを削除します', ['削除する'], '写真も消えます。元に戻せません。').then(function (v) { if (!v) return; api('a_flyer_delete', { id: f.id }).then(function (r) { toast(r.message); FA.d = r; faDraw(); }).catch(function (e) { toast(e.message); }); }); };
+}
+
 /* ---------- ルーティング ---------- */
 function loadMe() { return api('me').then(function (me) { S.me = me; return me; }); }
 function route() {
@@ -5500,7 +5607,7 @@ function route() {
   if (me.state !== 'approved') return me.state === 'none' ? noneView() : statusView();
   var full = (location.hash || '').replace('#', ''), h = full.split('/')[0];
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
-  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
+  if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched|a_approve|a_store|a_flyer)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
   if (h && h !== 'home' && h !== 'o_chg') { if (S.lastH && S.lastH !== full && S.lastH.split('/')[0] !== h) { S.prevH = S.lastH; lsSet_('hmtPrev', S.prevH); } S.lastH = full; try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
   var seg = full.split('/')[1];
@@ -5516,7 +5623,7 @@ function route() {
   if (h === 'o_sokai' && seg) return sokaiDocView(decodeURIComponent(seg));
   if (h === 'manual' && seg) return manualView(decodeURIComponent(seg));
   if (h === 'o_docs' && seg) return docsView(decodeURIComponent(seg));
-  ({ flyer: flyerView, supporter: supView, o_supporter: supView, manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
+  ({ flyer: flyerView, supporter: supView, o_supporter: supView, manual: manualView, o_report: reportView, o_sokai: sokaiView, o_kanban: function () { KBV.step = 'list'; KBV.list = null; kanbanView(); }, o_sched: schedView, a_sched: schedAdminView, o_desk: deskView, o_scanrun: scanView, o_search: searchView, card: cardView, dash: dashView, suginami: suginamiView, weather: weatherView, mail: mailView, mailnew: mailNewView, icon: iconView, event: eventView, tips: tipsView, board: boardView, boardnew: boardNewView, help: helpView, helpnew: helpNewView, mystery: mysteryView, a_img: imgAdminView, a_disaster: disasterView, a_docs: docsAdminView, a_approve: approveView, a_store: storeView, a_flyer: flyerAdminView, a_notice: noticeAdminView, a_mama: mamaAdminView, o_mama: mamaEnterView, a_event: eventAdminView, officer: officerView, headchg: headchgView, o_sum: sumView, o_unpaid: unpaidView, o_circ: circView, o_chg: chgView, o_roster: rosterView, o_scan: qrHubView }[h] || homeView)();
 }
 window.addEventListener('hashchange', route);
 
