@@ -1112,7 +1112,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-22 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-23 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2245,7 +2245,7 @@ function mailMoreSheet(d, id, redraw) {
       Array.prototype.forEach.call(box.querySelectorAll('[data-ref]'), function (b) { b.onclick = function () {
         var nm = b.textContent.replace('に依頼', '');
         cf(nm + 'に、返信をお願いします。' + (via === 'member' ? '会員LINE' : 'ママLINE') + 'からお知らせが届きます。よろしいですか?', function () {
-          b.disabled = true; api('mail_assign', { id: id, ref: b.dataset.ref, via: via }).then(function (r2) { toast(r2.pushed ? r2.name + 'さんに、' + (via === 'member' ? '会員LINEから' : 'ママから') + 'お知らせしました' : (r2.why || '依頼を記録しました')); close(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+          b.disabled = true; api('mail_assign', { id: id, ref: b.dataset.ref, via: via }).then(function (r2) { toast(r2.pushed ? r2.name + 'さんに、' + ((r2.via || via) === 'member' ? '会員LINEから' : 'ママから') + 'お知らせしました' : (r2.why || '依頼を記録しました')); close(); }).catch(function (e) { b.disabled = false; toast(e.message); });
         });
       }; });
     }).catch(function (e) { box.innerHTML = '<p class="small" style="color:var(--bad)">' + esc(e.message) + '</p>'; });
@@ -2883,7 +2883,7 @@ function drawMail(m) {
       Array.prototype.forEach.call(box.querySelectorAll('[data-ref]'), function (b) { b.onclick = function () {
         var nm = b.textContent;
         cf(nm + 'に、返信をお願いします。' + (via === 'member' ? '会員LINE' : 'ママLINE') + 'からお知らせが届きます。よろしいですか?', function () {
-          b.disabled = true; api('mail_assign', { id: m.id, ref: b.dataset.ref, via: via }).then(function (x) { toast(x.pushed ? x.name + 'さんに、' + (via === 'member' ? '会員LINEから' : 'ママから') + 'お知らせしました' : (x.why || '依頼を記録しました')); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); });
+          b.disabled = true; api('mail_assign', { id: m.id, ref: b.dataset.ref, via: via }).then(function (x) { toast(x.pushed ? x.name + 'さんに、' + ((x.via || via) === 'member' ? '会員LINEから' : 'ママから') + 'お知らせしました' : (x.why || '依頼を記録しました')); mailDetailView(m.id); }).catch(function (e) { b.disabled = false; toast(e.message); });
         });
       }; });
     }).catch(function (e) { box.innerHTML = '<p class="small" style="color:var(--bad)">' + esc(e.message) + '</p>'; });
