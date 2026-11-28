@@ -52,6 +52,7 @@
     $('#hdquit').onclick = function () { clearAll(); tok = ''; A.hub(); };
   }
   function done(ok, msg, extra) {   // ok: true / false / 'skip'
+    if (!G || G.busy) return; G.busy = true;   // 同じ問題の二重のかいとう(連打など)は 数えない
     clearAll();
     var tp = G.list[G.n], cost = ok === false ? 10 : 0;
     G.money = Math.max(0, G.money - cost); if (ok === true) G.right++;
@@ -378,15 +379,6 @@
     range: ['電子レンジ', function () { for (var i = 0; i < 3; i++) tone(2400, i * 0.7, 0.5, 0.18); }],
     denwa: ['電話の 着信音', function () { for (var r = 0; r < 2; r++) for (var i = 0; i < 16; i++) tone(i % 2 ? 1300 : 1000, r * 1.2 + i * 0.045, 0.045, 0.2); }]
   };
-  TYPES.push({ id: 'sound2', cat: '聴覚', name: 'この音は なに?', run: function (tp) {
-    var keys = Object.keys(SND), k = pick(keys), played = 0; dbg('snd', k);
-    frame(tp, 'この 音は <b>なに?</b>(2回まで きけます)', '<button type="button" class="qb pri" id="hdplay">🔊 きく</button><div id="hdch"></div><button type="button" class="qb sm" id="hdskip">音が 聞こえない(ノーカウント)</button>');
-    var set = shuf([k].concat(shuf(keys.filter(function (x) { return x !== k; })).slice(0, 3)));
-    var ch = choices(set.map(function (x) { return [SND[x][0], x]; }), function (v) { done(v === k, '正解は <b>' + SND[k][0] + '</b> でした'); });
-    $('#hdch').innerHTML = ch.html; ch.bind();
-    $('#hdplay').onclick = function () { if (played >= 2) return; played++; if (played >= 2) { this.disabled = true; } this.textContent = played >= 2 ? '🔊 (おしまい)' : '🔊 もういちど'; SND[k][1](); };
-    $('#hdskip').onclick = function () { done('skip', '音が 出ない ときは ノーカウントです'); };
-  } });
   // 視覚: 視力検査(ランドルト環)
   TYPES.push({ id: 'eye', cat: '視覚', name: '視力けんさ', run: function (tp) {
     var dirs = [['右', 0], ['下', 90], ['左', 180], ['上', 270]], d = pick(dirs), sz = 16 + rnd(14); dbg('eye', d[0]);
@@ -550,33 +542,75 @@
       $('#hdc').innerHTML = '<div class="hdt">1問 せいかい! つぎは、出てきた <b>全部の 数字を たすと</b> いくつ?</div>' + c.html; c.bind();
     }
   } });
+  function djSvg(label) {   // ヘッドホンのDJのイラスト(絵文字なし)
+    return '<svg viewBox="0 0 320 150" class="hdsc" role="img" aria-label="DJのイラスト"><rect width="320" height="150" fill="#2b1d4d"/><circle cx="40" cy="30" r="2" fill="#fff"/><circle cx="280" cy="22" r="2" fill="#ffd54f"/><circle cx="250" cy="52" r="1.6" fill="#fff"/>' +
+      '<g transform="translate(160 56)"><circle r="22" fill="#f2c9a0"/><path d="M-22 0 A22 22 0 0 1 22 0" fill="none" stroke="#111" stroke-width="6"/><rect x="-28" y="-6" width="10" height="20" rx="5" fill="#e11d48"/><rect x="18" y="-6" width="10" height="20" rx="5" fill="#e11d48"/><rect x="-14" y="-4" width="28" height="7" rx="3" fill="#111"/><path d="M-8 10 Q0 15 8 10" fill="none" stroke="#7a4a2a" stroke-width="2"/><rect x="-26" y="24" width="52" height="30" rx="8" fill="#6a4bd6"/></g>' +
+      '<rect x="40" y="96" width="92" height="40" rx="6" fill="#3a2d63"/><circle cx="86" cy="116" r="15" fill="#111"/><circle cx="86" cy="116" r="5" fill="#e11d48"/><rect x="188" y="96" width="92" height="40" rx="6" fill="#3a2d63"/><circle cx="234" cy="116" r="15" fill="#111"/><circle cx="234" cy="116" r="5" fill="#ffd54f"/>' +
+      [0, 1, 2, 3, 4, 5].map(function (i) { return '<rect x="' + (14 + i * 7) + '" y="60" width="5" height="30" fill="#ffd54f"><animate attributeName="height" values="8;30;12;26;8" dur="' + (0.8 + i * 0.13) + 's" repeatCount="indefinite"/><animate attributeName="y" values="90;60;86;64;90" dur="' + (0.8 + i * 0.13) + 's" repeatCount="indefinite"/></rect>'; }).join('') +
+      '<text x="160" y="143" font-size="13" text-anchor="middle" fill="#fff" font-weight="800">' + label + '</text></svg>';
+  }
+  function hearTest(cb) {
+    A.draw('<div class="qc" style="text-align:center"><div class="hdt">はじめに、音が 聞こえるか テストします</div>' + djSvg('音声 ながしてますよ〜') + '<div class="hdnote">音量を ほどよく あげて「音を鳴らす」を おしてください</div><button type="button" class="qb" id="hdpl">音を 鳴らす</button><div class="hdopt"><button type="button" class="qb pri" id="hdyes">聞こえる</button><button type="button" class="qb" id="hdno">聞こえない</button></div></div>');
+    root.setAttribute('data-hd', tok);
+    $('#hdpl').onclick = function () { tone(660, 0, 0.5, 0.3); tone(880, 0.55, 0.5, 0.3); };
+    $('#hdyes').onclick = function () { cb(true); }; $('#hdno').onclick = function () { cb(false); };
+  }
+  TYPES.push({ id: 'djhear', cat: '聴覚', name: '音が 聞こえたら タップ', run: function (tp) {
+    var fin = false, onset = 0, t0 = 0, started = false;
+    frame(tp, '今から 音を ながします。<br><b>音が 少しでも 聞こえたら タップ!</b>', djSvg('音声 ながしてますよ〜') + '<button type="button" class="qb pri" id="hdst0">はじめる</button><button type="button" class="qb" id="hdtap" style="display:none;min-height:84px;font-size:1.5em">聞こえた! タップ</button><div class="hdnote" id="hdmsg">「はじめる」を おすと、しずかな 時間のあと 小さな音が 少しずつ 大きくなります</div>');
+    $('#hdst0').onclick = function () {
+      var c = ac(); if (!c) { done('skip', 'この端末では 音が ならせません'); return; }
+      started = true; this.style.display = 'none'; $('#hdtap').style.display = ''; $('#hdmsg').textContent = '耳を すませて…';
+      var wait = 1800 + rnd(2200), RAMP = 6000; t0 = performance.now(); dbg('djhear', wait);
+      T(function () {
+        onset = performance.now(); var o = c.createOscillator(), g = c.createGain(), now = c.currentTime;
+        o.type = 'sine'; o.frequency.value = 520; g.gain.setValueAtTime(0.0008, now); g.gain.exponentialRampToValueAtTime(0.25, now + RAMP / 1000); o.connect(g); g.connect(c.destination); o.start(now); o.stop(now + RAMP / 1000 + 0.3); X.dj = { o: o, g: g };
+        T(function () { if (fin) return; fin = true; done(false, '音が ながれていましたが、タップが ありませんでした'); }, RAMP + 600);
+      }, wait);
+    };
+    $('#hdtap').onclick = function () {
+      if (fin || !started) return; fin = true; try { X.dj && X.dj.o.stop(); } catch (e) { /* 無視 */ }
+      if (!onset) { done(false, 'まだ 音は ながれていません(早すぎ)'); return; }
+      var s = Math.round((performance.now() - onset) / 100) / 10; done(true, '音が ながれて ' + s + '秒で 聞こえました');
+    };
+  } });
+  function rescueScene(extra) {   // 倒れている人のイラスト(絵文字なし)
+    return '<svg viewBox="0 0 320 150" class="hdsc" role="img" aria-label="道に人が倒れている絵"><rect width="320" height="150" fill="#e6f3ff"/><rect y="104" width="320" height="46" fill="#8d8d93"/><path d="M0 128H320" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/>' + (extra || '') +
+      '<g transform="translate(150 96)"><circle cx="0" cy="0" r="11" fill="#f2c9a0"/><path d="M-9-4 Q0-14 9-4" fill="#3b2f2f"/><rect x="12" y="-8" width="46" height="17" rx="8" fill="#3f7fbf"/><rect x="54" y="-6" width="30" height="7" rx="3" fill="#2d3f5c"/><rect x="54" y="2" width="30" height="7" rx="3" fill="#2d3f5c" transform="rotate(8 54 2)"/><rect x="14" y="8" width="26" height="6" rx="3" fill="#f2c9a0" transform="rotate(20 14 8)"/></g>' +
+      '<circle cx="150" cy="56" r="15" fill="#e11d48"/><text x="150" y="64" font-size="22" text-anchor="middle" fill="#fff" font-weight="900">!</text></svg>';
+  }
   TYPES.push({ id: 'rescue', cat: '常識', name: '救助問題', run: function (tp) {
     var bad = 0, found = {}, nf = 0, fin = false;
-    frame(tp, '<b>わああ! 人が たおれている!</b><br>どう 対応したら いいかな?', '<div id="hdst2"></div><div class="hdnote" id="hdmsg"></div>');
-    function mis(msg) { bad++; $('#hdmsg').innerHTML = '<span style="color:#c0392b;font-weight:800">' + msg + '</span>'; if (bad >= 2 && !fin) { fin = true; done(false, 'まちがいが 2回に なりました。<br>「声をかけて 反応を見る → 119番(救急)で 場所を 伝える → 住所が わからなければ まわりの 表示を さがす」が 大事です'); return true; } return false; }
-    function stage(q, opts, rightIdx, why, nextFn) {
+    frame(tp, '<b>人が 倒れている!</b>', rescueScene() + '<div id="hdst2"></div><div class="hdnote" id="hdmsg"></div>');
+    function mis(msg) { bad++; $('#hdmsg').innerHTML = '<span style="color:#c0392b;font-weight:800">' + msg + '</span>'; if (bad >= 2 && !fin) { fin = true; done(false, '2回 まちがえました。<br>声をかける → 119番 → 場所を 伝える、の順です'); return true; } return false; }
+    function stage(q, opts, why, nextFn) {   // opts[0] が正解
       var idx = shuf(opts.map(function (_, i) { return i; }));
       $('#hdst2').innerHTML = '<div class="hdt">' + q + '</div><div class="hdopt one">' + idx.map(function (i) { return '<button type="button" class="qb" data-r="' + i + '">' + opts[i] + '</button>'; }).join('') + '</div>';
-      root.querySelectorAll('[data-r]').forEach(function (b) { b.onclick = function () { if (fin) return; if (+b.dataset.r === rightIdx) { $('#hdmsg').innerHTML = '<span style="color:#1f7a4d;font-weight:800">せいかい! ' + why + '</span>'; nextFn(); } else { if (mis('ちがいます。' + (b.dataset.r == 99 ? '' : '')) ) return; b.disabled = true; } }; });
+      root.querySelectorAll('[data-r]').forEach(function (b) { b.onclick = function () { if (fin) return; if (+b.dataset.r === 0) { fin2 = true; $('#hdmsg').innerHTML = '<span style="color:#1f7a4d;font-weight:800">正解。' + why + '</span>'; root.querySelectorAll('[data-r]').forEach(function (x) { x.disabled = true; }); nextFn(); } else { if (mis('ちがいます')) return; b.disabled = true; } }; });
     }
-    function s1() { stage('まず なにを しますか?', ['近づいて 大きな 声で 「大丈夫ですか?」と 呼びかけ、肩を 軽く たたいて 反応を 見る', 'ゆすって 大きな 声で 起こす', '見なかった ことに して 立ち去る', 'お水を かける'], 0, '周りの 安全を 見て、声かけと 反応の 確認が 最初です。', function () { T(s2, 900); }); }
-    function s2() { $('#hdst2').innerHTML = ''; stage('反応が ありません。どこに 電話しますか?', ['119番(救急車)。「救急です」と 伝える', '110番(警察)だけ', '町会長に 電話', '電話は せず 様子を 見る'], 0, 'けが人・急病は 119番です。「火事ですか? 救急ですか?」と 聞かれたら「救急です」。「事件ですか? 事故ですか?」も 聞かれるので、わかる 範囲で 答えます(事件で 危険が あれば 110番も)。', function () { T(s3, 900); }); }
+    var fin2 = false;
+    function s1() { stage('まず どうする?', ['声をかけて 反応を見る', 'ゆすって 起こす', 'その場を 離れる', '水を かける'], '声かけと 反応の確認が 最初です', function () { T(s2, 1100); }); }
+    function s2() { $('#hdmsg').textContent = ''; stage('反応が ない。どこに 電話する?', ['119番(救急)', '110番だけ', '町会長', '様子を 見る'], '救急は 119番です', function () { T(s2b, 1100); }); }
+    function s2b() { $('#hdmsg').textContent = ''; stage('119番で「事件ですか? 事故ですか?」と 聞かれた', ['わかる 範囲で 答える', '答えずに 切る', 'ウソを 言う', '何も 言わない'], 'わからない ことは「わかりません」で OK', function () { T(s3, 1100); }); }
     function s3() {
-      $('#hdst2').innerHTML = '<div class="hdt">「場所は どこですか?」…住所が わからない!<br><b>この絵の中に、住所と おなじように 救急の人に 伝えられる 表示が 5つ あります。見つけて タップしてください</b></div>' +
+      $('#hdmsg').textContent = '';
+      $('#hdst2').innerHTML = '<div class="hdt">「場所は どこ?」…住所が わからない!<br><b>場所を 伝える 手がかりを 5つ タップ</b></div>' +
         '<svg viewBox="0 0 320 200" class="hdsc" id="hdrs"><rect width="320" height="200" fill="#e6f3ff"/><rect y="150" width="320" height="50" fill="#8d8d93"/><path d="M0 175H320" stroke="#fff" stroke-width="3" stroke-dasharray="14 10"/>' +
-        '<g data-h="1" data-n="お店の 看板(店の名前)"><rect x="6" y="40" width="96" height="110" fill="#f5deb3"/><rect x="12" y="46" width="84" height="22" fill="#b71c1c"/><text x="54" y="62" font-size="12" text-anchor="middle" fill="#fff" font-weight="800">はまだ食堂</text><rect x="6" y="40" width="96" height="110" fill="transparent"/></g>' +
-        '<g data-h="1" data-n="電柱の 住所表示"><rect x="120" y="30" width="9" height="125" fill="#8d6e63"/><rect x="108" y="48" width="34" height="24" fill="#fff" stroke="#1565c0" stroke-width="2"/><text x="125" y="58" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">杉並区</text><text x="125" y="67" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">浜田山3</text><rect x="104" y="40" width="42" height="36" fill="transparent"/></g>' +
-        '<g data-h="1" data-n="ブロック塀の 住所表示板(○丁目○番)"><rect x="150" y="105" width="52" height="46" fill="#cfd8dc"/><rect x="156" y="112" width="40" height="22" fill="#fff" stroke="#2e7d32" stroke-width="2"/><text x="176" y="127" font-size="10" text-anchor="middle" fill="#2e7d32" font-weight="900">3-1-8</text><rect x="150" y="105" width="52" height="46" fill="transparent"/></g>' +
-        '<g data-h="1" data-n="交差点の 名前の 標識"><rect x="224" y="20" width="6" height="132" fill="#607d8b"/><rect x="196" y="22" width="62" height="18" fill="#1565c0"/><text x="227" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="800">浜田山駅前</text><rect x="194" y="18" width="66" height="26" fill="transparent"/></g>' +
-        '<g data-h="1" data-n="バス停の 名前"><rect x="266" y="70" width="5" height="82" fill="#455a64"/><circle cx="268" cy="64" r="16" fill="#fff" stroke="#e65100" stroke-width="3"/><text x="268" y="68" font-size="9" text-anchor="middle" fill="#e65100" font-weight="900">バス</text><circle cx="268" cy="64" r="20" fill="transparent"/></g>' +
-        '<g data-h="0" data-n="木"><text x="150" y="98" font-size="30">🌳</text><rect x="148" y="70" width="36" height="34" fill="transparent"/></g><g data-h="0" data-n="雲"><text x="20" y="30" font-size="26">☁️</text><rect x="16" y="8" width="36" height="28" fill="transparent"/></g><g data-h="0" data-n="いぬ"><text x="262" y="146" font-size="22">🐕</text><rect x="258" y="124" width="30" height="26" fill="transparent"/></g>' +
-        '<text x="108" y="196" font-size="24">🧍</text></svg><div class="hdnote" id="hdfd">見つけた 数: 0 / 5</div>';
+        '<g data-h="1" data-n="お店の看板"><rect x="6" y="40" width="96" height="110" fill="#f5deb3"/><rect x="12" y="46" width="84" height="22" fill="#b71c1c"/><text x="54" y="62" font-size="12" text-anchor="middle" fill="#fff" font-weight="800">はまだ食堂</text><rect x="6" y="40" width="96" height="110" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="電柱の住所表示"><rect x="120" y="30" width="9" height="125" fill="#8d6e63"/><rect x="108" y="48" width="34" height="24" fill="#fff" stroke="#1565c0" stroke-width="2"/><text x="125" y="58" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">杉並区</text><text x="125" y="67" font-size="6.5" text-anchor="middle" fill="#1565c0" font-weight="800">浜田山3</text><rect x="104" y="40" width="42" height="36" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="塀の住所表示"><rect x="150" y="105" width="52" height="46" fill="#cfd8dc"/><rect x="156" y="112" width="40" height="22" fill="#fff" stroke="#2e7d32" stroke-width="2"/><text x="176" y="127" font-size="10" text-anchor="middle" fill="#2e7d32" font-weight="900">3-1-8</text><rect x="150" y="105" width="52" height="46" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="交差点の名前"><rect x="224" y="20" width="6" height="132" fill="#607d8b"/><rect x="196" y="22" width="62" height="18" fill="#1565c0"/><text x="227" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="800">浜田山駅前</text><rect x="194" y="18" width="66" height="26" fill="transparent"/></g>' +
+        '<g data-h="1" data-n="バス停の名前"><rect x="286" y="70" width="5" height="82" fill="#455a64"/><circle cx="288" cy="64" r="16" fill="#fff" stroke="#e65100" stroke-width="3"/><text x="288" y="68" font-size="9" text-anchor="middle" fill="#e65100" font-weight="900">バス</text><circle cx="288" cy="64" r="20" fill="transparent"/></g>' +
+        '<g data-h="0" data-n="木"><rect x="166" y="80" width="6" height="26" fill="#6d4c41"/><circle cx="169" cy="72" r="18" fill="#43a047"/><circle cx="169" cy="72" r="22" fill="transparent"/></g>' +
+        '<g data-h="0" data-n="雲"><ellipse cx="40" cy="22" rx="22" ry="9" fill="#fff"/><ellipse cx="54" cy="16" rx="14" ry="8" fill="#fff"/><rect x="16" y="6" width="50" height="28" fill="transparent"/></g>' +
+        '<g data-h="0" data-n="車"><rect x="226" y="132" width="44" height="14" rx="4" fill="#c62828"/><rect x="236" y="122" width="24" height="12" rx="3" fill="#ef9a9a"/><circle cx="236" cy="148" r="5" fill="#222"/><circle cx="260" cy="148" r="5" fill="#222"/><rect x="222" y="118" width="52" height="34" fill="transparent"/></g>' +
+        '<g transform="translate(60 182) scale(.55)"><circle cx="0" cy="0" r="11" fill="#f2c9a0"/><rect x="12" y="-8" width="46" height="17" rx="8" fill="#3f7fbf"/><rect x="54" y="-6" width="30" height="7" rx="3" fill="#2d3f5c"/></g></svg><div class="hdnote" id="hdfd">見つけた数: 0 / 5</div>';
       var done5 = false;
       root.querySelectorAll('#hdrs g[data-h]').forEach(function (g) { g.style.cursor = 'pointer'; g.onclick = function () {
         if (fin || done5) return; var nm = g.getAttribute('data-n');
-        if (g.getAttribute('data-h') === '1') { if (found[nm]) return; found[nm] = 1; nf++; g.style.filter = 'drop-shadow(0 0 4px #f2b705)'; g.insertAdjacentHTML('beforeend', '<circle cx="0" cy="0" r="0"/>'); $('#hdfd').textContent = '見つけた 数: ' + nf + ' / 5 (' + Object.keys(found).join('・') + ')'; dbg('rescue', nf);
-          if (nf >= 5) { done5 = true; fin = true; done(bad < 2, '電柱・ブロック塀の 住所表示、交差点名、バス停、お店の 看板は、場所を 伝える 手がかりに なります。<br>住所が 言えなくても 「○○のお店の 前です」と 伝えられます。'); } }
-        else { if (mis('それは ちがいます(' + nm + ')。住所や 場所の 名前が 書いてある ものを さがそう')) return; }
+        if (g.getAttribute('data-h') === '1') { if (found[nm]) return; found[nm] = 1; nf++; g.style.filter = 'drop-shadow(0 0 4px #f2b705)'; $('#hdfd').textContent = '見つけた数: ' + nf + ' / 5(' + Object.keys(found).join('・') + ')'; dbg('rescue', nf);
+          if (nf >= 5) { done5 = true; fin = true; done(bad < 2, '電柱・塀・交差点・バス停・お店の看板が 手がかりです。<br>「○○の前です」と 伝えられます'); } }
+        else { if (mis(nm + 'は ちがいます。名前や 住所が 書いてある ものを')) return; }
       }; });
     }
     s1();
@@ -585,10 +619,17 @@
   /* ===== しんこう ===== */
   function hold(stage, ctl) { var h = window.HmtHundred && window.HmtHundred.hold; try { return typeof h === 'function' ? !!h(stage, ctl) : false; } catch (e) { return false; } }
   function next() {
-    var tp = G.list[G.n]; tp.run(tp);
+    G.busy = false; var tp = G.list[G.n]; if (!tp) { finish(); return; } tp.run(tp);
   }
-  function rankOf(m) { return m >= 100 ? ['🏆', '完全死守! 1円も 失いませんでした!'] : m >= 70 ? ['🥇', 'おみごと! 大部分を 守りました'] : m >= 40 ? ['🥈', 'ギリギリ 守りきりました'] : m > 0 ? ['🥉', 'ざんねん…。かなり 失いました'] : ['😱', '100万円を ぜんぶ 失いました…'] };
+  function rankOf(m) { return m >= 100 ? ['🏆', '泥棒から 100万円を 完全に 死守しました!<br>1円も 失いませんでした'] : m >= 70 ? ['🥇', '泥棒から ほとんど 死守しました!'] : m >= 40 ? ['🥈', 'ギリギリ 死守しました…'] : m > 0 ? ['🥉', '泥棒に かなり 持っていかれました…'] : ['😱', '泥棒に 100万円を ぜんぶ 持っていかれました…'] };
   function finish() {
+    try { finish2(); } catch (e) {
+      var m = G ? G.money : 0; clearAll();
+      A.draw('<div class="hdh"><div class="hdm">' + m + '万円</div><div class="hdq">おしまい</div></div><div class="qc hdres"><b class="big">のこり ' + m + '万円</b><div style="line-height:1.7">' + (m >= 70 ? '100万円を ほとんど 守りきりました!' : m >= 40 ? 'なんとか 守りました' : '多くを うばわれました') + '</div></div><button type="button" class="qb pri" id="hdagain">もういちど あそぶ</button><button type="button" class="qb" id="hdhome">GAMEへ もどる</button>');
+      root.setAttribute('data-hd', tok); $('#hdagain').onclick = begin; $('#hdhome').onclick = function () { tok = ''; A.hub(); };
+    }
+  }
+  function finish2() {
     clearAll(); var d = load(), r = rankOf(G.money), newBest = !d.best || G.money > d.best;
     d.best = Math.max(d.best || 0, G.money); d.played = (d.played || 0) + 1; save(d);
     var xp = 5 + Math.round(G.money / 20), evo = 0; try { evo = A.addXp(xp); A.Store.save(); } catch (e) { /* 無視 */ }
@@ -598,11 +639,17 @@
   }
   function begin() {
     tok = 'hd' + Date.now(); clearAll();
+    var guided = false; try { guided = typeof window.HmtHundred.hold === 'function'; } catch (e) { guided = false; }   // ガイド中は、音のテストをとばす
+    if (guided) return build(true);
+    hearTest(function (ok) { build(ok); });
+  }
+  function build(hear) {
+    var pool = TYPES.filter(function (t) { return hear || t.cat !== '聴覚'; });
     // 体感・視覚・聴覚・記憶が、かたよらないように
     var cats = ['体感', '視覚', '聴覚', '記憶', '常識', '頭脳'], list = [];
-    cats.forEach(function (c) { var l = shuf(TYPES.filter(function (t) { return t.cat === c; })); list.push(l[0]); });
-    var rest = shuf(TYPES.filter(function (t) { return list.indexOf(t) < 0; })); while (list.length < 10 && rest.length) list.push(rest.shift());
-    G = { n: 0, total: Math.min(10, list.length), money: 100, right: 0, list: shuf(list) };
+    cats.forEach(function (c) { var l = shuf(pool.filter(function (t) { return t.cat === c; })); if (l[0]) list.push(l[0]); });
+    var rest = shuf(pool.filter(function (t) { return list.indexOf(t) < 0; })); while (list.length < 10 && rest.length) list.push(rest.shift());
+    G = { n: 0, total: Math.min(10, list.length), money: 100, right: 0, list: shuf(list), hear: hear };
     if (hold('first', { go: next, hub: function () { tok = ''; A.hub(); } })) return;   // ガイド用: 1問目の前で止める
     next();
   }
