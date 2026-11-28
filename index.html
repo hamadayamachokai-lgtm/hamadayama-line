@@ -49,6 +49,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .sheet.flat{margin-top:0}
 .hero.short{padding-bottom:28px}.hnotes{position:relative;margin-top:14px;display:grid;gap:8px}.hq{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);color:#fff}.hqt{font-size:15px;line-height:1.5;font-weight:700}.hqb{display:flex;gap:10px;margin-top:8px}.hqy{all:unset;box-sizing:border-box;flex:1;text-align:center;cursor:pointer;padding:11px 8px;border-radius:12px;background:#fde4e4;border:2px solid #f0aaaa;color:#8a1c1c;font-weight:800;font-size:17px}.hqy:active{background:#f8cccc}.hqy[disabled]{opacity:.55}.hn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);cursor:pointer;color:#fff}.hn.ntred{background:#fde6e6;border-color:#f0a3a3;color:#8a1313}.hn.ntred .hni svg{stroke:#c62828}.hn.ntred .hni small{opacity:1;color:#a31515}
 .ntc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:var(--card,#fff)}.ntc.red{background:#fde6e6;border-color:#f0a3a3}.ntc h3{margin:0 0 6px;font-size:15px}
+.sfq{font-weight:700;margin:14px 0 6px;color:var(--navy)}.sfch{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.sfg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.sfw{font-size:12px;color:var(--sub)}.sfw.su{color:#c62828}.sfw.sa{color:#1565c0}.sfd{all:unset;box-sizing:border-box;cursor:pointer;padding:9px 0;border-radius:10px;background:#fff;border:1px solid var(--line);font-size:15px}.sfd.td{border-color:var(--navy);font-weight:800}.sfd.on{background:var(--navy);color:#fff}.sfrow{display:flex;gap:10px;margin-top:10px}.sfrow label{flex:1;font-size:13px;color:var(--sub)}.sfrow input{display:block;width:100%;margin-top:2px}.sfo{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:14px}.sfo[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy)}.sfo small{opacity:.75}
 .hnt{font-size:14.5px;line-height:1.5;font-weight:600}.hni{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;min-width:52px}.hni svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.hni small{font-size:10.5px;opacity:.85;white-space:nowrap}
 
 /* カード・ボタン */
@@ -1119,7 +1120,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-26 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-27 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -3388,20 +3389,70 @@ function schedView() {
     if (d.admin) $('#sgo').onclick = function () { go('a_sched'); };
   }).catch(function (e) { sub('役員の予定', errCard(e), 'officer'); });
 }
-function schedAdminView() {
+var SF = { id: '', date: '', start: '', end: '', title: '', place: '', tags: [], memo: '', ym: '', officers: [] };
+function sfToday() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function sfReset(ev) {
+  SF.id = ev ? ev.id : ''; SF.date = ev ? ev.date : ''; SF.start = ev ? ev.start || '' : ''; SF.end = ev ? ev.end || '' : ''; SF.title = ev ? ev.title || '' : ''; SF.place = ev ? ev.place || '' : ''; SF.tags = ev ? (ev.tags || []).slice() : []; SF.memo = ev ? ev.memo || '' : '';
+  SF.ym = (SF.date || sfToday()).slice(0, 7);
+}
+function sfCalHtml() {
+  var p = SF.ym.split('-'), y = +p[0], m = +p[1], first = new Date(y, m - 1, 1).getDay(), n = new Date(y, m, 0).getDate(), t = sfToday(), h = '<div class="sfch"><button type="button" class="sbtn" id="sfpv" aria-label="前の月">＜</button><b>' + y + '年' + m + '月</b><button type="button" class="sbtn" id="sfnx" aria-label="次の月">＞</button></div><div class="sfg">';
+  ['日', '月', '火', '水', '木', '金', '土'].forEach(function (w, i) { h += '<span class="sfw' + (i === 0 ? ' su' : i === 6 ? ' sa' : '') + '">' + w + '</span>'; });
+  for (var k = 0; k < first; k++) h += '<span></span>';
+  for (var d = 1; d <= n; d++) { var ds = y + '-' + ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2); h += '<button type="button" class="sfd' + (ds === SF.date ? ' on' : '') + (ds === t ? ' td' : '') + '" data-d="' + ds + '" aria-pressed="' + (ds === SF.date) + '">' + d + '</button>'; }
+  return h + '</div><p class="small" style="margin:6px 2px 0">選んだ日: <b id="sfsel">' + (SF.date ? (+SF.date.slice(5, 7)) + '月' + (+SF.date.slice(8)) + '日(' + esc(dowJs(SF.date)) + ')' : 'まだ選んでいません') + '</b></p>';
+}
+function sfRead() {
+  if (!$('#sft')) return;
+  SF.start = $('#sfs').value; SF.end = $('#sfe').value; SF.title = $('#sft').value; SF.place = $('#sfp').value; SF.memo = $('#sfm').value;
+}
+function sfFormHtml() {
+  return '<div class="card" id="sfc"><h2>' + (SF.id ? '予定を直す' : '予定を入れる') + '</h2><p class="muted" style="margin:0 0 10px">質問に答えてください。わからないところは、空のままでもかまいません。(日付と内容だけは必要です)</p>' +
+    '<div class="sfq">① いつですか?</div><div id="sfcal">' + sfCalHtml() + '</div>' +
+    '<div class="sfrow"><label>開始<input type="time" id="sfs" value="' + esc(SF.start) + '"></label><label>終了<input type="time" id="sfe" value="' + esc(SF.end) + '"></label></div>' +
+    '<div class="sfq">② 内容を教えてください</div><input type="text" id="sft" maxlength="60" value="' + esc(SF.title) + '" placeholder="例: 役員会 第一回" style="width:100%">' +
+    '<div class="sfq">③ 開催場所(待ち合わせ)はどこですか?</div><input type="text" id="sfp" maxlength="60" value="' + esc(SF.place) + '" placeholder="例: 第1・第2集会室" style="width:100%">' +
+    '<div class="sfq">④ 該当する人を選んでください(またはテキスト入力)</div>' +
+    '<p class="small" style="margin:0 0 6px">選んだ人には、開催の3週間前から、ホームで「出席できますか?」とたずねます。</p>' +
+    '<div class="chips" id="sfo">' + (SF.officers.length ? SF.officers.map(function (o) { return '<button type="button" class="sfo" data-id="' + esc(o.id) + '" aria-pressed="' + (SF.tags.indexOf(o.id) >= 0) + '">' + esc(o.name) + (o.job ? '<small> ' + esc(o.job) + '</small>' : '') + '</button>'; }).join('') : '<span class="small">選べる役員がいません</span>') + '</div>' +
+    '<div style="display:flex;gap:8px;margin:6px 0"><button type="button" class="sbtn" id="sfall">全員を選ぶ</button><button type="button" class="sbtn" id="sfnone">選びなおす</button></div>' +
+    '<input type="text" id="sfm" maxlength="200" value="' + esc(SF.memo) + '" placeholder="文字で入れる(例: 会長・副会長・防犯部)" style="width:100%">' +
+    '<div class="sfq">⑤ 写真・PDFから入れる(スクショもOK)</div><label class="sbtn" style="cursor:pointer;margin:0;display:inline-block">写真・PDFをえらぶ<input type="file" id="sfile" accept="image/*,application/pdf" hidden></label>' +
+    '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><button class="btn" id="sfsave" style="flex:1">' + (SF.id ? '直して保存する' : '登録する') + '</button>' + (SF.id ? '<button class="sbtn" id="sfcancel">やめる</button>' : '') + '</div></div>' +
+    '<details class="card" style="margin-top:0"><summary style="cursor:pointer;font-weight:700">まとめて貼り付けて入れる(エクセルなど)</summary><p class="muted" style="margin:8px 0">1行に1つの予定を書きます。<br>例:2027年4月26日(月) 17:00〜21:00 役員会 第一回 第1・第2集会室</p><textarea id="sx" rows="6" style="width:100%" placeholder="ここに貼り付け"></textarea><div style="margin-top:8px"><button class="sbtn" id="sparse">確認する</button></div><div id="spv"></div></details>';
+}
+function schedAdminView(keep) {
   var items = [];
   sub('予定の登録', '<div class="skel" style="height:260px"></div>', 'officer');
-  api('o_sched_list').then(function (d) {
-    var h = '<div class="card"><h2>予定を入れる</h2><p class="muted" style="margin:0 0 8px">1行に1つの予定を書きます。<br>例:2027年4月26日(月) 17:00〜21:00 役員会 第一回 第1・第2集会室<br>エクセルの表をコピーして貼り付けてもかまいません。</p>' +
-      '<textarea id="sx" rows="8" style="width:100%" placeholder="ここに貼り付け"></textarea>' +
-      '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><label class="sbtn" style="cursor:pointer;margin:0">写真から文字にする<input type="file" id="sfile" accept="image/*" hidden></label><button class="sbtn" id="sparse">確認する</button></div><div id="spv"></div></div>' +
+  Promise.all([api('o_sched_list'), api('a_sched_get', {})]).then(function (rs) {
+    var d = rs[0]; SF.officers = rs[1].officers || [];
+    if (!keep) sfReset(null);
+    var h = sfFormHtml() +
       '<div class="card"><h2>登録ずみの予定(これから)</h2>' + (d.events.length ? d.events.map(function (e) {
-        return '<div class="pvrow"><div style="flex:1"><b>' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '(' + esc(e.dow) + ')</b> ' + esc(e.start || '') + (e.end ? '〜' + esc(e.end) : '') + '<br>' + esc(e.title) + (e.place ? ' <span class="muted">' + esc(e.place) + '</span>' : '') + '</div><button class="x" data-id="' + esc(e.id) + '">削除</button></div>';
+        return '<div class="pvrow"><div style="flex:1"><b>' + (+e.date.slice(5, 7)) + '/' + (+e.date.slice(8)) + '(' + esc(e.dow) + ')</b> ' + esc(e.start || '') + (e.end ? '〜' + esc(e.end) : '') + '<br>' + esc(e.title) + (e.place ? ' <span class="muted">' + esc(e.place) + '</span>' : '') + '</div><div style="display:flex;gap:6px;flex-shrink:0"><button class="sbtn sfed" data-id="' + esc(e.id) + '">編集</button><button class="x" data-id="' + esc(e.id) + '">削除</button></div></div>';
       }).join('') : '<p class="muted" style="margin:0">なし</p>') + '</div>';
     sub('予定の登録', h, 'officer');
+    function bindCal() {
+      $('#sfcal').innerHTML = sfCalHtml();
+      function mv(dm) { var p = SF.ym.split('-'), dt = new Date(+p[0], +p[1] - 1 + dm, 1); SF.ym = dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2); bindCal(); }
+      $('#sfpv').onclick = function () { mv(-1); }; $('#sfnx').onclick = function () { mv(1); };
+      Array.prototype.forEach.call(document.querySelectorAll('.sfd'), function (b) { b.onclick = function () { SF.date = b.dataset.d; bindCal(); }; });
+    }
+    bindCal();
+    Array.prototype.forEach.call(document.querySelectorAll('.sfo'), function (b) { b.onclick = function () { var on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); var i = SF.tags.indexOf(b.dataset.id); if (on && i < 0) SF.tags.push(b.dataset.id); if (!on && i >= 0) SF.tags.splice(i, 1); }; });
+    $('#sfall').onclick = function () { SF.tags = SF.officers.map(function (o) { return o.id; }); Array.prototype.forEach.call(document.querySelectorAll('.sfo'), function (b) { b.setAttribute('aria-pressed', 'true'); }); };
+    $('#sfnone').onclick = function () { SF.tags = []; Array.prototype.forEach.call(document.querySelectorAll('.sfo'), function (b) { b.setAttribute('aria-pressed', 'false'); }); };
+    $('#sfsave').onclick = function () {
+      sfRead(); if (!SF.date) return toast('「いつですか?」の日付を選んでください'); if (!SF.title.trim()) return toast('「内容」を入れてください');
+      var b = $('#sfsave'); b.disabled = true;
+      var body = { date: SF.date, start: SF.start, end: SF.end, title: SF.title.trim(), place: SF.place.trim(), memo: SF.memo.trim(), tags: SF.tags };
+      var pr = SF.id ? api('a_sched_update', Object.assign({ id: SF.id }, body)).then(function () { toast('直しました'); }) : api('a_sched_save', { items: [body] }).then(function (r) { toast(r.added ? '登録しました' : '同じ予定がすでにあります(新しくは作っていません)'); });
+      pr.then(function () { schedAdminView(); }).catch(function (e) { b.disabled = false; toast(e.message); });
+    };
+    if ($('#sfcancel')) $('#sfcancel').onclick = function () { schedAdminView(); };
     function drawPv(bad) {
       $('#spv').innerHTML = (items.length ? '<h2 style="margin:14px 0 4px">この内容で登録します(' + items.length + '件)</h2>' + items.map(function (x, i) {
-        return '<div class="pvrow"><div style="flex:1"><b>' + (+x.date.slice(5, 7)) + '/' + (+x.date.slice(8)) + '(' + esc(dowJs(x.date)) + ')</b> ' + esc(x.start || '時間未定') + (x.end ? '〜' + esc(x.end) : '') + '<br>' + esc(x.title) + (x.place ? ' <span class="muted">' + esc(x.place) + '</span>' : '') + (x.memo ? '<br><span class="small" style="color:var(--navy)">備考あり(' + x.memo.length + '文字)</span>' : '') + '</div><button class="x" data-i="' + i + '">外す</button></div>';
+        return '<div class="pvrow"><div style="flex:1"><b>' + (+x.date.slice(5, 7)) + '/' + (+x.date.slice(8)) + '(' + esc(dowJs(x.date)) + ')</b> ' + esc(x.start || '時間未定') + (x.end ? '〜' + esc(x.end) : '') + '<br>' + esc(x.title) + (x.place ? ' <span class="muted">' + esc(x.place) + '</span>' : '') + (x.memo ? '<br><span class="small" style="color:var(--navy)">備考あり(' + x.memo.length + '文字)</span>' : '') + '</div><button class="x" data-i="' + i + '">除く</button></div>';
       }).join('') + '<button class="btn" id="ssave" style="margin-top:10px">登録する</button>' : '') +
         (bad && bad.length ? '<p class="small" style="color:var(--bad)">読み取れなかった行:<br>' + bad.map(esc).join('<br>') + '</p>' : '') + (!items.length && !(bad && bad.length) ? '<p class="muted">予定が見つかりませんでした。</p>' : '');
       Array.prototype.forEach.call($('#spv').querySelectorAll('.x'), function (b) { b.onclick = function () { items.splice(+b.dataset.i, 1); drawPv(bad); }; });
@@ -3415,11 +3466,24 @@ function schedAdminView() {
     };
     $('#sfile').onchange = function () {
       var f = this.files && this.files[0]; if (!f) return; var inp = this;
-      toast('写真を読み取っています…(30秒ほどかかります)');
-      shrinkImage(f, 1600).then(function (data) { return api('a_sched_ocr', { data: data, mode: 'sched' }); })
-        .then(function (r) { $('#sx').value = r.text; toast(r.via === 'drive' ? '文字にしました(ざっくり読み取りです)。まちがいを直してから「確認する」を押してください' : '文字にしました。内容を確認してから「確認する」を押してください'); })
+      toast('読み取っています…(30秒ほどかかります)');
+      var rd = /^image\//.test(f.type) ? shrinkImage(f, 1600) : (f.type === 'application/pdf' ? (f.size > 2800000 ? Promise.reject(new Error('PDFが大きすぎます(2.8MBまで)')) : readFileData(f)) : Promise.reject(new Error('写真かPDFを選んでください')));
+      rd.then(function (data) { return api('a_sched_ocr', { data: data, mode: 'sched' }); })
+        .then(function (r) { return api('a_sched_parse', { text: r.text }).then(function (p) { return { p: p, via: r.via, text: r.text }; }); })
+        .then(function (o) {
+          sfRead(); var it = o.p.items || [];
+          if (it.length === 1) { var x = it[0]; SF.date = x.date; SF.ym = x.date.slice(0, 7); SF.start = x.start || ''; SF.end = x.end || ''; SF.title = x.title || ''; SF.place = x.place || ''; if (x.memo) SF.memo = x.memo; $('#sfs').value = SF.start; $('#sfe').value = SF.end; $('#sft').value = SF.title; $('#sfp').value = SF.place; $('#sfm').value = SF.memo; $('#sfcal').innerHTML = ''; var bc = document.querySelectorAll('.sfd'); bindCal(); toast('読み取りました' + (o.via === 'drive' ? '(ざっくりです)' : '') + '。内容を確認して「登録する」を押してください'); }
+          else if (it.length > 1) { items = it; $('#sx').value = o.text; document.querySelector('details.card').open = true; drawPv(o.p.bad); toast(it.length + '件見つかりました。下で確認して「登録する」を押してください'); }
+          else { $('#sx').value = o.text; document.querySelector('details.card').open = true; toast('予定として読み取れませんでした。下の文字を直して「確認する」を押してください'); }
+        })
         .catch(function (e) { toast(e.message || '読み取れませんでした'); }).then(function () { inp.value = ''; });
     };
+    Array.prototype.forEach.call(document.querySelectorAll('.pvrow .sfed'), function (b) {
+      b.onclick = function () {
+        b.disabled = true;
+        api('a_sched_get', { id: b.dataset.id }).then(function (r) { sfReset(r.event); schedAdminView(true); setTimeout(function () { var c = $('#sfc'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }).catch(function (e) { b.disabled = false; toast(e.message); });
+      };
+    });
     Array.prototype.forEach.call(document.querySelectorAll('.pvrow .x[data-id]'), function (b) {
       b.onclick = function () { cf('この予定を削除します(回答も消えます)。よろしいですか?', function () { api('a_sched_delete', { id: b.dataset.id }).then(function () { toast('削除しました'); schedAdminView(); }).catch(function (e) { toast(e.message); }); }); };
     });
