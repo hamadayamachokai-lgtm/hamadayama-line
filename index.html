@@ -31,7 +31,7 @@ h1,h2,h3{margin:0;line-height:1.35}
 .top .back:active{background:var(--mute-bg)}
 .top h1{font-size:18px;font-weight:700;flex:1}
 .top .pad-r{width:12px}
-.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hnav{display:flex;align-items:center;gap:4px;flex:none}.hnav .pl{all:unset;box-sizing:border-box;cursor:pointer;height:28px;max-width:62px;padding:0 9px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hnav .pl.add{color:#8a8f98;border-style:dashed;min-width:30px;padding:0 6px}.hnav .pl.off{opacity:.4}.hnav .pl:active{background:var(--mute-bg)}.hnav .hm{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--navy);background:#fff;border:1.5px solid var(--line);margin-left:2px}.hnav .hm svg{display:block}.hnav .hm span{display:block;font-size:9px;font-weight:700;line-height:1;margin-top:-2px}.mdl .box{max-height:86vh;overflow:auto}
+.top h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hnav{display:flex;align-items:center;gap:4px;flex:none}.hnav .pl{all:unset;box-sizing:border-box;cursor:pointer;height:28px;max-width:62px;padding:0 9px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font-size:12px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hnav .pl.add{color:#8a8f98;border-style:dashed;min-width:30px;padding:0 6px}.hnav .pl.off{opacity:.4}.hnav .pl:active{background:var(--mute-bg)}.hnav .hm{all:unset;box-sizing:border-box;cursor:pointer;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--navy);background:#fff;border:1.5px solid var(--line);margin-left:2px}.hnav .hm svg{display:block}.hnav .hm span{display:block;font-size:9px;font-weight:700;line-height:1;margin-top:-2px}.mdl .box{max-height:86vh;overflow:auto}.hnav .pe{all:unset;box-sizing:border-box;cursor:pointer;min-width:26px;height:26px;padding:0 5px;border-radius:99px;font-size:13px;font-weight:700;color:#6b7280;display:inline-flex;align-items:center;justify-content:center}.hnav .pe.on{background:var(--navy);color:#fff;font-size:11px;padding:0 9px}.hnav.ed .pl{border-style:dashed;border-color:var(--navy);box-shadow:0 0 0 2px rgba(37,58,92,.15)}.hnav .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.npk .npl{font-size:12.5px;font-weight:700;color:#6b7280;margin:12px 0 4px}.npg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.npg.two{grid-template-columns:repeat(2,1fr)}.np{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:4px 2px;border-radius:12px;background:#fff;border:1.5px solid var(--line);font-size:13.5px;font-weight:700;color:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.25}.np small{font-size:10px;font-weight:600;color:#6b7280}.np.on{background:var(--navy);color:#fff;border-color:var(--navy)}.np.on small{color:#dfe6f2}.np.del{width:100%;margin:2px 0 0;color:#b3261e;border-color:#e9a3a0;background:#fff5f4}
 
 /* ヒーロー */
 .hero{margin:0;padding:28px 20px 56px;color:#fff;position:relative;overflow:hidden;
@@ -621,40 +621,69 @@ function mkErr(code, msg) { var e = new Error(msg); e.code = code; return e; }
 
 /* ---------- 画面の骨組み ---------- */
 function setView(html) { try { camStop(); } catch (e) {} document.body.classList.remove('deskmode'); document.body.classList.remove('bchat'); $('#app').innerHTML = html; try { var pr = document.querySelector('#app .top .pad-r'); if (pr && S.me && S.me.state === 'approved') { pr.outerHTML = navHtml_(); navBind_(); } } catch (e) { /* 無くても動く */ } $('#toast').className = ''; window.scrollTo(0, 0); }
-/* ---------- 上のバー右側: 前回・よく使うボタン(最大3つ)・ホーム ---------- */
+/* ---------- 上のバー右側: 3つの場所(前回・よく使うボタン・好きなボタン)とホーム ---------- */
 function lsGet_(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
 function lsSet_(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* なくても動く */ } }
-function navFav_() { var has = {}; ((S.me && S.me.menu) || []).forEach(function (m) { if (m.ready) has[m.key] = 1; }); return (lsGet_('hmtFav', []) || []).slice(0, 2).map(function (k) { return has[k] ? k : ''; }); }
-function navHtml_() {
-  var fav = navFav_(), h = '<span class="hnav" id="hnav">';
-  var pv = S.prevH || lsGet_('hmtPrev', '');
-  h += '<button type="button" class="pl' + (pv && pv !== (location.hash || '').replace('#', '') ? '' : ' off') + '" data-nv="prev" aria-label="前回の画面にもどる">前回</button>';
-  for (var i = 0; i < 2; i++) h += fav[i] ? '<button type="button" class="pl" data-nv="fav" data-i="' + i + '" aria-label="' + esc(LABEL[fav[i]] || fav[i]) + '">' + esc(LABEL[fav[i]] || fav[i]) + '</button>' : '<button type="button" class="pl add" data-nv="add" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
-  return h + '<button type="button" class="hm" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button></span>';
+var NAV_SHORT = { card: '会員証', dashboard: '掲示板', mail: 'チャット', event: 'イベント', flyer: 'チラシ', help: '助け合い', suginami: '杉並', weather: '天気', tips: 'ゲーム', blog: 'ブログ', board: 'Tweet', headchg: '回覧元変更', supporter: 'サポーター', o_supporter: 'サポーター', o_sched: '予定', o_report: '報告・計画', o_sokai: '総会', o_kanban: '捨て看', o_summary: '集計', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員', o_checkin: 'QR', o_mama: 'ママ' };
+var NAV_COMMON = ['card', 'dashboard', 'mail', 'event', 'flyer', 'help', 'suginami', 'weather', 'tips', 'blog', 'board', 'headchg'];
+var NAV_OFFICER = ['o_supporter', 'o_sched', 'o_report', 'o_sokai', 'o_kanban', 'o_summary', 'o_unpaid', 'o_circ', 'o_roster', 'o_checkin', 'o_mama'];
+function navShort_(k) { return NAV_SHORT[k] || LABEL[k] || k; }
+function navHas_(k) { return ((S.me && S.me.menu) || []).some(function (m) { return m.key === k && m.ready; }); }
+function navRaw_() {   // 3つの場所の中身: 'prev'(前回) / 'top'(よく使う) / 画面の名前 / ''(空)
+  var v = lsGet_('hmtNav', null);
+  if (!v) { var f = lsGet_('hmtFav', []) || []; v = ['prev', f[0] || '', f[1] || '']; }
+  v = v.slice(0, 3); while (v.length < 3) v.push(''); return v;
 }
-function navPick_(i) {
-  var cnt = lsGet_('hmtUse', {}), list = ((S.me && S.me.menu) || []).filter(function (m) { return m.ready && m.key !== 'a_admin' && LABEL[m.key]; });
-  list.sort(function (a, b) { return (cnt[b.key] || 0) - (cnt[a.key] || 0); });
-  var cur = navFav_()[i], labs = list.map(function (m, j) { return (j < 3 && cnt[m.key] ? '★よく使う ' : '') + LABEL[m.key]; });
-  var opts = labs.slice(); if (cur) opts.push('このボタンをはずす');
-  askChoice('よく使うボタンを置く', opts, 'ここに置いたボタンは、画面の上から、ワンタップで開けます(長押しで入れかえ)').then(function (v) {
-    if (v == null) return; var fav = navFav_().map(function (x) { return x || ''; });
-    fav[i] = v === 'このボタンをはずす' ? '' : list[opts.indexOf(v)].key;
-    var keep = fav.filter(function (x, j) { return x && fav.indexOf(x) === j; }); while (keep.length < 2) keep.push('');
-    lsSet_('hmtFav', keep); var n = $('#hnav'); if (n) n.outerHTML = navHtml_(); navBind_();
+function navSlots_() {
+  var raw = navRaw_(), cnt = lsGet_('hmtUse', {}), used = {};
+  raw.forEach(function (x) { if (x && x !== 'prev' && x !== 'top') used[x] = 1; });
+  var ranked = Object.keys(cnt).filter(function (k) { return navHas_(k) && !used[k]; }).sort(function (a, b) { return cnt[b] - cnt[a]; });
+  return raw.map(function (x) {
+    if (x === 'prev') return { v: 'prev', kind: 'prev', label: '前回' };
+    if (x === 'top') { var k = ranked.shift(); return k ? { v: 'top', kind: 'key', key: k, label: navShort_(k), auto: 1 } : { v: 'top', kind: 'empty', label: '＋' }; }
+    if (x && navHas_(x)) return { v: x, kind: 'key', key: x, label: navShort_(x) };
+    return { v: '', kind: 'empty', label: '＋' };
   });
+}
+function navHtml_() {
+  var sl = navSlots_(), ed = !!S.navEdit, pv = S.prevH || lsGet_('hmtPrev', ''), h = '<span class="hnav' + (ed ? ' ed' : '') + '" id="hnav">';
+  sl.forEach(function (x, i) {
+    if (x.kind === 'prev') h += '<button type="button" class="pl' + (pv && pv !== (location.hash || '').replace('#', '') ? '' : ' off') + '" data-nv="slot" data-i="' + i + '" aria-label="前回の画面にもどる">前回</button>';
+    else if (x.kind === 'key') h += '<button type="button" class="pl' + (x.auto ? ' au' : '') + '" data-nv="slot" data-i="' + i + '" aria-label="' + esc(x.label) + '">' + esc(x.label) + '</button>';
+    else h += '<button type="button" class="pl add" data-nv="slot" data-i="' + i + '" aria-label="よく使うボタンを置く">＋</button>';
+  });
+  return h + '<button type="button" class="pe' + (ed ? ' on' : '') + '" data-nv="edit" aria-label="ボタンの入れかえ">' + (ed ? '完了' : '✎') + '</button><button type="button" class="hm" data-nv="home" aria-label="ホームにもどる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></button></span>';
+}
+function navRefresh_() { var n = $('#hnav'); if (n) { n.outerHTML = navHtml_(); navBind_(); } }
+function navPick_(i) {
+  var cur = navRaw_()[i], el = document.createElement('div'); el.className = 'mdl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+  var grid = function (keys) { var l = keys.filter(navHas_); return l.length ? '<div class="npg">' + l.map(function (k) { return '<button type="button" class="np' + (cur === k ? ' on' : '') + '" data-v="' + k + '">' + esc(navShort_(k)) + '</button>'; }).join('') + '</div>' : ''; };
+  var off = grid(NAV_OFFICER);
+  el.innerHTML = '<div class="box npk"><h3>この場所に置くボタン</h3>' + (cur ? '<button type="button" class="np del" data-v="">このボタンを削除</button>' : '') +
+    '<div class="npl">入れ替え</div><div class="npg two"><button type="button" class="np' + (cur === 'prev' ? ' on' : '') + '" data-v="prev">前回</button><button type="button" class="np' + (cur === 'top' ? ' on' : '') + '" data-v="top">よく使う<small>アクセスの多い順</small></button></div>' +
+    '<div class="npl">みんなのメニュー</div>' + grid(NAV_COMMON) + (off ? '<div class="npl">役員専用メニュー</div>' + off : '') + '<button type="button" class="sbtn" data-v="__x" style="margin-top:12px">やめる</button></div>';
+  document.body.appendChild(el);
+  var done = function (v) { document.body.removeChild(el); if (v == null || v === '__x') return; var a = navRaw_(); a[i] = v; if (v && v !== 'top') a = a.map(function (x, j) { return j !== i && x === v ? '' : x; }); lsSet_('hmtNav', a); navRefresh_(); };
+  el.onclick = function (e) { if (e.target === el) done(null); };
+  Array.prototype.forEach.call(el.querySelectorAll('[data-v]'), function (b) { b.onclick = function () { done(b.dataset.v); }; });
 }
 function navBind_() {
   var n = $('#hnav'); if (!n) return;
   Array.prototype.forEach.call(n.querySelectorAll('[data-nv]'), function (b) {
-    var t = null, long_ = false, k = b.dataset.nv, i = +b.dataset.i;
-    if (k === 'fav') { b.addEventListener('touchstart', function () { long_ = false; t = setTimeout(function () { long_ = true; navPick_(i); }, 550); }, { passive: true }); b.addEventListener('touchend', function () { clearTimeout(t); }); b.addEventListener('touchmove', function () { clearTimeout(t); }, { passive: true }); b.addEventListener('contextmenu', function (e) { e.preventDefault(); }); }
+    var k = b.dataset.nv, i = +b.dataset.i, t = null, lp = false;
+    if (k === 'slot') {
+      b.addEventListener('pointerdown', function () { lp = false; clearTimeout(t); t = setTimeout(function () { lp = true; navPick_(i); }, 600); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { clearTimeout(t); }); });
+      b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    }
     b.onclick = function () {
-      if (long_) { long_ = false; return; }
+      if (lp) { lp = false; return; }
       if (k === 'home') return go('home');
-      if (k === 'prev') { var pv = S.prevH || lsGet_('hmtPrev', ''); if (pv && /^[A-Za-z0-9_\-\/%]+$/.test(pv)) go(pv); else toast('前回の画面は、まだありません'); return; }
-      if (k === 'add') return navPick_(i);
-      if (k === 'fav') { var f = navFav_()[i]; if (f) openTile(f); }
+      if (k === 'edit') { S.navEdit = !S.navEdit; navRefresh_(); return; }
+      var x = navSlots_()[i];
+      if (S.navEdit || x.kind === 'empty') return navPick_(i);
+      if (x.kind === 'prev') { var pv = S.prevH || lsGet_('hmtPrev', ''); if (pv && /^[A-Za-z0-9_\-\/%]+$/.test(pv)) go(pv); else toast('前回の画面は、まだありません'); return; }
+      openTile(x.key);
     };
   });
 }
@@ -925,8 +954,12 @@ function gdAllMore_(k) {
   else tourStart(gdMenuTour(k));
 }
 function gdAllStart_() {
-  var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')).filter(function (t) { return t.style.display !== 'none'; }), last = '';
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')).filter(function (t) { return t.style.display !== 'none' && !/^a_/.test(t.dataset.k); }), last = '';
   var steps = [{ sel: '.gsec', next: 1, ms: 9000, dock: 'top', title: '画面ボタンの説明', say: 'ホームのボタンを、ひとつずつ ご説明します。\n自動で動きますが、動きが早ければ「ストップ」してください。\n遅いと感じたら、手動で「次へ」を押してください。\n「倍速」のボタンで、速さを変えられます。' }];
+  var NAVSAY_ = 'ホーム以外の画面では、上にこのボタンが出ます。\n・「前回」: ひとつ前に見ていた画面にもどります\n・「＋」: よく使うボタンを置けます(アクセスの多い順に自動で置くこともできます)\n・「✎」: 前回やボタンの入れかえ・削除ができます\n・「ホーム」: いつでもホームにもどります';
+  steps.push({ sel: '.hero', next: 1, ms: 8000, title: 'いちばん上', say: 'あなたのお名前と、ステータス(会員・役員など)です。\n名前の横のアイコンを押すと、アイコンを変えられます。' });
+  if (document.querySelector('.hnotes')) steps.push({ sel: '.hnotes', next: 1, ms: 8000, title: 'お知らせの枠', say: '災害・チャットの通知・役員予定・タスクなど、今のお知らせが出ます。\n押すと、その画面が開きます。' });
+  steps.push({ sel: function () { var d = document.getElementById('navdemo'); if (!d) { d = document.createElement('div'); d.id = 'navdemo'; d.style.cssText = 'margin:10px 16px;padding:8px 10px;border-radius:12px;background:#fff;border:1.5px solid var(--line);display:flex;justify-content:flex-end;pointer-events:none'; d.innerHTML = navHtml_().replace('id="hnav"', ''); var hr = document.querySelector('.hero'); if (hr && hr.parentNode) hr.parentNode.insertBefore(d, hr.nextSibling); } return d; }, next: 1, ms: 14000, title: '上のボタン(ほかの画面)', say: NAVSAY_ });
   var heads = { officer: 'ここからは「役員専用」のメニューです。', admin: 'ここからは「管理者専用」のメニューです。' };
   tiles.forEach(function (t) {
     var k = t.dataset.k, sec = t.classList.contains('officer') ? 'officer' : /^a_/.test(k) ? 'admin' : 'common', desc = ALLDESC_[k] || 'ここから「' + (LABEL[k] || k) + '」の画面が開きます', say = desc;
@@ -971,13 +1004,13 @@ function gdPanel() {
 function homeView() {
   var me = S.me, sections = {}, order = [];
   me.menu.forEach(function (m) { if (m.key === 'mystery') return; /* 歴史推理は GAME の中にあります */ if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
-  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat"><div class="tsr"><input id="tgq" type="search" autocomplete="off" maxlength="60" placeholder="🔍 #タグで ボタンを探す(例: 引換券 祭礼)" aria-label="ハッシュタグでボタンを探す"><button type="button" id="tgx" class="sbtn" style="display:none">全部出す</button></div><div id="tgm" class="muted" role="status" style="margin:-4px 2px 10px"></div>';
+  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat"><div class="tsr"' + (GD_.on ? ' style="display:none"' : '') + '><input id="tgq" type="search" autocomplete="off" maxlength="60" placeholder="🔍 #タグで ボタンを探す(例: 引換券 祭礼)" aria-label="ハッシュタグでボタンを探す"><button type="button" id="tgx" class="sbtn" style="display:none">全部出す</button></div><div id="tgm" class="muted" role="status" style="margin:-4px 2px 10px;' + (GD_.on ? 'display:none' : '') + '"></div>';
   order.forEach(function (sec) {
     html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<span style="display:flex;gap:6px;align-items:center">' + '<button type="button" id="gdlast" class="gdb" aria-label="前に開いていた画面にもどる">前回画面</button>' + '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button></span>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-7 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-8 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2137,6 +2170,26 @@ var TOURS_ = {
     { skipif: function () { return TR.g.id !== 'gcards'; }, sel: '.pcmode', any: 1, say: '好きなカードゲームを押してみましょう', pick: function (t) { var b = t.closest ? t.closest('button') : null, k = b ? b.getAttribute('data-g') : ''; TR.g.card = k; TR.g.key = k; TR.g.name = CNAME_[k] || 'このゲーム'; } },
     { expand: function () { return gBuild_(TR.g); } } ] },
   o_gift: { t: '商品券の対象者を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します。商品券の対象の方(●のついた方)が、画面に出ます' }] },
+  m_o_report: { t: '事業報告・計画の入力を、教えてもらう', home: 1, three: 1, compact: 1, fin: { say: '案内は以上になります。\nこのまま入力作業をはじめてください', btn: 'ガイドを終了して入力作業する', other: '別のガイドをする' }, steps: [
+    { sel: '.tile[data-k="o_report"]', say: 'この「事業報告・計画」ボタンを押します' },
+    { sel: function () { return document.querySelector('.rpflow') || document.querySelector('.rpseg'); }, next: 1, dock: 'top', say: function () { var y = RP.data ? RP.data.year : 0; return (y ? reiwaY(y - 2019) : '令和○年度') + ' 事業報告 ここから始めます。\n「① 事業報告 → ② 事業計画 → ③ 提出」の順に進みます。「イマココ」が、いま居る場所です'; } },
+    { skipif: function () { return !document.querySelector('.rpc2 .xb'); }, sel: '.rpc2 .xb', next: 1, noact: '.rpc2 .xb', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '右端の「×」を押すと、そのカードが消えます。\n(今回だけ対象外にする・削除する、が選べます)' },
+    { skipif: function () { return !document.querySelector('.rpc2 .fadd-t'); }, sel: '.rpc2 .fadd-t', next: 1, noact: '.rpc2 .fadd-t', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '「入力欄を足す」を押すと、日付・回数・人数・備考などの入力項目が増えます' },
+    { sel: '.rpc2 .cxrow', next: 1, noact: '.rpc2 .cxrow', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: 'チェックボックスがあれば、チェックを入れます。\n「実施済」か「やらない」のどちらかにチェックしてください。\n空欄があれば、そこに数字を入力します' },
+    { skipif: function () { return !document.querySelector('.rpc2 .rpbt .pe'); }, sel: '.rpc2 .rpbt .pe', next: 1, noact: '.rpc2 .rpbt .pe', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '途中で一旦保存することもできます。\nこの「一旦保存して終了」を押すと、続きはいつでも再開できます' },
+    { skipif: function () { return !document.querySelector('#rpgoplan'); }, sel: '#rpgoplan', next: 1, noact: '#rpgoplan', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: 'すべて終わったら、こちらをタップします。\n事業計画書の作成にうつります' },
+    { skipif: function () { return !document.querySelector('#rpsave'); }, sel: '#rpsave', next: 1, noact: '#rpsave', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '一旦保存して終わるときは、その下の白い「一時保存」ボタンを押してください' } ] },
+  m_o_unpaid: { t: '未納者の確認と記録を、教えてもらう', home: 1, three: 1, compact: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
+    { sel: '.tile[data-k="o_unpaid"]', say: 'この「未納者」を押します' },
+    { sel: '#ucnt', next: 1, dock: 'top', say: '現金回収の方のうち、まだ納入されていない世帯の数です' },
+    { sel: '#useg', next: 1, dock: 'top', say: '「未納のみ」と「納入済みも表示」を切りかえられます' },
+    { sel: '#uchips', next: 1, dock: 'top', say: '丁目を選ぶと、その丁目だけが表示されます' },
+    { skipif: function () { return !document.querySelector('#ulist [data-map]'); }, sel: tourFollow_('#ulist [data-map]'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '「現在地から行く」を押すと、その方のお宅までの地図が開きます' },
+    { skipif: function () { return !document.querySelector('#ulist .sbtn.ok'); }, sel: tourFollow_('#ulist .sbtn.ok'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '納入されたら、この「納入済にする」を押します。\nその方は未納の一覧から消えます(まちがえたら「納入済みも表示」から、未納に戻せます)' },
+    { skipif: function () { return !document.querySelector('#ulist [data-st="退会"]'); }, sel: tourFollow_('#ulist [data-st="退会"]'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '退会されたら、この「退会にする」を押します。理由を選ぶ画面が出ます' },
+    { skipif: function () { return !document.querySelector('#ulist [data-st="休会"]'); }, sel: tourFollow_('#ulist [data-st="休会"]'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '休会されたら、この「休会にする」を押します' },
+    { skipif: function () { return !document.querySelector('#ulist [data-mail]'); }, sel: tourFollow_('#ulist [data-mail]'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '確認したいことがあれば、「役員にチャット」を押します。その方の名前が入った文章で、役員に連絡できます' },
+    { skipif: function () { return !document.querySelector('#ulist [data-doc]'); }, sel: tourFollow_('#ulist [data-doc]'), next: 1, noact: '#ulist .sbtn', noactMsg: '説明中は押せません。「次へ」を押してください', dock: 'top', say: '「格納書類」を押すと、その方の書類が見られます。(数字は書類の数です)' } ] },
   m_o_sokai: { t: '', home: 1, steps: [{ sel: '.tile[data-k="o_sokai"]', say: 'この「総会」を押します。総会の資料を見たり、当日の出席者数を入れたりできます' }] },
   chat: { t: 'チャットで役員に連絡する場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="mail"]', say: 'この「チャット」を押します' },
@@ -2405,7 +2458,7 @@ function tourStart(name) {
   if (T.home && (location.hash || '#') !== '#' && location.hash !== '#home') go('home');
 }
 function tourStop(quiet, msg) {
-  window.HMT_TUT = 0; try { clearTimeout(TR.at); } catch (e) { /* 無視 */ }
+  window.HMT_TUT = 0; try { var nd = document.getElementById('navdemo'); if (nd) nd.remove(); } catch (e) { /* 無視 */ } try { clearTimeout(TR.at); } catch (e) { /* 無視 */ }
   try { if (window.HmtHundred) window.HmtHundred.hold = null; } catch (e) { /* 無視 */ }
   if (TR.t) clearInterval(TR.t);
   document.removeEventListener('click', tourClick, true); window.removeEventListener('scroll', tourPos, true); window.removeEventListener('resize', tourPos);
@@ -2535,6 +2588,7 @@ function tourAsk(st) {
   });
 }
 function tourEnd(mode) {
+  try { var nd = document.getElementById('navdemo'); if (nd) nd.remove(); } catch (e) { /* 無視 */ }
   TR.fin = true; TR.ws = false; TR.hold = false; TR.el = null;
   if (mode === 'no') {
     TR.box.innerHTML = 'ガイドを終わります。<br><br>戻るときは、光っている「ホーム」からお戻りください!<br><br>またガイドでお待ちしてます。<div class="tb"><button type="button" class="q" data-tx="1">ガイドを終わる</button></div>';
