@@ -777,7 +777,10 @@ var GM_ = [   // 1段目: メニュー → 2段目: したいこと → ガイ�
   ['suginami', '防災情報', [['情報を見たい', 'bosai']]],
   ['weather', '天気', [['情報を見たい', 'weather']]],
   ['tips', 'ゲーム', [['ゲームで遊びたい', 'gplay']]],
-  ['blog', '町会ブログ', [['見たい', 'blog']]]
+  ['blog', '町会ブログ', [['見たい', 'blog']]],
+  ['o_roster', '会員検索', [['会員を検索したい', 'm_o_roster']]],
+  ['o_circ', '回覧元', [['見る', 'o_circ'], ['変更', 'o_circchg']]],
+  ['o_sched', '予定', [['役員の予定を見たい', 'm_o_sched']]]
 ];
 var GOFF_ = [['o_sched', '役員の予定を見たい'], ['o_circ', '回覧元を見たい'], ['headchg', '回覧元を変更したい'], ['o_roster', '会員情報を見たい(会員検索)'], ['o_report', '事業報告・計画を記載したい'], ['o_mama', 'スナックママの部屋に行きたい'], ['o_supporter', 'サポーターの募集をしたい'], ['o_summary', '集計結果を見たい'], ['o_kanban', '捨て看板を依頼したい'], ['o_sokai', '総会資料を見たい']];
 var GDESC_ = { o_unpaid: '未納の方を確認したい', o_checkin: 'QRを読み取りたい', o_desk: 'QR受付画面を開きたい', a_sched: '予定を登録したい', a_image: '推理の画像を変えたい', a_disaster: '災害モードを切りかえたい', a_docs: '書類を更新したい', a_notice: 'お知らせを更新したい', a_mama: 'ママを設定したい', a_event: 'イベントを設定したい', a_admin: '管理システムを開きたい' };
@@ -833,14 +836,14 @@ function gdPanel() {
     var menus = '<div class="gdc">' + chip('何からやればいいかわからない', 'data-gpick="__start"').replace('gdw s', 'gdw s ai') + chip('ガイドの終了方法', 'data-gtour="gdoff"').replace('gdw s', 'gdw s rd') + '</div><div class="gdc">' + ord.map(pickChip).join('') + '</div>';
     var staff = isOfficer();
     h += '<div class="gdt">🤖 私がガイドします</div><div class="gdo">まずはテキストまたはボタンから、<br>知りたいことを教えてください</div>' +
-      '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + ['card', 'event', 'tips'].map(pickChip).join('') + '</div>' +
+      '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + (isOfficer() ? ['o_roster', 'o_circ', 'o_sched'] : ['card', 'event', 'tips']).map(pickChip).join('') + '</div>' +
       '<div class="gdh0">テキストで検索</div><input id="gdq" class="gdin" type="search" maxlength="40" placeholder="🔍 ここに知りたいことを入力" autocomplete="off" aria-label="知りたいことを入力"><div class="gdo" style="margin:4px 0 0">例)会員証を編集・イベント申込 など</div><div id="gdres"></div>' +
       '<div class="gdh0">ボタンから検索</div>' +
       (staff ? '<details class="gdd" open><summary>ガイドできる内容</summary>' + menus + '</details>' : '<div class="gdh1">ガイドできる内容</div>' + menus);
     if (staff) {
       var og = [[['o_roster', '会員を検索'], ['o_circ', '回覧元を検索'], ['headchg', '回覧元を変更したい']], [['o_unpaid', '未納者を知りたい'], ['o_gift', '商品券対象者を知りたい', 'o_circ']], [['o_sched', '役員の予定'], ['o_kanban', '捨て看板を依頼したい']], [['o_report', '事業報告・計画提出'], ['o_supporter', 'サポーター募集']], [['o_sokai', '総会'], ['o_summary', '集計結果'], ['o_mama', 'スナックママの部屋に行く']]];
       var ohtml = og.map(function (row) {
-        var c = row.filter(function (x) { return has[x[2] || x[0]]; }).map(function (x) { return chip(x[1], 'data-gtour="' + (x[0] === 'o_gift' || x[0] === 'headchg' ? x[0] : gdMenuTour(x[0])) + '"'); }).join('');
+        var c = row.filter(function (x) { return has[x[2] || x[0]]; }).map(function (x) { return chip(x[1], 'data-gtour="' + (x[0] === 'o_gift' ? x[0] : x[0] === 'headchg' ? 'o_circchg' : gdMenuTour(x[0])) + '"'); }).join('');
         return c ? '<div class="gdc">' + c + '</div>' : '';
       }).join('');
       if (ohtml) h += '<details class="gdd"><summary>役員専用</summary>' + ohtml + '</details>';
@@ -858,7 +861,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261127-27 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-1 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2044,6 +2047,22 @@ var TOURS_ = {
     { sel: '.bcomp .bsend', say: '書けたら、この送るボタンを押します' } ] },
   bosai: { t: '防災情報を見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="suginami"]', say: 'この「杉並(防災)」を押すと、杉並区の防災情報が見られます' }] },
   blog: { t: '町会ブログを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="blog"]', say: 'この「町会ブログ」を押すと、ブログが開きます' }] },
+  m_o_roster: { t: '', home: 1, three: 1, steps: [{ sel: '.tile[data-k="o_roster"]', say: 'この「会員名簿」を押します。名前・住所・丁目・班などから、会員さんを探せます' }] },
+  m_o_sched: { t: '', home: 1, three: 1, steps: [{ sel: '.tile[data-k="o_sched"]', say: 'この「役員の予定」を押します。役員の予定が見られます' }] },
+  o_circ: { t: '回覧元を見る', home: 1, three: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
+    { sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します' },
+    { sel: '#cmon button[data-m="cur"]', next: 1, say: 'ここが今の回覧元です。\n「先月」を選ぶと、前回の回覧元が見られます' },
+    { sel: '#cchips', next: 1, say: '丁目を選択してください' },
+    { sel: '#cq', next: 1, say: 'この検索窓から、会員検索ができます' },
+    { sel: '#cnear', next: 1, say: '「現在地から検索」を押すと、いま居る場所から いちばん近い回覧元さんを検索できます' },
+    { sel: '#clist .mrow', next: 1, say: '表示されている情報です。\n・赤丸は、商品券の対象という意味です\n・緑のタグは、その班に未納者がいると赤になります\n・「格納書類」は、その班の格納書類です' } ] },
+  o_circchg: { t: '回覧元を変更する', home: 1, three: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
+    { sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します' },
+    { sel: '#cchips', need: 'button', say: 'まずは、この丁目を選択しましょう' },
+    { sel: '#cq', next: 1, say: 'つぎに、下へスクロールして対象の人を見つけるか、この検索窓から会員検索で表示してみましょう' },
+    { sel: function () { return document.querySelector('#clist [data-chg]'); }, say: 'この「回覧元変更」を押してください' },
+    { sel: '#chlist', need: '.chpick:not([disabled])', say: '新しく回覧元になる方を、タップしてください' },
+    { sel: '#chform', next: 1, noact: '#chgo', say: '入っている住所が違っている、または空白のときは、住所を入れましょう。\n最後に、一番下の「この内容で変更する」を押したら完了です。\n(ガイドの練習では押せません。実際に変更するときは、あとで押してください)' } ] },
   headchg: { t: '回覧元を変更する場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="headchg"]', say: 'この「回覧元変更」を押します' }] },
   evreg: { t: 'イベント申込者の登録場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
@@ -2231,6 +2250,7 @@ GTUT_.kar = [
   { sel: '.kmat', say: 'その答えの札を、この中から探して、タップしましょう。取った人の名前が、札につきます。多く取った人の勝ちです。試しにやってみましょう', wait: '少し待ちましょう' }];
 var GFIN_ = { kar: { say: 'どうでしたか?\nこれでチュートリアルは終了です。', btn: '次の問題を開始(このガイドは終了)' } };
 TOURS_.g_kar.steps = TOURS_.g_kar.steps.slice(0, 5).concat(GTUT_.kar); TOURS_.g_kar.fin = GFIN_.kar;
+TOURS_.m_o_circ = TOURS_.o_circ;
 TOURS_.game = TOURS_.gplay;
 function tourEvBtn(name, kind) {
   var e = document.querySelector('[data-ed^="' + name + '|"]'); if (!e) return null;
@@ -2278,9 +2298,10 @@ function tourTick() {
 }
 function tourRender(st) {
   var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy;
-  TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">つぎへ</button>' : '') + '<button type="button" class="q" data-tq="1">やめる</button></div>';
+  TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
   var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
+  var ob = TR.box.querySelector('[data-to]'); if (ob) ob.onclick = function (ev) { ev.stopPropagation(); tourOther_(); };
 }
 function tourPos() {
   if (!TR.on || !TR.el || !TR.hole) return;
@@ -2308,6 +2329,8 @@ function tourClick(ev) {
   if (TR.fin) { if (TR.el && !(ev.target.closest && ev.target.closest('.tourui')) && TR.el.contains(ev.target)) setTimeout(function () { tourStop(true); }, 200); return; }
   var st = tourStep(); if (!st || !TR.el) return;
   if (ev.target.closest && ev.target.closest('.tourui')) return;
+  if (st.noact && ev.target.closest && ev.target.closest(st.noact)) { ev.preventDefault(); ev.stopPropagation(); toast('ガイドの練習なので、ここは押せません。「次へ」を押してください'); return; }
+  if (st.need && TR.el.contains(ev.target) && !(ev.target.closest && ev.target.closest(st.need))) return;   // 枠の中でも、指定の場所以外を押したときは、進まない
   if (TR.el.contains(ev.target) || ev.target === TR.el) { if (st.pick) st.pick(ev.target); if (!st.next) setTimeout(tourNext, 250); return; }
   if (st.next) return;   // 「つぎへ」の場面は、ほかも自由に触れる
   ev.preventDefault(); ev.stopPropagation();
@@ -2356,12 +2379,13 @@ function tourEnd(mode) {
     return;
   }
   var CF = (TOURS_[TR.name] || {}).fin || (TR.g && GFIN_[TR.g.key]) || null;   // 「どうでしたか?」のような、ガイドごとの終わりの文
-  TR.box.innerHTML = (CF ? esc(CF.say).replace(/\n/g, '<br>') + '<br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>' : 'このガイドは完了です!<br>できました😊<br><br>あとは画面の指示に従ってください<br><span style="font-size:14px">(まだ画面が読み込めていないときは、少しお待ちください)</span><br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>') + '<div class="tb"><button type="button" class="q" data-tx="1">' + (CF ? esc(CF.btn) : 'ガイドを終わる') + '</button><button type="button" data-to="1">他も見てみる</button></div>';
+  TR.box.innerHTML = (CF ? esc(CF.say).replace(/\n/g, '<br>') + '<br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>' : 'このガイドは完了です!<br>できました😊<br><br>あとは画面の指示に従ってください<br><span style="font-size:14px">(まだ画面が読み込めていないときは、少しお待ちください)</span><br><br><span style="font-size:17px;font-weight:700">戻るときには、光っている「ホーム」を押してください</span>') + '<div class="tb"><button type="button" class="q" data-tx="1">' + (CF ? esc(CF.btn) : 'ガイドを終わる') + '</button><button type="button" data-to="1">' + (CF && CF.other ? esc(CF.other) : '他も見てみる') + '</button></div>';
   TR.box.querySelector('[data-tx]').onclick = function (ev) { ev.stopPropagation(); tourStop(true); };
-  TR.box.querySelector('[data-to]').onclick = function (ev) {
-    ev.stopPropagation(); tourStop(true); GD_.on = true; GD_.pick = null; try { localStorage.setItem('hmtGuide', '1'); } catch (e) { /* なくても動く */ }
-    if ((location.hash || '#') === '#' || location.hash === '#home') homeView(); else go('home');
-  };
+  TR.box.querySelector('[data-to]').onclick = function (ev) { ev.stopPropagation(); tourOther_(); };
+}
+function tourOther_() {   // 「別のガイドをする」「他も見てみる」: ガイドを終えて、ホームのガイド選びにもどる
+  tourStop(true); GD_.on = true; GD_.pick = null; try { localStorage.setItem('hmtGuide', '1'); } catch (e) { /* なくても動く */ }
+  if ((location.hash || '#') === '#' || location.hash === '#home') homeView(); else go('home');
 }
 function tourWaitUI(txt) {
   TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px'; TR.ws = true;
