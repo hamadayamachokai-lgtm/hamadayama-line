@@ -285,6 +285,7 @@ button.mi{cursor:pointer;min-height:32px}
 .tourb{position:fixed;z-index:99991;width:min(320px,calc(100vw - 24px));box-sizing:border-box;background:#fff;color:#1a1a1a;border:3px solid #ffd43b;border-radius:16px;padding:14px 14px 12px;font-size:20px;font-weight:800;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .tourb .th{font-size:34px;line-height:1;display:inline-block;animation:tourbn .7s infinite alternate}.tourb .tn{font-size:13px;opacity:.6;font-weight:600;margin-bottom:4px}
 .tourb .tb{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.tourb button{all:unset;cursor:pointer;box-sizing:border-box;padding:10px 16px;border-radius:12px;font-size:16px;font-weight:800;background:#06c755;color:#fff;min-height:44px}.tourb button.q{background:#eee;color:#444}
+.tsr{display:flex;gap:8px;margin:0 0 12px}.tsr input{flex:1;min-width:0;font-size:16px;padding:10px 12px;box-sizing:border-box;border:2px solid var(--line);border-radius:12px;background:#fff}
 .tourb.sm{font-size:15px;line-height:1.45;padding:9px 11px;border-radius:14px;width:min(300px,calc(100vw - 24px))}.tourb.sm .tb{margin-top:7px;gap:6px}.tourb.sm button{padding:6px 11px;min-height:36px;font-size:14px;border-radius:10px}.tourb.sm .tn{font-size:12px;margin-bottom:2px}
 .tourb.shake{animation:tourshk .35s}@keyframes tourbn{from{transform:translateY(0)}to{transform:translateY(7px)}}@keyframes tourshk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .aiact{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px 44px}.aiact button{all:unset;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--navy);color:var(--navy);background:#fff}.aiact button.go{background:var(--navy);color:#fff}
@@ -553,6 +554,32 @@ var LABEL = {
   o_mama: 'スナックママ', o_sched: '役員の予定', o_report: '事業報告・計画', o_sokai: '総会', o_kanban: '捨て看板依頼', a_sched: '予定の登録', o_summary: '集計結果', o_unpaid: '未納者', o_circ: '回覧元', o_roster: '会員名簿', o_checkin: 'QR', o_desk: 'QR受付画面',
   a_admin: '管理システム', a_disaster: '災害モード', a_image: '推理の画像', a_docs: '書類の更新', a_notice: 'お知らせの更新', a_mama: 'ママ', a_event: 'イベントの設定'
 };
+/* ---- ボタンのハッシュタグ(検索ワード)。管理システム「LINE管理」→「ハッシュタグ」で変えられます。サーバーの値があれば、そちらを使います ---- */
+var TAGS_ = {
+  card: 'カイインショウ かいいんしょう 祭礼 演芸会 災害 会員証 引換券',
+  dashboard: 'ケイジバン けいじばん お知らせ 掲示板 町会から',
+  mail: 'ちゃっと メール 連絡 通知 チャット',
+  event: 'いべんと 申請 祭礼菓子配布 演芸会 菓子申込 お土産申込 申込 イベント',
+  supporter: 'さぽーたー お手伝い HELP 募集 サポート サポーター',
+  flyer: 'ちらし 祭礼菓子配布 演芸会 ピラティス コンサート チラシ イベント通知 イベント',
+  help: '災害 水害 地震 助けて 助ける どうしたらいい お手伝い マッチング',
+  suginami: '杉並区 気象庁 防災 注意 警報 情報',
+  weather: '浜田山 天気 気象 ウェザーニュース',
+  tips: 'トランプ ゲーム 暇つぶし 隙間時間 歴史 学び おえかき',
+  blog: 'ホームページ 町会 浜田山町会ホームページ 事業部 防災部 防犯部 活動 浜田山町会',
+  board: '口コミ 悩み 匿名 匿名掲示板 次元式でコメント消える 時限式 気軽に ツイート コメント',
+  headchg: '変更 回覧 申請 回覧元 代表者変更',
+  o_supporter: 'お手伝い 募集', o_sched: 'カレンダー 予定', o_report: '提出物', o_sokai: '総会 soukai そうかい', o_kanban: 'すてかん 捨て看板',
+  o_summary: '祭礼 演芸会 会員数 納入 町会費 人数 数値 集計', o_unpaid: '未納 みのう 町会費', o_circ: '回覧元 回覧元変更 変更申請',
+  o_roster: 'データ 検索 会員 名簿 会員検索', o_checkin: 'イベント QR 読み込み データ 祭礼 演芸会 申込 申し込み', o_desk: 'QR 受付 イベント 祭礼 演芸会',
+  o_mama: '別のLINE スナック まま ママ 入店'
+};
+function tagList_(k) { var v = (S.me && S.me.tags && S.me.tags[k] != null) ? S.me.tags[k] : TAGS_[k]; return String(v || '').split(/[\s#＃、,]+/).filter(Boolean); }
+/** 検索用のそろえ方: 全角半角・大文字小文字・カタカナ/ひらがなの差を無くす */
+function tagNorm_(t) { return String(t || '').normalize('NFKC').toLowerCase().replace(/[#\s]+/g, '').replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }); }
+function tagWords_(q) { return String(q || '').split(/[\s#＃、,]+/).map(tagNorm_).filter(Boolean); }
+/** そのボタンが、検索ワードのどれかに合うか */
+function tagHit_(k, words) { var hay = tagList_(k).map(tagNorm_).concat([tagNorm_(LABEL[k] || '')]); return words.some(function (w) { return hay.some(function (h) { return h.indexOf(w) >= 0; }); }); }
 var SECTION = { common: 'みんなのメニュー', officer: '役員専用(役員だけに表示)', admin: '管理者専用' };
 
 /* ---------- 通信 ---------- */
@@ -793,10 +820,10 @@ function gdMenuTour(k) {
 var GDKW_ = { flyer: 'イベントチラシ チラシ ちらし イベント 行事 お知らせ ポスター', card: '会員証 カード QR', cardedit: '会員証 編集 直す 変更 登録内容', carddel: '会員証 削除 解除 登録解除 やめる 退会', board: '掲示板 お知らせ', tweetlook: 'ツイート Tweet 投稿 見る', tweetnew: 'ツイート Tweet 投稿 書く つぶやき', chat: 'チャット 連絡 メッセージ 役員 新規', chatai: 'チャット ロボット 質問 使い方', evfest: 'イベント 祭礼 お祭り 申込 申し込み', evfestx: 'イベント 祭礼 キャンセル 取り消し 取消', evengei: 'イベント 演芸会 申込 申し込み', evgeix: 'イベント 演芸会 キャンセル 取り消し 取消', evstat: 'イベント 申し込み状況 申込状況 確認', helplook: '助け合い 見る 災害', helprec: '助け合い 募集 災害', suplook: 'サポーター 募集 見る', supdo: 'サポーター やってみたい 申込 申し込み ボランティア', headchg: '回覧元 変更 組長', bosai: '防災 杉並 災害', weather: '天気 予報 雨', blog: 'ブログ 町会', gplay: 'ゲーム 遊ぶ 遊びたい トランプ 神経衰弱 ババ抜き 7並べ ポーカー カルタ ソリティア', gdoff: 'ガイド 終了 やめる 終わる OFF オフ 消す', o_roster: '会員 検索 名簿 情報', o_circ: '回覧元 検索 見る', o_gift: '商品券 対象 回覧元', o_unpaid: '未納 会費 納入', o_sched: '役員 予定 スケジュール', o_kanban: '捨て看板 依頼 看板', o_report: '事業報告 事業計画 提出', o_supporter: 'サポーター 募集', m_o_sokai: '総会 資料 出席者 出席者数 委任状', o_summary: '集計 結果', o_mama: 'スナック ママ 部屋' };
 function gdIndex() {
   var has = {}, L = []; S.me.menu.forEach(function (m) { has[m.key] = 1; });
-  GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1]]); }); });
+  GM_.forEach(function (m) { if (!has[m[0]]) return; m[2].forEach(function (w) { L.push([m[1] + ':' + w[0], w[1], (GDKW_[w[1]] || '') + ' ' + m[1] + ' ' + tagList_(m[0]).join(' ')]); }); });
   L.push(['何からやればいいかわからない', '__start', '何から はじめて 初めて 最初 わからない 登録したけど']); L.push(['ガイドの終了方法', 'gdoff', GDKW_.gdoff]);
   if (isOfficer()) [['o_roster', '会員を検索', 'o_roster'], ['o_circ', '回覧元を検索', 'o_circ'], ['o_gift', '商品券対象者を知りたい', 'o_circ'], ['o_unpaid', '未納者を知りたい', 'o_unpaid'], ['o_sched', '役員の予定', 'o_sched'], ['o_kanban', '捨て看板を依頼したい', 'o_kanban'], ['o_report', '事業報告・計画提出', 'o_report'], ['o_supporter', 'サポーター募集(役員)', 'o_supporter'], ['o_sokai', '総会', 'o_sokai'], ['o_summary', '集計結果', 'o_summary'], ['o_mama', 'スナックママの部屋に行く', 'o_mama']].forEach(function (x) {
-    if (!has[x[2]]) return; var id = x[0] === 'o_gift' ? 'o_gift' : gdMenuTour(x[0]); L.push([x[1] + '(役員)', id, (GDKW_[id === 'm_o_sokai' ? 'm_o_sokai' : x[0]] || '')]);
+    if (!has[x[2]]) return; var id = x[0] === 'o_gift' ? 'o_gift' : gdMenuTour(x[0]); L.push([x[1] + '(役員)', id, (GDKW_[id === 'm_o_sokai' ? 'm_o_sokai' : x[0]] || '') + ' ' + tagList_(x[0] === 'o_gift' ? 'o_circ' : x[0]).join(' ')]);
   });
   return L;
 }
@@ -809,11 +836,11 @@ function hardRefresh() {
 function gdSearchInit() {
   var q = $('#gdq'), box = $('#gdres'); if (!q || !box) return;
   q.oninput = function () {
-    var t = gdNorm(q.value); if (!t) { box.innerHTML = ''; return; }
-    var qs = [], i; if (t.length < 2) qs = [t]; else for (i = 0; i < t.length - 1; i++) qs.push(t.substr(i, 2));
+    var t = gdNorm(String(q.value).replace(/[#＃]/g, ' ')); if (!t) { box.innerHTML = ''; return; }
+    t = t.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); }); var qs = [], i; if (t.length < 2) qs = [t]; else for (i = 0; i < t.length - 1; i++) qs.push(t.substr(i, 2));
     var need = Math.max(1, Math.ceil(qs.length * 0.5)), res = [];
     gdIndex().forEach(function (e) {
-      var hay = gdNorm(e[0] + ' ' + e[2]), sc = 0; qs.forEach(function (g) { if (hay.indexOf(g) >= 0) sc++; });
+      var hay = gdNorm(String(e[0] + ' ' + e[2]).replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 96); })), sc = 0; qs.forEach(function (g) { if (hay.indexOf(g) >= 0) sc++; });
       if (sc >= need) res.push([sc, e]);
     });
     res.sort(function (a, b) { return b[0] - a[0]; });
@@ -824,45 +851,54 @@ function gdSearchInit() {
 }
 /* ---- 画面チュートリアル: ホームのボタンを、1つずつ 自動で説明する(「ストップ」で止められる) ---- */
 var ALLDESC_ = {
-  card: '自分の会員証(QRコード)を出すところです。\nこんな時はこちらから:イベントの受付で見せる/登録内容を直す/LINE会員登録をやめる',
-  dashboard: '町会からのお知らせ・掲示板です。\nこんな時はこちらから:町会の最新情報を見たい',
-  mail: '役員とのチャットです。\nこんな時はこちらから:役員に連絡・相談したい/使い方をロボットに質問したい',
-  event: '祭礼・演芸会などの申し込みをするところです。\nこんな時はこちらから:申し込みたい/キャンセルしたい/申し込み状況を見たい',
-  flyer: 'イベントのチラシを見るところです。新しいチラシがあると、ボタンが薄い赤になります。\nこんな時はこちらから:開催するイベントを知りたい',
-  help: '町会の助け合いの掲示です。\nこんな時はこちらから:手伝ってほしい/手伝える人を探したい・募集したい',
-  suginami: '杉並区の防災情報です。\nこんな時はこちらから:災害に備えたい/避難情報を見たい',
-  weather: '天気の情報です。\nこんな時はこちらから:今日や週間の天気を見たい',
-  tips: 'クイズ・カード・パズルなどで遊べるゲームです(歴史推理もここ)。\nこんな時はこちらから:すきま時間に遊びたい',
-  blog: '町会ブログです。\nこんな時はこちらから:町会の活動の様子を読みたい',
-  board: 'Tweet(ひとこと投稿)です。\nこんな時はこちらから:会員どうしの投稿を見たい・書きたい',
-  headchg: '回覧元が替わったことを知らせるところです。\nこんな時はこちらから:班の回覧元が交代した',
-  supporter: 'サポーター募集です。\nこんな時はこちらから:町会のお手伝いを探したい・やってみたい',
-  o_supporter: 'お手伝い(サポーター)の募集を出す・応募者を見るところです。\nこんな時はこちらから:お手伝いを募集したい',
-  o_mama: '役員用の、スナックママの部屋です。\nこんな時はこちらから:ママの部屋の画面を開きたい',
-  o_sched: '役員の予定を見るところです。\nこんな時はこちらから:役員会などの日程を確認したい',
-  o_report: '事業報告・計画を記載するところです。\nこんな時はこちらから:事業報告・計画を出したい',
-  o_sokai: '総会の資料を見たり、当日の出席者数を入れたりするところです。\nこんな時はこちらから:総会の資料・出席数',
-  o_kanban: '捨て看板の依頼を出すところです。\nこんな時はこちらから:捨て看板を依頼したい',
-  o_summary: '会員人数・回覧元・商品券などの集計です。\nこんな時はこちらから:全体の数字を知りたい',
-  o_unpaid: '未納の方を確認するところです。\nこんな時はこちらから:未納者を知りたい',
-  o_circ: '今の回覧元を見たり、検索・変更したりするところです。商品券の対象も分かります。\nこんな時はこちらから:回覧元を知りたい/変更したい',
-  o_roster: '会員を名前・住所などで探して、情報を見るところです。\nこんな時はこちらから:会員を検索したい',
-  o_checkin: '会員証のQRを読み取って、受付や来場を記録するところです。\nこんな時はこちらから:イベントの受付をしたい',
-  o_desk: '大きな画面で受付を進める「QR受付画面」です。\nこんな時はこちらから:受付の順番待ちを進めたい',
-  a_admin: '管理システムを開きます。', a_disaster: '災害モードを切りかえます。', a_image: '歴史推理の画像を変えます。', a_docs: '書類を更新します。', a_notice: 'お知らせを更新します。', a_mama: 'ママの設定です。', a_event: 'イベントの設定です。', a_sched: '予定を登録します。'
+  card: 'あなたの会員証です。\nイベント時には引換券の代わりとなります',
+  dashboard: '町会からのお知らせ・掲示板です。\n町会の最新情報が見られます',
+  mail: '役員とのチャットです。\n連絡・相談や、使い方をロボットに質問できます',
+  event: '祭礼・演芸会などの申し込みをするところです。\n申し込み・キャンセル・状況の確認ができます',
+  flyer: 'イベントのチラシを見るところです。\n新しいチラシがあると、ボタンが薄い赤になります',
+  help: '町会の助け合いの掲示です。\n手伝ってほしいこと・手伝えることを探したり、募集したりできます',
+  suginami: '杉並区の防災情報です。\n災害に備えたいとき、避難情報を見たいときに',
+  weather: '浜田山の天気です。\n今日や週間の天気が見られます',
+  tips: 'クイズ・カード・パズルなどで遊べるゲームです。\n歴史推理もここにあります',
+  blog: '町会ブログです。\n町会の活動の様子が読めます',
+  board: 'Tweet(ひとこと投稿)です。\n会員どうしの投稿を見たり、書いたりできます',
+  headchg: '回覧元(班の代表者)が替わったことを知らせるところです',
+  supporter: 'サポーター募集です。\n町会のお手伝いを探したり、やってみたりできます',
+  o_supporter: 'お手伝い(サポーター)の募集を出すところです。\n応募してくれた方も見られます',
+  o_mama: '役員用の、スナックママの部屋です',
+  o_sched: '役員の予定です。\n役員会などの日程が見られます',
+  o_report: '事業報告・計画を記載・提出するところです',
+  o_sokai: '総会の資料を見たり、当日の出席者数を入れたりするところです',
+  o_kanban: '捨て看板の依頼を出すところです',
+  o_summary: '会員人数・回覧元・商品券などの集計です',
+  o_unpaid: '未納の方を確認するところです',
+  o_circ: '今の回覧元を見たり、検索・変更したりするところです。\n商品券の対象も分かります',
+  o_roster: '会員を名前・住所などで探して、情報を見るところです',
+  o_checkin: '会員証のQRを読み取って、受付や来場を記録するところです',
+  o_desk: '大きな画面で受付を進める「QR受付画面」です',
+  a_admin: '管理システムを開きます', a_disaster: '災害モードを切りかえます', a_image: '歴史推理の画像を変えます', a_docs: '書類を更新します', a_notice: 'お知らせを更新します', a_mama: 'ママの設定です', a_event: 'イベントの設定です', a_sched: '予定を登録します'
 };
+var ALLSPD_ = [0.5, 1, 1.5, 2, 3];
+/** 「詳しいガイドを見たい」: そのメニューの、くわしいガイドへ */
+function gdAllMore_(k) {
+  var has = false; GM_.forEach(function (m) { if (m[0] === k) has = true; });
+  tourStop(true); GD_.on = true; try { localStorage.setItem('hmtGuide', '1'); } catch (e) { /* なくても動く */ }
+  if (has) { GD_.pick = k; if ((location.hash || '#') === '#' || location.hash === '#home') homeView(); else go('home'); }
+  else tourStart(gdMenuTour(k));
+}
 function gdAllStart_() {
-  var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')), steps = [{ sel: '.gsec', next: 1, ms: 6000, say: 'ホームのボタンを、ひとつずつ ご説明します。\n自動で進みます。止めたいときは「ストップ」を押してください。' }], last = '';
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')).filter(function (t) { return t.style.display !== 'none'; }), last = '';
+  var steps = [{ sel: '.gsec', next: 1, ms: 9000, dock: 'top', title: '画面ボタンの説明', say: 'ホームのボタンを、ひとつずつ ご説明します。\n自動で動きますが、動きが早ければ「ストップ」してください。\n遅いと感じたら、手動で「次へ」を押してください。\n「倍速」のボタンで、速さを変えられます。' }];
   var heads = { officer: 'ここからは「役員専用」のメニューです。', admin: 'ここからは「管理者専用」のメニューです。' };
   tiles.forEach(function (t) {
-    var k = t.dataset.k, sec = t.classList.contains('officer') ? 'officer' : /^a_/.test(k) ? 'admin' : 'common', say = '【' + (LABEL[k] || k) + '】\n' + (ALLDESC_[k] || 'ここから「' + (LABEL[k] || k) + '」の画面が開きます。');
-    if (sec !== last && heads[sec]) say = heads[sec] + '\n\n' + say;
-    last = sec; steps.push({ sel: '.tile[data-k="' + k + '"]', next: 1, ms: Math.min(14000, 3500 + say.length * 120), noact: '.tile', noactMsg: '説明中は、ボタンは押せません。「ストップ」か「ガイドを終わる」を押してください', say: say });
+    var k = t.dataset.k, sec = t.classList.contains('officer') ? 'officer' : /^a_/.test(k) ? 'admin' : 'common', desc = ALLDESC_[k] || 'ここから「' + (LABEL[k] || k) + '」の画面が開きます', say = desc;
+    if (sec !== last && heads[sec]) desc = heads[sec] + '\n' + desc;
+    last = sec; steps.push({ sel: '.tile[data-k="' + k + '"]', next: 1, dock: 'top', ms: Math.min(14000, 4500 + desc.length * 130), noact: '.tile', noactMsg: '説明中は、ボタンは押せません。「ストップ」か「説明を終わる」を押してください', title: LABEL[k] || k, say: desc, tags: tagList_(k), more: k });
   });
-  TOURS_.allmenu = { t: '', home: 1, auto: 1, nocount: 0, fin: { say: 'ボタンの説明は以上です。\n気になるボタンを押して、使ってみてください', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: steps };
+  TOURS_.allmenu = { t: '', home: 1, auto: 1, compact: 1, fin: { say: 'ボタンの説明は以上です。\n気になるボタンを押して、使ってみてください', btn: '説明を終わる', other: '別のガイドをする' }, steps: steps };
   tourStart('allmenu');
 }
-function lastScr_() { var l = ''; try { l = localStorage.getItem('hmtLast') || ''; } catch (e) { l = ''; } return /^[A-Za-z0-9_\-\/%]+$/.test(l) ? l : ''; }
+function lastScr_() { var l = S.lastH || ''; if (!l) { try { l = localStorage.getItem('hmtLast') || ''; } catch (e) { l = ''; } } return /^[A-Za-z0-9_\-\/%]+$/.test(l) ? l : ''; }
 function gdPanel() {
   var me = S.me, has = {}; me.menu.forEach(function (m) { has[m.key] = 1; });
   var wish = function (t, tour) { return '<button type="button" class="gdw" data-gtour="' + tour + '">' + esc(t) + '</button>'; }, h = '<div class="gdp">';
@@ -877,7 +913,7 @@ function gdPanel() {
     var pickChip = function (k) { return gm[k] && has[k] ? chip(gm[k][1], 'data-gpick="' + k + '"') : ''; };
     var menus = '<div class="gdc">' + chip('何からやればいいかわからない', 'data-gpick="__start"').replace('gdw s', 'gdw s ai') + chip('ガイドの終了方法', 'data-gtour="gdoff"').replace('gdw s', 'gdw s rd') + '</div><div class="gdc">' + ord.map(pickChip).join('') + '</div>';
     var staff = isOfficer();
-    h += '<div class="gdt">🤖 私がガイドします</div><div style="margin:6px 0 8px"><button type="button" id="gdall" class="gdb on">画面チュートリアル</button></div><div class="gdo">あなたが聞きたいことは、<br>テキスト または ボタンから<br>知りたいことを私に教えてください</div>' +
+    h += '<div class="gdt">🤖 私がガイドします</div><div style="margin:6px 0 8px"><button type="button" id="gdall" class="gdb on">画面ボタンの説明</button></div><div class="gdo">あなたが聞きたいことは、<br>テキスト または ボタンから<br>知りたいことを私に教えてください</div>' +
       '<div class="gdh0">よくガイドするタグ</div><div class="gdc">' + (isOfficer() ? ['o_roster', 'o_circ', 'o_sched'] : ['card', 'event', 'tips']).map(pickChip).join('') + '</div>' +
       '<div class="gdh0">テキストで検索</div><input id="gdq" class="gdin" type="search" maxlength="40" placeholder="🔍 ここに知りたいことを入力" autocomplete="off" aria-label="知りたいことを入力"><div class="gdo" style="margin:4px 0 0">例)会員証を編集・イベント申込 など</div><div id="gdres"></div>' +
       '<div class="gdh0">ボタンから検索</div>' +
@@ -897,18 +933,27 @@ function gdPanel() {
 function homeView() {
   var me = S.me, sections = {}, order = [];
   me.menu.forEach(function (m) { if (m.key === 'mystery') return; /* 歴史推理は GAME の中にあります */ if (!sections[m.section]) { sections[m.section] = []; order.push(m.section); } sections[m.section].push(m); });
-  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat">';
+  var html = '<div class="hero"><div class="brand">HAMADAYAMA</div><h1><button class="hav" id="hav" aria-label="アイコンを変える">' + av(me.icon, '', me.photo) + '</button>こんにちは、' + esc(me.profile.lineName) + 'さん</h1><div class="sub"><span class="chip role">' + esc(me.role) + '</span></div>' + heroNotes(me) + '</div><div class="pad sheet flat"><div class="tsr"><input id="tgq" type="search" autocomplete="off" maxlength="60" placeholder="🔍 #タグで ボタンを探す(例: 引換券 祭礼)" aria-label="ハッシュタグでボタンを探す"><button type="button" id="tgx" class="sbtn" style="display:none">全部出す</button></div><div id="tgm" class="muted" role="status" style="margin:-4px 2px 10px"></div>';
   order.forEach(function (sec) {
-    html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<span style="display:flex;gap:6px;align-items:center">' + (lastScr_() ? '<button type="button" id="gdlast" class="gdb" aria-label="前に開いていた画面にもどる">前回画面</button>' : '') + '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button></span>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
+    html += '<div class="sec' + (sec === 'common' ? ' gsec' : '') + '">' + SECTION[sec] + (sec === 'common' ? '<span style="display:flex;gap:6px;align-items:center">' + '<button type="button" id="gdlast" class="gdb" aria-label="前に開いていた画面にもどる">前回画面</button>' + '<button type="button" id="gdbtn" class="gdb' + (GD_.on ? ' on' : '') + '" aria-pressed="' + GD_.on + '">ガイド ' + (GD_.on ? 'ON' : 'OFF') + '</button></span>' : '') + '</div>' + (sec === 'common' && GD_.on ? gdPanel() : '') + '<div class="grid">' + sections[sec].map(function (m) {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-3 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-4 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
   var hr = $('#hrfr'); if (hr) hr.onclick = hardRefresh;
-  var gl = $('#gdlast'); if (gl) gl.onclick = function () { var l = lastScr_(); if (l) location.hash = '#' + l; };
+  var tq = $('#tgq'), tx = $('#tgx');
+  var tgFilter = function () {
+    var ws = tagWords_(tq.value), tl = Array.prototype.slice.call(document.querySelectorAll('.tile[data-k]')), n = 0;
+    tl.forEach(function (b) { var ok = !ws.length || tagHit_(b.dataset.k, ws); b.style.display = ok ? '' : 'none'; if (ok && ws.length) n++; });
+    Array.prototype.forEach.call(document.querySelectorAll('.grid'), function (g) { var any = !!g.querySelector('.tile:not([style*="display: none"])'), h = g.previousElementSibling; while (h && !h.classList.contains('sec')) h = h.previousElementSibling; g.style.display = any ? '' : 'none'; if (h && !h.classList.contains('gsec')) h.style.display = any ? '' : 'none'; });
+    tx.style.display = ws.length ? '' : 'none';
+    $('#tgm').textContent = !ws.length ? '' : n ? '「' + tq.value.trim() + '」に合うボタン ' + n + '個だけ、出しています(ほかは かくしています)' : '「' + tq.value.trim() + '」に合うボタンは ありません。別のことばで、ためしてください';
+  };
+  tq.oninput = tgFilter; tx.onclick = function () { tq.value = ''; tgFilter(); tq.blur(); };
+  var gl = $('#gdlast'); if (gl) gl.onclick = function () { var l = lastScr_(); if (l) location.hash = '#' + l; else toast('まだ前の画面がありません。ボタンを押して画面を開くと、次から使えます'); };
   var gb = $('#gdbtn'); if (gb) gb.onclick = function () { GD_.on = !GD_.on; GD_.pick = null; try { localStorage.setItem('hmtGuide', GD_.on ? '1' : '0'); } catch (e) { /* なくても動く */ } tourStop(true); homeView(); };
   Array.prototype.forEach.call(document.querySelectorAll('[data-gtour]'), function (b) { b.onclick = function () { tourStart(b.dataset.gtour); }; });
   var ga = $('#gdall'); if (ga) ga.onclick = gdAllStart_;
@@ -2358,10 +2403,17 @@ function tourRender(st) {
   var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy; TR.box.classList.toggle('sm', !!TOURS_[TR.name].compact);
   TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
   var TT = TOURS_[TR.name];
-  if (TT.auto) {   // 自動で進む説明: 「ストップ」で止まる/「つづける」で再開
-    clearTimeout(TR.at); TR.box.querySelector('.tb').innerHTML = '<button type="button" data-tp="1">' + (TR.pause ? 'つづける' : 'ストップ') + '</button><button type="button" data-tn="1">次へ</button><button type="button" class="q" data-tq="1">ガイドを終わる</button>';
-    var tp = TR.box.querySelector('[data-tp]'); tp.onclick = function (ev) { ev.stopPropagation(); TR.pause = !TR.pause; clearTimeout(TR.at); tp.textContent = TR.pause ? 'つづける' : 'ストップ'; if (!TR.pause) TR.at = setTimeout(tourNext, 1500); };
-    if (!TR.pause) TR.at = setTimeout(tourNext, st.ms || 6000);
+  if (TT.auto) {   // 自動で進む説明: 「ストップ」で止まる/「つづける」で再開/「倍速」で速さを変える
+    clearTimeout(TR.at); if (!TR.spd) TR.spd = 1;
+    var tgs = (st.tags || []).map(function (t) { return '#' + esc(t); }).join('　');
+    TR.box.innerHTML = '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>' + (st.title ? '<div style="font-size:18px;font-weight:800;margin-bottom:2px">' + esc(st.title) + '</div>' : '') + '<div style="font-weight:600">' + esc(sy).replace(/\n/g, '<br>') + '</div>' +
+      (st.more ? '<div class="tb"><button type="button" data-tm="1" style="background:#1b6fe0">詳しいガイドを見たい</button></div>' : '') +
+      (tgs ? '<div style="font-size:12.5px;font-weight:600;margin-top:6px;color:#444"><b>検索タグ</b><br>' + tgs + '</div>' : '') +
+      '<div class="tb"><button type="button" data-tp="1">' + (TR.pause ? 'つづける' : 'ストップ') + '</button><button type="button" data-tn="1">次へ</button><button type="button" data-ts="1" style="background:#6b7280">' + TR.spd + '倍速</button><button type="button" class="q" data-tq="1">説明を終わる</button></div>';
+    var tp = TR.box.querySelector('[data-tp]'); tp.onclick = function (ev) { ev.stopPropagation(); TR.pause = !TR.pause; clearTimeout(TR.at); tp.textContent = TR.pause ? 'つづける' : 'ストップ'; if (!TR.pause) TR.at = setTimeout(tourNext, 1500 / TR.spd); };
+    var ts = TR.box.querySelector('[data-ts]'); ts.onclick = function (ev) { ev.stopPropagation(); TR.spd = ALLSPD_[(ALLSPD_.indexOf(TR.spd) + 1) % ALLSPD_.length]; ts.textContent = TR.spd + '倍速'; if (!TR.pause) { clearTimeout(TR.at); TR.at = setTimeout(tourNext, (st.ms || 6000) / TR.spd); } };
+    var tm = TR.box.querySelector('[data-tm]'); if (tm) tm.onclick = function (ev) { ev.stopPropagation(); gdAllMore_(st.more); };
+    if (!TR.pause) TR.at = setTimeout(tourNext, (st.ms || 6000) / TR.spd);
   }
   var nb = TR.box.querySelector('[data-tn]'); if (nb) nb.onclick = function (ev) { ev.stopPropagation(); tourNext(); };
   TR.box.querySelector('[data-tq]').onclick = function (ev) { ev.stopPropagation(); tourStop(false, 'ガイドをやめました'); };
@@ -5222,7 +5274,7 @@ function route() {
   var officerOnly = /^(officer|o_sum|o_unpaid|o_circ|o_chg|o_roster|o_scan|o_scanrun|o_search|o_desk|o_sched|o_report|o_sokai|o_kanban|o_docs|o_doc|o_mama|o_supporter)$/.test(h);
   if ((officerOnly && !isOfficer()) || (/^(a_img|a_disaster|a_docs|a_notice|a_mama|a_event|a_sched)$/.test(h) && !isAdmin())) h = '';
   renderNav(h);
-  if (h && h !== 'home' && h !== 'o_chg') { try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
+  if (h && h !== 'home' && h !== 'o_chg') { S.lastH = full; try { localStorage.setItem('hmtLast', full); } catch (e) { /* なくても動く */ } }   // 「前回画面」ボタン用(ホーム以外で、最後に開いていた画面)
   var seg = full.split('/')[1];
   if (h === 'mail' && seg) return mailDetailView(seg);
   if (h === 'board' && seg) return boardDetailView(seg);
