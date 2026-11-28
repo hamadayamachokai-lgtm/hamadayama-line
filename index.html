@@ -285,6 +285,7 @@ button.mi{cursor:pointer;min-height:32px}
 .tourb{position:fixed;z-index:99991;width:min(320px,calc(100vw - 24px));box-sizing:border-box;background:#fff;color:#1a1a1a;border:3px solid #ffd43b;border-radius:16px;padding:14px 14px 12px;font-size:20px;font-weight:800;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .tourb .th{font-size:34px;line-height:1;display:inline-block;animation:tourbn .7s infinite alternate}.tourb .tn{font-size:13px;opacity:.6;font-weight:600;margin-bottom:4px}
 .tourb .tb{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.tourb button{all:unset;cursor:pointer;box-sizing:border-box;padding:10px 16px;border-radius:12px;font-size:16px;font-weight:800;background:#06c755;color:#fff;min-height:44px}.tourb button.q{background:#eee;color:#444}
+.tourb.sm{font-size:15px;line-height:1.45;padding:9px 11px;border-radius:14px;width:min(300px,calc(100vw - 24px))}.tourb.sm .tb{margin-top:7px;gap:6px}.tourb.sm button{padding:6px 11px;min-height:36px;font-size:14px;border-radius:10px}.tourb.sm .tn{font-size:12px;margin-bottom:2px}
 .tourb.shake{animation:tourshk .35s}@keyframes tourbn{from{transform:translateY(0)}to{transform:translateY(7px)}}@keyframes tourshk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .aiact{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px 44px}.aiact button{all:unset;cursor:pointer;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:700;border:1.5px solid var(--navy);color:var(--navy);background:#fff}.aiact button.go{background:var(--navy);color:#fff}
 .aifq{display:flex;flex-direction:column;gap:6px;margin:0 0 12px 44px}.aifq button{all:unset;cursor:pointer;padding:9px 12px;border-radius:12px;font-size:14.5px;background:#fff;border:1px solid var(--line);color:var(--ink,#222)}
@@ -902,7 +903,7 @@ function homeView() {
       return '<button class="tile' + (m.ready ? '' : ' soon') + (sec === 'officer' ? ' officer' : '') + (m.hot ? ' hot' : '') + '" data-k="' + m.key + '">' + (m.hot && m.urgent ? '<span class="tag urg">急募</span>' : '') + (m.ready ? '' : '<span class="tag">' + esc(m.note || '準備中') + '</span>') + (badgeOf(m.key) ? '<b class="bdg' + bdgCls(m.key) + '">' + badgeOf(m.key) + '</b>' : '') + svg(m.key) + '<span>' + esc(LABEL[m.key]) + '</span></button>';
     }).join('') + '</div>';
   });
-  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-2 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
+  html += '</div><p class="small" style="text-align:center;margin:18px 0 0;opacity:.6">画面 20261128-3 / API ' + esc(me.apiVer || '(古い)') + '</p><p style="text-align:center;margin:6px 0 0"><button type="button" id="hrfr" class="sbtn" style="min-height:40px;padding:6px 14px">画面を最新にする</button></p><p class="small" style="text-align:center;margin:4px 0 0;opacity:.6">表示がおかしいときは、これを押してください</p><div style="height:28px"></div>';
   setView(html);
   Array.prototype.forEach.call(document.querySelectorAll('.tile'), function (b) { b.onclick = function () { openTile(b.dataset.k); }; });
   $('#hav').onclick = function () { go('icon'); };
@@ -2092,20 +2093,21 @@ var TOURS_ = {
   blog: { t: '町会ブログを見る場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="blog"]', say: 'この「町会ブログ」を押すと、ブログが開きます' }] },
   m_o_roster: { t: '', home: 1, three: 1, steps: [{ sel: '.tile[data-k="o_roster"]', say: 'この「会員名簿」を押します。名前・住所・丁目・班などから、会員さんを探せます' }] },
   m_o_sched: { t: '', home: 1, three: 1, steps: [{ sel: '.tile[data-k="o_sched"]', say: 'この「役員の予定」を押します。役員の予定が見られます' }] },
-  o_circ: { t: '回覧元を見る', home: 1, three: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
+  o_circ: { t: '回覧元を見る', home: 1, three: 1, compact: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
     { sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します' },
     { sel: '#cmon button[data-m="cur"]', next: 1, say: 'ここが今の回覧元です。\n「先月」を選ぶと、前回の回覧元が見られます' },
     { sel: '#cchips', next: 1, say: '丁目を選択してください' },
     { sel: '#cq', next: 1, say: 'この検索窓から、会員検索ができます' },
     { sel: '#cnear', next: 1, say: '「現在地から検索」を押すと、いま居る場所から いちばん近い回覧元さんを検索できます' },
     { sel: '#clist .mrow', next: 1, say: '表示されている情報です。\n・赤丸は、商品券の対象という意味です\n・緑のタグは、その班に未納者がいると赤になります\n・「格納書類」は、その班の格納書類です' } ] },
-  o_circchg: { t: '回覧元を変更する', home: 1, three: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
+  o_circchg: { t: '回覧元を変更する', home: 1, three: 1, compact: 1, fin: { say: '案内は以上になります', btn: 'ガイドを終わる', other: '別のガイドをする' }, steps: [
     { sel: '.tile[data-k="o_circ"]', say: 'この「回覧元」を押します' },
     { sel: '#cchips', need: 'button', say: 'まずは、この丁目を選択しましょう' },
-    { sel: '#cq', next: 1, say: 'つぎに、下へスクロールして対象の人を見つけるか、この検索窓から会員検索で表示してみましょう' },
-    { sel: function () { return document.querySelector('#clist [data-chg]'); }, say: 'この「回覧元変更」を押してください' },
-    { sel: '#chlist', need: '.chpick:not([disabled])', say: '新しく回覧元になる方を、タップしてください' },
-    { sel: '#chform', next: 1, noact: '#chgo', say: '入っている住所が違っている、または空白のときは、住所を入れましょう。\n最後に、一番下の「この内容で変更する」を押したら完了です。\n(ガイドの練習では押せません。実際に変更するときは、あとで押してください)' } ] },
+    { sel: '#cq', next: 1, say: 'つぎに、この検索窓から会員検索をするか、下へスクロールして対象の人を探しましょう。\n(スクロールして探すときは、そのまま「次へ」)' },
+    { sel: tourFollow_('#clist [data-chg]'), free: '#clist [data-chg]', dock: 'top', say: '下へスクロールして、対象の班の「回覧元変更」を押してください' },
+    { sel: tourFollow_('#chlist .chpick:not([disabled])'), free: '#chlist .chpick:not([disabled])', dock: 'top', say: '新しく回覧元になる方を、タップしてください' },
+    { sel: '#chaddr', next: 1, dock: 'top', say: '住所が違う、または空白のときは、ここに入れましょう。入れたら「次へ」' },
+    { sel: '#chgo', next: 1, noact: '#chgo', dock: 'top', say: '最後に、ここを押したら完了です。\n(練習では押せません)' } ] },
   headchg: { t: '回覧元を変更する場所を、教えてもらう', home: 1, steps: [{ sel: '.tile[data-k="headchg"]', say: 'この「回覧元変更」を押します' }] },
   evreg: { t: 'イベント申込者の登録場所を、教えてもらう', home: 1, steps: [
     { sel: '.tile[data-k="event"]', say: 'この「イベント」を押します' },
@@ -2323,6 +2325,14 @@ function tourStop(quiet, msg) {
   if (was && !quiet && msg) toast(msg);
 }
 function tourStep() { return TR.on ? TOURS_[TR.name].steps[TR.i] : null; }
+/** 画面に見えている候補のうち、いちばん中央に近いものを選ぶ(スクロールすると、光る場所がついてくる) */
+function tourFollow_(q) {
+  return function () {
+    var l = Array.prototype.slice.call(document.querySelectorAll(q)), vh = window.innerHeight, best = null, bd = 1e9, top = (TR.box && TR.box.offsetHeight ? TR.box.offsetHeight : 120) + 10;
+    l.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.width > 0 && r.top >= top && r.bottom <= vh - 80) { var d = Math.abs((r.top + r.bottom) / 2 - (top + vh - 80) / 2); if (d < bd) { bd = d; best = e; } } });
+    return best || l[0] || null;
+  };
+}
 function tourVisible(e) { if (!e) return false; var r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }
 function tourTick() {
   if (TR.fin) { var hb = document.querySelector('#bnav [data-h="home"]'); if (tourVisible(hb)) { var hr = hb.getBoundingClientRect(); if (hr.left < 0 || hr.right > window.innerWidth) { try { hb.parentNode.scrollLeft = 0; } catch (e) { /* 無視 */ } } TR.el = hb; tourPos(); } else { TR.hole.style.display = 'none'; TR.box.style.top = '30%'; TR.box.style.left = '12px'; } return; }
@@ -2334,13 +2344,18 @@ function tourTick() {
   TR.wait = 0;
   if (TR.el !== e) {
     TR.el = e; var r0 = e.getBoundingClientRect();
-    if (r0.top < 70 || r0.bottom > window.innerHeight - 90) { try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
-    tourRender(st);
+    if (st.dock) {   // 説明の枠を画面の上に置く。光る場所は、枠の下に見えるようにする
+      tourRender(st); var bh = TR.box.offsetHeight;
+      if (r0.top < bh + 16 || r0.bottom > window.innerHeight - 80) { e.style.scrollMarginTop = (bh + 24) + 'px'; try { e.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
+    } else {
+      if (r0.top < 70 || r0.bottom > window.innerHeight - 90) { try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) { e.scrollIntoView(); } }
+      tourRender(st);
+    }
   } else if (typeof st.say === 'function' && st.say() !== TR.sayc) tourRender(st);   // 選びなおしたとき、説明も かわる
   tourPos();
 }
 function tourRender(st) {
-  var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy;
+  var n = TOURS_[TR.name].steps.length, sy = typeof st.say === 'function' ? st.say() : st.say; TR.sayc = sy; TR.box.classList.toggle('sm', !!TOURS_[TR.name].compact);
   TR.box.innerHTML = (TOURS_[TR.name].nocount ? '' : '<div class="tn">' + (TR.i + 1) + ' / ' + n + '</div>') + esc(sy).replace(/\n/g, '<br>') + '<div class="tb">' + (st.next ? '<button type="button" data-tn="1">' + (TOURS_[TR.name].three ? '次へ' : 'つぎへ') + '</button>' : '') + '<button type="button" class="q" data-tq="1">' + (TOURS_[TR.name].three ? 'ガイドを終わる' : 'やめる') + '</button>' + (TOURS_[TR.name].three ? '<button type="button" data-to="1">別のガイドをする</button>' : '') + '</div>';
   var TT = TOURS_[TR.name];
   if (TT.auto) {   // 自動で進む説明: 「ストップ」で止まる/「つづける」で再開
@@ -2357,6 +2372,8 @@ function tourPos() {
   if (!tourVisible(TR.el)) return;
   var r = TR.el.getBoundingClientRect(), p = 6, h = TR.hole, b = TR.box;
   h.style.display = 'block'; h.style.left = (r.left - p) + 'px'; h.style.top = (r.top - p) + 'px'; h.style.width = (r.width + p * 2) + 'px'; h.style.height = (r.height + p * 2) + 'px';
+  var stp = tourStep();
+  if (stp && stp.dock === 'top') { b.style.top = '8px'; b.style.left = Math.max(12, (window.innerWidth - b.offsetWidth) / 2) + 'px'; return; }
   var bh = b.offsetHeight, bw = b.offsetWidth, vh = window.innerHeight, below = vh - r.bottom, top = below > bh + 24 ? r.bottom + p + 12 : Math.max(8, r.top - p - bh - 12);
   b.style.top = top + 'px'; b.style.left = Math.max(12, Math.min(window.innerWidth - bw - 12, r.left + r.width / 2 - bw / 2)) + 'px';
 }
@@ -2378,6 +2395,7 @@ function tourClick(ev) {
   if (TR.fin) { if (TR.el && !(ev.target.closest && ev.target.closest('.tourui')) && TR.el.contains(ev.target)) setTimeout(function () { tourStop(true); }, 200); return; }
   var st = tourStep(); if (!st || !TR.el) return;
   if (ev.target.closest && ev.target.closest('.tourui')) return;
+  if (st.free && ev.target.closest && ev.target.closest(st.free)) { setTimeout(tourNext, 250); return; }   // 光っている場所以外でも、同じ種類のボタンなら進む
   if (st.noact && ev.target.closest && ev.target.closest(st.noact)) { ev.preventDefault(); ev.stopPropagation(); toast(st.noactMsg || 'ガイドの練習なので、ここは押せません。「次へ」を押してください'); return; }
   if (st.need && TR.el.contains(ev.target) && !(ev.target.closest && ev.target.closest(st.need))) return;   // 枠の中でも、指定の場所以外を押したときは、進まない
   if (TR.el.contains(ev.target) || ev.target === TR.el) { if (st.pick) st.pick(ev.target); if (!st.next) setTimeout(tourNext, 250); return; }
